@@ -16,6 +16,7 @@
 #include "BoundingBox.h"
 #include "Camera.h"
 #include "Frustum.h"
+#include <list>
 
 struct ChunkedLoDTerrainDesc {
     // Note(eugene): hierarchical transforms

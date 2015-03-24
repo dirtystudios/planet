@@ -1,6 +1,7 @@
 #ifndef __gpu_tile_buffer_h__
 #define __gpu_tile_buffer_h__
 
+#include <list>
 
 struct GPUTile {
     GPUTile() {};
