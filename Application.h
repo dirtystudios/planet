@@ -2,13 +2,53 @@
 #define __application_h__
 
 namespace app {
+    enum class KeyCode {
+            KEY_A = 1,
+            KEY_B = 2,
+            KEY_C,
+            KEY_D,
+            KEY_E,
+            KEY_F,
+            KEY_G,
+            KEY_H,
+            KEY_I,
+            KEY_J,
+            KEY_K,
+            KEY_L,
+            KEY_M,
+            KEY_N,
+            KEY_O,
+            KEY_P,
+            KEY_Q,
+            KEY_R,
+            KEY_S,
+            KEY_T,
+            KEY_U,
+            KEY_V,
+            KEY_W,
+            KEY_X,
+            KEY_Y,
+            KEY_Z,
+            KEY_1,
+            KEY_2,
+            KEY_3,
+            KEY_4,
+            KEY_5,
+            KEY_6,
+            KEY_7,                                                                        
+            KEY_8,
+            KEY_9,
+            KEY_0,
+            KEY_LEFT_SHIFT,
+            KEY_UNKNOWN
+    };
+
     struct KeyState {
-        bool is_w_pressed;
-        bool is_a_pressed;
-        bool is_s_pressed;
-        bool is_d_pressed;
-        bool is_q_pressed;
-        bool is_e_pressed;
+        bool pressed[256];
+
+        bool IsPressed(app::KeyCode key) const {
+            return pressed[(int)key];
+        };
     };
 
     struct CursorState {

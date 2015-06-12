@@ -1,18 +1,17 @@
 #ifndef __frustum_h__
 #define __frustum_h__
+
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_access.hpp>
+#include "BoundingBox.h"
 
-class Frustum {
-private:
-    glm::vec4 _frustum_planes[6];
-public:
+struct Frustum {
     Frustum(const glm::mat4& projection, const glm::mat4& view);
-    Frustum();
 
-    bool ContainsPoint(const glm::vec3& p);
-    void ComputeFrustumPlanes(const glm::mat4& projection, const glm::mat4& view);
-    const glm::vec4* GetPlanes();
+    glm::vec4 frustum_planes[6];
+
+    bool IsPointInFrustum(const glm::vec3& p);    
+    bool IsBoxInFrustum(const BoundingBox& bbox);
 };
+
 
 #endif

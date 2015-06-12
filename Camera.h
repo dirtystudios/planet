@@ -2,46 +2,31 @@
 
 #include <glm/glm.hpp>
 
-class Camera {
-private:
-    glm::vec3 _up;
-    glm::vec3 _right;
-    glm::vec3 _look;
-    glm::vec3 _pos;
-    
-    float _fov;
-    float _zfar;
-    float _znear;
-    float _aspect_ratio;
-    
-    glm::mat4 _persp;
-    glm::mat4 _view;
+struct Camera {
+    Camera(float fov_degrees = 45.f, float aspect_ratio = 1.33333f, float znear = 0.01f, float zfar = 100000.f);
 
-    bool _dirty_view;
-    bool _dirty_perspective;    
-public:
-    Camera(float fov = 45.f, float aspect_ratio = 4.f/3.f, float znear = 0.1f, float zfar = 10000.f);
+    glm::vec3 up;
+    glm::vec3 right;
+    glm::vec3 look;
+    glm::vec3 pos;
 
-    void SetFieldOfView(float degrees);
-    void SetFarClip(float distance);
-    void SetNearClip(float distance);
-    void SetAspectRatio(float aspect);
+    float fov_degrees;
+    float zfar;
+    float znear;
+    float aspect_ratio;
 
     void Translate(glm::vec3 translation);
     void MoveTo(glm::vec3 pos);
+    void Translate(float x, float y, float z);
+    void MoveTo(float x, float y, float z);
     void Yaw(float degrees);
     void Pitch(float degrees);
     void LookAt(glm::vec3 target);
-
-    glm::vec3 GetRight();
-    glm::vec3 GetUp();
-    glm::vec3 GetLook();
-    glm::vec3 GetPos();
-    glm::mat4 GetView();
-    glm::mat4 GetProjection();    
-
-private:
-    void BuildView();
-    void BuildPerspective();    
-   
+    void LookAt(float x, float y, float z);
+    
+    float GetHorizontalFieldOfView();
+    float GetVerticalFieldOfView();
+    
+    glm::mat4 BuildView();
+    glm::mat4 BuildProjection();    
 };

@@ -3,7 +3,7 @@ project(dg)
 
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -std=c++11 -g -Wno-unused-variable")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -std=c++11 -g")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
@@ -14,6 +14,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
     endif()
 endif()
 
+message("CMAKE_CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 
 

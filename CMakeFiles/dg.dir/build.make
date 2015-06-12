@@ -35,10 +35,10 @@ RM = /usr/local/Cellar/cmake/3.1.1_1/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/eugene.sturm/projects/misc/planet
+CMAKE_SOURCE_DIR = /Users/eugene.sturm/projects/misc/planet72
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/eugene.sturm/projects/misc/planet
+CMAKE_BINARY_DIR = /Users/eugene.sturm/projects/misc/planet72
 
 # Include any dependencies generated for this target.
 include CMakeFiles/dg.dir/depend.make
@@ -51,17 +51,17 @@ include CMakeFiles/dg.dir/flags.make
 
 CMakeFiles/dg.dir/main.cpp.o: CMakeFiles/dg.dir/flags.make
 CMakeFiles/dg.dir/main.cpp.o: main.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet72/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/dg.dir/main.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/main.cpp.o -c /Users/eugene.sturm/projects/misc/planet/main.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/main.cpp.o -c /Users/eugene.sturm/projects/misc/planet72/main.cpp
 
 CMakeFiles/dg.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/dg.dir/main.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet/main.cpp > CMakeFiles/dg.dir/main.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet72/main.cpp > CMakeFiles/dg.dir/main.cpp.i
 
 CMakeFiles/dg.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/dg.dir/main.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet/main.cpp -o CMakeFiles/dg.dir/main.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet72/main.cpp -o CMakeFiles/dg.dir/main.cpp.s
 
 CMakeFiles/dg.dir/main.cpp.o.requires:
 .PHONY : CMakeFiles/dg.dir/main.cpp.o.requires
@@ -74,17 +74,17 @@ CMakeFiles/dg.dir/main.cpp.o.provides.build: CMakeFiles/dg.dir/main.cpp.o
 
 CMakeFiles/dg.dir/App.cpp.o: CMakeFiles/dg.dir/flags.make
 CMakeFiles/dg.dir/App.cpp.o: App.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet/CMakeFiles $(CMAKE_PROGRESS_2)
+	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet72/CMakeFiles $(CMAKE_PROGRESS_2)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/dg.dir/App.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/App.cpp.o -c /Users/eugene.sturm/projects/misc/planet/App.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/App.cpp.o -c /Users/eugene.sturm/projects/misc/planet72/App.cpp
 
 CMakeFiles/dg.dir/App.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/dg.dir/App.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet/App.cpp > CMakeFiles/dg.dir/App.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet72/App.cpp > CMakeFiles/dg.dir/App.cpp.i
 
 CMakeFiles/dg.dir/App.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/dg.dir/App.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet/App.cpp -o CMakeFiles/dg.dir/App.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet72/App.cpp -o CMakeFiles/dg.dir/App.cpp.s
 
 CMakeFiles/dg.dir/App.cpp.o.requires:
 .PHONY : CMakeFiles/dg.dir/App.cpp.o.requires
@@ -97,17 +97,17 @@ CMakeFiles/dg.dir/App.cpp.o.provides.build: CMakeFiles/dg.dir/App.cpp.o
 
 CMakeFiles/dg.dir/SystemGLFW3.cpp.o: CMakeFiles/dg.dir/flags.make
 CMakeFiles/dg.dir/SystemGLFW3.cpp.o: SystemGLFW3.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet/CMakeFiles $(CMAKE_PROGRESS_3)
+	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet72/CMakeFiles $(CMAKE_PROGRESS_3)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/dg.dir/SystemGLFW3.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/SystemGLFW3.cpp.o -c /Users/eugene.sturm/projects/misc/planet/SystemGLFW3.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/SystemGLFW3.cpp.o -c /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp
 
 CMakeFiles/dg.dir/SystemGLFW3.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/dg.dir/SystemGLFW3.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet/SystemGLFW3.cpp > CMakeFiles/dg.dir/SystemGLFW3.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp > CMakeFiles/dg.dir/SystemGLFW3.cpp.i
 
 CMakeFiles/dg.dir/SystemGLFW3.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/dg.dir/SystemGLFW3.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet/SystemGLFW3.cpp -o CMakeFiles/dg.dir/SystemGLFW3.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp -o CMakeFiles/dg.dir/SystemGLFW3.cpp.s
 
 CMakeFiles/dg.dir/SystemGLFW3.cpp.o.requires:
 .PHONY : CMakeFiles/dg.dir/SystemGLFW3.cpp.o.requires
@@ -120,17 +120,17 @@ CMakeFiles/dg.dir/SystemGLFW3.cpp.o.provides.build: CMakeFiles/dg.dir/SystemGLFW
 
 CMakeFiles/dg.dir/Camera.cpp.o: CMakeFiles/dg.dir/flags.make
 CMakeFiles/dg.dir/Camera.cpp.o: Camera.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet/CMakeFiles $(CMAKE_PROGRESS_4)
+	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet72/CMakeFiles $(CMAKE_PROGRESS_4)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/dg.dir/Camera.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/Camera.cpp.o -c /Users/eugene.sturm/projects/misc/planet/Camera.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/Camera.cpp.o -c /Users/eugene.sturm/projects/misc/planet72/Camera.cpp
 
 CMakeFiles/dg.dir/Camera.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/dg.dir/Camera.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet/Camera.cpp > CMakeFiles/dg.dir/Camera.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet72/Camera.cpp > CMakeFiles/dg.dir/Camera.cpp.i
 
 CMakeFiles/dg.dir/Camera.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/dg.dir/Camera.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet/Camera.cpp -o CMakeFiles/dg.dir/Camera.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet72/Camera.cpp -o CMakeFiles/dg.dir/Camera.cpp.s
 
 CMakeFiles/dg.dir/Camera.cpp.o.requires:
 .PHONY : CMakeFiles/dg.dir/Camera.cpp.o.requires
@@ -143,17 +143,17 @@ CMakeFiles/dg.dir/Camera.cpp.o.provides.build: CMakeFiles/dg.dir/Camera.cpp.o
 
 CMakeFiles/dg.dir/Frustum.cpp.o: CMakeFiles/dg.dir/flags.make
 CMakeFiles/dg.dir/Frustum.cpp.o: Frustum.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet/CMakeFiles $(CMAKE_PROGRESS_5)
+	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet72/CMakeFiles $(CMAKE_PROGRESS_5)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/dg.dir/Frustum.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/Frustum.cpp.o -c /Users/eugene.sturm/projects/misc/planet/Frustum.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/Frustum.cpp.o -c /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp
 
 CMakeFiles/dg.dir/Frustum.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/dg.dir/Frustum.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet/Frustum.cpp > CMakeFiles/dg.dir/Frustum.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp > CMakeFiles/dg.dir/Frustum.cpp.i
 
 CMakeFiles/dg.dir/Frustum.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/dg.dir/Frustum.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet/Frustum.cpp -o CMakeFiles/dg.dir/Frustum.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp -o CMakeFiles/dg.dir/Frustum.cpp.s
 
 CMakeFiles/dg.dir/Frustum.cpp.o.requires:
 .PHONY : CMakeFiles/dg.dir/Frustum.cpp.o.requires
@@ -166,17 +166,17 @@ CMakeFiles/dg.dir/Frustum.cpp.o.provides.build: CMakeFiles/dg.dir/Frustum.cpp.o
 
 CMakeFiles/dg.dir/DebugRenderer.cpp.o: CMakeFiles/dg.dir/flags.make
 CMakeFiles/dg.dir/DebugRenderer.cpp.o: DebugRenderer.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet/CMakeFiles $(CMAKE_PROGRESS_6)
+	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet72/CMakeFiles $(CMAKE_PROGRESS_6)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/dg.dir/DebugRenderer.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/DebugRenderer.cpp.o -c /Users/eugene.sturm/projects/misc/planet/DebugRenderer.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dg.dir/DebugRenderer.cpp.o -c /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp
 
 CMakeFiles/dg.dir/DebugRenderer.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/dg.dir/DebugRenderer.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet/DebugRenderer.cpp > CMakeFiles/dg.dir/DebugRenderer.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp > CMakeFiles/dg.dir/DebugRenderer.cpp.i
 
 CMakeFiles/dg.dir/DebugRenderer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/dg.dir/DebugRenderer.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet/DebugRenderer.cpp -o CMakeFiles/dg.dir/DebugRenderer.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp -o CMakeFiles/dg.dir/DebugRenderer.cpp.s
 
 CMakeFiles/dg.dir/DebugRenderer.cpp.o.requires:
 .PHONY : CMakeFiles/dg.dir/DebugRenderer.cpp.o.requires
@@ -229,6 +229,6 @@ CMakeFiles/dg.dir/clean:
 .PHONY : CMakeFiles/dg.dir/clean
 
 CMakeFiles/dg.dir/depend:
-	cd /Users/eugene.sturm/projects/misc/planet && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/eugene.sturm/projects/misc/planet /Users/eugene.sturm/projects/misc/planet /Users/eugene.sturm/projects/misc/planet /Users/eugene.sturm/projects/misc/planet /Users/eugene.sturm/projects/misc/planet/CMakeFiles/dg.dir/DependInfo.cmake --color=$(COLOR)
+	cd /Users/eugene.sturm/projects/misc/planet72 && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/eugene.sturm/projects/misc/planet72 /Users/eugene.sturm/projects/misc/planet72 /Users/eugene.sturm/projects/misc/planet72 /Users/eugene.sturm/projects/misc/planet72 /Users/eugene.sturm/projects/misc/planet72/CMakeFiles/dg.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/dg.dir/depend
 

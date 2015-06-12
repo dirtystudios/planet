@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <iostream>
 #include "Log.h"
+#include <map>
 
 GLFWwindow* _window = NULL;
 int32_t _window_width = 800;
@@ -15,6 +16,52 @@ bool first = true;
 app::AppState _app_state;
 app::Application* _app = { nullptr };
 
+#define MAP_KEY_GLFW(x) GLFW_KEY_##x, app::KeyCode::KEY_##x
+app::KeyCode GetKeyCodeFromGLFWKey(int glfw_key) {
+    static std::map<int, app::KeyCode> glfw_mapping = {
+        {MAP_KEY_GLFW(A)},
+        {MAP_KEY_GLFW(B)},
+        {MAP_KEY_GLFW(C)},
+        {MAP_KEY_GLFW(D)},
+        {MAP_KEY_GLFW(E)},
+        {MAP_KEY_GLFW(F)},
+        {MAP_KEY_GLFW(G)},
+        {MAP_KEY_GLFW(H)},
+        {MAP_KEY_GLFW(I)},
+        {MAP_KEY_GLFW(J)},
+        {MAP_KEY_GLFW(K)},
+        {MAP_KEY_GLFW(L)},
+        {MAP_KEY_GLFW(M)},
+        {MAP_KEY_GLFW(N)},
+        {MAP_KEY_GLFW(O)},
+        {MAP_KEY_GLFW(P)},
+        {MAP_KEY_GLFW(P)},
+        {MAP_KEY_GLFW(Q)},
+        {MAP_KEY_GLFW(R)},
+        {MAP_KEY_GLFW(S)},
+        {MAP_KEY_GLFW(T)},
+        {MAP_KEY_GLFW(U)},
+        {MAP_KEY_GLFW(V)},
+        {MAP_KEY_GLFW(W)},
+        {MAP_KEY_GLFW(X)},
+        {MAP_KEY_GLFW(Y)},
+        {MAP_KEY_GLFW(Z)},
+        {MAP_KEY_GLFW(1)},
+        {MAP_KEY_GLFW(2)},
+        {MAP_KEY_GLFW(3)},
+        {MAP_KEY_GLFW(4)},
+        {MAP_KEY_GLFW(5)},
+        {MAP_KEY_GLFW(6)},
+        {MAP_KEY_GLFW(7)},
+        {MAP_KEY_GLFW(8)},
+        {MAP_KEY_GLFW(9)},
+        {MAP_KEY_GLFW(0)},
+        {MAP_KEY_GLFW(LEFT_SHIFT)}
+    };
+    auto it = glfw_mapping.find(glfw_key);
+    return it == glfw_mapping.end() ? app::KeyCode::KEY_UNKNOWN : it->second;
+}
+
 static void ErrorCallback(const int error, const char *description) {    
     glfwSetWindowShouldClose(_window, GL_TRUE);
 }
@@ -22,34 +69,8 @@ static void ErrorCallback(const int error, const char *description) {
 static void KeyCallback(GLFWwindow *window, const int key, const int scancode, const int action, const int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(_window, GL_TRUE);
-    }
-
-    switch(key) {
-        case GLFW_KEY_W: {
-            _app_state.key_state.is_w_pressed = action;
-            break;
-        }
-        case GLFW_KEY_A: {
-            _app_state.key_state.is_a_pressed = action;
-            break;
-        }
-        case GLFW_KEY_S: {
-            _app_state.key_state.is_s_pressed = action;
-            break;
-        }
-        case GLFW_KEY_D: {
-            _app_state.key_state.is_d_pressed = action;
-            break;
-        }
-        case GLFW_KEY_Q: {
-            _app_state.key_state.is_q_pressed = action;
-            break;
-        }
-        case GLFW_KEY_E: {
-            _app_state.key_state.is_e_pressed = action;
-            break;
-        }
-    }
+    }    
+    _app_state.key_state.pressed[(int)GetKeyCodeFromGLFWKey(key)] = action >= 1 ? true : false;  
 }
 
 static void FramebufferResizeCallback(GLFWwindow *window, int width, int height) {
@@ -111,9 +132,9 @@ int sys::Run(app::Application* app) {
     glfwSetKeyCallback(_window, KeyCallback);
     glfwSetCursorEnterCallback(_window, CursorEnterCallback);
 //    glfwSwapInterval(0);
-    glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwGetWindowSize(_window, &_window_width, &_window_height);
-    //glfwSetWindowPos(_window, 1500, 750);    
+    //glfwSetWindowPos(_window, 1000, 500);    
                 
     _app->OnStart();
 

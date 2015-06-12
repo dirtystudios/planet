@@ -1,4 +1,4 @@
-# Install script for directory: /Users/eugene.sturm/projects/misc/planet
+# Install script for directory: /Users/eugene.sturm/projects/misc/planet72
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -33,7 +33,7 @@ else()
   set(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 endif()
 
-file(WRITE "/Users/eugene.sturm/projects/misc/planet/${CMAKE_INSTALL_MANIFEST}" "")
+file(WRITE "/Users/eugene.sturm/projects/misc/planet72/${CMAKE_INSTALL_MANIFEST}" "")
 foreach(file ${CMAKE_INSTALL_MANIFEST_FILES})
-  file(APPEND "/Users/eugene.sturm/projects/misc/planet/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+  file(APPEND "/Users/eugene.sturm/projects/misc/planet72/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
 endforeach()

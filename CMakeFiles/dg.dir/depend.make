@@ -4,14 +4,14 @@
 CMakeFiles/dg.dir/App.cpp.o: App.cpp
 CMakeFiles/dg.dir/App.cpp.o: App.h
 CMakeFiles/dg.dir/App.cpp.o: Application.h
+CMakeFiles/dg.dir/App.cpp.o: BoundingBox.h
 CMakeFiles/dg.dir/App.cpp.o: Camera.h
 CMakeFiles/dg.dir/App.cpp.o: DebugRenderer.h
 CMakeFiles/dg.dir/App.cpp.o: Frustum.h
 CMakeFiles/dg.dir/App.cpp.o: GLHelpers.h
+CMakeFiles/dg.dir/App.cpp.o: Helpers.h
 CMakeFiles/dg.dir/App.cpp.o: Log.h
 CMakeFiles/dg.dir/App.cpp.o: System.h
-CMakeFiles/dg.dir/App.cpp.o: TerrainRenderer.h
-CMakeFiles/dg.dir/App.cpp.o: TerrainRenderer2.h
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/common.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/detail/_fixes.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/detail/_swizzle.hpp
@@ -76,12 +76,17 @@ CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/geometric.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/glm.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/constants.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/constants.inl
-CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/matrix_access.hpp
-CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/matrix_access.inl
+CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/matrix_transform.hpp
+CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/matrix_transform.inl
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/quaternion.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/quaternion.inl
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/type_ptr.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtc/type_ptr.inl
+CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtx/norm.hpp
+CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtx/norm.inl
+CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtx/quaternion.hpp
+CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtx/transform.hpp
+CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/gtx/transform.inl
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/integer.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/mat2x2.hpp
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/glm/mat2x3.hpp
@@ -141,7 +146,8 @@ CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/noise/noise.h
 CMakeFiles/dg.dir/App.cpp.o: /usr/local/include/noise/noisegen.h
 
 CMakeFiles/dg.dir/Camera.cpp.o: Camera.cpp
-CMakeFiles/dg.dir/Camera.cpp.o: camera.h
+CMakeFiles/dg.dir/Camera.cpp.o: Camera.h
+CMakeFiles/dg.dir/Camera.cpp.o: Helpers.h
 CMakeFiles/dg.dir/Camera.cpp.o: /usr/local/include/glm/common.hpp
 CMakeFiles/dg.dir/Camera.cpp.o: /usr/local/include/glm/detail/_fixes.hpp
 CMakeFiles/dg.dir/Camera.cpp.o: /usr/local/include/glm/detail/_swizzle.hpp
@@ -320,6 +326,7 @@ CMakeFiles/dg.dir/DebugRenderer.cpp.o: /usr/local/include/glm/vec3.hpp
 CMakeFiles/dg.dir/DebugRenderer.cpp.o: /usr/local/include/glm/vec4.hpp
 CMakeFiles/dg.dir/DebugRenderer.cpp.o: /usr/local/include/glm/vector_relational.hpp
 
+CMakeFiles/dg.dir/Frustum.cpp.o: BoundingBox.h
 CMakeFiles/dg.dir/Frustum.cpp.o: Frustum.cpp
 CMakeFiles/dg.dir/Frustum.cpp.o: Frustum.h
 CMakeFiles/dg.dir/Frustum.cpp.o: /usr/local/include/glm/common.hpp

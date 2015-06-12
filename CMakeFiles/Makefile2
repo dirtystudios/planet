@@ -47,10 +47,10 @@ RM = /usr/local/Cellar/cmake/3.1.1_1/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/eugene.sturm/projects/misc/planet
+CMAKE_SOURCE_DIR = /Users/eugene.sturm/projects/misc/planet72
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/eugene.sturm/projects/misc/planet
+CMAKE_BINARY_DIR = /Users/eugene.sturm/projects/misc/planet72
 
 #=============================================================================
 # Target rules for target CMakeFiles/dg.dir
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /Users/eugene.sturm/projects/misc/planet
 CMakeFiles/dg.dir/all:
 	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/depend
 	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet/CMakeFiles  1 2 3 4 5 6
+	$(CMAKE_COMMAND) -E cmake_progress_report /Users/eugene.sturm/projects/misc/planet72/CMakeFiles  1 2 3 4 5 6
 	@echo "Built target dg"
 .PHONY : CMakeFiles/dg.dir/all
 
@@ -69,9 +69,9 @@ all: CMakeFiles/dg.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/dg.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/eugene.sturm/projects/misc/planet/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/eugene.sturm/projects/misc/planet72/CMakeFiles 6
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/dg.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/eugene.sturm/projects/misc/planet/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/eugene.sturm/projects/misc/planet72/CMakeFiles 0
 .PHONY : CMakeFiles/dg.dir/rule
 
 # Convenience name for target.

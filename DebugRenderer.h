@@ -11,6 +11,7 @@ private:
     GLuint program;
     
     std::vector<GLuint> lines;
+    std::vector<GLuint> lines_per_framce;
     std::vector<GLuint> points;
 private:
     static DebugRenderer* _renderer;
@@ -38,6 +39,24 @@ public:
 
     }
 
+    void DrawBox(const glm::vec3& min, const glm::vec3& max) {
+        DrawLine(glm::vec3(min.x, max.y, max.z), glm::vec3(max.x, max.y, max.z));
+        DrawLine(glm::vec3(min.x, max.y, max.z), glm::vec3(min.x, min.y, max.z));
+        DrawLine(glm::vec3(min.x, min.y, max.z), glm::vec3(max.x, min.y, max.z));
+        DrawLine(glm::vec3(max.x, max.y, max.z), glm::vec3(max.x, min.y, max.z));
+
+        DrawLine(glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, max.y, min.z));
+        DrawLine(glm::vec3(min.x, max.y, min.z), glm::vec3(min.x, min.y, min.z));
+        DrawLine(glm::vec3(min.x, min.y, min.z), glm::vec3(max.x, min.y, min.z));
+        DrawLine(glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, min.y, min.z));
+
+        DrawLine(glm::vec3(min.x, min.y, min.z), glm::vec3(min.x, min.y, max.z));
+        DrawLine(glm::vec3(min.x, max.y, min.z), glm::vec3(min.x, max.y, max.z));
+        DrawLine(glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, min.y, max.z));
+        DrawLine(glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, max.y, max.z));
+
+    }
+
     void DrawRect(const glm::vec3& tl, const glm::vec3& br) {
         float w = br.x - tl.x;
         float h = tl.y - br.y;
@@ -48,8 +67,6 @@ public:
         DrawLine(tr, br);
         DrawLine(br, bl);
         DrawLine(bl, tl);
-
-
     }
 
     void DrawPoint(const glm::vec3& p) {
@@ -70,6 +87,13 @@ public:
         DrawLine(p + glm::vec3(-10, 0, 0), p + glm::vec3(10, 0, 0));
         DrawLine(p + glm::vec3(0, -10, 0), p + glm::vec3(0, 10, 0));
         DrawLine(p + glm::vec3(0, 0, -10), p + glm::vec3(0, 0, 10));
+    }
+
+
+    
+
+    void DrawLineSingleFrame(const glm::vec3& p1, const glm::vec3& p2, float line_width = 1.f, bool depth_enabled = true) {
+
     }
 
     void DrawLine(const glm::vec3& p1, const glm::vec3& p2, float line_width = 1.f, bool depth_enabled = true) {
