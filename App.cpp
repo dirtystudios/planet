@@ -355,15 +355,11 @@ struct Vertex {
 struct Transform {    
     glm::quat rotation;
     glm::vec3 position;    
-
-    void ConvertEulerAngles(float x_radians, float y_radians, float z_radians) {
-        rotation = glm::quat(glm::vec3(x_radians, y_radians, z_radians));
-    }
 };
 
 struct Terrain {
     uint32_t max_lod;
-    glm::mat4 world;
+    Transform transform;
     uint32_t size;
     uint32_t resolution;
     float split_factor;
@@ -372,6 +368,7 @@ struct Terrain {
 };
 
 Terrain terrain;
+std::vector<Terrain> terrains;
 
 void App::OnStart() {    
     LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
@@ -403,7 +400,7 @@ void App::OnStart() {
 
     float best = 0.1;
     
-    uint32_t size = 10000000;
+    uint32_t size = 1000;
     //max_lod = (int)((log(size/res/best) / log(2)) + 0.5);
     //LOG_D("MAX_LOD: %d %f", max_lod, pow(2, max_lod));
     max_lod = 16;
@@ -412,7 +409,8 @@ void App::OnStart() {
     terrain.size = size;
     terrain.split_factor = 1.f;
     terrain.max_lod = max_lod;
-    terrain.world = glm::mat4();    
+    terrain.transform.position = glm::vec3(0, 0, 0);    
+    
 
     root = new TerrainNode();
     root->lod = 0;
@@ -433,12 +431,6 @@ void App::OnStart() {
     vao = gl::CreateVertexArrayObject(vb, { { ParamType::Float2, ParamType::Float2 } });
     gpu_tile_buffer = new GPUTileBuffer(RESOLUTION, 512);
     lru_tile_cache = new LRUTileCache(gpu_tile_buffer);
-    
-
- 
-
-
-    
 }
 
 void App::OnFrame(const app::AppState* app_state, float dt) {    
@@ -485,7 +477,8 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
                         perlin.SetFrequency(0.5);
                         perlin.SetOctaveCount(8);
                         perlin.SetPersistence(0.25); 
-                        return perlin.GetValue(x * 0.1f, y * 0.1f, z * 0.1f) * 20;                                                                                     
+                        //return perlin.GetValue(x * 0.01f, y * 0.01f, z * 0.01f) * 20;                                                                                     
+                        return 0;
                     }, &data, &max, &min);
 
                 node->bbox.min.z = min;
