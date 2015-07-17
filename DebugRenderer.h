@@ -17,8 +17,8 @@ private:
     static DebugRenderer* _renderer;
     DebugRenderer() {
         GLuint shaders[2] = { 0 };    
-        shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "/Users/eugene.sturm/projects/misc/planet/debug_vs.glsl");        
-        shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "/Users/eugene.sturm/projects/misc/planet/debug_fs.glsl");    
+		shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "C:/Users/jacob.arveson/Documents/gitrepos/planet/debug_vs.glsl");
+		shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "C:/Users/jacob.arveson/Documents/gitrepos/planet/debug_fs.glsl");
         program = gl::CreateProgram(shaders, 2);
         GL_CHECK(glLineWidth(0.9f));
         GL_CHECK(glPointSize(5.f));

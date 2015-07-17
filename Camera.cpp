@@ -18,7 +18,7 @@ void Camera::MoveTo(glm::vec3 new_pos) {
     pos = new_pos;
 }
 
-void Camera::Camera::Translate(float x, float y, float z) {
+void Camera::Translate(float x, float y, float z) {
     Translate(glm::vec3(x, y, z));
 }
 

@@ -1,6 +1,13 @@
 #include "System.h"
-#include <glfw/glfw3.h>
+
+#ifdef _WIN32
+#include <GL/glew.h>
+#include <stdint.h>
+#else
 #include <unistd.h>
+#endif
+
+#include <glfw/glfw3.h>
 #include <iostream>
 #include "Log.h"
 #include <map>
@@ -126,6 +133,14 @@ int sys::Run(app::Application* app) {
     }
     _app = app;
     glfwMakeContextCurrent(_window);
+
+#ifdef _WIN32
+	// start GLEW extension handler
+	glewExperimental = GL_TRUE;
+	glewInit();
+	glGetError();
+#endif
+
     glfwSetFramebufferSizeCallback(_window, FramebufferResizeCallback);
     glfwSetCursorPosCallback(_window, CursorPosCallback);
     glfwSetMouseButtonCallback(_window, MouseButtonCallback);
