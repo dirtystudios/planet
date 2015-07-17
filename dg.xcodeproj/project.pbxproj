@@ -1,0 +1,759 @@
+// !$*UTF8*$!
+{
+       archiveVersion = 1;
+       classes = {
+       };
+       objectVersion = 46;
+       objects = {
+
+/* Begin PBXAggregateTarget section */
+              AE22FF1F5D8A4BC8BA5FF45C /* ALL_BUILD */ = {
+                     isa = PBXAggregateTarget;
+                     buildConfigurationList = F41C69FF1E064993BDDA1438 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+                     buildPhases = (
+                            003F2EE193924F3999CF4E6E /* CMake Rules */,
+                     );
+                     dependencies = (
+                            9ADCDE2B3ADB425796E3E058 /* PBXTargetDependency */,
+                            7C820FB5393F4F08A37904CA /* PBXTargetDependency */,
+                     );
+                     name = ALL_BUILD;
+                     productName = ALL_BUILD;
+              };
+              ACD19D35F4A84A12909A969E /* ZERO_CHECK */ = {
+                     isa = PBXAggregateTarget;
+                     buildConfigurationList = DFE3D9177FCC4105829B0656 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+                     buildPhases = (
+                            75628E061D444474A0E50D3B /* CMake Rules */,
+                     );
+                     dependencies = (
+                     );
+                     name = ZERO_CHECK;
+                     productName = ZERO_CHECK;
+              };
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+F16E9FD760AB45A5A982D1E1 /* /Users/eugene.sturm/projects/misc/planet72/App.cpp */ = {isa = PBXBuildFile; fileRef = 566F2F5D991D461F9415BA8B /* /Users/eugene.sturm/projects/misc/planet72/App.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+08DB8CBD4D33472E8A46EEB7 /* /Users/eugene.sturm/projects/misc/planet72/App.h */ = {isa = PBXBuildFile; fileRef = 63996DFA3DC54186A1475108 /* /Users/eugene.sturm/projects/misc/planet72/App.h */; settings = { COMPILER_FLAGS = ""; }; };
+B96D8F95823D4AF1B5C7F624 /* /Users/eugene.sturm/projects/misc/planet72/Application.h */ = {isa = PBXBuildFile; fileRef = 4B1F061F40E245D4ABAEC60F /* /Users/eugene.sturm/projects/misc/planet72/Application.h */; settings = { COMPILER_FLAGS = ""; }; };
+7868E35193C940528CEF7F41 /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = DFFB03649FEE430095CD8439 /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */; settings = { COMPILER_FLAGS = ""; }; };
+968211DE3F9D4542A108E4C6 /* /Users/eugene.sturm/projects/misc/planet72/Camera.cpp */ = {isa = PBXBuildFile; fileRef = 02B8429E45FB4DC18629447E /* /Users/eugene.sturm/projects/misc/planet72/Camera.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+A3552F9737C04B07ABEFD980 /* /Users/eugene.sturm/projects/misc/planet72/Camera.h */ = {isa = PBXBuildFile; fileRef = 8A22D71EB22643758309B6B7 /* /Users/eugene.sturm/projects/misc/planet72/Camera.h */; settings = { COMPILER_FLAGS = ""; }; };
+09518091B552437091FCFDE7 /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp */ = {isa = PBXBuildFile; fileRef = A2902F33CF1440BBACD449AB /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+F19635A00CB942F5939579FB /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.h */ = {isa = PBXBuildFile; fileRef = 7BF7C6B657064B74927DB2B5 /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.h */; settings = { COMPILER_FLAGS = ""; }; };
+62ED0B2C968742D78FDDEDA6 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp */ = {isa = PBXBuildFile; fileRef = 5EE2C2791024412A8605D7F5 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+2408146CF2D04883ADB0DF49 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.h */ = {isa = PBXBuildFile; fileRef = D2E0CBA83EC44B8E9C439095 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.h */; settings = { COMPILER_FLAGS = ""; }; };
+2BB332A610124A87B05A7317 /* /Users/eugene.sturm/projects/misc/planet72/GLHelpers.h */ = {isa = PBXBuildFile; fileRef = AD6444F77C1E41CAB84515C2 /* /Users/eugene.sturm/projects/misc/planet72/GLHelpers.h */; settings = { COMPILER_FLAGS = ""; }; };
+BA89CA2D721549B8AF1B5D33 /* /Users/eugene.sturm/projects/misc/planet72/Log.h */ = {isa = PBXBuildFile; fileRef = 4ED85B5D5A8B4AF8975CA91F /* /Users/eugene.sturm/projects/misc/planet72/Log.h */; settings = { COMPILER_FLAGS = ""; }; };
+14132697BCBB4BD8BF9F07BF /* /Users/eugene.sturm/projects/misc/planet72/System.h */ = {isa = PBXBuildFile; fileRef = 8DDEA200AD6C4A7088EE0233 /* /Users/eugene.sturm/projects/misc/planet72/System.h */; settings = { COMPILER_FLAGS = ""; }; };
+7BA27EBABD654799A974D99B /* /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp */ = {isa = PBXBuildFile; fileRef = 43A03C9A58824B17A1CF45C9 /* /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+FDA080BC1CD740BAA8F51D10 /* /Users/eugene.sturm/projects/misc/planet72/main.cpp */ = {isa = PBXBuildFile; fileRef = CF30DBB720714BCC86B4A401 /* /Users/eugene.sturm/projects/misc/planet72/main.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+              416FCF064FC94633A87CB52A /*  */ = {
+                     isa = PBXBuildStyle;
+              };
+              F57ECC592B7B4FA791C61444 /* Debug */ = {
+                     isa = PBXBuildStyle;
+                     buildSettings = {
+                            COPY_PHASE_STRIP = NO;
+                     };
+                     name = Debug;
+              };
+              6C77759E88E34B10B247A124 /* Release */ = {
+                     isa = PBXBuildStyle;
+                     buildSettings = {
+                            COPY_PHASE_STRIP = NO;
+                     };
+                     name = Release;
+              };
+              B762F8231500441A8B453076 /* MinSizeRel */ = {
+                     isa = PBXBuildStyle;
+                     buildSettings = {
+                            COPY_PHASE_STRIP = NO;
+                     };
+                     name = MinSizeRel;
+              };
+              6A5A00ABEACD49EAA0AC93D6 /* RelWithDebInfo */ = {
+                     isa = PBXBuildStyle;
+                     buildSettings = {
+                            COPY_PHASE_STRIP = NO;
+                     };
+                     name = RelWithDebInfo;
+              };
+/* End PBXBuildStyle section */
+
+/* Begin PBXContainerItemProxy section */
+              B7DD481D052D49F8BEE30BEE /* PBXContainerItemProxy */ = {
+                     isa = PBXContainerItemProxy;
+                     containerPortal = 6D6814F89C6340D2823A2B79 /* Project object */;
+                     proxyType = 1;
+                     remoteGlobalIDString = 852FBABD5CDC4A4DB058FC7A;
+                     remoteInfo = dg;
+              };
+              7D696B95532D422EB6DDC204 /* PBXContainerItemProxy */ = {
+                     isa = PBXContainerItemProxy;
+                     containerPortal = 6D6814F89C6340D2823A2B79 /* Project object */;
+                     proxyType = 1;
+                     remoteGlobalIDString = ACD19D35F4A84A12909A969E;
+                     remoteInfo = ZERO_CHECK;
+              };
+              4302367643144F4BBE83AE1B /* PBXContainerItemProxy */ = {
+                     isa = PBXContainerItemProxy;
+                     containerPortal = 6D6814F89C6340D2823A2B79 /* Project object */;
+                     proxyType = 1;
+                     remoteGlobalIDString = ACD19D35F4A84A12909A969E;
+                     remoteInfo = ZERO_CHECK;
+              };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+87C6072B8A044F879EEBB4AB /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+5B1EE47E66FC4563BD77421B /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+566F2F5D991D461F9415BA8B /* /Users/eugene.sturm/projects/misc/planet72/App.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "App.cpp"; path = "App.cpp"; sourceTree = SOURCE_ROOT; };
+63996DFA3DC54186A1475108 /* /Users/eugene.sturm/projects/misc/planet72/App.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "App.h"; path = "App.h"; sourceTree = SOURCE_ROOT; };
+4B1F061F40E245D4ABAEC60F /* /Users/eugene.sturm/projects/misc/planet72/Application.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "Application.h"; path = "Application.h"; sourceTree = SOURCE_ROOT; };
+DFFB03649FEE430095CD8439 /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+02B8429E45FB4DC18629447E /* /Users/eugene.sturm/projects/misc/planet72/Camera.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "Camera.cpp"; path = "Camera.cpp"; sourceTree = SOURCE_ROOT; };
+8A22D71EB22643758309B6B7 /* /Users/eugene.sturm/projects/misc/planet72/Camera.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "Camera.h"; path = "Camera.h"; sourceTree = SOURCE_ROOT; };
+A2902F33CF1440BBACD449AB /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "DebugRenderer.cpp"; path = "DebugRenderer.cpp"; sourceTree = SOURCE_ROOT; };
+7BF7C6B657064B74927DB2B5 /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "DebugRenderer.h"; path = "DebugRenderer.h"; sourceTree = SOURCE_ROOT; };
+5EE2C2791024412A8605D7F5 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "Frustum.cpp"; path = "Frustum.cpp"; sourceTree = SOURCE_ROOT; };
+D2E0CBA83EC44B8E9C439095 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "Frustum.h"; path = "Frustum.h"; sourceTree = SOURCE_ROOT; };
+AD6444F77C1E41CAB84515C2 /* /Users/eugene.sturm/projects/misc/planet72/GLHelpers.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "GLHelpers.h"; path = "GLHelpers.h"; sourceTree = SOURCE_ROOT; };
+4ED85B5D5A8B4AF8975CA91F /* /Users/eugene.sturm/projects/misc/planet72/Log.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "Log.h"; path = "Log.h"; sourceTree = SOURCE_ROOT; };
+8DDEA200AD6C4A7088EE0233 /* /Users/eugene.sturm/projects/misc/planet72/System.h */ = {isa = PBXFileReference; explicitFileType = "sourcecode.c.h"; fileEncoding = 4; name = "System.h"; path = "System.h"; sourceTree = SOURCE_ROOT; };
+43A03C9A58824B17A1CF45C9 /* /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "SystemGLFW3.cpp"; path = "SystemGLFW3.cpp"; sourceTree = SOURCE_ROOT; };
+CF30DBB720714BCC86B4A401 /* /Users/eugene.sturm/projects/misc/planet72/main.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "main.cpp"; path = "main.cpp"; sourceTree = SOURCE_ROOT; };
+F395D91FC7E44B19BAC967C3 /* dg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = dg; refType = 0; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+              BA516D73C6D44503A898D461  = {
+                     isa = PBXGroup;
+                     children = (
+                            4321E662E0264882BC579540 /* Sources */,
+                            BC8243EFAC404129A4C36472 /* Resources */,
+                            CD3E0411D08E4EF8AF9112F8 /* Products */,
+                     );
+                     sourceTree = "<group>";
+              };
+              4321E662E0264882BC579540 /* Sources */ = {
+                     isa = PBXGroup;
+                     children = (
+                            A506829D2ABD4105AFB2629E /* dg */,
+                            DBB87597212C45DE86B0F1D7 /* ALL_BUILD */,
+                            21016A4F662646C98D6744CE /* ZERO_CHECK */,
+                     );
+                     name = Sources;
+                     sourceTree = "<group>";
+              };
+              BC8243EFAC404129A4C36472 /* Resources */ = {
+                     isa = PBXGroup;
+                     children = (
+                     );
+                     name = Resources;
+                     sourceTree = "<group>";
+              };
+              A506829D2ABD4105AFB2629E /* dg */ = {
+                     isa = PBXGroup;
+                     children = (
+                            FCA92BDC26FF458B9FFE2FED /* src */,
+                            DFFB03649FEE430095CD8439 /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */,
+                     );
+                     name = dg;
+                     sourceTree = "<group>";
+              };
+              FCA92BDC26FF458B9FFE2FED /* src */ = {
+                     isa = PBXGroup;
+                     children = (
+                            AC3B09122DC34E6CAE5458BD /* gfx */,
+                            566F2F5D991D461F9415BA8B /* /Users/eugene.sturm/projects/misc/planet72/App.cpp */,
+                            63996DFA3DC54186A1475108 /* /Users/eugene.sturm/projects/misc/planet72/App.h */,
+                            4B1F061F40E245D4ABAEC60F /* /Users/eugene.sturm/projects/misc/planet72/Application.h */,
+                            02B8429E45FB4DC18629447E /* /Users/eugene.sturm/projects/misc/planet72/Camera.cpp */,
+                            8A22D71EB22643758309B6B7 /* /Users/eugene.sturm/projects/misc/planet72/Camera.h */,
+                            5EE2C2791024412A8605D7F5 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp */,
+                            D2E0CBA83EC44B8E9C439095 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.h */,
+                            4ED85B5D5A8B4AF8975CA91F /* /Users/eugene.sturm/projects/misc/planet72/Log.h */,
+                            8DDEA200AD6C4A7088EE0233 /* /Users/eugene.sturm/projects/misc/planet72/System.h */,
+                            43A03C9A58824B17A1CF45C9 /* /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp */,
+                            CF30DBB720714BCC86B4A401 /* /Users/eugene.sturm/projects/misc/planet72/main.cpp */,
+                     );
+                     name = src;
+                     sourceTree = "<group>";
+              };
+              AC3B09122DC34E6CAE5458BD /* gfx */ = {
+                     isa = PBXGroup;
+                     children = (
+                            918E5D49F7234F5E8A5D644E /* gl */,
+                            A2902F33CF1440BBACD449AB /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp */,
+                            7BF7C6B657064B74927DB2B5 /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.h */,
+                     );
+                     name = gfx;
+                     sourceTree = "<group>";
+              };
+              918E5D49F7234F5E8A5D644E /* gl */ = {
+                     isa = PBXGroup;
+                     children = (
+                            AD6444F77C1E41CAB84515C2 /* /Users/eugene.sturm/projects/misc/planet72/GLHelpers.h */,
+                     );
+                     name = gl;
+                     sourceTree = "<group>";
+              };
+              DBB87597212C45DE86B0F1D7 /* ALL_BUILD */ = {
+                     isa = PBXGroup;
+                     children = (
+                            98176D6BB9804EAC8D788E67 /* CMake Rules */,
+                            87C6072B8A044F879EEBB4AB /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */,
+                     );
+                     name = ALL_BUILD;
+                     sourceTree = "<group>";
+              };
+              98176D6BB9804EAC8D788E67 /* CMake Rules */ = {
+                     isa = PBXGroup;
+                     children = (
+                     );
+                     name = "CMake Rules";
+                     sourceTree = "<group>";
+              };
+              21016A4F662646C98D6744CE /* ZERO_CHECK */ = {
+                     isa = PBXGroup;
+                     children = (
+                            7E8F141BA2C0439A815FD32E /* CMake Rules */,
+                            5B1EE47E66FC4563BD77421B /* /Users/eugene.sturm/projects/misc/planet72/CMakeLists.txt */,
+                     );
+                     name = ZERO_CHECK;
+                     sourceTree = "<group>";
+              };
+              7E8F141BA2C0439A815FD32E /* CMake Rules */ = {
+                     isa = PBXGroup;
+                     children = (
+                     );
+                     name = "CMake Rules";
+                     sourceTree = "<group>";
+              };
+              CD3E0411D08E4EF8AF9112F8 /* Products */ = {
+                     isa = PBXGroup;
+                     children = (
+                            F395D91FC7E44B19BAC967C3 /* dg */,
+                     );
+                     name = Products;
+                     sourceTree = "<group>";
+              };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+              852FBABD5CDC4A4DB058FC7A /* dg */ = {
+                     isa = PBXNativeTarget;
+                     buildConfigurationList = 4CDE65DAF6EA4C408012AA96 /* Build configuration list for PBXNativeTarget "dg" */;
+                     buildPhases = (
+                            9950717F2BC04392AB430CF4 /* Sources */,
+                     );
+                     buildRules = (
+                     );
+                     dependencies = (
+                            BCA5328964674860A87294EE /* PBXTargetDependency */,
+                     );
+                     name = dg;
+                     productName = dg;
+                     productReference = F395D91FC7E44B19BAC967C3 /* dg */;
+                     productType = "com.apple.product-type.tool";
+              };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+              6D6814F89C6340D2823A2B79 /* Project object */ = {
+                     isa = PBXProject;
+                     attributes = {
+                            BuildIndependentTargetsInParallel = YES;
+                     };
+                     buildConfigurationList = 4AC023E1BED443508AEC93D9 /* Build configuration list for PBXProject  "dg" */;
+                     buildSettings = {
+                     };
+                     buildStyles = (
+                            F57ECC592B7B4FA791C61444 /* Debug */,
+                            6C77759E88E34B10B247A124 /* Release */,
+                            B762F8231500441A8B453076 /* MinSizeRel */,
+                            6A5A00ABEACD49EAA0AC93D6 /* RelWithDebInfo */,
+                     );
+                     compatibilityVersion = "Xcode 3.2";
+                     hasScannedForEncodings = 0;
+                     mainGroup = BA516D73C6D44503A898D461;
+                     projectDirPath = ".";
+                     projectRoot = "";
+                     targets = (
+                            AE22FF1F5D8A4BC8BA5FF45C /* ALL_BUILD */,
+                            ACD19D35F4A84A12909A969E /* ZERO_CHECK */,
+                            852FBABD5CDC4A4DB058FC7A /* dg */,
+                     );
+              };
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+              EF5262576AE34385818A40A3 /*  */ = {
+                     isa = PBXShellScriptBuildPhase;
+                     buildActionMask = 2147483647;
+                     files = (
+                     );
+                     inputPaths = (
+                     );
+                     outputPaths = (
+                     );
+                     runOnlyForDeploymentPostprocessing = 0;
+                     shellPath = /bin/sh;
+                     shellScript = "# shell script goes here
+exit 0";
+                     showEnvVarsInLog = 0;
+              };
+              003F2EE193924F3999CF4E6E /* CMake Rules */ = {
+                     isa = PBXShellScriptBuildPhase;
+                     buildActionMask = 2147483647;
+                     files = (
+                     );
+                     name = "CMake Rules";
+                     runOnlyForDeploymentPostprocessing = 0;
+                     shellPath = /bin/sh;
+                     shellScript = "make -C /Users/eugene.sturm/projects/misc/planet72 -f /Users/eugene.sturm/projects/misc/planet72/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
+                     showEnvVarsInLog = 0;
+              };
+              7BE378EA9EC54822ACF34341 /*  */ = {
+                     isa = PBXShellScriptBuildPhase;
+                     buildActionMask = 2147483647;
+                     files = (
+                     );
+                     inputPaths = (
+                     );
+                     outputPaths = (
+                     );
+                     runOnlyForDeploymentPostprocessing = 0;
+                     shellPath = /bin/sh;
+                     shellScript = "# shell script goes here
+exit 0";
+                     showEnvVarsInLog = 0;
+              };
+              75628E061D444474A0E50D3B /* CMake Rules */ = {
+                     isa = PBXShellScriptBuildPhase;
+                     buildActionMask = 2147483647;
+                     files = (
+                     );
+                     name = "CMake Rules";
+                     runOnlyForDeploymentPostprocessing = 0;
+                     shellPath = /bin/sh;
+                     shellScript = "make -C /Users/eugene.sturm/projects/misc/planet72 -f /Users/eugene.sturm/projects/misc/planet72/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
+                     showEnvVarsInLog = 0;
+              };
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+              9950717F2BC04392AB430CF4 /* Sources */ = {
+                     isa = PBXSourcesBuildPhase;
+                     buildActionMask = 2147483647;
+                     files = (
+                            F16E9FD760AB45A5A982D1E1 /* /Users/eugene.sturm/projects/misc/planet72/App.cpp */,
+                            968211DE3F9D4542A108E4C6 /* /Users/eugene.sturm/projects/misc/planet72/Camera.cpp */,
+                            09518091B552437091FCFDE7 /* /Users/eugene.sturm/projects/misc/planet72/DebugRenderer.cpp */,
+                            62ED0B2C968742D78FDDEDA6 /* /Users/eugene.sturm/projects/misc/planet72/Frustum.cpp */,
+                            7BA27EBABD654799A974D99B /* /Users/eugene.sturm/projects/misc/planet72/SystemGLFW3.cpp */,
+                            FDA080BC1CD740BAA8F51D10 /* /Users/eugene.sturm/projects/misc/planet72/main.cpp */,
+                     );
+                     runOnlyForDeploymentPostprocessing = 0;
+              };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+              9ADCDE2B3ADB425796E3E058 /* PBXTargetDependency */ = {
+                     isa = PBXTargetDependency;
+                     target = 852FBABD5CDC4A4DB058FC7A /* dg */;
+                     targetProxy = B7DD481D052D49F8BEE30BEE /* PBXContainerItemProxy */;
+              };
+              7C820FB5393F4F08A37904CA /* PBXTargetDependency */ = {
+                     isa = PBXTargetDependency;
+                     target = ACD19D35F4A84A12909A969E /* ZERO_CHECK */;
+                     targetProxy = 7D696B95532D422EB6DDC204 /* PBXContainerItemProxy */;
+              };
+              BCA5328964674860A87294EE /* PBXTargetDependency */ = {
+                     isa = PBXTargetDependency;
+                     target = ACD19D35F4A84A12909A969E /* ZERO_CHECK */;
+                     targetProxy = 4302367643144F4BBE83AE1B /* PBXContainerItemProxy */;
+              };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+              9EA3F6EB3F9E45F9839A4665 /* Debug */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+                            ONLY_ACTIVE_ARCH = YES;
+                            SDKROOT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72/build";
+                     };
+                     name = Debug;
+              };
+              0E0D1251105E4B98A1C1D087 /* Release */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+                            ONLY_ACTIVE_ARCH = YES;
+                            SDKROOT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72/build";
+                     };
+                     name = Release;
+              };
+              D7FE36E70E2B4AFA989801D5 /* MinSizeRel */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+                            ONLY_ACTIVE_ARCH = YES;
+                            SDKROOT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72/build";
+                     };
+                     name = MinSizeRel;
+              };
+              E1658388C1A14C0EB7F4CDF1 /* RelWithDebInfo */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+                            ONLY_ACTIVE_ARCH = YES;
+                            SDKROOT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72/build";
+                     };
+                     name = RelWithDebInfo;
+              };
+              C524BC3E049A4E5C959B4AB6 /* Debug */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ALL_BUILD;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = Debug;
+              };
+              39A2C4BE04504416B24F7381 /* Release */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ALL_BUILD;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = Release;
+              };
+              B81B086B3CE3410788C72D7E /* MinSizeRel */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ALL_BUILD;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = MinSizeRel;
+              };
+              E5EC5F96B53C410C86D6A6F1 /* RelWithDebInfo */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ALL_BUILD;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = RelWithDebInfo;
+              };
+              25E29AA8398D4E14B74445E7 /* Debug */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ZERO_CHECK;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = Debug;
+              };
+              AA5B7FBC6B9C4BF6BC589CBA /* Release */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ZERO_CHECK;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = Release;
+              };
+              012EE38F6A1342578F9181A4 /* MinSizeRel */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ZERO_CHECK;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = MinSizeRel;
+              };
+              E992E673FDD3411E879A1C18 /* RelWithDebInfo */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            OTHER_CFLAGS = "  ";
+                            OTHER_LDFLAGS = " ";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = ZERO_CHECK;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = RelWithDebInfo;
+              };
+              DA48BED4752B4093B2D2F9E1 /* Debug */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            CONFIGURATION_BUILD_DIR = "/Users/eugene.sturm/projects/misc/planet72/bin/Debug";
+                            EXECUTABLE_PREFIX = "";
+                            EXECUTABLE_SUFFIX = "";
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 0;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            LIBRARY_SEARCH_PATHS = "";
+                            OTHER_CFLAGS = "    ";
+                            OTHER_CPLUSPLUSFLAGS = " -pedantic -std=c++11     -pedantic -std=c++11        ";
+                            OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /usr/local/lib/libglfw3.dylib -framework IOKit -framework CoreVideo -framework Cocoa -framework AGL -framework OpenGL /usr/local/lib/libnoise.a";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = dg;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = Debug;
+              };
+              82D4A48C15A2439C9C98A02E /* Release */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            CONFIGURATION_BUILD_DIR = "/Users/eugene.sturm/projects/misc/planet72/bin/Release";
+                            EXECUTABLE_PREFIX = "";
+                            EXECUTABLE_SUFFIX = "";
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 2;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            LIBRARY_SEARCH_PATHS = "";
+                            OTHER_CFLAGS = "    -DNDEBUG   ";
+                            OTHER_CPLUSPLUSFLAGS = " -pedantic -std=c++11     -pedantic -std=c++11        -g  ";
+                            OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /usr/local/lib/libglfw3.dylib -framework IOKit -framework CoreVideo -framework Cocoa -framework AGL -framework OpenGL /usr/local/lib/libnoise.a";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = dg;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = Release;
+              };
+              63DED1ABFF9C49FBA5E75A71 /* MinSizeRel */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            CONFIGURATION_BUILD_DIR = "/Users/eugene.sturm/projects/misc/planet72/bin/MinSizeRel";
+                            EXECUTABLE_PREFIX = "";
+                            EXECUTABLE_SUFFIX = "";
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = s;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            LIBRARY_SEARCH_PATHS = "";
+                            OTHER_CFLAGS = "    -DNDEBUG   ";
+                            OTHER_CPLUSPLUSFLAGS = " -pedantic -std=c++11        -DNDEBUG -g  ";
+                            OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /usr/local/lib/libglfw3.dylib -framework IOKit -framework CoreVideo -framework Cocoa -framework AGL -framework OpenGL /usr/local/lib/libnoise.a";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = dg;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = MinSizeRel;
+              };
+              B1A98200A047415FB035AEBC /* RelWithDebInfo */ = {
+                     isa = XCBuildConfiguration;
+                     buildSettings = {
+                            COMBINE_HIDPI_IMAGES = YES;
+                            CONFIGURATION_BUILD_DIR = "/Users/eugene.sturm/projects/misc/planet72/bin/RelWithDebInfo";
+                            EXECUTABLE_PREFIX = "";
+                            EXECUTABLE_SUFFIX = "";
+                            GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+                            GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+                            GCC_OPTIMIZATION_LEVEL = 2;
+                            GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'", );
+                            GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+                            HEADER_SEARCH_PATHS = (/usr/local/include, );
+                            INSTALL_PATH = "";
+                            LIBRARY_SEARCH_PATHS = "";
+                            OTHER_CFLAGS = "       -DNDEBUG  ";
+                            OTHER_CPLUSPLUSFLAGS = " -pedantic -std=c++11           -DNDEBUG  ";
+                            OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /usr/local/lib/libglfw3.dylib -framework IOKit -framework CoreVideo -framework Cocoa -framework AGL -framework OpenGL /usr/local/lib/libnoise.a";
+                            OTHER_REZFLAGS = "";
+                            PRODUCT_NAME = dg;
+                            SECTORDER_FLAGS = "";
+                            SYMROOT = "/Users/eugene.sturm/projects/misc/planet72";
+                            USE_HEADERMAP = NO;
+                            WARNING_CFLAGS = ("-Wmost", "-Wno-four-char-constants", "-Wno-unknown-pragmas", );
+                     };
+                     name = RelWithDebInfo;
+              };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+              4AC023E1BED443508AEC93D9 /* Build configuration list for PBXProject  "dg" */ = {
+                     isa = XCConfigurationList;
+                     buildConfigurations = (
+                            9EA3F6EB3F9E45F9839A4665 /* Debug */,
+                            0E0D1251105E4B98A1C1D087 /* Release */,
+                            D7FE36E70E2B4AFA989801D5 /* MinSizeRel */,
+                            E1658388C1A14C0EB7F4CDF1 /* RelWithDebInfo */,
+                     );
+                     defaultConfigurationIsVisible = 0;
+                     defaultConfigurationName = Debug;
+              };
+              F41C69FF1E064993BDDA1438 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+                     isa = XCConfigurationList;
+                     buildConfigurations = (
+                            C524BC3E049A4E5C959B4AB6 /* Debug */,
+                            39A2C4BE04504416B24F7381 /* Release */,
+                            B81B086B3CE3410788C72D7E /* MinSizeRel */,
+                            E5EC5F96B53C410C86D6A6F1 /* RelWithDebInfo */,
+                     );
+                     defaultConfigurationIsVisible = 0;
+                     defaultConfigurationName = Debug;
+              };
+              DFE3D9177FCC4105829B0656 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+                     isa = XCConfigurationList;
+                     buildConfigurations = (
+                            25E29AA8398D4E14B74445E7 /* Debug */,
+                            AA5B7FBC6B9C4BF6BC589CBA /* Release */,
+                            012EE38F6A1342578F9181A4 /* MinSizeRel */,
+                            E992E673FDD3411E879A1C18 /* RelWithDebInfo */,
+                     );
+                     defaultConfigurationIsVisible = 0;
+                     defaultConfigurationName = Debug;
+              };
+              4CDE65DAF6EA4C408012AA96 /* Build configuration list for PBXNativeTarget "dg" */ = {
+                     isa = XCConfigurationList;
+                     buildConfigurations = (
+                            DA48BED4752B4093B2D2F9E1 /* Debug */,
+                            82D4A48C15A2439C9C98A02E /* Release */,
+                            63DED1ABFF9C49FBA5E75A71 /* MinSizeRel */,
+                            B1A98200A047415FB035AEBC /* RelWithDebInfo */,
+                     );
+                     defaultConfigurationIsVisible = 0;
+                     defaultConfigurationName = Debug;
+              };
+/* End XCConfigurationList section */
+       };
+       rootObject = 6D6814F89C6340D2823A2B79;
+}

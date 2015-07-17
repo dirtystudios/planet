@@ -1,3 +1,25 @@
-Better Debug Rendering
-Better Text Rendering - freetype-gl
-Redo Chunked LOD - memory management
+├─  Terrain shading
+├──  Generate heightmap normals using central differences
+├───  Dependency between heightmap data and normal data during gpu tile production
+└──  Hardcode directional light in shaders from quick and dirty shading
+
+├─ Debug Rendering
+├── Don't use lines -- lines suck
+└── Smarter caching and creation of vertex data
+
+├─ Text Rendering
+└──  Use freetype-gl library
+
+├─ Frustum Culling
+└──  Not perfect, get some false positives on edge of screen
+
+├─ Planet
+└──  Spherical deformation
+
+├─ Chunked LOD
+├── Skirts
+├── Better control of when LOD switches happen
+└── Morphing between LODs
+
+
+

@@ -1,1 +1,3 @@
 /Users/eugene.sturm/projects/misc/planet72/CMakeFiles/dg.dir
+/Users/eugene.sturm/projects/misc/planet72/CMakeFiles/ALL_BUILD.dir
+/Users/eugene.sturm/projects/misc/planet72/CMakeFiles/ZERO_CHECK.dir

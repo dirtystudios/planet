@@ -27,14 +27,16 @@ bool Frustum::IsPointInFrustum(const glm::vec3& p) {
 }
 
 bool Frustum::IsBoxInFrustum(const BoundingBox& box) {
-    return IsPointInFrustum(box.min) ||
+    return
+    IsPointInFrustum(box.min) ||
     IsPointInFrustum(box.max) ||
     IsPointInFrustum(glm::vec3(box.min.x, box.min.y, box.max.z)) ||
-    IsPointInFrustum(glm::vec3(box.max.x, box.max.y, box.min.z)) ||
     IsPointInFrustum(glm::vec3(box.min.x, box.max.y, box.min.z)) ||
-    IsPointInFrustum(glm::vec3(box.min.x, box.max.y, box.max.z)) ||
     IsPointInFrustum(glm::vec3(box.max.x, box.min.y, box.min.z)) ||
-    IsPointInFrustum(glm::vec3(box.max.x, box.min.y, box.max.z));    
+    IsPointInFrustum(glm::vec3(box.max.x, box.max.y, box.min.z)) ||
+    IsPointInFrustum(glm::vec3(box.max.x, box.min.y, box.max.z)) ||
+    IsPointInFrustum(glm::vec3(box.min.x, box.max.y, box.max.z));
+
 }
 
 

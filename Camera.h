@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 
 struct Camera {
-    Camera(float fov_degrees = 45.f, float aspect_ratio = 1.33333f, float znear = 0.01f, float zfar = 100000.f);
+    Camera(float fov_degrees = 45.f, float aspect_ratio = 1.33333f, float znear = 0.001f, float zfar = 100000.f);
 
     glm::vec3 up;
     glm::vec3 right;

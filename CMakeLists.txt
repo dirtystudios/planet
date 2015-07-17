@@ -44,18 +44,19 @@ set(LIBS
 )
 
 set(GFX_SOURCES
-${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.cpp        
+    ${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.cpp
+)
+
+set(GFX_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.h
+)
+
+set(GFX_GL_SOURCES
 
 )
 
-set(GFX_HEADERS    
-)
-
-set(GFX_GL_SOURCES    
-)
-
-set(GFX_GL_HEADERS    
-
+set(GFX_GL_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/GLHelpers.h
 )
 
 set(GAME_SOURCES    
@@ -87,10 +88,10 @@ set(ALL_HEADERS
 )
 
 # create application
-add_executable(dg  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${ALL_SOURCES} ${ALL_HEADERS})
+add_executable(dg ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${ALL_SOURCES} ${ALL_HEADERS})
 target_link_libraries(dg ${LIBS})
 
 # Source groups for correct organization in Xcode
-source_group(src FILES ${GAME_SOURCES} ${GAME_HEADERS})
+source_group(src FILES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${GAME_SOURCES} ${GAME_HEADERS})
 source_group(src\\gfx FILES ${GFX_SOURCES} ${GFX_HEADERS})
 source_group(src\\gfx\\gl FILES ${GFX_GL_SOURCES} ${GFX_GL_HEADERS})
