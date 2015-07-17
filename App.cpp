@@ -599,7 +599,9 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
                         mountain.SetFrequency(0.05);
                         mountain.SetOctaveCount(8);
   //                      perlin.SetPersistence(0.25);
-                        return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
+//double v = mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
+
+                        return sin(x * 3.14f/180.f);
 //                        return x < 0 &&  y < 0 ? 1.f : -1.f;
                     }, &elevation_data, &max, &min, &normal_data);
                 
