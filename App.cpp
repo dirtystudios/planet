@@ -73,9 +73,10 @@ public:
         delete [] tiles;
     }
 
-    GPUTile* GetFreeTile() {        
-        GPUTile* tile = unused.front();        
-        if(tile) {
+    GPUTile* GetFreeTile() {    
+        GPUTile* tile = NULL;
+        if(unused.size() > 0) {
+            tile = unused.front();
             unused.pop_front();
             used.push_back(tile);
             LOG_D("GPUTileBuffer: used:%d unused:%d", used.size(), unused.size()); 
@@ -154,17 +155,22 @@ public:
                 lru.push_front(key);
                 cache.insert(std::make_pair(key, val));
             } else {
+                if (lru.size() == 0) {
+                      // boom
+                    LOG_E("%s", "Failed to evict from LRUTileCache");
+                    assert(false);
+                }
+
                 TileId key_to_evict = lru.back();
                 it = cache.find(key_to_evict);
                 if(it != cache.end()) {
-                    lru.pop_back();
-                    cache.erase(it);
-                    
                     val = it->second;
                     val->lod = lod;
                     val->tx = tx;
                     val->ty = ty;
 
+                    lru.pop_back();
+                    cache.erase(it);
                     lru.push_front(key);
                     cache.insert(std::make_pair(key, val));
                 } else {
@@ -504,8 +510,8 @@ void App::OnStart() {
     cam.LookAt(0, 0, 0);   
 
     GLuint shaders[2] = { 0 };      
-	shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "C:/Users/jacob.arveson/Documents/gitrepos/planet/terrain_vs.glsl");
-	shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "C:/Users/jacob.arveson/Documents/gitrepos/planet/terrain_fs.glsl");
+	shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "Z:/projects/planet/terrain_vs.glsl");
+	shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "Z:/projects/planet/terrain_fs.glsl");
     program = gl::CreateProgram(shaders, 2);
 
     std::vector<Vertex> vertices;
