@@ -30,10 +30,11 @@ FIND_PATH(LIBNOISE_INCLUDE_DIRS noise/noise.h DOC "Path to libnoise include dire
   # By default headers are under GLFW subfolder
   /usr/include/noise
   /usr/local/include/noise
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${LIBNOISE_ROOT}/include/ # added by ptr
 )
 
-SET(LIBNOISE_LIB_NAMES libnoise.a)
+SET(LIBNOISE_LIB_NAMES libnoise.a libnoise.lib)
 
 FIND_LIBRARY(LIBNOISE_LIBRARIES DOC "Absolute path to LIBNOISE library."
   NAMES ${LIBNOISE_LIB_NAMES}
@@ -43,6 +44,7 @@ FIND_LIBRARY(LIBNOISE_LIBRARIES DOC "Absolute path to LIBNOISE library."
   PATHS
   /usr/local/lib
   /usr/lib
+  ${CMAKE_CURRENT_SOURCE_DIR}/winlibs
   ${LIBNOISE_ROOT_DIR}/lib-msvc100/release # added by ptr
 )
 

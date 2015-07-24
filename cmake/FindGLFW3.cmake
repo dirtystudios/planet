@@ -30,10 +30,11 @@ FIND_PATH(GLFW_INCLUDE_DIRS GLFW/glfw3.h DOC "Path to GLFW include directory."
   # By default headers are under GLFW subfolder
   /usr/include/GLFW
   /usr/local/include/GLFW
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${GLFW_ROOT_DIR}/include/ # added by ptr
 )
 
-SET(GLFW_LIB_NAMES libglfw3.a glfw3 glfw GLFW3.lib)
+SET(GLFW_LIB_NAMES libglfw3.a glfw3 glfw GLFW3.lib glfw3.lib)
 
 FIND_LIBRARY(GLFW_LIBRARIES DOC "Absolute path to GLFW library."
   NAMES ${GLFW_LIB_NAMES}
@@ -43,6 +44,7 @@ FIND_LIBRARY(GLFW_LIBRARIES DOC "Absolute path to GLFW library."
   PATHS
   /usr/local/lib
   /usr/lib
+  ${CMAKE_CURRENT_SOURCE_DIR}/winlibs
   ${GLFW_ROOT_DIR}/lib-msvc100/release # added by ptr
 )
 IF( APPLE )

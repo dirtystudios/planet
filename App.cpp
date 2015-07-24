@@ -16,6 +16,10 @@
 #include "DebugRenderer.h"
 #include <algorithm>
 
+#ifdef _WIN32
+#include <functional>
+#endif
+
 uint32_t frame_count = 0;
 double curr_frame_time = 0;
 double prev_frame_time = 0;
@@ -69,9 +73,10 @@ public:
         delete [] tiles;
     }
 
-    GPUTile* GetFreeTile() {        
-        GPUTile* tile = unused.front();        
-        if(tile) {
+    GPUTile* GetFreeTile() {    
+        GPUTile* tile = NULL;
+        if(unused.size() > 0) {
+            tile = unused.front();
             unused.pop_front();
             used.push_back(tile);
             LOG_D("GPUTileBuffer: used:%d unused:%d", used.size(), unused.size()); 
@@ -112,7 +117,7 @@ struct Tile {
 class LRUTileCache {
 private:
     typedef size_t TileId;
-    typedef typename std::unordered_map<TileId, Tile*>::iterator CacheIterator;
+    typedef std::unordered_map<TileId, Tile*>::iterator CacheIterator;
 
     GPUTileBuffer* gpu_tile_buffer;
     std::list<TileId> lru;
@@ -150,17 +155,22 @@ public:
                 lru.push_front(key);
                 cache.insert(std::make_pair(key, val));
             } else {
+                if (lru.size() == 0) {
+                      // boom
+                    LOG_E("%s", "Failed to evict from LRUTileCache");
+                    assert(false);
+                }
+
                 TileId key_to_evict = lru.back();
                 it = cache.find(key_to_evict);
                 if(it != cache.end()) {
-                    lru.pop_back();
-                    cache.erase(it);
-                    
                     val = it->second;
                     val->lod = lod;
                     val->tx = tx;
                     val->ty = ty;
 
+                    lru.pop_back();
+                    cache.erase(it);
                     lru.push_front(key);
                     cache.insert(std::make_pair(key, val));
                 } else {
@@ -499,9 +509,9 @@ void App::OnStart() {
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);   
 
-    GLuint shaders[2] = { 0 };    
-    shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "/Users/eugene.sturm/projects/misc/planet72/terrain_vs.glsl");    
-    shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "/Users/eugene.sturm/projects/misc/planet72/terrain_fs.glsl");    
+    GLuint shaders[2] = { 0 };      
+	shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "Z:/projects/planet/terrain_vs.glsl");
+	shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "Z:/projects/planet/terrain_fs.glsl");
     program = gl::CreateProgram(shaders, 2);
 
     std::vector<Vertex> vertices;

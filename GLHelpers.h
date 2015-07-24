@@ -5,9 +5,14 @@
 #ifndef __gl_helpers_h__
 #define __gl_helpers_h__
 
-
+#ifdef _WIN32
+#include <GL\glew.h>
+#include <stdint.h>
+#else
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
+#endif
+
 #include "Log.h"
 #include <unordered_map>
 #include <fstream>
