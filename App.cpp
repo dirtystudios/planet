@@ -509,9 +509,9 @@ void App::OnStart() {
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);   
 
-    GLuint shaders[2] = { 0 };      
-	shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "Z:/projects/planet/terrain_vs.glsl");
-	shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "Z:/projects/planet/terrain_fs.glsl");
+    GLuint shaders[2] = { 0 };
+	shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "shaders/terrain_vs.glsl");
+	shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "shaders/terrain_fs.glsl");
     program = gl::CreateProgram(shaders, 2);
 
     std::vector<Vertex> vertices;
