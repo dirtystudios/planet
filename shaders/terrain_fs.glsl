@@ -3,6 +3,7 @@
 uniform sampler2DArray heightmap_normals_tile_array;
 uniform int normals_tile_index;
 
+
 in vec2 t;
 in vec3 c;                                                                     
 out vec4 color;                                                    

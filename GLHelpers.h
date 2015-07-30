@@ -256,6 +256,10 @@ namespace gl {
                 GL_CHECK(glUniformMatrix4fv(location, 1, GL_FALSE, (float*)data));
                 break;
             }
+            case ParamType::Float3: {
+                GL_CHECK(glUniform3fv(location, 1, (float*)data));
+                break;
+            }
             default: {
                 LOG_E("gfx", "Unsupported uniform type");
                 assert(false);

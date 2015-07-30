@@ -16,7 +16,7 @@ out vec2 t;
 out vec3 c;
                                                                                                                               
 void main(void) {           
-    float height = 25.f * texture(heightmap_elevations_tile_array, vec3(tex, float(elevations_tile_index))).x;
+    float height = 250.f * texture(heightmap_elevations_tile_array, vec3(tex, float(elevations_tile_index))).x;
     vec3 normal = texture(heightmap_normals_tile_array, vec3(tex, float(normals_tile_index))).xyz;
     vec4 pos = vec4(position.x, position.y, height, 1.f);                  
     c = normal;

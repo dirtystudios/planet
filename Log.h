@@ -1,3 +1,6 @@
+#ifndef __log_h__
+#define __log_h__
+
 #include <iostream>
 #include <iomanip>
 #include <cassert>
@@ -59,3 +62,5 @@ static void WriteLine(const char* severity, const char* msg, ...) {
 #define LOG_FATAL(channel, msg) LOG(channel, "FATAL", msg)
 #define LOG(channel, severity, msg) do { std::cout << "(" << std::setw(7) << std::right << channel << " [" << std::left << std::setw(5) << severity << "]) " << msg << std::endl; } while(false)
 */
+
+#endif

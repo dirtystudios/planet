@@ -15,6 +15,8 @@
 #include "Frustum.h"
 #include "DebugRenderer.h"
 #include <algorithm>
+#include "TerrainRenderer.h"
+#include "Log.h"
 
 #ifdef _WIN32
 #include <functional>
@@ -33,215 +35,20 @@ GLuint program;
 GLuint vao;
 GLuint vb;
 uint32_t num_vertices = 0;
-
-
-struct GPUTile {
-    GPUTile() {};
-    GPUTile(GLuint tex_id, uint32_t idx) : texture_array_id(tex_id), index(idx) {};
-
-    GLuint texture_array_id;
-    uint32_t index;
-
-    void CopyData(uint32_t width, uint32_t height, GLenum format, void* data) {
-        gl::UpdateTexture2DArray(texture_array_id, format, GL_FLOAT, width, height, index, data);
-    }
-};
-
-class GPUTileBuffer {
-private:
-    uint32_t tile_size;
-    uint32_t num_tiles;
-    GLuint tex_id;    
-    GPUTile* tiles;
-    std::list<GPUTile*> unused;
-    std::list<GPUTile*> used;
-public:
-    GPUTileBuffer(uint32_t tile_size, uint32_t num_tiles, GLenum tex_format) {
-        this->tile_size = tile_size;
-        this->num_tiles = num_tiles;
-        tex_id = gl::CreateTexture2DArray(tex_format, 1, tile_size, tile_size, num_tiles);
-        tiles = new GPUTile[num_tiles];
-        for(uint32_t i = 0; i < num_tiles; ++i) {
-            tiles[i].texture_array_id = tex_id;
-            tiles[i].index = i;
-            unused.push_back(&tiles[i]);
-        }
-        
-    }
-
-    ~GPUTileBuffer() {        
-        delete [] tiles;
-    }
-
-    GPUTile* GetFreeTile() {    
-        GPUTile* tile = NULL;
-        if(unused.size() > 0) {
-            tile = unused.front();
-            unused.pop_front();
-            used.push_back(tile);
-            LOG_D("GPUTileBuffer: used:%d unused:%d", used.size(), unused.size()); 
-        }
-        return tile; 
-    }
-
-    void FreeTile(GPUTile* tile) {
-        used.remove(tile);
-        unused.push_front(tile);
-    }
-
-    uint32_t GetMaxCapacity() {
-        return num_tiles;
-    }
-
-    uint32_t GetUnusedCount() {
-        return unused.size();
-    }
-
-    GLuint GetTextureId() {
-        return tex_id;
-    }
-};
-
-
-struct Tile {
-    Tile(uint32_t lod, uint32_t tx, uint32_t ty, GPUTile* data) : lod(lod), tx(tx), ty(ty), data(data) {};
-    
-    uint32_t lod;
-    uint32_t tx;
-    uint32_t ty;
-
-    GPUTile* data;
-};
-
-
-class LRUTileCache {
-private:
-    typedef size_t TileId;
-    typedef std::unordered_map<TileId, Tile*>::iterator CacheIterator;
-
-    GPUTileBuffer* gpu_tile_buffer;
-    std::list<TileId> lru;
-    std::unordered_map<TileId, Tile*> cache;        
-
-private:
-     TileId GetTileId(uint32_t lod, uint32_t tx, uint32_t ty) {
-        size_t seed = 0;
-        HashCombine(seed, lod);
-        HashCombine(seed, tx);
-        HashCombine(seed, ty);
-        return seed;
-    } 
-public:
-    LRUTileCache(GPUTileBuffer* gpu_tile_buffer) : gpu_tile_buffer(gpu_tile_buffer) {}
-    ~LRUTileCache() {
-        for(std::pair<TileId, Tile*> p : cache) {
-            delete p.second;
-        }        
-    }
-
-    Tile* Get(uint32_t lod, uint32_t tx, uint32_t ty) {
-        TileId key = GetTileId(lod, tx, ty);
-        CacheIterator it = cache.find(key);
-        
-        Tile* val = NULL;
-        if(it != cache.end()) {
-            lru.remove(key);
-            lru.push_front(key);
-            val = it->second;
-        } else {
-            GPUTile* gpu_tile = gpu_tile_buffer->GetFreeTile();
-            if(gpu_tile) {
-                val = new Tile(lod, tx, ty, gpu_tile);
-                lru.push_front(key);
-                cache.insert(std::make_pair(key, val));
-            } else {
-                if (lru.size() == 0) {
-                      // boom
-                    LOG_E("%s", "Failed to evict from LRUTileCache");
-                    assert(false);
-                }
-
-                TileId key_to_evict = lru.back();
-                it = cache.find(key_to_evict);
-                if(it != cache.end()) {
-                    val = it->second;
-                    val->lod = lod;
-                    val->tx = tx;
-                    val->ty = ty;
-
-                    lru.pop_back();
-                    cache.erase(it);
-                    lru.push_front(key);
-                    cache.insert(std::make_pair(key, val));
-                } else {
-                    // boom
-                    LOG_E("%s", "Failed to evict from LRUTileCache");
-                    assert(false);
-                }
-            }
-        }
-        return val;
-    }
-
-    
-    Tile* Get(uint32_t lod, uint32_t tx, uint32_t ty, std::function<void(GPUTile* gpu_tile)> load_func) {
-        TileId key = GetTileId(lod, tx, ty);
-        CacheIterator it = cache.find(key);
-
-        Tile* val = NULL;        
-        if(it != cache.end()) {            
-            lru.remove(key);
-            lru.push_front(key);
-            val = it->second;
-        } else {            
-            GPUTile* gpu_tile = gpu_tile_buffer->GetFreeTile();
-            if(gpu_tile) {
-                load_func(gpu_tile);                
-                val = new Tile(lod, tx, ty, gpu_tile);
-                lru.push_front(key);
-                cache.insert(std::make_pair(key, val));                                
-            } else {           
-                TileId key_to_evict = lru.back();
-                it = cache.find(key_to_evict);
-                if(it != cache.end()) {                    
-                    lru.pop_back();
-                    cache.erase(it);
-
-                    val = it->second;
-                    //LOG_D("Evicting %d %d %d for %d %d %d", val->lod, val->tx, val->ty, lod, tx, ty); 
-                    val->lod = lod;
-                    val->tx = tx;
-                    val->ty = ty;
-                    load_func(val->data);
-                                            
-                    lru.push_front(key);
-                    cache.insert(std::make_pair(key, val));                    
-                } else {
-                    // boom
-                    LOG_E("%s", "Failed to evict from LRUTileCache");
-                    assert(false);
-                }
-            }
-        }
-        return val;
-    }        
-};
-
-
-class TileProducer {
-    
-    LRUTileCache cache;
-    Tile* GetTile(uint32_t lod, uint32_t tx, uint32_t ty) {
-        
-    }
-    
-    void CreateTile(uint32_t lod, uint32_t tx, uint32_t ty) {
-        
-    }
-    
-};
-
-
+uint32_t max_lod;
+float split_factor;
+GPUTileBuffer* heightmap_normals_buffer;
+LRUTileCache* heightmap_normals_cache;
+GPUTileBuffer* gpu_tile_buffer;
+LRUTileCache* lru_tile_cache;
+TerrainNode* root;
+std::function<void(GPUTile* tile)> generate_heightmap_func;
+const uint32_t TERRAIN_RESOLUTION = 32;
+const uint32_t TERRAIN_SIZE = 10000;
+const float TERRAIN_SPLIT_FACTOR = 1.0f;
+const uint32_t TERRAIN_MAX_LOD = 5;
+Terrain terrain;
+std::vector<Terrain> terrains;
 
 template <class T>
 void BuildVertexGrid(
@@ -288,18 +95,17 @@ void BuildVertexGrid(const glm::vec3& center, const glm::vec2& size, const glm::
         vertex_generator, vertices);
 }
 
-float g_dx = 0;
-float g_dy = 0;
-
 template <class T>
-void GenerateHeightmapRegion(const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution, 
+void GenerateHeightmapRegion(const glm::vec3& center, 
+    const glm::vec2& size, 
+    const glm::uvec2& resolution, 
     std::function<T(double x, double y, double z)> heightmap_generator, 
     std::vector<T>* data, T* max, T* min) {
 
     *max = std::numeric_limits<float>::min();
     *min = std::numeric_limits<float>::max();
     glm::vec2 half_size = size / 2.f;
-    float dx = size.x / (float)(resolution.x - 1);
+    float dx =  .x / (float)(resolution.x - 1);
     float dy = size.y / (float)(resolution.y - 1);
     for(uint32_t i = 0; i < resolution.y; ++i) {
         for(uint32_t j = 0; j < resolution.x; ++j) {
@@ -320,8 +126,11 @@ void GenerateHeightmapRegion(const glm::vec3& center, const glm::vec2& size, con
     }
 }
 
-void GenerateHeightmapRegionNormals(const std::vector<float>& heightmap_data, const glm::vec2& size, const glm::uvec2& resolution,
-                                    std::vector<glm::vec3>* generated_normal_data) {
+void GenerateHeightmapRegionNormals(const std::vector<float>& heightmap_data, 
+    const glm::vec2& size, 
+    const glm::uvec2& resolution, 
+    uint32_t lod,
+    std::vector<glm::vec3>* generated_normal_data) {
     
     // convert from 2D index to 1D index, clamping to edges (ex. i=-1 => i=0)
     auto get_index = [&](int32_t i, int32_t j) -> int32_t {
@@ -331,6 +140,7 @@ void GenerateHeightmapRegionNormals(const std::vector<float>& heightmap_data, co
         return k * resolution.y + p;
     };
     
+    // Note(eugene): need to do this on gpu
     for(uint32_t i = 0; i < resolution.x; ++i) {
         for(uint32_t j = 0; j < resolution.y; ++j) {
             float tl = heightmap_data[get_index(i - 1, j - 1)];
@@ -341,44 +151,30 @@ void GenerateHeightmapRegionNormals(const std::vector<float>& heightmap_data, co
             float b  = heightmap_data[get_index(i + 1, j)];
             float bl = heightmap_data[get_index(i + 1, j - 1)];
             float l  = heightmap_data[get_index(i, j - 1)];
+
+
+            float f = resolution.x / 128.f;
             float x = -((br - bl) + (2.f * (r - l)) + (tr-tl));
             float y = -((tl - bl) + (2.f * (t - b)) + (tr-br));
-            float z = size.x / 2.f / (float)(resolution.x - 1);
-            glm::vec3 normal = glm::normalize(glm::vec3(x, y, z));
+            float z = 1.f / pow(2, (lod)); 
+            glm::vec3 normal = glm::normalize(glm::vec3(f*x, f*y, z));
             
         
             generated_normal_data->push_back(normal);
-//            LOG_D("%f %s", glm::dot(glm::vec3(0, 0, 1), normal), ToString(normal).c_str());
-//            LOG_D("%d %d(%d) %.5f -- %d:%.5f %d:%.5f %d:%.5f %d:%.5f %s", i, j, get_index(i, j), heightmap_data[get_index(i, j)], get_index(i + 1, j), y_u, get_index(i - 1, j), y_d, get_index(i, j-1), x_l, get_index(i, j+1), x_r, ToString(glm::normalize(glm::vec3(x, y, 1))).c_str());
+            //LOG_D("%f %s", glm::dot(glm::vec3(0, 0, 1), normal), ToString(normal).c_str());
+            //LOG_D("%d %d(%d) %.5f -- %d:%.5f %d:%.5f %d:%.5f %d:%.5f %s", i, j, get_index(i, j), heightmap_data[get_index(i, j)], get_index(i + 1, j), y_u, get_index(i - 1, j), y_d, get_index(i, j-1), x_l, get_index(i, j+1), x_r, ToString(glm::normalize(glm::vec3(x, y, 1))).c_str());
         }
     }
 
 }
 
-void GenerateHeightmapRegion(const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,
+void GenerateHeightmapRegion(uint32_t lod, const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,
                              std::function<float(double x, double y, double z)> heightmap_generator,
                              std::vector<float>* elevation_data, float* elevation_max, float* elevation_min,
-                             std::vector<glm::vec3>* normal_data) {
+                             std::vector<glm::vec3>* normal_data) {    
     GenerateHeightmapRegion(center, size, resolution, heightmap_generator, elevation_data, elevation_max, elevation_min);
-    GenerateHeightmapRegionNormals(*elevation_data, size, resolution, normal_data);
+    GenerateHeightmapRegionNormals(*elevation_data, size, resolution, lod, normal_data);
 }
-struct TerrainNode {
-    uint32_t lod;
-    uint32_t tx;
-    uint32_t ty;
-
-    double x;
-    double y;
-
-    BoundingBox bbox;
-    float size;
-
-    TerrainNode* children = { NULL };
-};
-
-
-uint32_t max_lod;
-float split_factor;
 
 
 double ComputeScreenSpaceError2(const BoundingBox& bbox, const glm::vec3& eye, float size) {
@@ -400,13 +196,6 @@ double ComputeScreenSpaceError(const BoundingBox& bbox, const glm::vec3& eye, fl
     return res;   
 }
 
-GPUTileBuffer* heightmap_normals_buffer;
-LRUTileCache* heightmap_normals_cache;
-GPUTileBuffer* gpu_tile_buffer;
-LRUTileCache* lru_tile_cache;
-TerrainNode* root;
-std::function<void(GPUTile* tile)> generate_heightmap_func;
-const uint32_t GLOBAL_RESOLUTION = 4;
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
 
@@ -416,7 +205,7 @@ void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_
     }
 
     if (key_state.IsPressed(app::KeyCode::KEY_2)) {
-        walk_speed = 300.f;
+        walk_speed = 100.f;
     }
 
     if (key_state.IsPressed(app::KeyCode::KEY_3)) {
@@ -476,21 +265,10 @@ struct Transform {
     glm::vec3 position;    
 };
 
+  auto vertex_generator = [&](float x, float y, float u, float v) -> Vertex  {             
+        return Vertex(glm::vec2(x, y), glm::vec2(u, v));
+    };
 
-struct Terrain {
-    uint32_t max_lod;
-    Transform transform;
-    uint32_t size;
-    uint32_t resolution;
-    float split_factor;
-
-    //TerrainGenerator terrain_generator;
-    TerrainNode* root { NULL };
-};
-
-
-Terrain terrain;
-std::vector<Terrain> terrains;
 
 void App::OnStart() {    
     LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
@@ -504,36 +282,32 @@ void App::OnStart() {
     glCullFace(GL_BACK);
 //    glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+ //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);   
 
     GLuint shaders[2] = { 0 };
-	shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "shaders/terrain_vs.glsl");
-	shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "shaders/terrain_fs.glsl");
+	shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_vs.glsl");
+	shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_fs.glsl");
     program = gl::CreateProgram(shaders, 2);
 
     std::vector<Vertex> vertices;
-    auto vertex_generator = [&](float x, float y, float u, float v) -> Vertex  {             
-        return Vertex(glm::vec2(x, y), glm::vec2(u, v));
-    };
 
     float best = 0.1;
     
-    uint32_t size = 1000;
+    uint32_t size = TERRAIN_SIZE;
     //max_lod = (int)((log(size/res/best) / log(2)) + 0.5);
     //LOG_D("MAX_LOD: %d %f", max_lod, pow(2, max_lod));
-    max_lod = 7;
-    split_factor = 1.5f;
+    max_lod = TERRAIN_MAX_LOD;
+    split_factor = TERRAIN_SPLIT_FACTOR;
 
     terrain.resolution = 128;
     terrain.size = size;
     terrain.split_factor = 1.f;
     terrain.max_lod = max_lod;
-    terrain.transform.position = glm::vec3(0, 0, 0);    
+    //terrain.transform.position = glm::vec3(0, 0, 0);    
     
-
     root = new TerrainNode();
     root->lod = 0;
     root->tx = 0;
@@ -546,15 +320,17 @@ void App::OnStart() {
 
     terrain.root = root;
 
-    BuildVertexGrid<Vertex>(glm::vec3(0, 0, 1), glm::vec2(size, size), glm::uvec2(GLOBAL_RESOLUTION, GLOBAL_RESOLUTION), vertex_generator, &vertices);
+    BuildVertexGrid<Vertex>(glm::vec3(0, 0, 1), glm::vec2(size, size), glm::uvec2(TERRAIN_RESOLUTION, TERRAIN_RESOLUTION), vertex_generator, &vertices);
 
     num_vertices = vertices.size();    
     vb = gl::CreateBuffer(GL_ARRAY_BUFFER, vertices.data(), sizeof(Vertex) * vertices.size(), GL_STATIC_DRAW);
     vao = gl::CreateVertexArrayObject(vb, { { ParamType::Float2, ParamType::Float2 } });
-    gpu_tile_buffer = new GPUTileBuffer(GLOBAL_RESOLUTION, 512, GL_R32F);
+    gpu_tile_buffer = new GPUTileBuffer(TERRAIN_RESOLUTION, 512, GL_R32F);
     lru_tile_cache = new LRUTileCache(gpu_tile_buffer);
-    heightmap_normals_buffer = new GPUTileBuffer(GLOBAL_RESOLUTION, 512, GL_RGB32F);
+    heightmap_normals_buffer = new GPUTileBuffer(TERRAIN_RESOLUTION, 512, GL_RGB32F);
     heightmap_normals_cache = new LRUTileCache(heightmap_normals_buffer);
+    root->vao = vao;
+    root->vb = vb;
 }
 
 
@@ -566,11 +342,12 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
     glm::mat4 world = glm::mat4();
     Frustum frustum(proj, view);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
     //DebugRenderer::GetInstance()->Render(proj * view);
 
-    GL_CHECK(glBindVertexArray(vao));
+//    GL_CHECK(glBindVertexArray(vao));
     GL_CHECK(glUseProgram(program));
     
     int tex_slot = 0;
@@ -601,33 +378,35 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
             generate_heightmap_func = [&](GPUTile* tile) -> void {
 
                 float min, max;
-                glm::uvec2 resolution = glm::uvec2(GLOBAL_RESOLUTION, GLOBAL_RESOLUTION);
-                GenerateHeightmapRegion(glm::vec3(node->x, node->y, 0), glm::vec2(node->size, node->size),
+                glm::uvec2 resolution = glm::uvec2(TERRAIN_RESOLUTION, TERRAIN_RESOLUTION);
+                GenerateHeightmapRegion(node->lod, glm::vec3(node->x, node->y, 0), glm::vec2(node->size, node->size),
                     resolution, [&](double x, double y, double z) -> float {
-                        noise::module::Perlin mountain;
+                        noise::module::RidgedMulti mountain;
                         mountain.SetSeed(32);
                         mountain.SetFrequency(0.05);
                         mountain.SetOctaveCount(8);
   //                      perlin.SetPersistence(0.25);
-//double v = mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
-
-                        return sin(x * 3.14f/180.f);
+double v = mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
+                        return v;
+//                        return sin(x * 3.14f/180.f);
 //                        return x < 0 &&  y < 0 ? 1.f : -1.f;
                     }, &elevation_data, &max, &min, &normal_data);
                 
-                
+
                 node->bbox.min.z = min;
                 node->bbox.max.z = max;
                 //DebugRenderer::GetInstance()->DrawBox(node->bbox.min, node->bbox.max);
-                tile->CopyData(GLOBAL_RESOLUTION, GLOBAL_RESOLUTION, GL_RED, elevation_data.data());
+                tile->CopyData(TERRAIN_RESOLUTION, TERRAIN_RESOLUTION, GL_RED, elevation_data.data());
                 
             };
             
+
             std::function<void(GPUTile* tile)> pass_normals_func = [&](GPUTile* tile) -> void {
-                tile->CopyData(GLOBAL_RESOLUTION, GLOBAL_RESOLUTION, GL_RGB, normal_data.data());
+                tile->CopyData(TERRAIN_RESOLUTION, TERRAIN_RESOLUTION, GL_RGB, normal_data.data());
             };
 
             
+
             Tile* elevations_tile = lru_tile_cache->Get(node->lod, node->tx, node->ty, generate_heightmap_func);
             Tile* normals_tile = heightmap_normals_cache->Get(node->lod, node->tx, node->ty, pass_normals_func);
 
@@ -640,12 +419,14 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
 //            printf("%f\n", scale_factor);
             glm::mat4 translation = glm::translate(glm::mat4(), glm::vec3(node->x, node->y, 0));            
             glm::mat4 scale = glm::scale(glm::vec3(scale_factor, scale_factor, 1.f));
-            world = translation * scale;
+            world = glm::mat4();//translation * scale;
             int elevations_tile_index = elevations_tile->data->index;
             int normals_tile_index = normals_tile->data->index;
             gl::SetUniform(program, "elevations_tile_index", ParamType::Int32, &elevations_tile_index);
             gl::SetUniform(program, "normals_tile_index", ParamType::Int32, &normals_tile_index);
             gl::SetUniform(program, "world", ParamType::Float4x4, &world);
+            
+            GL_CHECK(glBindVertexArray(node->vao));
             GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, num_vertices));
         } else {
             if(!node->children) {                
@@ -670,6 +451,14 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
                     child->ty = node->ty * 2 + (i < 2 ? 1 : 0);
                     child->bbox.max = glm::vec3(child->x + half_child_size, child->y + half_child_size, 0);
                     child->bbox.min = glm::vec3(child->x - half_child_size, child->y - half_child_size, 0);  
+
+
+                    // trying out a mesh for each quad...not the end game solution
+                    std::vector<Vertex> vertices;
+                    BuildVertexGrid<Vertex>(glm::vec3(child->x, child->y, 1), glm::vec2(child->size, child->size), glm::uvec2(TERRAIN_RESOLUTION, TERRAIN_RESOLUTION), vertex_generator, &vertices);
+                    num_vertices = vertices.size();    
+                    child->vb = gl::CreateBuffer(GL_ARRAY_BUFFER, vertices.data(), sizeof(Vertex) * vertices.size(), GL_STATIC_DRAW);
+                    child->vao = gl::CreateVertexArrayObject(child->vb, { { ParamType::Float2, ParamType::Float2 } });
                 }
             }
 
