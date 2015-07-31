@@ -61,7 +61,7 @@ set(GFX_SOURCES
 
 set(GFX_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/TerrainRenderer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ChunkedLODTerrainRenderer.h
 )
 
 set(GFX_GL_SOURCES
