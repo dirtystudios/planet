@@ -60,7 +60,7 @@ private:
     std::map<ChunkedLoDTerrainNode*, ChunkedLoDTerrainDesc> _terrain_descs;
     std::vector<ChunkedLoDTerrain> _terrains;
 
-    GLuint _shaders[2] { 0 };
+    GLuint _shaders[2];
     GLuint _program { 0 };
     GPUTileBuffer* _gpu_tile_buffer { 0 };
     GPUTileBuffer* _heightmap_normals_buffer { 0 };
