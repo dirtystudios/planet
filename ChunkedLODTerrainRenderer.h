@@ -4,9 +4,18 @@
 
 #include <map>
 #include <vector>
+#include <queue>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+
 #include "GLHelpers.h"
 #include "GPUTileBuffer.h"
 #include "LRUTileCache.h"
+#include "BoundingBox.h"
+#include "Camera.h"
+#include "Frustum.h"
 
 struct ChunkedLoDTerrainDesc {
     // Note(eugene): hierarchical transforms
