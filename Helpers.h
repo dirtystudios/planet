@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 #include <sstream>
+#include <fstream>
+#include "Log.h"
 
 const glm::vec3 X_AXIS = glm::vec3(1, 0, 0);
 const glm::vec3 Y_AXIS = glm::vec3(0, 1, 0);
@@ -58,6 +60,19 @@ static inline glm::vec3 GetColor(uint32_t index) {
     return glm::vec3(r, g, b);
 }
 
+static std::string ReadFileContents(const std::string& fpath) {
+   std::ifstream fin(fpath);
+
+    if(fin.fail()) {
+        LOG_E("Failed to open file '%s'\n", fpath.c_str());
+        assert(false);
+    }
+
+    std::string ss((std::istreambuf_iterator<char>(fin)),
+                    std::istreambuf_iterator<char>());
+
+    return ss;
+}
 
 
 

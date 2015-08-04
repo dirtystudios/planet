@@ -1,5 +1,15 @@
 #version 410 core                                                  
 
+layout(std140) uniform PerViewBuffer {       
+    mat4 view;
+    mat4 proj;
+    vec3 eye_pos;
+};
+
+layout(std140) uniform PerTerrainBuffer {           
+    mat4 world;
+};
+
 uniform mat4 view;
 uniform mat4 proj;
 uniform mat4 world;
