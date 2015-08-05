@@ -13,7 +13,7 @@
 └── Smarter caching and creation of vertex data
 
 ├─ Text Rendering
-└──  Use freetype-gl library
+└──  Use freetype-gl library (/sigh, jake)
 
 ├─ Frustum Culling
 └──  Not perfect, get some false positives on edge of screen
@@ -25,6 +25,3 @@
 ├── Skirts
 ├── Better control of when LOD switches happen
 └── Morphing between LODs
-
-
-
