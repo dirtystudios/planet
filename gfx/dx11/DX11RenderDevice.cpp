@@ -603,6 +603,67 @@ namespace graphics {
 
     }
 
+    void RenderDeviceDX11::BindSampler(SamplerHandle handle, uint32_t location) {
+        // TODO-Jake: FIXME
+        SamplerStateDX11 *ss = Get(m_samplers, handle);
+        if (!ss){
+            LOG_E("DX11RenderDev: Invalid handle given to BindSampler.");
+        }
+        m_devcon->VSSetSamplers(0, 1, &ss->samplerState1);
+        m_devcon->VSSetSamplers(1, 1, &ss->samplerState2);
+    }
+
+    SamplerHandle RenderDeviceDX11::CreateSamplers(){
+        D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
+
+        ID3D11SamplerState *samplerState1, *samplerState2;
+        HRESULT hr = m_dev->CreateSamplerState(&samplerDesc, &samplerState1);
+        if (FAILED(hr)){
+            LOG_E("DX11RenderDev: Failed creating samplerState HR: 0x%x", hr);
+        }
+
+        m_dev->CreateSamplerState(&samplerDesc, &samplerState2);
+        if (FAILED(hr)){
+            LOG_E("DX11RenderDev: Failed creating samplerState HR: 0x%x", hr);
+        }
+
+        uint32_t handle = GenerateHandle();
+        SamplerStateDX11 samplerDX11 = {};
+        samplerDX11.samplerState1 = samplerState1;
+        samplerDX11.samplerState2 = samplerState2;
+        m_samplers.insert(std::make_pair(handle, samplerDX11));
+
+        return handle;
+    }
+
+    void RenderDeviceDX11::DestroySampler(SamplerHandle handle) {
+        // TODO-Jake: FIXME
+
+        auto it = m_samplers.find(handle);
+        if (it == m_samplers.end()) {
+            LOG_E("DX11RenderDev: Invalid handle given to DestroySampler.");
+            return;
+        }
+        SamplerStateDX11 &sampler= (*it).second;
+
+        //if (sampler.samplerState)
+            //sampler.samplerState->Release();
+
+        m_samplers.erase(it);
+    }
+
+    void RenderDeviceDX11::SetProgramTexture(TextureHandle handle, const char *paramName, uint32_t slot) {
+        // TODO-Jake: need shader reflecter for param name?
+        // hardcoding this for now
+
+        TextureDX11 *tex = Get(m_textures, handle);
+        if (!tex){
+            LOG_E("DX11RenderDev: Invalid handle given to SetProgramTexture.");
+        }
+
+        m_devcon->VSSetShaderResources(slot, 1, &tex->shaderResourceView);
+    }
+
     void RenderDeviceDX11::BindConstantBuffer(ConstantBufferHandle handle, uint32_t slot) {
         ConstantBufferDX11 *cb = Get(m_constantBuffers, handle);
         if (!cb){
@@ -610,49 +671,7 @@ namespace graphics {
         }
         m_devcon->VSSetConstantBuffers(slot, 1, &cb->constantBuffer);
     }
-    
-    bool RenderDeviceDX11::BindAttributes(const VertLayout &vert_layout, const AttribLayout &attrib_layout) {
-        if(!Matches(attrib_layout, vert_layout)) {
-            return false;
-        }
-        
-        size_t offset = 0;
-        for(uint32_t idx = 0; idx < attrib_layout.elements.size(); ++idx) {
-            const AttribElement* attrib_elem = &attrib_layout.elements[idx];
-            const VertElement* vert_elem = &vert_layout.elements[idx];
-            
-            GLenum type = GL_FALSE;
-            GLuint size = 0;
-            switch(attrib_elem->type) {
-                case ParamType::Float:
-                    type = GL_FLOAT;
-                    size = 1;
-                    break;
-                case ParamType::Float2:
-                    type = GL_FLOAT;
-                    size = 2;
-                    break;
-                case ParamType::Float3:
-                    type = GL_FLOAT;
-                    size = 3;
-                    break;
-                case ParamType::Float4:
-                    type = GL_FLOAT;
-                    size = 4;
-                    break;
-                default:
-                    SLOG_E("gfx", "Unknown vertex element type");
-                    return false;
-            }
-            
-            SLOG_D("gfx", "Binding attribute (size:" << size << ", type:" << type << ", stride:" << vert_layout.stride << ", offset: " << offset << ") to location:" << attrib_elem->location);
-            GL_CHECK(glEnableVertexAttribArray(attrib_elem->location));
-            GL_CHECK(glVertexAttribPointer(attrib_elem->location, size, type, GL_FALSE, vert_layout.stride, (const void*)offset));
-            offset += SizeofParam(vert_elem->type);
-        }
-        return true;
-    }
-
+   
     int RenderDeviceDX11::InitializeDevice(void* args) {
         m_hwnd = static_cast<HWND>(args);
 

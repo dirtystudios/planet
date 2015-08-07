@@ -68,6 +68,8 @@ namespace graphics {
     typedef uint32_t IndexBufferHandle;
     typedef uint32_t UniformHandle;
     typedef uint32_t ConstantBufferHandle;
+
+    typedef uint32_t SamplerHandle;
         
     class RenderDevice {
     public:
@@ -93,6 +95,10 @@ namespace graphics {
         virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data) = 0;
         virtual void                    DestroyTexture(TextureHandle handle) = 0;
 
+        // Not sure how else to handle these yet, possibly shader reflection?
+        virtual SamplerHandle           CreateSamplers() = 0;
+        virtual void                    DestroySampler(SamplerHandle handle) = 0;
+
         virtual void                    Clear(float* RGBA) = 0;
         virtual void                    SwapBuffers() = 0;
 
@@ -111,6 +117,8 @@ namespace graphics {
         virtual void DrawArrays(VertexBufferHandle handle, uint32_t start_vertex, uint32_t num_vertices) = 0;
         virtual void BindTexture(TextureHandle handle, uint32_t slot) = 0;
         virtual void BindConstantBuffer(ConstantBufferHandle handle, uint32_t slot) = 0;
+        virtual void SetProgramTexture(TextureHandle handle, const char *param_name, uint32_t slot) = 0;
+        virtual void BindSampler(SamplerHandle handle, uint32_t location) = 0;
     };
 
 }

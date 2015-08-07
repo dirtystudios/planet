@@ -113,6 +113,8 @@ namespace graphics {
         void DrawArrays(VertexBufferHandle handle, uint32_t start_vertex, uint32_t num_vertices);
         void BindTexture(TextureHandle handle, uint32_t slot);
         void BindConstantBuffer(ConstantBufferHandle handle, uint32_t slot);        
+
+        void                    PrintDisplayAdapterInfo();
     private:
         template <class T> T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
             auto it = map.find(handle);

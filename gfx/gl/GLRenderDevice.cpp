@@ -456,4 +456,7 @@ namespace graphics {
         return ++key;
     }
 
+    void PrintDisplayAdapterInfo() {
+
+    }
 }

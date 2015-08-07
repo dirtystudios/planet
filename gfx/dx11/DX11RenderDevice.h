@@ -55,14 +55,14 @@ namespace graphics {
         DXGI_FORMAT format;
     };
     
-    struct VertexArrayObjectGL {
-        GLuint id { 0 };
-    };
-    
-    
     struct ConstantBufferDX11 {
         ID3D11Buffer* constantBuffer;
         MemoryLayout layout;
+    };
+
+    struct SamplerStateDX11{
+        ID3D11SamplerState* samplerState1;
+        ID3D11SamplerState* samplerState2;
     };
 
     struct ShaderResourceViewDX11 {
@@ -78,6 +78,7 @@ namespace graphics {
         std::unordered_map<uint32_t, ProgramDX11> m_programs;
         std::unordered_map<uint32_t, TextureDX11> m_textures;
         std::unordered_map<uint32_t, ConstantBufferDX11> m_constantBuffers;
+        std::unordered_map<uint32_t, SamplerStateDX11> m_samplers;
 
         HWND m_hwnd;
         ComPtr<ID3D11Device> m_dev;
@@ -107,8 +108,10 @@ namespace graphics {
         TextureHandle           CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data);
         TextureHandle           CreateTexture2DArray(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, uint32_t depth, void* data) = 0;
         TextureHandle           CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data);
-
         void                    DestroyTexture(TextureHandle handle);
+
+        SamplerHandle           CreateSamplers();
+        void                    DestroySampler(SamplerHandle handle);
 
         void                    Clear(float* RGBA);
         void                    SwapBuffers();
@@ -124,7 +127,10 @@ namespace graphics {
         void SetBlendState(uint32_t state);
         void DrawArrays(VertexBufferHandle handle, uint32_t start_vertex, uint32_t num_vertices);
         void BindTexture(TextureHandle handle, uint32_t slot);
-        void BindConstantBuffer(ConstantBufferHandle handle, uint32_t slot);        
+        void BindConstantBuffer(ConstantBufferHandle handle, uint32_t slot);  
+        void SetProgramTexture(TextureHandle handle, const char *paramName, uint32_t slot);
+        void BindSampler(SamplerHandle handle, uint32_t location);
+
     private:
         wchar_t *convertCharArrayToLPCWSTR(const char* charArray)
         {
