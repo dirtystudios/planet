@@ -434,6 +434,26 @@ namespace graphics {
 
         tdesc.Format = dxFormat;
 
+		int formatByteSize = 0;
+		switch (dataFormat) {
+		case DataFormat::RED:
+			formatByteSize = 4;
+			break;
+		case DataFormat::RGB:
+			formatByteSize = 12;
+			break;
+		default:
+			LOG_E("DX11RenderDev: Unsupported dataformat given for CreateTexture2DArray.");
+			return 0;
+		}
+
+		D3D11_SUBRESOURCE_DATA subData = { 0 };
+		subData.pSysMem = data;
+		subData.SysMemPitch = formatByteSize * width;
+		subData.SysMemSlicePitch = formatByteSize * width * height;
+
+		//datatype currently just float
+
         HRESULT hr = m_dev->CreateTexture2D(&tdesc, NULL, &texture);
         if (FAILED(hr)){
             LOG_E("DX11RenderDev: Failed Creating Texture2DArray Hr: 0x%x", hr);

@@ -78,7 +78,6 @@ namespace graphics {
         std::unordered_map<uint32_t, ProgramDX11> m_programs;
         std::unordered_map<uint32_t, TextureDX11> m_textures;
         std::unordered_map<uint32_t, ConstantBufferDX11> m_constantBuffers;
-        std::unordered_map<uint32_t, VertexArrayObjectGL> _vao_cache;
 
         HWND m_hwnd;
         ComPtr<ID3D11Device> m_dev;
