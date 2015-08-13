@@ -1,12 +1,31 @@
 #ifndef __chunked_lod_terrain_renderer_h__
 #define __chunked_lod_terrain_renderer_h__
 
-
 #include <map>
 #include <vector>
 #include "GLHelpers.h"
 #include "GPUTileBuffer.h"
 #include "LRUTileCache.h"
+#include "gfx/RenderDevice.h"
+
+struct Material {
+
+};
+
+struct Mesh {
+
+};
+
+struct PerTerrainBuffer {
+    glm::mat4 world;
+    int32_t elevations_tile_index;
+    int32_t normals_tile_index;
+};
+
+struct PerViewBuffer {
+    glm::mat4 view;
+    glm::mat4 proj;
+};
 
 struct ChunkedLoDTerrainDesc {
     // Note(eugene): hierarchical transforms
@@ -23,7 +42,7 @@ typedef uint32_t ChunkedLoDTerrainHandle;
 
 class ChunkedLoDTerrainRenderer {
 private:
-    struct ChunkedLoDVertex { 
+    struct ChunkedLoDVertex {
         ChunkedLoDVertex(glm::vec2 pos, glm::vec2 tex) : pos(pos), tex(tex) {};
         glm::vec2 pos;
         glm::vec2 tex;
@@ -60,40 +79,55 @@ private:
     std::map<ChunkedLoDTerrainNode*, ChunkedLoDTerrainDesc> _terrain_descs;
     std::vector<ChunkedLoDTerrain> _terrains;
 
-    GLuint _shaders[2] { 0 };
-    GLuint _program { 0 };
+    graphics::ShaderHandle _shaders[2] { 0 };
+    graphics::ProgramHandle _program { 0 };
+
     GPUTileBuffer* _gpu_tile_buffer { 0 };
     GPUTileBuffer* _heightmap_normals_buffer { 0 };
     LRUTileCache* _lru_tile_cache { 0 };
     LRUTileCache* _heightmap_normals_cache { 0 };
 
-public:
-    ChunkedLoDTerrainRenderer() {
-        // Note(eugene): cleanup shaders
-        _shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_vs.glsl");
-        _shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_fs.glsl");
-        assert(_shaders[0] && _shaders[1]);
-        _program = gl::CreateProgram(_shaders, 2);
-        assert(_program);
+    graphics::RenderDevice* _render_device;
 
-        _gpu_tile_buffer = new GPUTileBuffer(TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE, GL_R32F);
+public:
+    ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
+        std::string vs_contents = ReadFileContents("/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_vs.glsl");
+        const char* vs_src = vs_contents.c_str();
+
+        std::string fs_contents = ReadFileContents("/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_fs.glsl");
+        const char* fs_src = fs_contents.c_str();
+
+        // Note(eugene): cleanup shaders
+        _shaders[0] = _render_device->CreateShader(graphics::ShaderType::VERTEX_SHADER, &vs_src);
+        _shaders[1] = _render_device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
+        assert(_shaders[0] && _shaders[1]);
+
+        //_program = _render_device->CreateProgram(_shaders, 2);
+
+//        assert(_program);
+
+        graphics::TextureHandle heightmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::RGB32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
+        graphics::TextureHandle normalmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::RGB32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
+        assert(heightmap_texture_array && normalmap_texture_array);
+
+        _gpu_tile_buffer = new GPUTileBuffer(TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE, heightmap_texture_array);
         _lru_tile_cache = new LRUTileCache(_gpu_tile_buffer);
-        _heightmap_normals_buffer = new GPUTileBuffer(TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE, GL_RGB32F);
+        _heightmap_normals_buffer = new GPUTileBuffer(TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE, normalmap_texture_array);
         _heightmap_normals_cache = new LRUTileCache(_heightmap_normals_buffer);
     }
 
     ~ChunkedLoDTerrainRenderer() {
-        if(_gpu_tile_buffer) { 
-            delete _gpu_tile_buffer; 
+        if(_gpu_tile_buffer) {
+            delete _gpu_tile_buffer;
         }
-        if(_heightmap_normals_buffer) { 
-            delete _heightmap_normals_buffer; 
+        if(_heightmap_normals_buffer) {
+            delete _heightmap_normals_buffer;
         }
         if(_lru_tile_cache) {
-            delete _lru_tile_cache; 
+            delete _lru_tile_cache;
         }
-        if(_heightmap_normals_cache) { 
-            delete _heightmap_normals_cache; 
+        if(_heightmap_normals_cache) {
+            delete _heightmap_normals_cache;
         }
         // Note(eugene): cleanup program, meshes and terrains
     }
@@ -109,21 +143,23 @@ public:
         root->size = desc.size;
         float half_size = root->size / 2.f;
         // z-coordinates will be filled in when heightmap data is generated
-        root->bbox.max = glm::vec3(half_size, half_size, 0); 
+        root->bbox.max = glm::vec3(half_size, half_size, 0);
         root->bbox.min = glm::vec3(-half_size, -half_size, 0);
 
         // build mesh to be used for terrain
         auto vertex_generator = [&](float x, float y, float u, float v) -> ChunkedLoDVertex  {
             return ChunkedLoDVertex(glm::vec2(x, y), glm::vec2(u, v));
         };
-        
+
         uint32_t t = TERRAIN_QUAD_RESOLUTION;
         std::vector<ChunkedLoDVertex> vertices;
         BuildVertexGrid<ChunkedLoDVertex>(glm::vec3(root->x, root->y, 1), glm::vec2(root->size, root->size), glm::uvec2(TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION), vertex_generator, &vertices);
 
-        terrain.num_vertices = vertices.size();    
-        terrain.vb = gl::CreateBuffer(GL_ARRAY_BUFFER, vertices.data(), sizeof(ChunkedLoDVertex) * vertices.size(), GL_STATIC_DRAW);
-        terrain.vao = gl::CreateVertexArrayObject(terrain.vb, { { ParamType::Float2, ParamType::Float2 } });
+        terrain.num_vertices = vertices.size();
+        graphics::VertLayout layout;
+        layout.Add(graphics::ParamType::Float2);
+        layout.Add(graphics::ParamType::Float2);
+        terrain.vb = _render_device->CreateVertexBuffer(layout, vertices.data(), sizeof(ChunkedLoDVertex) * vertices.size(), graphics::BufferUsage::STATIC);
 
         terrain.root = root;
         terrain.heightmap_generator = desc.heightmap_generator;
@@ -140,28 +176,22 @@ public:
     void Render(Camera& cam, Frustum& frustum) {
         if(_terrains.size() == 0) {
             return;
-        }   
+        }
+
 
         glm::mat4 proj = cam.BuildProjection();
         glm::mat4 view = cam.BuildView();
         glm::mat4 world = glm::mat4();
 
-        uint32_t tex_slot = 0;
-        GL_CHECK(glUseProgram(_program));
-        gl::SetUniform(_program, "proj", ParamType::Float4x4, &proj);
-        gl::SetUniform(_program, "view", ParamType::Float4x4, &view);        
-        GL_CHECK(glActiveTexture(GL_TEXTURE0));
-        GL_CHECK(glBindTexture(GL_TEXTURE_2D_ARRAY, _gpu_tile_buffer->GetTextureId()));    
-        gl::SetUniform(_program, "heightmap_elevations_tile_array", ParamType::Int32, &tex_slot);
-        
-        tex_slot = 1;
-        GL_CHECK(glActiveTexture(GL_TEXTURE1));
-        GL_CHECK(glBindTexture(GL_TEXTURE_2D_ARRAY, _heightmap_normals_buffer->GetTextureId()));
-        gl::SetUniform(_program, "heightmap_normals_tile_array", ParamType::Int32, &tex_slot);
-    
+        _render_device->SetVertexShader(_shaders[0]);
+        _render_device->SetPixelShader(_shaders[1]);
+        _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "proj", &proj);
+        _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "view", &view);
+        _render_device->SetShaderTexture(_shaders[0], _gpu_tile_buffer->GetTextureId(), graphics::TextureSlot::BASE);
+        _render_device->SetShaderTexture(_shaders[0], _heightmap_normals_buffer->GetTextureId(), graphics::TextureSlot::NORMAL);
 
         for(const ChunkedLoDTerrain& terrain : _terrains) {
-            GL_CHECK(glBindVertexArray(terrain.vao));
+            //GL_CHECK(glBindVertexArray(terrain.vao));
 
             ChunkedLoDTerrainNode* root = terrain.root;
             std::queue<ChunkedLoDTerrainNode*> dfs_queue;
@@ -169,10 +199,10 @@ public:
 
             while(!dfs_queue.empty()) {
                 ChunkedLoDTerrainNode* node = dfs_queue.front();
-                dfs_queue.pop();        
+                dfs_queue.pop();
 
                 if(ShouldSplitNode(node, cam.pos)) {
-                    if(!node->children) {                
+                    if(!node->children) {
                         float child_size = node->size / 2.f;
                         float half_child_size = child_size / 2.f;
                         double child_pos[4][2] = {
@@ -185,7 +215,7 @@ public:
                         node->children = new ChunkedLoDTerrainNode[NUM_QUAD_TREE_NODES];
                         for(uint32_t i = 0; i < NUM_QUAD_TREE_NODES; ++i) {
                             ChunkedLoDTerrainNode* child = &node->children[i];
-                                                      
+
                             child->x = child_pos[i][0];
                             child->y = child_pos[i][1];
                             child->size = child_size;
@@ -199,28 +229,30 @@ public:
 
                     for(uint32_t idx = 0; idx < NUM_QUAD_TREE_NODES; ++idx) {
                         dfs_queue.push(&node->children[idx]);
-                    }   
+                    }
                 } else {
                     std::vector<float> elevation_data;
                     std::vector<glm::vec3> normal_data;
-                    
+
                     // lambda cant capture static const var
-                    uint32_t terrain_quad_resoltuon = TERRAIN_QUAD_RESOLUTION;
+                    uint32_t terrain_quad_resolution = TERRAIN_QUAD_RESOLUTION;
                     auto generate_heightmap_func = [&](GPUTile* tile) -> void {
                         float min, max;
-                        glm::uvec2 resolution = glm::uvec2(terrain_quad_resoltuon, terrain_quad_resoltuon);
+                        glm::uvec2 resolution = glm::uvec2(terrain_quad_resolution, terrain_quad_resolution);
                         GenerateHeightmapRegion(node->lod, glm::vec3(node->x, node->y, 0), glm::vec2(node->size, node->size),
                             resolution, terrain.heightmap_generator, &elevation_data, &max, &min, &normal_data);
-                        
+
 
                         node->bbox.min.z = min;
                         node->bbox.max.z = max;
-                        tile->CopyData(terrain_quad_resoltuon, terrain_quad_resoltuon, GL_RED, elevation_data.data());
+                        //tile->CopyData(terrain_quad_resolution, terrain_quad_resolution, GL_RED, elevation_data.data());
+                        _render_device->UpdateTextureArray(tile->texture_array_id, tile->index, terrain_quad_resolution, terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RED, elevation_data.data());
                     };
-                    
+
 
                     std::function<void(GPUTile* tile)> pass_normals_func = [&](GPUTile* tile) -> void {
-                        tile->CopyData(terrain_quad_resoltuon, terrain_quad_resoltuon, GL_RGB, normal_data.data());
+                        //tile->CopyData(terrain_quad_resolution, terrain_quad_resolution, GL_RGB, normal_data.data());
+                        _render_device->UpdateTextureArray(tile->texture_array_id, tile->index, terrain_quad_resolution, terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RED, normal_data.data());
                     };
 
                     Tile* elevations_tile = _lru_tile_cache->Get(node->lod, node->tx, node->ty, generate_heightmap_func);
@@ -229,18 +261,24 @@ public:
                     //if(!frustum.IsBoxInFrustum(node->bbox)) {
                     //    continue;
                     //}
-        
+
                     float scale_factor = node->size / (node->size * pow(2, (node->lod)));
-                    glm::mat4 translation = glm::translate(glm::mat4(), glm::vec3(node->x, node->y, 0));            
+                    glm::mat4 translation = glm::translate(glm::mat4(), glm::vec3(node->x, node->y, 0));
                     glm::mat4 scale = glm::scale(glm::vec3(scale_factor, scale_factor, 1.f));
                     world = translation * scale;
                     int elevations_tile_index = elevations_tile->data->index;
                     int normals_tile_index = normals_tile->data->index;
-                    gl::SetUniform(_program, "elevations_tile_index", ParamType::Int32, &elevations_tile_index);
-                    gl::SetUniform(_program, "normals_tile_index", ParamType::Int32, &normals_tile_index);
-                    gl::SetUniform(_program, "world", ParamType::Float4x4, &world);
-                            
-                    GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, terrain.num_vertices));
+
+                    _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Int32, "elevations_tile_index", &elevations_tile_index);
+                    _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Int32, "normals_tile_index", &normals_tile_index);
+                    _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "world", &world);
+                    _render_device->SetVertexBuffer(terrain.vb);
+                    _render_device->DrawPrimitive(graphics::PrimitiveType::TRIANGLES, 0, terrain.num_vertices);
+
+
+                    //_render_device->DrawArrays(terrain.vb, 0, terrain.num_vertices);
+
+                    //GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, terrain.num_vertices));
                 }
 
             }
@@ -249,25 +287,25 @@ public:
 private:
     template <class T>
     void BuildVertexGrid(
-        float center_x, float center_y, float center_z, 
-        float size_x, float size_y, 
-        uint32_t resolution_x, uint32_t resolution_y, 
-        std::function<T(float x, float y, float u, float v)> vertex_generator, 
-        std::vector<T>* vertices) 
+        float center_x, float center_y, float center_z,
+        float size_x, float size_y,
+        uint32_t resolution_x, uint32_t resolution_y,
+        std::function<T(float x, float y, float u, float v)> vertex_generator,
+        std::vector<T>* vertices)
     {
         float half_size_x = size_x / 2.f;
         float half_size_y = size_y / 2.f;
-        
+
         float dx = size_x / (float)(resolution_x - 1);
         float dy = size_y / (float)(resolution_y - 1);
 
-        auto generate_vertex = [&] (uint32_t i, uint32_t j) -> T { 
+        auto generate_vertex = [&] (uint32_t i, uint32_t j) -> T {
             float x = center_x - half_size_x + (j * dx);
             float y = center_y + half_size_y - (i * dy);
             float u = j * dx / size_x;
             float v = i * dy / size_y;
-            
-            return vertex_generator(x, y, u, v); 
+
+            return vertex_generator(x, y, u, v);
         };
 
         for(uint32_t i = 0; i < resolution_y - 1; ++i) {
@@ -281,12 +319,12 @@ private:
                 vertices->push_back(generate_vertex(i, j));
             }
         }
-    }  
+    }
 
     template <class T>
-    void BuildVertexGrid(const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,     
-        std::function<T(float x, float y, float u, float v)> vertex_generator, 
-        std::vector<T>* vertices) 
+    void BuildVertexGrid(const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,
+        std::function<T(float x, float y, float u, float v)> vertex_generator,
+        std::vector<T>* vertices)
     {
         BuildVertexGrid(center.x, center.y, center.z, size.x, size.y, resolution.x, resolution.y,
             vertex_generator, vertices);
@@ -302,10 +340,10 @@ private:
         @param max Output parameter to store max height value
         @param min Output parameter to store min height value
     */
-    void GenerateHeightmapRegion(const glm::dvec3& region_center, 
-        const glm::vec2& region_size, 
-        const glm::uvec2& resolution, 
-        std::function<float(double x, double y, double z)> heightmap_generator, 
+    void GenerateHeightmapRegion(const glm::dvec3& region_center,
+        const glm::vec2& region_size,
+        const glm::uvec2& resolution,
+        std::function<float(double x, double y, double z)> heightmap_generator,
         std::vector<float>* data, float* max, float* min) {
 
         *max = std::numeric_limits<float>::min();
@@ -323,7 +361,7 @@ private:
                 float val = heightmap_generator(x, y, 0);
 
                 if(val > *max) {
-                    *max = val;      
+                    *max = val;
                 } else if(val < *min) {
                     *min = val;
                 }
@@ -333,12 +371,12 @@ private:
         }
     }
 
-    void GenerateHeightmapRegionNormals(const std::vector<float>& heightmap_data, 
-        const glm::vec2& size, 
-        const glm::uvec2& resolution, 
+    void GenerateHeightmapRegionNormals(const std::vector<float>& heightmap_data,
+        const glm::vec2& size,
+        const glm::uvec2& resolution,
         uint32_t lod,
         std::vector<glm::vec3>* generated_normal_data) {
-        
+
         // convert from 2D index to 1D index, clamping to edges (ex. i=-1 => i=0)
         auto get_index = [&](int32_t i, int32_t j) -> int32_t {
             int32_t k = (i >= (int32_t)resolution.x) ? resolution.x - 1 : ((i < 0) ? 0 : i);
@@ -346,7 +384,7 @@ private:
            // LOG_D("%d %d %d -> %d %d", j >= resolution.y, i, j, k, p);
             return k * resolution.y + p;
         };
-        
+
         // Note(eugene): need to do this on gpu
         for(uint32_t i = 0; i < resolution.x; ++i) {
             for(uint32_t j = 0; j < resolution.y; ++j) {
@@ -363,15 +401,15 @@ private:
                 //
                 // There is an issue that depending on the terrain size or heightmap we set, the z
                 // value chosen will be proportionally different that the x and y values that are
-                // be computed. By scaling the x and y values by this term, x and y values will be 
+                // be computed. By scaling the x and y values by this term, x and y values will be
                 // proportionally similar to the z value no matter the terrain size or resolution.
                 //
                 float scale = ((float)resolution.x / (float)(size.x * pow(2, lod))) / 0.032f;
-                
-                // This needs to scale with region LoD to keep the ratio between size of z value and 
-                // size of x/y values similar. If we don't, the z value will dominate more an more in 
+
+                // This needs to scale with region LoD to keep the ratio between size of z value and
+                // size of x/y values similar. If we don't, the z value will dominate more an more in
                 // the normal as we go to higher LoD regions.
-                float z = 1.f / pow(2, (lod)); 
+                float z = 1.f / pow(2, (lod));
 
                 float x = -((br - bl) + (2.f * (r - l)) + (tr - tl));
                 float y = -((tl - bl) + (2.f * (t - b)) + (tr - br));
@@ -386,7 +424,7 @@ private:
     void GenerateHeightmapRegion(uint32_t lod, const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,
                                  std::function<float(double x, double y, double z)> heightmap_generator,
                                  std::vector<float>* elevation_data, float* elevation_max, float* elevation_min,
-                                 std::vector<glm::vec3>* normal_data) {    
+                                 std::vector<glm::vec3>* normal_data) {
         GenerateHeightmapRegion(center, size, resolution, heightmap_generator, elevation_data, elevation_max, elevation_min);
         GenerateHeightmapRegionNormals(*elevation_data, size, resolution, lod, normal_data);
     }
@@ -399,24 +437,24 @@ private:
     }
 
     bool ComputeScreenSpaceError(const BoundingBox& bbox, const glm::vec3& eye, float size) {
-        double d = bbox.GetDistanceFromBoundingBox(eye);            
+        double d = bbox.GetDistanceFromBoundingBox(eye);
         if(d < TERRAIN_SPLIT_FACTOR * size) {
             return true;
         }
 
         return false;
     }
-    
+
     /*
     double ComputeScreenSpaceError(const BoundingBox& bbox, const glm::vec3& eye, float hfov, uint32_t viewport_width, float geometric_error) {
-        double d = bbox.GetDistanceFromBoundingBox(eye);            
+        double d = bbox.GetDistanceFromBoundingBox(eye);
 
         double w = 2.f * d * tan(hfov / 2.f);
         if(w == 0) {
             return 0; //TODO: this mean if we are ever inside the bounding box, we say we have 0 screen space error. NOT good.
         }
-        double res = geometric_error * viewport_width / w;        
-        return res;   
+        double res = geometric_error * viewport_width / w;
+        return res;
     }
     */
 };

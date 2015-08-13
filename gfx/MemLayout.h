@@ -23,6 +23,11 @@ namespace graphics {
                 elements.push_back(elem);
             }
         };
+
+        void Add(ParamType type, uint32_t count) {
+            elements.push_back(StructureElement(type, count));
+            stride += SizeofParam(type) * count;
+        }
     };
 }
 

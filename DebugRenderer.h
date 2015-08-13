@@ -35,6 +35,7 @@ public:
     void DrawSphere(const glm::vec3& p, float radius, bool depth_enabeled = true) {
 
     }
+    
     void DrawAxis(const glm::mat4& transform, float scale, bool depth_enabled = true) {
 
     }

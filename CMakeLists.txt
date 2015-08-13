@@ -33,7 +33,7 @@ if (WIN32)
     find_package(GLEW REQUIRED)
     set(PLATFORM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include)
 elseif(APPLE)
-    set(PLATFORM_INCLUDE_DIRS "/usr/local/include")     
+    set(PLATFORM_INCLUDE_DIRS "/usr/local/include")
 endif()
 
 if(NOT ${GLFW3_FOUND})
@@ -42,15 +42,15 @@ endif()
 
 
 include_directories(
-    ${PLATFORM_INCLUDE_DIRS}         
-    ${GLFW_INCLUDE_DIRS}     
-    ${LIBNOISE_INCLUDE_DIRS} 
+    ${PLATFORM_INCLUDE_DIRS}
+    ${GLFW_INCLUDE_DIRS}
+    ${LIBNOISE_INCLUDE_DIRS}
     ${GLEW_INCLUDE_DIRS}
 )
 
-set(LIBS        
+set(LIBS
     ${GLFW_LIBRARIES}
-    ${OPENGL_LIBRARIES}    
+    ${OPENGL_LIBRARIES}
     ${LIBNOISE_LIBRARIES}
     ${GLEW_LIBRARIES}
 )
@@ -65,37 +65,37 @@ set(GFX_HEADERS
 )
 
 set(GFX_GL_SOURCES
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/gfx/gl/GLRenderDevice.cpp
 )
 
 set(GFX_GL_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/GLHelpers.h
 )
 
-set(GAME_SOURCES    
+set(GAME_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/App.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SystemGLFW3.cpp        
-    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.cpp        
-    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.cpp        
+    ${CMAKE_CURRENT_SOURCE_DIR}/SystemGLFW3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.cpp
 )
 
-set(GAME_HEADERS    
+set(GAME_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/Application.h
     ${CMAKE_CURRENT_SOURCE_DIR}/App.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/System.h        
-    ${CMAKE_CURRENT_SOURCE_DIR}/Log.h    
-    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.h    
-    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.h    
+    ${CMAKE_CURRENT_SOURCE_DIR}/System.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.h
 )
 
-set(ALL_SOURCES        
+set(ALL_SOURCES
     ${GAME_SOURCES}
     ${GFX_SOURCES}
     ${GFX_GL_SOURCES}
 )
 
-set(ALL_HEADERS   
-    ${GAME_HEADERS} 
+set(ALL_HEADERS
+    ${GAME_HEADERS}
     ${GFX_HEADERS}
     ${GFX_GL_HEADERS}
 )

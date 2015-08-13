@@ -1,0 +1,273 @@
+
+    struct RenderCommand {
+        RenderCommandType type;
+
+        RenderCommand(RenderCommandType type) : type(type) {};
+    }
+
+    enum RenderCommand {
+        DRAW_ARRAYS,
+        UPDATE_CONSTANT_BUFFER
+
+    };
+
+    struct UpdateConstantBufferData : public RenderCommand {
+        ConstantBufferHandle constant_buffer_handle;
+        void* data;
+        size_t size;
+    }
+
+    struct DrawArrays : public RenderCommand {
+        VertexBufferHandle vertex_buffer_handle;
+        uint32_t num_vertices;
+        uint32_t start_vertex;
+        PrimitiveTopology topology;
+    };
+
+
+    void WriteDrawArraysCommand(CommandPacket* packet, VertexBufferHandle handle, uint32_t num_vertices, uint32_t start_vertex, PrimitiveTopology topology) {
+        buffer.append(DRAW_ARRAYS);
+        buffer.append(sizeof(num_vertices) + sizeof(start_vertex) + sizeof(topology));
+        buffer.append(handle);
+        buffer.append(num_vertices);
+        buffer.append(start_vertex);
+        buffer.append(toplogy);
+    }
+    void WriteUpdateConstantBufferCommand(CommandPacket* packet, ConstantBufferHandle handle, void* data, size_t size) {
+        buffer.append(UPDATE_CONSTANT_BUFFER);
+        buffer.append(sizeof(handle) + sizeof(data) + sizeof(size));
+        buffer.append(handle);
+        buffer.append(data);
+        buffer.append(size);
+    }
+
+    struct CommandPacket {
+        uint8_t* buffer;
+        uint32_t buffer_len;
+        uint32_t buffer_offset;
+    }
+
+
+    // key stores infomration about the RenderTarget, Program, RenderStates & Textures to be used
+    template <typename K>
+    class ViewPacket {
+    private:
+        K* _keys;
+        CommandPacket* _command_packets;
+        uint8_t* _aux_mem;
+        size_t _aux_mem_len;
+    public:
+        RenderQueue(std::vector<FrameBufferHandle> frame_buffers, float* view_matrix, float* projection_matrix);
+
+        CommandPacket* AddCommandPacket(K key, size_t packet_size) {
+
+        }
+
+
+        void* GetAuxillaryMemory(size_t size) {
+
+        }
+
+        void Sort();
+        void Submit();
+
+    }   
+
+
+    RenderQueue queue;
+    size_t size = sizeof(DrawArrays) + sizeof(UpdateConstantBufferCommand);    
+    void* mem = queue.GetAuxMemory(size);
+    memcpy(mem, cb_data, size);
+
+    CommandPacket* packet = queue.CreatePacket(GenerateKey(), size);
+    WriteUpdateConstantBufferCommand(packet, cb_handle, mem, size);
+    WriteDrawArraysCommand(packet, vb_handle, 23, 0, TRIANGLES);
+
+
+    class CommandBuffer {
+    private:
+    public:
+        CommandBuffer(size_t size) {
+
+        }
+        void WriteCommand(uint32_t opcode, void* payload, size_t payload_size)
+    }
+
+    class RenderTask {
+    private:
+        std::vector<uint8_t> byte_buffer;
+
+    public:
+        void SetProgram(ProgramHandle program)
+        //void SetTexture();
+        //void SetSamplers();
+        void UpdateConstantBuffer(ConstantBufferHandle handle, void* data, size_t size);        
+        //void SetRenderTarget();
+        void SetDepthState(DepthState state);
+        void SetBlendState(BlendState state);
+        void SetRasterState(RasterState state);
+        void SetDrawCall(DrawCall draw_call)
+    };
+
+   /*
+    class DrawCallBuilder {
+        SetTopology();
+
+    };
+    
+
+
+    RenderCommand {
+        RenderState render_state;;
+        DrawCall draw_call;
+    }
+
+
+    namespace commands {
+        struct RenderTask {
+
+            
+        };
+
+        struct DrawArrays {
+            VertexBufferHandle vertex_buffer;
+            ProgramHandle  program;
+            
+            uint32_t vertex_count;
+            uint32_t vertex_start;
+            PrimitiveType primitive_type;
+        };
+        
+        struct DrawIndexed {
+            VertexBufferHandle vertex_buffer;
+            IndexBufferHandle index_buffer;
+            ProgramHandle  program;
+            
+            uint32_t index_count;
+            uint32_t start_index;
+            PrimitiveType primitive_type;
+        };
+        
+        struct UpdateConstantBufferData {
+            ConstantBufferHandle constant_buffer;
+            void* data;
+            uint32_t size;
+        };
+        
+        struct UpdateUniformData {
+            const char* uniform_name;
+            void* data;
+            uint32_t size;
+            ParamType param_type;
+        };
+    }
+    */
+
+    SetRasterizerState
+    SetDepthState
+    SetBlendState
+    UpdateConstantBuffer;
+    UpdateTexture;
+    BindProgram;
+    BindVertexBuffer;
+    BindTexture;
+    BindSampler;
+    BindConstantBuffer;
+    DrawArrays
+
+    void WriteDrawArraysCommand(CommandBuffer* command_buffer, const DrawArrays* cmd) {
+        command_buffer->WriteCommand(RenderOpcode::DrawArrays, cmd, sizeof(cmd));
+    }
+
+    void WriteUpdateConstantBufferCommand(CommandBuffer* command_buffer, const UpdateConstantBuffer* cmd) {
+        command_buffer->WriteCommand<UpdateConstantBuffer>(cmd);
+    }
+
+
+
+
+    CommandBuffer b;
+    UpdateConstantBuffer ucb;
+    DrawArrays command;
+    command.handle = handle;
+    b.WriteCommand<DrawArrays>(RenderOpcode::DrawArrays, &command);
+
+    
+    b.WriteCommand(UPDATE_CONSTANT_BUFFER, &ucb, sizeof(ucb));
+    b.WriteCommand<DrawArrays>(command);
+    b.WriteCommand<UpdateConstantBuffer>(command):
+
+
+    struct CommandBuffer {
+    private:
+        uint8_t* _buffer { 0 };
+        size_t _buffer_len { 0 };
+        uint8_t* _read_pos { 0 };
+        uint8_t* _write_pos { 0 };
+    public: 
+        CommandBuffer(size_t buffer_size) {
+            _buffer_len = buffer_size;
+            _buffer = new uint8_t[_buffer_len];
+            _read_pos = _buffer;
+            _write_pos = _buffer;
+        }
+
+        template <typename T>
+        void WriteCommand(RenderOpcode opcode, const T* command) {
+            _buffer.write<RenderOpcode>(opcode);
+            size_t size = sizeof(T);
+            _buffer.write<size_t>(size);
+            _buffer.write(command, size);
+        }
+
+        RenderOpcode ReadOpcode() {
+            return read<RenderOpcode>();
+        }
+
+        template <typename T>
+        void ReadCommand(RenderOpcode* opcode, void*) {
+            return (T*)&_buffer[_read_pos];
+            _read_pos += sizeof(T);
+        } 
+
+    private:
+        template <typename T>
+        T read() {
+            assert(_read_pos + sizeof(T) < _buffer_len);
+            T val = *((T*)&_buffer[_read_pos]);
+            _read_pos += sizeof(T);
+            return val;
+        }
+
+        void read(uint8_t* dest, size_t size) {
+            assert(_read_pos + size < _buffer_len);
+            memcpy(dest, &_buffer[_read_pos], size);
+            _read_pos += size;
+        }
+
+        template <typename T>
+        void write(T val) {
+            write(&val, sizeof(T));
+        }
+
+        void write(uint8_t* src, size_t size) {
+            assert(_write_pos + size < _buffer_len);
+            memcpy(&_buffer[_write_pos], src, size);
+            _write_pos += size;
+        }
+    };
+
+
+    enum RenderOpcode {
+        SetRasterizerState,
+        SetDepthState,
+        SetBlendState,
+        UpdateConstantBuffer,
+        UpdateTexture,
+        BindProgram,
+        BindVertexBuffer,
+        BindTexture,
+        BindSampler,
+        BindConstantBuffer,
+        DrawArrays
+    };

@@ -1,3 +1,4 @@
+#include "gfx/gl/GLRenderDevice.h"
 #include "App.h"
 #include "GLHelpers.h"
 #include <glm/glm.hpp>
@@ -31,6 +32,7 @@ double frame_time = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
+graphics::RenderDeviceGL* render_device;
 
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
@@ -80,6 +82,7 @@ void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_
     if (translation != glm::vec3(0, 0, 0)) {
 
     }
+    
 
     glm::vec2 mouse_delta(cursor_state.delta_x, cursor_state.delta_y);
     if(mouse_delta.x != 0 || mouse_delta.y != 0) {
@@ -90,20 +93,23 @@ void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_
     }
 }
 
-struct Transform {    
+struct Transform {
     glm::quat rotation;
-    glm::vec3 position;    
+    glm::vec3 position;
 };
 
 
 ChunkedLoDTerrainRenderer* terrain_renderer;
 
-void App::OnStart() {    
+void App::OnStart() {
+    render_device = new graphics::RenderDeviceGL();
+    
+    
     LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
     LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
     LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
-    glClearColor(0.1f, 0.1f, 0.1f, 1.f);    
+    glClearColor(0.1f, 0.1f, 0.1f, 1.f);
     glClearDepth(1.0f);
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
@@ -116,10 +122,10 @@ void App::OnStart() {
 
 
 
-    terrain_renderer = new ChunkedLoDTerrainRenderer();
+    terrain_renderer = new ChunkedLoDTerrainRenderer(render_device);
 
     cam.MoveTo(0, 0, 1000);
-    cam.LookAt(0, 0, 0);   
+    cam.LookAt(0, 0, 0);
 
     ChunkedLoDTerrainDesc desc;
     desc.size = 10000;
@@ -134,6 +140,7 @@ void App::OnStart() {
                     };
 
     terrain_renderer->RegisterTerrain(desc);
+
 }
 
 
@@ -146,13 +153,13 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
     Frustum frustum(proj, view);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
+
     terrain_renderer->Render(cam, frustum);
-  
+
     accumulate += dt;
     ++frame_count;
-    ++total_frame_count;    
-    
+    ++total_frame_count;
+
     if(accumulate > 1.0) {
         std::stringstream ss;
         ss << "gfx | FPS: " << frame_count << " | Frame: " << total_frame_count;

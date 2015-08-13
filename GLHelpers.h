@@ -301,7 +301,7 @@ namespace gl {
                     return false;
             }
             
-            LOG_D("VertexArrayAttribute size:%d type:%s offset:%d to location:%d stride:%d", size, GetGLenumString(type), offset, idx, layout.stride);
+            //LOG_D("VertexArrayAttribute size:%d type:%s offset:%d to location:%d stride:%d", size, GetGLenumString(type), offset, idx, layout.stride);
             GL_CHECK(glEnableVertexAttribArray(idx));
             GL_CHECK(glVertexAttribPointer(idx, size, type, GL_FALSE, layout.stride, (const void*)offset));
             offset += SizeofParam(vert_elem->type);

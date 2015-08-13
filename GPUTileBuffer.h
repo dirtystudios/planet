@@ -2,11 +2,13 @@
 #define __gpu_tile_buffer_h__
 
 
+#include "gfx/RenderDevice.h"
+
 struct GPUTile {
     GPUTile() {};
-    GPUTile(GLuint tex_id, uint32_t idx) : texture_array_id(tex_id), index(idx) {};
+    GPUTile(graphics::TextureHandle tex_id, uint32_t idx) : texture_array_id(tex_id), index(idx) {};
 
-    GLuint texture_array_id;
+    graphics::TextureHandle texture_array_id;
     uint32_t index;
 
     void CopyData(uint32_t width, uint32_t height, GLenum format, void* data) {
@@ -18,15 +20,15 @@ class GPUTileBuffer {
 private:
     uint32_t _tile_size;
     uint32_t _num_tiles;
-    GLuint _tex_id;    
+    graphics::TextureHandle _tex_id;    
     GPUTile* _tiles;
     std::list<GPUTile*> _unused;
     std::list<GPUTile*> _used;
 public:
-    GPUTileBuffer(uint32_t tile_size, uint32_t num_tiles, GLenum tex_format) {
+    GPUTileBuffer(uint32_t tile_size, uint32_t num_tiles, graphics::TextureHandle texture_handle) {
         this->_tile_size = tile_size;
         this->_num_tiles = num_tiles;
-        _tex_id = gl::CreateTexture2DArray(tex_format, 1, _tile_size, _tile_size, _num_tiles);
+        _tex_id = texture_handle;
         _tiles = new GPUTile[_num_tiles];
         for(uint32_t i = 0; i < _num_tiles; ++i) {
             _tiles[i].texture_array_id = _tex_id;

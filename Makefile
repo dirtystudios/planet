@@ -235,6 +235,30 @@ SystemGLFW3.cpp.s:
 	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/SystemGLFW3.cpp.s
 .PHONY : SystemGLFW3.cpp.s
 
+gfx/gl/GLRenderDevice.o: gfx/gl/GLRenderDevice.cpp.o
+.PHONY : gfx/gl/GLRenderDevice.o
+
+# target to build an object file
+gfx/gl/GLRenderDevice.cpp.o:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/gfx/gl/GLRenderDevice.cpp.o
+.PHONY : gfx/gl/GLRenderDevice.cpp.o
+
+gfx/gl/GLRenderDevice.i: gfx/gl/GLRenderDevice.cpp.i
+.PHONY : gfx/gl/GLRenderDevice.i
+
+# target to preprocess a source file
+gfx/gl/GLRenderDevice.cpp.i:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/gfx/gl/GLRenderDevice.cpp.i
+.PHONY : gfx/gl/GLRenderDevice.cpp.i
+
+gfx/gl/GLRenderDevice.s: gfx/gl/GLRenderDevice.cpp.s
+.PHONY : gfx/gl/GLRenderDevice.s
+
+# target to generate assembly for a file
+gfx/gl/GLRenderDevice.cpp.s:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/gfx/gl/GLRenderDevice.cpp.s
+.PHONY : gfx/gl/GLRenderDevice.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -283,6 +307,9 @@ help:
 	@echo "... SystemGLFW3.o"
 	@echo "... SystemGLFW3.i"
 	@echo "... SystemGLFW3.s"
+	@echo "... gfx/gl/GLRenderDevice.o"
+	@echo "... gfx/gl/GLRenderDevice.i"
+	@echo "... gfx/gl/GLRenderDevice.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

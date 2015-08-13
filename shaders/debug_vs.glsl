@@ -5,7 +5,6 @@ in vec3 position;
 uniform mat4 proj_view;                                                
                                                                    
                                                                    
-void main(void)                                                    
-{                                                                  
+void main(void) {                                                                  
     gl_Position = proj_view * vec4(position, 1.f);              
 }                                                                  
