@@ -1,33 +1,23 @@
 #include "App.h"
-#include "GLHelpers.h"
-#include <glm/glm.hpp>
-#include "Camera.h"
-#include <vector>
 #include "System.h"
-#include <sstream>
+
 #include "Helpers.h"
-#include <list>
-#include <unordered_map>
-#include "BoundingBox.h"
-#include <queue>
-#include <glm/gtx/transform.hpp>
-#include <noise/noise.h>
+#include "Camera.h"
 #include "Frustum.h"
 #include "DebugRenderer.h"
-#include <algorithm>
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
 
-#ifdef _WIN32
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <noise/noise.h>
+
 #include <functional>
-#endif
+#include <queue>
 
 uint32_t frame_count = 0;
-double curr_frame_time = 0;
-double prev_frame_time = 0;
 double accumulate = 0;
 double total_frame_count = 0;
-double frame_time = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;

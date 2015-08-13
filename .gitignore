@@ -33,6 +33,7 @@
 *.userosscache
 *.sln.docstates
 ipch/
+*.stackdump
 
 # Visual Studio Profiler Files
 *.vspx
