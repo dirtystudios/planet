@@ -1,3 +1,15 @@
+[BUGS]
+- In some places, LOD loses resolution as camera gets closer
+	- Seen with these params in flat areas
+	   	const uint32_t TERRAIN_QUAD_RESOLUTION { 64 };
+    	const float TERRAIN_SPLIT_FACTOR  { 1.5f };
+    	const uint32_t TERRAIN_MAX_LOD { 20 };
+    	const uint32_t NUM_QUAD_TREE_NODES  { 4 };
+    	const uint32_t GPU_TILE_BUFFER_SIZE  { 1024 };
+
+
+[Features]
+
 ├─ XBOX Controller Support
 
 ├─ Shader Recompile

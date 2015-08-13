@@ -31,9 +31,12 @@ double frame_time = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
-
+bool z_toggle = false;
+bool z_pressed = false;
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
+
+
 
     glm::vec3 translation(0, 0, 0);
     if (key_state.IsPressed(app::KeyCode::KEY_1)) {
@@ -76,6 +79,15 @@ void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_
         translation.z += walk_speed * dt;
     }
 
+    if(key_state.OnReleased(app::KeyCode::KEY_Z)) {
+        z_toggle = !z_toggle;
+        if(z_toggle) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    
+        }
+    }
+
     cam.Translate(translation);
     if (translation != glm::vec3(0, 0, 0)) {
 
@@ -112,7 +124,7 @@ void App::OnStart() {
     glCullFace(GL_BACK);
 //    glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
- //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
 
@@ -122,7 +134,7 @@ void App::OnStart() {
     cam.LookAt(0, 0, 0);   
 
     ChunkedLoDTerrainDesc desc;
-    desc.size = 10000;
+    desc.size = 5000;
     desc.x = 0;
     desc.y = 0;
     desc.heightmap_generator = [&](double x, double y, double z) -> float {

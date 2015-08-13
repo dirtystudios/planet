@@ -164,7 +164,9 @@ int sys::Run(app::Application* app) {
         prev_cursor[0] = curr_cursor[0];
         prev_cursor[1] = curr_cursor[1];
                  
-        _app->OnFrame(&_app_state, dt);            
+        _app->OnFrame(&_app_state, dt);   
+
+        memcpy(_app_state.key_state.prev_pressed, _app_state.key_state.pressed, sizeof(bool) * 256);         
             
         glfwSwapBuffers(_window);
         dt = glfwGetTime() - start;
