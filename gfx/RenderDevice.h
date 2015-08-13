@@ -44,7 +44,7 @@ namespace graphics {
 
     enum class ShaderType : uint32_t {
         VERTEX_SHADER = 0,
-        TESS_CONTROL_SHAuintDER,
+        TESS_CONTROL_SHADER,
         TESS_EVAL_SHADER,
         FRAGMENT_SHADER,
         COUNT
