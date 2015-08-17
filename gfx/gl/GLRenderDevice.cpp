@@ -584,6 +584,9 @@ namespace graphics {
         GLenum gl_primitive_type = SafeGet(primitive_type_mapping, (uint32_t)primitive_type);
 
         GL_CHECK(glDrawArrays(gl_primitive_type, start_vertex, num_vertices));
+
+        _pending_state.shader_textures.Clear();
+        _pending_state.shader_parameters.Clear();
     }
 
     bool RenderDeviceGL::BindAttributes(const VertLayout &vert_layout, const AttribLayout &attrib_layout) {

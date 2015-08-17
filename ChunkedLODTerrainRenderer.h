@@ -246,13 +246,15 @@ public:
                         node->bbox.min.z = min;
                         node->bbox.max.z = max;
                         //tile->CopyData(terrain_quad_resolution, terrain_quad_resolution, GL_RED, elevation_data.data());
-                        _render_device->UpdateTextureArray(tile->texture_array_id, tile->index, terrain_quad_resolution, terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RED, elevation_data.data());
+                        _render_device->UpdateTextureArray(tile->texture_array_id, tile->index, terrain_quad_resolution, 
+                            terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RED, elevation_data.data());
                     };
 
 
                     std::function<void(GPUTile* tile)> pass_normals_func = [&](GPUTile* tile) -> void {
                         //tile->CopyData(terrain_quad_resolution, terrain_quad_resolution, GL_RGB, normal_data.data());
-                        _render_device->UpdateTextureArray(tile->texture_array_id, tile->index, terrain_quad_resolution, terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RED, normal_data.data());
+                        _render_device->UpdateTextureArray(tile->texture_array_id, tile->index, terrain_quad_resolution, 
+                            terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RGB, normal_data.data());
                     };
 
                     Tile* elevations_tile = _lru_tile_cache->Get(node->lod, node->tx, node->ty, generate_heightmap_func);

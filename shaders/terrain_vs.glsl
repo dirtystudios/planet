@@ -26,8 +26,7 @@ uniform sampler2DArray normal_texture;
 layout(location = 0) in vec2 position;
 layout(location = 1) in vec2 tex;
 
-layout(location = 2) out vec2 t;
-layout(location = 3) out vec3 c;
+layout(location = 3) out vec3 Normal;
 
 out gl_PerVertex {
   vec4 gl_Position;
@@ -37,8 +36,7 @@ void main(void) {
     float height = 250.f * texture(base_texture, vec3(tex, float(elevations_tile_index))).x;
     vec3 normal = texture(normal_texture, vec3(tex, float(normals_tile_index))).xyz;
     vec4 pos = vec4(position.x, position.y, height, 1.f);
-    c = normal;
-    t = tex;
+    Normal = normal;    
 
     /*
     // in order to sphereicalize the cube, need to be -1 > x > 1, -1 > y > 1, -1 > z > 1
