@@ -1,7 +1,7 @@
 #include "System.h"
 
-#include <SDL.h>
-#include <SDL_syswm.h>
+#include "SDL.h"
+#include "SDL_syswm.h"
 
 #ifdef _WIN32
 #include <GL/glew.h>
