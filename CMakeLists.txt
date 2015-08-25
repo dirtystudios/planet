@@ -6,7 +6,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -std=c++11 -g")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2")
-elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SAFESEH:NO")
     SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /SAFESEH:NO")
     SET (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /SAFESEH:NO")
@@ -26,33 +26,40 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(OpenGL REQUIRED)
-find_package(GLFW3 REQUIRED)
 find_package(LIBNOISE REQUIRED)
 
+#set(SDL2_BUILDING_LIBRARY true)
+#add_subdirectory("SDL-Mirror")
+
+# We only want the static library to build
+# set_target_properties(SDL2 SDL2main PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+
 if (WIN32)
+    set(GLEW_ROOT_DIR ${CMAKE_SOURCE_DIR})
     find_package(GLEW REQUIRED)
+    add_definitions(-DGLEW_STATIC)
+    #i give up
+    set(SDL2_INCLUDE_DIR "SDL-Mirror/include")
+    set(SDL2_LIBRARIES "../winlibs/SDL2")
+    
     set(PLATFORM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include)
 elseif(APPLE)
-    set(PLATFORM_INCLUDE_DIRS "/usr/local/include")
-endif()
-
-if(NOT ${GLFW3_FOUND})
-    message(FATAL_ERROR "Failure to find GLFW3")
+    set(PLATFORM_INCLUDE_DIRS "/usr/local/include")     
 endif()
 
 
 include_directories(
-    ${PLATFORM_INCLUDE_DIRS}
-    ${GLFW_INCLUDE_DIRS}
-    ${LIBNOISE_INCLUDE_DIRS}
+    ${PLATFORM_INCLUDE_DIRS}          
+    ${LIBNOISE_INCLUDE_DIRS} 
     ${GLEW_INCLUDE_DIRS}
+    ${SDL2_INCLUDE_DIR}
 )
 
-set(LIBS
-    ${GLFW_LIBRARIES}
-    ${OPENGL_LIBRARIES}
+set(LIBS        
+    ${OPENGL_LIBRARIES}    
     ${LIBNOISE_LIBRARIES}
-    ${GLEW_LIBRARIES}
+    ${GLEW_LIBRARY}
+    ${SDL2_LIBRARIES}
 )
 
 set(GFX_SOURCES
@@ -65,37 +72,37 @@ set(GFX_HEADERS
 )
 
 set(GFX_GL_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/gfx/gl/GLRenderDevice.cpp
+
 )
 
 set(GFX_GL_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/GLHelpers.h
 )
 
-set(GAME_SOURCES
+set(GAME_SOURCES    
     ${CMAKE_CURRENT_SOURCE_DIR}/App.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SystemGLFW3.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SystemSDL2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.cpp        
+    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.cpp        
 )
 
-set(GAME_HEADERS
+set(GAME_HEADERS    
     ${CMAKE_CURRENT_SOURCE_DIR}/Application.h
     ${CMAKE_CURRENT_SOURCE_DIR}/App.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/System.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Log.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/System.h        
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log.h    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.h    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.h    
 )
 
-set(ALL_SOURCES
+set(ALL_SOURCES        
     ${GAME_SOURCES}
     ${GFX_SOURCES}
     ${GFX_GL_SOURCES}
 )
 
-set(ALL_HEADERS
-    ${GAME_HEADERS}
+set(ALL_HEADERS   
+    ${GAME_HEADERS} 
     ${GFX_HEADERS}
     ${GFX_GL_HEADERS}
 )
