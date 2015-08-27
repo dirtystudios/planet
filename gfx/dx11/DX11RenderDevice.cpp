@@ -1,6 +1,7 @@
 #include "DX11RenderDevice.h"
 #include "../../Log.h"
 #include <d3dcompiler.h>
+#include <d3dcompiler.inl>
 
 #define SafeGet(id, idx) id[idx];
 
@@ -185,10 +186,26 @@ namespace graphics {
             return 0;
         }
 
+        ComPtr<ID3D11InputLayout> inputLayout;
+        switch (shaderType) {
+        case ShaderType::VERTEX_SHADER:
+        {
+            std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc = GenerateInputLayout(blob.Get());
+            hr = m_dev->CreateInputLayout(&inputLayoutDesc[0], inputLayoutDesc.size(), blob->GetBufferPointer(), blob->GetBufferSize(), &inputLayout);
+            if (FAILED(hr)) {
+                LOG_E("DX11Render: Failed to Create Input Layout. HR: 0x%x", hr);
+                return 0;
+            }
+        }
+        default:
+            break;
+        }
+
         uint32_t handle = GenerateHandle();
         ShaderDX11 shader = {};
         shader.shader = blob.Get();
         shader.type = shaderType;
+        shader.inputLayout = inputLayout.Get();
 
         m_shaders.insert(std::make_pair(handle, shader));
         return handle;
@@ -794,7 +811,83 @@ namespace graphics {
         return ++key;
     }
 
-    /*ShaderGL* RenderDeviceGL::GetShader(ShaderHandle handle) {
-        return Get(_shaders, handle);
-    }*/
+    std::vector<D3D11_INPUT_ELEMENT_DESC> RenderDeviceDX11::GenerateInputLayout(ID3DBlob* pShaderBlob) {
+        ComPtr<ID3D11ShaderReflection> shaderReflection;
+        HRESULT hr;
+
+        std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
+
+        hr = D3D11Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
+        if (FAILED(hr)) {
+            LOG_E("DX11Render: Failed to get shader reflection. HR: 0x%x", hr);
+            return inputLayoutDesc;
+        }
+
+        D3D11_SHADER_DESC shaderDesc;
+        hr = shaderReflection->GetDesc(&shaderDesc);
+        if (FAILED(hr)) {
+            LOG_E("DX11Render: Failed to get shaderDesc. HR: 0x%x", hr);
+            return inputLayoutDesc;
+        }
+
+        for (uint32_t x = 0; x < shaderDesc.InputParameters; ++x) {
+            D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+            hr = shaderReflection->GetInputParameterDesc(x, &paramDesc);
+            if (FAILED(hr)) {
+                LOG_E("DX11Render: Failed to get shader param desc. HR: 0x%x", hr);
+                return inputLayoutDesc;
+            }
+
+            D3D11_INPUT_ELEMENT_DESC ied;
+            ied.SemanticName = paramDesc.SemanticName;
+            ied.SemanticIndex = paramDesc.SemanticIndex;
+            ied.InputSlot = 0;
+            ied.AlignedByteOffset = x == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
+            ied.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+            ied.InstanceDataStepRate = 0;
+
+            switch (paramDesc.Mask) {
+            case 1:
+                switch (paramDesc.ComponentType) {
+                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32_UINT; break;
+                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32_SINT; break;
+                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32_FLOAT; break;
+                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                }
+                break;
+            case 3:
+                switch (paramDesc.ComponentType) {
+                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32_UINT; break;
+                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32_SINT; break;
+                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32_FLOAT; break;
+                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                }
+                break;
+            case 7:
+                switch (paramDesc.ComponentType) {
+                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32_UINT; break;
+                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32_SINT; break;
+                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32_FLOAT; break;
+                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                }
+                break;
+            case 15:
+                switch (paramDesc.ComponentType) {
+                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_UINT; break;
+                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_SINT; break;
+                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
+                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                }
+                break;
+            default:
+                LOG_E("DX11Render: Unexpected paramdesc mask encountered!: %d", paramDesc.Mask);
+                return inputLayoutDesc;
+                break;
+            }
+
+            inputLayoutDesc.emplace_back(ied);
+        }
+        return inputLayoutDesc;
+    }
+    
 }

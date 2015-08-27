@@ -40,12 +40,12 @@ namespace graphics {
     struct ShaderDX11 {
         ID3DBlob* shader;
         ShaderType type;
+        ID3D11InputLayout *inputLayout;
     };
     
     struct ProgramDX11 {
         ID3D11VertexShader *vertexShader;
         ID3D11PixelShader *pixelShader;
-        ID3D11InputLayout *inputLayout;
         AttribLayout layout;
     };
     
@@ -147,8 +147,8 @@ namespace graphics {
             return &(*it).second;
         }
 
-        //ShaderGL*   GetShader(ShaderHandle handle);
         uint32_t    GenerateHandle();
         bool        BindAttributes(const VertLayout &vert_layout, const AttribLayout &attrib_layout);
+        std::vector<D3D11_INPUT_ELEMENT_DESC> GenerateInputLayout(ID3DBlob* pShaderBlob);
     };
 }
