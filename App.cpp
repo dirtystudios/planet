@@ -117,11 +117,12 @@ void App::OnStart() {
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);*/
+
 //    glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
  //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
+    renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
 
@@ -154,6 +155,7 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
     Frustum frustum(proj, view);
 
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer->Render(cam, frustum);
 

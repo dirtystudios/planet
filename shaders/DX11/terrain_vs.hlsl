@@ -1,13 +1,5 @@
 // Vertex Shader -- Manual Convert of terrain_vs.glsl to hlsl
 
-/*uniform mat4 view;
-uniform mat4 proj;
-uniform mat4 world;
-uniform int elevations_tile_index;
-uniform int normals_tile_index;
-uniform sampler2DArray heightmap_elevations_tile_array;
-uniform sampler2DArray heightmap_normals_tile_array;*/
-
 cbuffer cbPerObject : register ( b0 ) {
 	float4x4 view : VIEWPROJECTION;
 	float4x4 proj : PROJECTION;
@@ -20,34 +12,26 @@ SamplerState heightmapNormalsSampler: register(s1);
 
 Texture2DArray<float> terrainHeightTileArray : register(t0);
 Texture2DArray<float3> terrainNormalTileArray : register(t1);
- 
-//layout(location = 0) in vec2 position;                                                  
-//layout(location = 1) in vec2 tex; 
 
 struct VS_INPUT {
 	float2 vPos : POSITION;
 	float2 vTex : TEXCOORD0;
 };
 
-//out vec2 t;
-//out vec3 c;
-
 struct VS_OUTPUT {
 	float2 vTexture : TEXCOORD0;
-	float3 vCube : NORMAL;
+	float3 vNormal : NORMAL;
 	float4 vPosition : SV_POSITION;
 };
 
 VS_OUTPUT VSMain( VS_INPUT Input ) {    
 	VS_OUTPUT output;
 	float height = 250.f * terrainHeightTileArray.SampleLevel(heightmapElevationsSampler, float3(Input.vTex, elevations_tile_index), 0);
-	//float3 normal = terrainNormalTileArray.SampleLevel(heightmapNormalsSampler, float3(Input.vTex, g_normals_tile_index), 0).rgb;
-    float3 normal = {1.0f, 1.0f, 1.0f};
+	float3 normal = terrainNormalTileArray.SampleLevel(heightmapNormalsSampler, float3(Input.vTex, normals_tile_index), 0).xyz;
+    //float3 normal = {1.0f, 1.0f, 1.0f};
     float4 pos = float4(Input.vPos.x, Input.vPos.y, height, 1.f);                  
-    output.vCube = normal;
+    output.vNormal = normal;
     output.vTexture = Input.vTex;
-
-
 
     /*
     // in order to sphereicalize the cube, need to be -1 > x > 1, -1 > y > 1, -1 > z > 1

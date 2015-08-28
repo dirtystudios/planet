@@ -554,8 +554,12 @@ namespace graphics {
         }
         // hmm..to check the cbhandle or not
         cBufferCache.UpdateConstantBuffer(shader->cbHandle, paramType, paramName, data);
+
+        //todo: put this call somewhere else
+        UpdateConstantBuffer(shader->cbHandle, cBufferCache.GetConstantBufferData(shader->cbHandle));
     }
 
+    //todo: put this somewhere better
     void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferCacheHandle handle, void* data) {
         // This should be called in the draw function?
         // something something state cache
@@ -778,8 +782,8 @@ namespace graphics {
 
         // TODO-Jake: move this to setRasterizerState
         D3D11_RASTERIZER_DESC rasterDesc;
-        rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-        rasterDesc.CullMode = D3D11_CULL_NONE;
+        rasterDesc.FillMode = D3D11_FILL_SOLID;
+        rasterDesc.CullMode = D3D11_CULL_BACK;
         rasterDesc.FrontCounterClockwise = true;
         rasterDesc.AntialiasedLineEnable = false;
         rasterDesc.DepthBias = 0;
