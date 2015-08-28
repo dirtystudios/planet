@@ -19,6 +19,7 @@
     <ClInclude Include="..\DebugRenderer.h" />
     <ClInclude Include="..\Frustum.h" />
     <ClInclude Include="..\gfx\AttribLayout.h" />
+    <ClInclude Include="..\gfx\dx11\DX11ConstantBufferCache.h" />
     <ClInclude Include="..\gfx\dx11\DX11RenderDevice.h" />
     <ClInclude Include="..\gfx\gl\GLRenderDevice.h" />
     <ClInclude Include="..\gfx\gl\GLUtils.h" />
@@ -38,6 +39,7 @@
     <ClCompile Include="..\Camera.cpp" />
     <ClCompile Include="..\DebugRenderer.cpp" />
     <ClCompile Include="..\Frustum.cpp" />
+    <ClCompile Include="..\gfx\dx11\DX11ConstantBufferCache.cpp" />
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp" />
     <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp" />
     <ClCompile Include="..\main.cpp" />
@@ -46,7 +48,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32A60293-4AF5-43BB-A314-BC8382DFA22B}</ProjectGuid>
     <RootNamespace>planet</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -75,6 +77,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -85,8 +88,12 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libnoise.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libnoise.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y /D "$(SolutionDir)..\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
+copy /Y /D "$(SolutionDir)..\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
