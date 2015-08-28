@@ -9,17 +9,17 @@ uniform sampler2DArray heightmap_elevations_tile_array;
 uniform sampler2DArray heightmap_normals_tile_array;*/
 
 cbuffer cbPerObject : register ( b0 ) {
-	float4x4 g_view : VIEWPROJECTION;
-	float4x4 g_projection : PROJECTION;
-	float4x4 g_world : WORLD;
-	int g_elevations_tile_index;
-	int g_normals_tile_index;
+	float4x4 view : VIEWPROJECTION;
+	float4x4 proj : PROJECTION;
+	float4x4 world : WORLD;
+	int elevations_tile_index;
+	int normals_tile_index;
 };
-SamplerState g_heightmap_elevations_tile_array : register(s0);
-SamplerState g_heightmap_normals_tile_array : register(s1);
+SamplerState heightmapElevationsSampler : register(s0);
+SamplerState heightmapNormalsSampler: register(s1);
 
-Texture2DArray terrainHeight : register(t0);
-Texture2DArray terrainNormal : register(t1);
+Texture2DArray<float> terrainHeightTileArray : register(t0);
+Texture2DArray<float3> terrainNormalTileArray : register(t1);
  
 //layout(location = 0) in vec2 position;                                                  
 //layout(location = 1) in vec2 tex; 
@@ -40,10 +40,9 @@ struct VS_OUTPUT {
 
 VS_OUTPUT VSMain( VS_INPUT Input ) {    
 	VS_OUTPUT output;
-    //float height = 50.f * tex2D(g_heightmap_elevations_tile_array, float3(Input.vTex, asfloat(g_elevations_tile_index))).x;
-	float height = 50.f * terrainHeight.SampleLevel(g_heightmap_elevations_tile_array, float3(Input.vTex, asfloat(g_elevations_tile_index)), 0).x;
-    //float3 normal = tex2D(g_heightmap_normals_tile_array, float3(Input.vTex, asfloat(g_normals_tile_index)));
-	float3 normal = terrainNormal.SampleLevel(g_heightmap_normals_tile_array, float3(Input.vTex, asfloat(g_normals_tile_index)), 0).xyz;
+	float height = 250.f * terrainHeightTileArray.SampleLevel(heightmapElevationsSampler, float3(Input.vTex, elevations_tile_index), 0);
+	//float3 normal = terrainNormalTileArray.SampleLevel(heightmapNormalsSampler, float3(Input.vTex, g_normals_tile_index), 0).rgb;
+    float3 normal = {1.0f, 1.0f, 1.0f};
     float4 pos = float4(Input.vPos.x, Input.vPos.y, height, 1.f);                  
     output.vCube = normal;
     output.vTexture = Input.vTex;
@@ -62,10 +61,12 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
     mapping.y = radius * pos.y * sqrt(1.f - (z_squared / 2.f) - (x_squared / 2.f) + (z_squared * x_squared / 3.f));
     mapping.z = (radius + height) * pos.z * sqrt(1.f - (x_squared / 2.f) - (y_squared / 2.f) + (x_squared * y_squared / 3.f));
     */  
-
-    //gl_Position = proj * view * world * pos;
-	//output.vPosition = g_projection * g_view * g_world * pos;
-	output.vPosition = mul(mul(mul(pos, g_world), g_view), g_projection);
+	
+	pos = mul(world, pos);
+	pos = mul(view, pos);
+	pos = mul(proj, pos);
+	
+	output.vPosition = pos;
 	
 	return output;
 }    

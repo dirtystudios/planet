@@ -60,7 +60,7 @@ void InitDX11DebugLayer(ID3D11Device* dev){
 
 namespace graphics {
     IndexBufferHandle RenderDeviceDX11::CreateIndexBuffer(void* data, size_t size, BufferUsage usage) {
-        ComPtr<ID3D11Buffer> indexBuffer = NULL;
+        ID3D11Buffer* indexBuffer = NULL;
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -82,34 +82,40 @@ namespace graphics {
         else {
             uint32_t handle = GenerateHandle();
             IndexBufferDX11 ib;
-            ib.indexBuffer = indexBuffer.Get();
+            ib.indexBuffer = indexBuffer;//indexBuffer.Get();
 
-            // This set buffer should be moved eventually to its own command
-            m_devcon->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
             m_indexBuffers.insert(std::make_pair(handle, ib));
             return handle;
         }
     }
     
-    void RenderDeviceDX11::DestroyIndexBuffer(IndexBufferHandle handle) {
-        auto it = m_indexBuffers.find(handle);
-        if(it == m_indexBuffers.end()) {
-            LOG_E("DX11RenderDev: Failed to DestroyIndexBuffer: %d", handle)
+    void RenderDeviceDX11::SetIndexBuffer(IndexBufferHandle handle) {
+        IndexBufferDX11* indexBuff = Get(m_indexBuffers, handle);
+        if (!indexBuff) {
+            LOG_E("DX11RenderDev: Invalid Handle given to SetIndexBuffer.");
             return;
         }
-        IndexBufferDX11 &ib = (*it).second;
-        
-        if(ib.indexBuffer)
-            ib.indexBuffer->Release();
-        m_indexBuffers.erase(it);
+        // todo: format?
+        m_devcon->IASetIndexBuffer(indexBuff->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    }
+
+    void RenderDeviceDX11::DestroyIndexBuffer(IndexBufferHandle handle) {
+        IndexBufferDX11* indexBuff = Get(m_indexBuffers, handle);
+        if (!indexBuff) {
+            LOG_E("DX11RenderDev: Failed to DestroyIndexBuffer: %d", handle)
+            return;
+        }      
+        if(indexBuff->indexBuffer)
+            indexBuff->indexBuffer->Release();
+        m_indexBuffers.erase(handle);
     }
     
     VertexBufferHandle RenderDeviceDX11::CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage) {
-        ComPtr<ID3D11Buffer> vertexBuffer = NULL;
+        ID3D11Buffer* vertexBuffer = NULL;
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
-        bufferDesc.Usage = SafeGet(bufferUsageDX11, (uint32_t)usage);
-        bufferDesc.ByteWidth = size * 4;
+        bufferDesc.Usage = SafeGet(BufferUsageDX11, (uint32_t)usage);
+        bufferDesc.ByteWidth = size;
         bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         bufferDesc.CPUAccessFlags = 0;
         bufferDesc.MiscFlags = 0;
@@ -120,24 +126,29 @@ namespace graphics {
         initData.SysMemSlicePitch = 0;
 
         HRESULT hr = m_dev->CreateBuffer(&bufferDesc, &initData, &vertexBuffer);
-        if (FAILED(hr)){
+        if (FAILED(hr)) {
             LOG_E("DX11RenderDev: Failed to create Vertex buffer. HResult: 0x%x", hr);
             return 0;
         }
-        else {
-            uint32_t handle = GenerateHandle();
-            VertexBufferDX11 vb = {};
-            vb.vertexBuffer = vertexBuffer.Get();
-            vb.layout = layout;
+        uint32_t handle = GenerateHandle();
+        VertexBufferDX11 vb = {};
+        vb.vertexBuffer = vertexBuffer;//vertexBuffer.Get();
+        vb.layout = layout;
 
-            // This set should probly go in its own command
-            m_devcon->IASetVertexBuffers(0, 1, &vertexBuffer, &vb.layout.stride, 0);
-
-            m_vertexBuffers.insert(std::make_pair(handle, vb));
-            return handle;
-        }
+        m_vertexBuffers.insert(std::make_pair(handle, vb));
+        return handle;
     }
 
+    void RenderDeviceDX11::SetVertexBuffer(VertexBufferHandle handle) {
+        //!states needed
+        VertexBufferDX11* vb = Get(m_vertexBuffers, handle);
+        if (!vb) {
+            LOG_E("DX11RenderDev: Invalid Handle given to SetVertexBuffer.");
+            return;
+        }
+        uint32_t offset = 0;
+        m_devcon->IASetVertexBuffers(0, 1, &vb->vertexBuffer, &vb->layout.stride, &offset);
+    }
 
     void RenderDeviceDX11::DestroyVertexBuffer(VertexBufferHandle handle) {
         auto it = m_vertexBuffers.find(handle);
@@ -160,6 +171,9 @@ namespace graphics {
         char *entryPoint;
         char *target;
 
+        // may want to break these up...meh
+
+        // ---- Compile Shader Source 
         switch (shaderType){
         case ShaderType::FRAGMENT_SHADER:
             entryPoint = "PSMain";
@@ -185,8 +199,14 @@ namespace graphics {
             }
             return 0;
         }
+        
+        // ---- Create Shader and do necessary reflection 
+        // todo: samplers?
+        ID3D11InputLayout* inputLayout;
+        ShaderDX11 shader = {};
+        uint32_t shaderHandle = 0;
+        shader.shaderType = shaderType;
 
-        ComPtr<ID3D11InputLayout> inputLayout;
         switch (shaderType) {
         case ShaderType::VERTEX_SHADER:
         {
@@ -196,80 +216,106 @@ namespace graphics {
                 LOG_E("DX11Render: Failed to Create Input Layout. HR: 0x%x", hr);
                 return 0;
             }
-        }
-        default:
+            ID3D11VertexShader* vertexShader;
+            hr = m_dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &vertexShader);
+            if (FAILED(hr)) {
+                LOG_E("DX11RenderDev: Failed to Create VertexShader in CreateProgram. Hr: 0x%x", hr);
+                return 0;
+            }
+            uint32_t inputLayoutHandle = GenerateHandle();
+            InputLayoutDX11 inputLayoutDx11;
+            inputLayoutDx11.inputLayout = inputLayout;//inputLayout.Get();
+            m_inputLayouts.insert(std::make_pair(inputLayoutHandle, inputLayoutDx11));
+
+            uint32_t cBufferHandle = GenerateHandle();
+            cBufferHandle = CreateConstantBuffer(blob.Get(), cBufferHandle);
+
+            shaderHandle = GenerateHandle();
+            shader.vertexShader = vertexShader;//vertexShader.Get();
+            shader.cbHandle = cBufferHandle;
+            shader.inputLayoutHandle = inputLayoutHandle;
             break;
         }
-
-        uint32_t handle = GenerateHandle();
-        ShaderDX11 shader = {};
-        shader.shader = blob.Get();
-        shader.type = shaderType;
-        shader.inputLayout = inputLayout.Get();
-
-        m_shaders.insert(std::make_pair(handle, shader));
-        return handle;
+        case ShaderType::FRAGMENT_SHADER:
+        {
+            // todo: cbuffer n anything else for fragment shader
+            ID3D11PixelShader* pixelShader;
+            hr = m_dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &pixelShader);
+            if (FAILED(hr)) {
+                LOG_E("DX11RenderDev: Failed to Create PixelShader in CreateProgram. Hr: 0x%x", hr);
+                return 0;
+            }
+            shaderHandle = GenerateHandle();
+            shader.pixelShader = pixelShader;//pixelShader.Get();
+            shader.cbHandle = 0;
+            break;
+        }
+        // todo: the rest of the shaders
+        default:
+            LOG_E("DX11RenderDev: Invalid/Unimplemented Shader Type to compile.");
+            return 0;
+            break;
+        }
+        m_shaders.insert(std::make_pair(shaderHandle, shader));
+        return shaderHandle;
     }
     
     void RenderDeviceDX11::DestroyShader(ShaderHandle handle) {
-        auto it = m_shaders.find(handle);
-        if(it == m_shaders.end()) {
-            LOG_E("DX11RenderDev: Invalid Shader handle given to destroy.");
-            return;
+        ShaderDX11* shader = Get(m_shaders, handle);
+        if (!shader) {
+            LOG_E("DX11RenderDev: Invalid handle given to DestroyShader");
         }
-        ShaderDX11 &shader = (*it).second;
-        
-        if(shader.shader) {
-            shader.shader->Release();
+        if (shader->inputLayoutHandle) {
+            InputLayoutDX11* il = Get(m_inputLayouts, shader->inputLayoutHandle);
+            il->inputLayout->Release();
+            m_inputLayouts.erase(shader->inputLayoutHandle);
         }
-        m_shaders.erase(it);
+        if (shader->cbHandle) {
+            ConstantBufferDX11* cBuffer = Get(m_constantBuffers, shader->cbHandle);
+            cBuffer->constantBuffer->Release();
+            m_constantBuffers.erase(shader->cbHandle);
+            cBufferCache.RemoveConstantBuffer(shader->cbHandle);
+        }
+        //todo: release rest of stuff
+        m_shaders.erase(handle);
     }
     
-    ConstantBufferHandle RenderDeviceDX11::CreateConstantBuffer(const MemoryLayout& layout, void* data, BufferUsage usage) {
-        ComPtr<ID3D11Buffer> constantBuffer = NULL;
+    uint32_t RenderDeviceDX11::CreateConstantBuffer(ID3DBlob *vertexShader, uint32_t handle){
+        ID3D11Buffer* constantBuffer = NULL;
 
-        // TODO-Jake: use usage and data parameters
-
-        // so VS_CONSTANT_BUFFER is defined global in the renderer parent
-
-        VS_CONSTANT_BUFFER vsConstData;
-        //not sure what to do for these yet bleh
-        vsConstData.g_view = {};
-        vsConstData.g_projection = {};
-        vsConstData.g_world = {};
-        vsConstData.g_elevations_tile_index = 0;
-        vsConstData.g_normals_tile_index = 0;
+        if (!cBufferCache.InsertConstantBuffer(vertexShader, handle)) {
+            return 0;
+        }
 
         D3D11_BUFFER_DESC cbDesc;
-        cbDesc.ByteWidth = sizeof(VS_CONSTANT_BUFFER);
+        cbDesc.ByteWidth = cBufferCache.GetConstantBufferSize(handle);
         cbDesc.Usage = D3D11_USAGE_DYNAMIC;
         cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
         cbDesc.MiscFlags = 0;
         cbDesc.StructureByteStride = 0;
 
+        // Not sure if need this or not, oops
         D3D11_SUBRESOURCE_DATA InitData;
-        InitData.pSysMem = &vsConstData;
+        InitData.pSysMem = cBufferCache.GetConstantBufferData(handle);
         InitData.SysMemPitch = 0;
         InitData.SysMemSlicePitch = 0;
 
-        HRESULT hr = m_dev->CreateBuffer(&cbDesc, &InitData, &constantBuffer);
+        HRESULT hr = m_dev->CreateBuffer(&cbDesc, NULL, &constantBuffer);
         if (FAILED(hr)) {
             LOG_E("DX11RenderDev: Failed to Create ConstantBuffer. Hr: 0x%x", hr);
-            return hr;
+            cBufferCache.RemoveConstantBuffer(handle);
+            return 0;
         }
-        uint32_t handle = GenerateHandle();
 
         ConstantBufferDX11 cb = {};
-        cb.constantBuffer = constantBuffer.Get();
-        cb.layout = layout;
-
+        cb.constantBuffer = constantBuffer;//constantBuffer.Get();
         m_constantBuffers.insert(std::make_pair(handle, cb));
 
         return handle;
     }
     
-    void RenderDeviceDX11::DestroyConstantBuffer(ConstantBufferHandle handle) {
+    void RenderDeviceDX11::DestroyConstantBuffer(ConstantBufferCacheHandle handle) {
         auto it = m_constantBuffers.find(handle);
         if(it == m_constantBuffers.end()) {
             LOG_E("DX11RenderDev: Invalid handle given to DestroyConstantBuffer.");
@@ -281,95 +327,67 @@ namespace graphics {
             cb.constantBuffer->Release();
         } 
         m_constantBuffers.erase(it);
+
+        cBufferCache.RemoveConstantBuffer(handle);
     }
     
-    ProgramHandle RenderDeviceDX11::CreateProgram(ShaderHandle* shaderHandles, uint32_t numShaders) {
-        //TODO-Jake: redo this instead of hardcoding the input_layout...oops
-        //      ---- Possibly figure out better way to do 'programs'?
-        
-        HRESULT hr;
-        ShaderHandle handle;
-        ShaderDX11* shader;
-        ProgramDX11 program = { 0 };
-
-        for (uint32_t x = 0; x < numShaders; ++x){
-            handle = shaderHandles[x];
-            shader = Get(m_shaders, handle);
-            if (!shader) {
-                LOG_E("DX11RenderDev: Invalid Shader handle given to CreateProgram");
-                return 0;
-            }
-
-            switch (shader->type) {
-            case ShaderType::VERTEX_SHADER:
-                if (program.vertexShader){
-                    LOG_E("DX11RenderDev: Multiple VertexShaders given in CreateProgram.");
-                    return 0;
-                }
-
-                hr = m_dev->CreateVertexShader(shader->shader->GetBufferPointer(), shader->shader->GetBufferSize(), NULL, &program.vertexShader);
-                if (FAILED(hr)) {
-                    LOG_E("DX11RenderDev: Failed to Create VertexShader in CreateProgram. Hr: 0x%x", hr);
-                    return 0;
-                }
-
-                //this is going here for now
-
-                D3D11_INPUT_ELEMENT_DESC ied[] =
-                {
-                    { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                    { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                    //{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                };
-
-                hr = m_dev->CreateInputLayout(ied, 2, shader->shader->GetBufferPointer(), shader->shader->GetBufferSize(), &program.inputLayout);
-                if (FAILED(hr)) {
-                    LOG_E("DX11RenderDev: Failed to Create InputLayout in CreateProgram. Hr: 0x%x", hr);
-                    return 0;
-                }
-
-
-                break;
-            case ShaderType::FRAGMENT_SHADER:
-                if (program.pixelShader){
-                    LOG_E("DX11RenderDev: Multiple FragmentShaders given in CreateProgram.");
-                    return 0;
-                }
-                hr = m_dev->CreatePixelShader(shader->shader->GetBufferPointer(), shader->shader->GetBufferSize(), NULL, &program.pixelShader);
-                if (FAILED(hr)){
-                    LOG_E("DX11RenderDev: Failed to Create PixelShader in CreateProgram. Hr: 0x%x", hr);
-                    return 0;
-                }
-                break;
-            default:
-                LOG_E("DX11RenderDev: Invalid shader type given to CreateProgram.");
-                return 0;
-            }
-        }
-
-        uint32_t handle = GenerateHandle();
-        m_programs.insert(std::make_pair(handle, program));
-        return handle;
-    }
-    
-    void RenderDeviceDX11::DestroyProgram(ProgramHandle handle) {
-        auto it = m_programs.find(handle);
-        if(it == m_programs.end()) {
-            LOG_E("DX11RenderDev: Invalid ProgramHandle given to DestroyProgram.");
+    void RenderDeviceDX11::SetVertexShader(ShaderHandle shaderHandle) {
+        //do state enginge
+        ShaderDX11* shader = Get(m_shaders, shaderHandle);
+        if (!shader) {
+            LOG_E("DX11RenderDev: Invalid Shader handle given to SetVertexShader");
             return;
         }
-        ProgramDX11 &program = (*it).second;
-        
-        if(program.pixelShader) 
-            program.pixelShader->Release();
+        if (shader->shaderType != ShaderType::VERTEX_SHADER) {
+            LOG_E("DX11RenderDev: Non Vertex Shader given to SetVertexShader.");
+            return;
+        }
 
-        if (program.vertexShader)
-            program.vertexShader->Release();
+        m_devcon->VSSetShader(shader->vertexShader, 0, 0);
 
-        if (program.inputLayout)
-            program.inputLayout->Release();
-        
-        m_programs.erase(it);
+        if (shader->cbHandle) {
+            //todo: support multiple constantbuffers
+            SetConstantBuffer(shader->cbHandle);
+        }
+
+        //todo: input layout cache
+        if (shader->inputLayoutHandle) {
+            SetInputLayout(shader->inputLayoutHandle);
+        }
+
+        //samplers
+    }
+
+    void RenderDeviceDX11::SetPixelShader(ShaderHandle shaderHandle) {
+        //something something state
+        ShaderDX11* shader = Get(m_shaders, shaderHandle);
+        if (!shader) {
+            LOG_E("DX11RenderDev: Invalid Shader handle given to SetPixelShader");
+            return;
+        }
+        m_devcon->PSSetShader(shader->pixelShader, 0, 0);
+
+        //todo: cbuffer, samplers, etc...
+    }
+
+    void RenderDeviceDX11::SetInputLayout(uint32_t inputLayoutHandle) {
+        //blah state
+        InputLayoutDX11* inputLayout = Get(m_inputLayouts, inputLayoutHandle);
+        if (!inputLayout) {
+            LOG_E("DX11RenderDev: Invalid handle give to SetInputLayout.");
+            return;
+        }
+        m_devcon->IASetInputLayout(inputLayout->inputLayout);
+    }
+
+    void RenderDeviceDX11::SetConstantBuffer(ConstantBufferCacheHandle handle) {
+        //blah state enginge
+        ConstantBufferDX11* cBuffer = Get(m_constantBuffers, handle);
+        if (!cBuffer) {
+            LOG_E("DX11RenderDev: Internal Error, Invalid handle given to SetConstantBuffer.");
+            return;
+        }
+        m_devcon->VSSetConstantBuffers(0, 1, &cBuffer->constantBuffer);
     }
     
     TextureHandle RenderDeviceDX11::CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data) {
@@ -428,20 +446,17 @@ namespace graphics {
         return handle;*/
     }
 
-    TextureHandle RenderDeviceDX11::CreateTexture2DArray(TextureFormat texFormat, DataType dataType, DataFormat dataFormat, uint32_t width, uint32_t height, uint32_t depth, void* data){
-        // TODO-Jake: actually use parameters here
-
-        ComPtr<ID3D11Texture2D> texture;
-        DXGI_FORMAT dxFormat = SafeGet(textureFormatDX11, (uint32_t)texFormat);
+   TextureHandle RenderDeviceDX11::CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
+        ID3D11Texture2D* texture;
+        DXGI_FORMAT dxFormat = SafeGet(TextureFormatDX11, (uint32_t)texFormat);
 
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
 
         tdesc.Width = width;
         tdesc.Height = height;
-        tdesc.MipLevels = 1;
+        tdesc.MipLevels = /*Avicii - */levels;
         tdesc.ArraySize = depth;
 
-        // todo thoughts, add commands to set sampledesc? thats antialiasing right?
         tdesc.SampleDesc.Count = 1;
         tdesc.SampleDesc.Quality = 0;
         tdesc.Usage = D3D11_USAGE_DEFAULT;
@@ -452,24 +467,22 @@ namespace graphics {
         tdesc.Format = dxFormat;
 
 		int formatByteSize = 0;
-		switch (dataFormat) {
-		case DataFormat::RED:
+		switch (dxFormat) {
+		case DXGI_FORMAT_R32_FLOAT:
 			formatByteSize = 4;
 			break;
-		case DataFormat::RGB:
+		case DXGI_FORMAT_R32G32B32_FLOAT:
 			formatByteSize = 12;
 			break;
 		default:
-			LOG_E("DX11RenderDev: Unsupported dataformat given for CreateTexture2DArray.");
+			LOG_E("DX11RenderDev: Unsupported dataformat given for CreateTextureArray.");
 			return 0;
 		}
 
-		D3D11_SUBRESOURCE_DATA subData = { 0 };
+		/*D3D11_SUBRESOURCE_DATA subData = { 0 };
 		subData.pSysMem = data;
 		subData.SysMemPitch = formatByteSize * width;
-		subData.SysMemSlicePitch = formatByteSize * width * height;
-
-		//datatype currently just float
+		subData.SysMemSlicePitch = formatByteSize * width * height;*/
 
         HRESULT hr = m_dev->CreateTexture2D(&tdesc, NULL, &texture);
         if (FAILED(hr)){
@@ -477,19 +490,27 @@ namespace graphics {
             return 0;
         }
 
-        // TODO-Jake: Still not sure how resourceviews work, so every texture gets one for now :/
-        ComPtr<ID3D11ShaderResourceView> shaderResourceView;
-        hr = m_dev->CreateShaderResourceView(texture.Get(), NULL, &shaderResourceView);
+        // TODO-Jake: k this isnt the funnest, hopefully we can just make one per texture
+        ID3D11ShaderResourceView* shaderResourceView;
+        D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+        viewDesc.Format = tdesc.Format;
+        viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+        viewDesc.Texture2DArray.MostDetailedMip = 0;
+        viewDesc.Texture2DArray.MipLevels = levels;
+        viewDesc.Texture2DArray.FirstArraySlice = 0;
+        viewDesc.Texture2DArray.ArraySize = depth;
+        hr = m_dev->CreateShaderResourceView(texture, &viewDesc, &shaderResourceView);
         if (FAILED(hr)){
             LOG_E("DX11RenderDev: Failed Creating shaderResourceView in Texture2DArray Hr: 0x%x", hr);
-            texture.Reset();
+            //texture.ReleaseAndGetAddressOf();
+            texture->Release();
             return 0;
         }
 
         uint32_t handle = GenerateHandle();
         TextureDX11 textureDX11 = {};
-        textureDX11.texture = texture.Get();
-        textureDX11.shaderResourceView = shaderResourceView.Get();
+        textureDX11.texture = texture;//texture.Get();
+        textureDX11.shaderResourceView = shaderResourceView;//shaderResourceView.Get();
         textureDX11.format = dxFormat;
         m_textures.insert(std::make_pair(handle, textureDX11));
 
@@ -497,31 +518,47 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::DestroyTexture(TextureHandle handle) {
-        auto it = m_textures.find(handle);
-        if(it == m_textures.end()) {
+        TextureDX11* texture = Get(m_textures, handle);
+        if(!texture) {
             LOG_E("DX11RenderDev: Invalid handle given to DestroyTexture.");
             return;
         }
-        TextureDX11 &texture = (*it).second;
         
-        if(texture.texture) 
-            texture.texture->Release();
-        if (texture.shaderResourceView)
-            texture.shaderResourceView->Release();
+        if(texture->texture) 
+            texture->texture->Release();
+        if (texture->shaderResourceView)
+            texture->shaderResourceView->Release();
         
-        m_textures.erase(it);
+        m_textures.erase(handle);
     }
 
-    void RenderDeviceDX11::Clear(float *RGBA) {
+    void RenderDeviceDX11::Clear(float r, float g, float b, float a) {
+        float RGBA[4] = { r, g, b, a };
         m_devcon->ClearRenderTargetView(renderTarget.Get(), RGBA);
     }
 
     void RenderDeviceDX11::SwapBuffers() {
-        m_swapchain->Present(1, 0);
+        HRESULT hr = m_swapchain->Present(1, 0);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Error on present? Hr: 0x%x", hr);
+        }
     }
 
-    void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferHandle handle, void* data, size_t size, size_t offset) {
-        //TODO-Jake: What to do with size and offset?
+    void RenderDeviceDX11::SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *paramName, void *data) {
+        // todo: here we are just updating 'cache' 
+        //   need to make sure the actual map and update happens in...draw call?
+        ShaderDX11 *shader = Get(m_shaders, handle);
+        if (!shader) {
+            LOG_E("DX11RenderDev: Invalid handle given to SetShaderParameter.");
+            return;
+        }
+        // hmm..to check the cbhandle or not
+        cBufferCache.UpdateConstantBuffer(shader->cbHandle, paramType, paramName, data);
+    }
+
+    void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferCacheHandle handle, void* data) {
+        // This should be called in the draw function?
+        // something something state cache
 
         ConstantBufferDX11 *cb = Get(m_constantBuffers, handle);
         if (!cb){
@@ -531,20 +568,13 @@ namespace graphics {
 
         D3D11_MAPPED_SUBRESOURCE mappedResource;
         HRESULT hr;
+        
         hr = m_devcon->Map(cb->constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
         if (FAILED(hr)){
             LOG_E("DX11RenderDev: Failed to map constant buffer: %d", handle);
             return;
         }
-
-        VS_CONSTANT_BUFFER* buffData = (VS_CONSTANT_BUFFER*)mappedResource.pData;
-        VS_CONSTANT_BUFFER* dataPtr = static_cast<VS_CONSTANT_BUFFER*>(data);
-
-        buffData->g_view = dataPtr->g_view;
-        buffData->g_projection = dataPtr->g_projection;
-        buffData->g_world = dataPtr->g_world;
-        buffData->g_elevations_tile_index = dataPtr->g_elevations_tile_index;
-        buffData->g_normals_tile_index = dataPtr->g_normals_tile_index;
+        memcpy(mappedResource.pData, cBufferCache.GetConstantBufferData(handle), cBufferCache.GetConstantBufferSize(handle));
 
         m_devcon->Unmap(cb->constantBuffer, 0);
     }
@@ -553,14 +583,13 @@ namespace graphics {
         LOG_E("DX11RenderDev: Unimplemented Function UpdateTexture");
     }
 
-    void RenderDeviceDX11::UpdateTexture2DArray(TextureHandle handle, void* data, size_t size, uint32_t width, uint32_t height) {
+    void RenderDeviceDX11::UpdateTextureArray(TextureHandle handle, uint32_t arrayIndex, uint32_t width, uint32_t height, DataType dataType, DataFormat dataFormat, void* data){
         TextureDX11 *texture = Get(m_textures, handle);
         if (!texture){
-            LOG_E("DX11RenderDev: Invalid handle given to UpdateTexture2DArray.");
+            LOG_E("DX11RenderDev: Invalid handle given to UpdateTextureArray.");
             return;
         }
 
-        // TODO-Jake: this ones gunna be hardcoded till i figure out how to make dx11 rendererer actually...well, render
         D3D11_BOX box = { 0 };
         box.left = 0;
         box.top = 0;
@@ -571,124 +600,126 @@ namespace graphics {
 
         switch (texture->format) {
         case DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT:
-            m_devcon->UpdateSubresource(texture->texture, 0, &box, data, width * 1, width * 1 * height);
+            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RED) {
+                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
+            }
+            m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 4, width * 4 * height);
             break;
-        case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:
-            m_devcon->UpdateSubresource(texture->texture, 0, &box, data, width * 4, width * 4 * height);
+        case DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT:
+            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RGB) {
+                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
+            }
+            m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 12, width * 12 * height);
             break;
         default:
-            LOG_E("DX11Render: Unsupported TextureFormat for UpdateTexture2DArray.");
+            LOG_E("DX11RenderDev: Unsupported TextureFormat for UpdateTextureArray.");
         }
-    }
-
-    void RenderDeviceDX11::BindProgram(ProgramHandle handle) {
-        ProgramDX11 *program = Get(m_programs, handle);
-        if (!program){
-            LOG_E("DX11RenderDev: Invalid handle given to BindProgram.");
-            return;
-        }
-
-        if (program->pixelShader)
-            m_devcon->PSSetShader(program->pixelShader, 0, 0);
-        if (program->vertexShader)
-            m_devcon->VSSetShader(program->vertexShader, 0, 0);
-
-        if (program->inputLayout)
-            m_devcon->IASetInputLayout(program->inputLayout);
     }
 
     void RenderDeviceDX11::SetRasterizerState(uint32_t state) {
-
+        //uhhh
     }
 
     void RenderDeviceDX11::SetDepthState(uint32_t state) {
-
+        //bleh
     }
 
     void RenderDeviceDX11::SetBlendState(uint32_t state) {
-
+        //no 
     }
 
-    void RenderDeviceDX11::DrawArrays(VertexBufferHandle handle, uint32_t startVertex, uint32_t numVertices) {
-        // TODO-Jake, need primitive drawtype command?
-        m_devcon->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    //todo...batch these calls!
+    void RenderDeviceDX11::SetShaderTexture(ShaderHandle shaderHandle, TextureHandle textureHandle, TextureSlot slot) {
+        ShaderDX11* shader = Get(m_shaders, shaderHandle);
+        if (!shader) {
+            LOG_E("DX11RenderDev: Invalid ShaderHandle given to SetShaderTexture.");
+            return;
+        }
+        TextureDX11* texture = Get(m_textures, textureHandle);
+        if (!texture) {
+            LOG_E("DX11RenderDev: Invalid TextureHandle give to SetShaderTexture.");
+            return;
+        }
+
+        switch (shader->shaderType) {
+        case ShaderType::FRAGMENT_SHADER:
+            m_devcon->PSSetShaderResources((uint32_t)slot, 1, &texture->shaderResourceView);
+            break;
+        case ShaderType::VERTEX_SHADER:
+            m_devcon->VSSetShaderResources((uint32_t)slot, 1, &texture->shaderResourceView);
+            break;
+        default:
+            LOG_E("DX11RenderDev: Invalid ShaderType given to SetShaderTexture.");
+            break;
+        }
+
+        //This goes here for now
+        SetSampler(1, shaderHandle, (uint32_t)slot);
+    }
+
+    void RenderDeviceDX11::DrawPrimitive(PrimitiveType primitiveType, uint32_t startVertex, uint32_t numVertices) {
+        D3D11_PRIMITIVE_TOPOLOGY type = SafeGet(PrimitiveTypeDX11, (uint32_t)primitiveType);
+        m_devcon->IASetPrimitiveTopology(type);
         m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), NULL);
         m_devcon->Draw(numVertices, startVertex);
     }
 
-    void RenderDeviceDX11::BindTexture(TextureHandle handle, uint32_t slot) {
-
-    }
-
-    void RenderDeviceDX11::BindSampler(SamplerHandle handle, uint32_t location) {
+    // Currently ignoreing samplerhandle, just using default
+    void RenderDeviceDX11::SetSampler(SamplerHandle samplerHandle, ShaderHandle shaderHandle, uint32_t location) {
         // TODO-Jake: FIXME
-        SamplerStateDX11 *ss = Get(m_samplers, handle);
-        if (!ss){
-            LOG_E("DX11RenderDev: Invalid handle given to BindSampler.");
+        SamplerDX11 *sampler = Get(m_samplers, defaultSamplerHandle);
+        if (!sampler) {
+            LOG_E("DX11RenderDev: Invalid handle given to SetSampler.");
         }
-        m_devcon->VSSetSamplers(0, 1, &ss->samplerState1);
-        m_devcon->VSSetSamplers(1, 1, &ss->samplerState2);
+
+        ShaderDX11* shader = Get(m_shaders, shaderHandle);
+        if (!shader) {
+            LOG_E("DX11RenderDev: Invalid ShaderHandle given to SetSampler.");
+            return;
+        }
+        switch (shader->shaderType) {
+        case ShaderType::VERTEX_SHADER:
+            m_devcon->VSSetSamplers(location, 1, &sampler->sampler);
+            break;
+        case ShaderType::FRAGMENT_SHADER:
+            m_devcon->PSSetSamplers(location, 1, &sampler->sampler);
+            break;
+        default:
+            LOG_E("DX11RenderDev: Invalid ShaderType given to SetSampler.");
+            break;
+        }
     }
 
-    SamplerHandle RenderDeviceDX11::CreateSamplers(){
+    // Just call this in initialize to get the default made to use
+    SamplerHandle RenderDeviceDX11::CreateSampler() {
         D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
-
-        ID3D11SamplerState *samplerState1, *samplerState2;
-        HRESULT hr = m_dev->CreateSamplerState(&samplerDesc, &samplerState1);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Failed creating samplerState HR: 0x%x", hr);
-        }
-
-        m_dev->CreateSamplerState(&samplerDesc, &samplerState2);
+        ID3D11SamplerState* samplerState;
+        HRESULT hr = m_dev->CreateSamplerState(&samplerDesc, &samplerState);
         if (FAILED(hr)){
             LOG_E("DX11RenderDev: Failed creating samplerState HR: 0x%x", hr);
         }
 
         uint32_t handle = GenerateHandle();
-        SamplerStateDX11 samplerDX11 = {};
-        samplerDX11.samplerState1 = samplerState1;
-        samplerDX11.samplerState2 = samplerState2;
+        SamplerDX11 samplerDX11 = {};
+        samplerDX11.sampler = samplerState;//samplerState.Get();
         m_samplers.insert(std::make_pair(handle, samplerDX11));
+
+        //hack for now
+        defaultSamplerHandle = handle;
 
         return handle;
     }
 
     void RenderDeviceDX11::DestroySampler(SamplerHandle handle) {
-        // TODO-Jake: FIXME
-
-        auto it = m_samplers.find(handle);
-        if (it == m_samplers.end()) {
+        SamplerDX11* sampler = Get(m_samplers, handle);
+        if (!sampler) {
             LOG_E("DX11RenderDev: Invalid handle given to DestroySampler.");
             return;
         }
-        SamplerStateDX11 &sampler= (*it).second;
-
-        //if (sampler.samplerState)
-            //sampler.samplerState->Release();
-
-        m_samplers.erase(it);
+        sampler->sampler->Release();
+        m_samplers.erase(handle);
     }
 
-    void RenderDeviceDX11::SetProgramTexture(TextureHandle handle, const char *paramName, uint32_t slot) {
-        // TODO-Jake: need shader reflecter for param name?
-        // hardcoding this for now
-
-        TextureDX11 *tex = Get(m_textures, handle);
-        if (!tex){
-            LOG_E("DX11RenderDev: Invalid handle given to SetProgramTexture.");
-        }
-
-        m_devcon->VSSetShaderResources(slot, 1, &tex->shaderResourceView);
-    }
-
-    void RenderDeviceDX11::BindConstantBuffer(ConstantBufferHandle handle, uint32_t slot) {
-        ConstantBufferDX11 *cb = Get(m_constantBuffers, handle);
-        if (!cb){
-            LOG_E("DX11RenderDev: Invalid handle given to BindConstantBuffer.");
-        }
-        m_devcon->VSSetConstantBuffers(slot, 1, &cb->constantBuffer);
-    }
-   
     int RenderDeviceDX11::InitializeDevice(void* args) {
         m_hwnd = static_cast<HWND>(args);
 
@@ -742,14 +773,12 @@ namespace graphics {
         ComPtr<ID3D11Texture2D> backbuffer;
         m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
 
+        // todo: what to do about this?
         m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &renderTarget);
-
-        //SwapBuffers();
 
         // TODO-Jake: move this to setRasterizerState
         D3D11_RASTERIZER_DESC rasterDesc;
         rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-        //lets try none for testing currently
         rasterDesc.CullMode = D3D11_CULL_NONE;
         rasterDesc.FrontCounterClockwise = true;
         rasterDesc.AntialiasedLineEnable = false;
@@ -780,35 +809,10 @@ namespace graphics {
         vp.TopLeftY = 0;
         m_devcon->RSSetViewports(1, &vp);
 
+        // todo: deal with this?
+        CreateSampler();
+
         return hr;
-    }
-
-    void RenderDeviceDX11::PrintDisplayAdapterInfo() {
-        ComPtr<IDXGIAdapter> adapter;
-        m_factory->EnumAdapters(0, &adapter);
-        auto adapterDesc = DXGI_ADAPTER_DESC();
-        adapter->GetDesc(&adapterDesc);
-
-        char buffer[128];
-        wcstombs_s(0, buffer, 128, adapterDesc.Description, 128);
-        char *dxLevel = "Unknown";
-        switch (m_dev->GetFeatureLevel()){
-        case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_1:
-            dxLevel = "11.1";
-            break;
-        case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0:
-            dxLevel = "11.0";
-            break;
-        }
-
-        LOG_D("DirectX Version: v%s", dxLevel);
-        LOG_D("DisplayAdaterDesc: %s", buffer);
-        LOG_D("VendorID:DeviceID 0x%x:0x%x", adapterDesc.VendorId, adapterDesc.DeviceId);
-    }
-
-    uint32_t RenderDeviceDX11::GenerateHandle() {
-        static uint32_t key = 0;
-        return ++key;
     }
 
     std::vector<D3D11_INPUT_ELEMENT_DESC> RenderDeviceDX11::GenerateInputLayout(ID3DBlob* pShaderBlob) {
@@ -889,5 +893,27 @@ namespace graphics {
         }
         return inputLayoutDesc;
     }
-    
+
+    void RenderDeviceDX11::PrintDisplayAdapterInfo() {
+        ComPtr<IDXGIAdapter> adapter;
+        m_factory->EnumAdapters(0, &adapter);
+        auto adapterDesc = DXGI_ADAPTER_DESC();
+        adapter->GetDesc(&adapterDesc);
+
+        char buffer[128];
+        wcstombs_s(0, buffer, 128, adapterDesc.Description, 128);
+        char *dxLevel = "Unknown";
+        switch (m_dev->GetFeatureLevel()) {
+        case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_1:
+            dxLevel = "11.1";
+            break;
+        case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0:
+            dxLevel = "11.0";
+            break;
+        }
+
+        LOG_D("DirectX Version: v%s", dxLevel);
+        LOG_D("DisplayAdaterDesc: %s", buffer);
+        LOG_D("VendorID:DeviceID 0x%x:0x%x", adapterDesc.VendorId, adapterDesc.DeviceId);
+    }
 }
