@@ -184,8 +184,8 @@ namespace graphics {
         ContextStateGL _current_state;
         ContextStateGL _pending_state;
     public:
-        RenderDeviceGL();
-
+      RenderDeviceGL();
+      virtual int                     InitializeDevice(void *args) { return 1; };
       virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
       virtual void                    DestroyIndexBuffer(IndexBufferHandle handle);
 
@@ -200,7 +200,7 @@ namespace graphics {
       virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data);
       virtual void                    DestroyTexture(TextureHandle handle);
 
-
+      void                    SwapBuffers() {};
 
       // "Commands"
       virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, DataType data_type, DataFormat data_format, void* data);

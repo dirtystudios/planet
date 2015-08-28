@@ -91,10 +91,10 @@ private:
 
 public:
     ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
-        std::string vs_contents = ReadFileContents("/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_vs.glsl");
+        std::string vs_contents = ReadFileContents("C:/Users/Jake/Documents/gitrepos/planet/shaders/DX11/terrain_vs.hlsl");
         const char* vs_src = vs_contents.c_str();
 
-        std::string fs_contents = ReadFileContents("/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_fs.glsl");
+        std::string fs_contents = ReadFileContents("C:/Users/Jake/Documents/gitrepos/planet/shaders/DX11/terrain_ps.hlsl");
         const char* fs_src = fs_contents.c_str();
 
         // Note(eugene): cleanup shaders
@@ -106,7 +106,7 @@ public:
 
 //        assert(_program);
 
-        graphics::TextureHandle heightmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::RGB32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
+        graphics::TextureHandle heightmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::R32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
         graphics::TextureHandle normalmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::RGB32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
         assert(heightmap_texture_array && normalmap_texture_array);
 

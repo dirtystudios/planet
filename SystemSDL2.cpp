@@ -16,6 +16,7 @@
 
 #ifdef _WIN32
 //#include "DeviceRenderDX11.h"
+#include "gfx\dx11\DX11RenderDevice.h"
 #endif
 
 #ifndef WIN32
@@ -106,9 +107,9 @@ int sys::Run(app::Application* app){
 
 #ifdef _WIN32
     // start GLEW extension handler
-    glewExperimental = GL_TRUE;
+    /*glewExperimental = GL_TRUE;
     glewInit();
-    glGetError();
+    glGetError();*/
 #endif
 
     SDL_SysWMinfo info;
@@ -125,6 +126,8 @@ int sys::Run(app::Application* app){
             /*_deviceRender = new DeviceRenderDX11();
             initRtn = _deviceRender->init(info.info.win.window);
             _app->SetDeviceRender(_deviceRender);*/
+            _app->renderDevice = new graphics::RenderDeviceDX11();
+            _app->renderDevice->InitializeDevice(info.info.win.window);
             break;
         case SDL_SYSWM_COCOA: subsystem = "Apple OS X"; break;
         case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
@@ -186,7 +189,8 @@ int sys::Run(app::Application* app){
 
         _app->OnFrame(&_app_state, dt);
         //_app->GetDeviceRender().SwapBuffers();
-        SDL_GL_SwapWindow(_window);
+        //SDL_GL_SwapWindow(_window);
+        _app->renderDevice->SwapBuffers();
         dt = GetTime() - start;
     }
 

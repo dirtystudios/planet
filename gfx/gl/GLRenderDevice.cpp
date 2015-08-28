@@ -502,7 +502,7 @@ namespace graphics {
             void *data = parameter->param_data;
 
             GLint location = program->GetLocation(param_name);
-            GL_CHECK();
+            //GL_CHECK();
             if(location < 0) {
                 SLOG_E("gfx", "Failed to find uniform by name '" << param_name << "'");
                 continue;

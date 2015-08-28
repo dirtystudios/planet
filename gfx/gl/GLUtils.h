@@ -6,7 +6,8 @@
 #define DG_GLUTILS_H
 
 
-#include <OpenGL/gl3.h>
+//#include <OpenGL/gl3.h>
+#include "../../include/GL/glew.h"
 #include "../../Log.h"
 #include <unordered_map>
 #include <functional>

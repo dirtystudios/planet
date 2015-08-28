@@ -1,4 +1,5 @@
 #include "gfx/gl/GLRenderDevice.h"
+#include "gfx/dx11/DX11RenderDevice.h"
 #include "App.h"
 #include "GLHelpers.h"
 #include <glm/glm.hpp>
@@ -32,7 +33,7 @@ double frame_time = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
-graphics::RenderDeviceGL* render_device;
+//graphics::RenderDeviceDX11* render_device;
 
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
@@ -102,10 +103,10 @@ struct Transform {
 ChunkedLoDTerrainRenderer* terrain_renderer;
 
 void App::OnStart() {
-    render_device = new graphics::RenderDeviceGL();
+    //render_device = new graphics::RenderDeviceDX11();
     
     
-    LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
+    /*LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
     LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
     LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
@@ -115,14 +116,14 @@ void App::OnStart() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
+    glCullFace(GL_BACK);*/
 //    glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
  //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
 
-    terrain_renderer = new ChunkedLoDTerrainRenderer(render_device);
+    terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
 
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
@@ -152,7 +153,7 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
     glm::mat4 world = glm::mat4();
     Frustum frustum(proj, view);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     terrain_renderer->Render(cam, frustum);
 

@@ -76,6 +76,7 @@ namespace graphics {
 
     class RenderDevice {
     public:
+        virtual int                     InitializeDevice(void *args) = 0;
         virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage) = 0;
         virtual void                    DestroyIndexBuffer(IndexBufferHandle handle) = 0;
 
@@ -90,7 +91,7 @@ namespace graphics {
         virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data) = 0;
         virtual void                    DestroyTexture(TextureHandle handle) = 0;
 
-
+        virtual void                    SwapBuffers() = 0;
 
         // "Commands"
         virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, DataType data_type, DataFormat data_format, void* data) = 0;

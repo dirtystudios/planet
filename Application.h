@@ -1,5 +1,6 @@
 #ifndef __application_h__
 #define __application_h__
+#include "gfx\RenderDevice.h"
 
 namespace app {
     enum class KeyCode {
@@ -64,6 +65,7 @@ namespace app {
 
     class Application {
     public:
+        graphics::RenderDevice* renderDevice;
         virtual void OnStart() = 0;
         virtual void OnFrame(const AppState* app_state, float dt) = 0;        
         virtual void OnShutdown() = 0;
