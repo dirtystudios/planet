@@ -20,6 +20,7 @@
     <ClInclude Include="..\Frustum.h" />
     <ClInclude Include="..\gfx\AttribLayout.h" />
     <ClInclude Include="..\gfx\dx11\DX11ConstantBufferCache.h" />
+    <ClInclude Include="..\gfx\dx11\DX11InputLayoutCache.h" />
     <ClInclude Include="..\gfx\dx11\DX11RenderDevice.h" />
     <ClInclude Include="..\gfx\gl\GLRenderDevice.h" />
     <ClInclude Include="..\gfx\gl\GLUtils.h" />
@@ -40,6 +41,7 @@
     <ClCompile Include="..\DebugRenderer.cpp" />
     <ClCompile Include="..\Frustum.cpp" />
     <ClCompile Include="..\gfx\dx11\DX11ConstantBufferCache.cpp" />
+    <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp" />
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp" />
     <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp" />
     <ClCompile Include="..\main.cpp" />

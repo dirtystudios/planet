@@ -10,6 +10,7 @@
 #include "../AttribLayout.h"
 #include "../ParamType.h"
 #include "DX11ConstantBufferCache.h"
+#include "DX11InputLayoutCache.h"
 #include <unordered_map>
 
 namespace graphics {
@@ -95,6 +96,7 @@ namespace graphics {
 
         // Cache / Reflection
         DX11ConstantBufferCache cBufferCache;
+        DX11InputLayoutCache inputLayoutCache;
 
     public:
         RenderDeviceDX11() {};
@@ -145,9 +147,9 @@ namespace graphics {
         void SetSampler(SamplerHandle samplerHandle, ShaderHandle shaderHandle, uint32_t location);
         void DestroySampler(SamplerHandle handle);
 
-        // need inputlayout cache...bleh
-        std::vector<D3D11_INPUT_ELEMENT_DESC> GenerateInputLayout(ID3DBlob* pShaderBlob);
+        uint32_t CreateInputLayout(ID3DBlob *Shader);
         void SetInputLayout(uint32_t inputLayoutHandle);
+        uint32_t DestroyInputLayout(uint32_t handle);
 
         uint32_t CreateConstantBuffer(ID3DBlob *vertexShader, uint32_t handle);
         void SetConstantBuffer(ConstantBufferCacheHandle handle);

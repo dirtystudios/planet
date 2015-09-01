@@ -108,6 +108,7 @@ namespace graphics {
         if(indexBuff->indexBuffer)
             indexBuff->indexBuffer->Release();
         m_indexBuffers.erase(handle);
+        inputLayoutCache.RemoveInputLayout(handle);
     }
     
     VertexBufferHandle RenderDeviceDX11::CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage) {
@@ -202,7 +203,6 @@ namespace graphics {
         
         // ---- Create Shader and do necessary reflection 
         // todo: samplers?
-        ID3D11InputLayout* inputLayout;
         ShaderDX11 shader = {};
         uint32_t shaderHandle = 0;
         shader.shaderType = shaderType;
@@ -210,30 +210,22 @@ namespace graphics {
         switch (shaderType) {
         case ShaderType::VERTEX_SHADER:
         {
-            std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc = GenerateInputLayout(blob.Get());
-            hr = m_dev->CreateInputLayout(&inputLayoutDesc[0], inputLayoutDesc.size(), blob->GetBufferPointer(), blob->GetBufferSize(), &inputLayout);
-            if (FAILED(hr)) {
-                LOG_E("DX11Render: Failed to Create Input Layout. HR: 0x%x", hr);
-                return 0;
-            }
             ID3D11VertexShader* vertexShader;
             hr = m_dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &vertexShader);
             if (FAILED(hr)) {
                 LOG_E("DX11RenderDev: Failed to Create VertexShader in CreateProgram. Hr: 0x%x", hr);
                 return 0;
             }
-            uint32_t inputLayoutHandle = GenerateHandle();
-            InputLayoutDX11 inputLayoutDx11;
-            inputLayoutDx11.inputLayout = inputLayout;//inputLayout.Get();
-            m_inputLayouts.insert(std::make_pair(inputLayoutHandle, inputLayoutDx11));
 
             uint32_t cBufferHandle = GenerateHandle();
             cBufferHandle = CreateConstantBuffer(blob.Get(), cBufferHandle);
 
+            uint32_t ilHandle = CreateInputLayout(blob.Get());
+
             shaderHandle = GenerateHandle();
             shader.vertexShader = vertexShader;//vertexShader.Get();
             shader.cbHandle = cBufferHandle;
-            shader.inputLayoutHandle = inputLayoutHandle;
+            shader.inputLayoutHandle = ilHandle;
             break;
         }
         case ShaderType::FRAGMENT_SHADER:
@@ -280,6 +272,27 @@ namespace graphics {
         m_shaders.erase(handle);
     }
     
+    uint32_t RenderDeviceDX11::CreateInputLayout(ID3DBlob *shader) {
+        InputLayoutCacheHandle ilHandle = inputLayoutCache.InsertInputLayout(shader);
+        ID3D11InputLayout* inputLayout;
+
+        //todo, handle cache / same hash/handle
+        if (!ilHandle) {
+            LOG_D("DX11Render: Invalid or empty input layout defined in shader.");
+            return 0;
+        }
+
+        HRESULT hr = m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), inputLayoutCache.GetInputLayoutSize(ilHandle), shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout);
+        if (FAILED(hr)) {
+            LOG_E("DX11Render: Failed to Create Input Layout. HR: 0x%x", hr);
+            return 0;
+        }
+        InputLayoutDX11 inputLayoutDx11;
+        inputLayoutDx11.inputLayout = inputLayout;//inputLayout.Get();
+        m_inputLayouts.insert(std::make_pair(ilHandle, inputLayoutDx11));
+        return ilHandle;
+    }
+
     uint32_t RenderDeviceDX11::CreateConstantBuffer(ID3DBlob *vertexShader, uint32_t handle){
         ID3D11Buffer* constantBuffer = NULL;
 
@@ -318,7 +331,6 @@ namespace graphics {
     void RenderDeviceDX11::DestroyConstantBuffer(ConstantBufferCacheHandle handle) {
         auto it = m_constantBuffers.find(handle);
         if(it == m_constantBuffers.end()) {
-            LOG_E("DX11RenderDev: Invalid handle given to DestroyConstantBuffer.");
             return;
         }
         ConstantBufferDX11 &cb = (*it).second;
@@ -330,7 +342,7 @@ namespace graphics {
 
         cBufferCache.RemoveConstantBuffer(handle);
     }
-    
+
     void RenderDeviceDX11::SetVertexShader(ShaderHandle shaderHandle) {
         //do state enginge
         ShaderDX11* shader = Get(m_shaders, shaderHandle);
@@ -817,85 +829,6 @@ namespace graphics {
         CreateSampler();
 
         return hr;
-    }
-
-    std::vector<D3D11_INPUT_ELEMENT_DESC> RenderDeviceDX11::GenerateInputLayout(ID3DBlob* pShaderBlob) {
-        ComPtr<ID3D11ShaderReflection> shaderReflection;
-        HRESULT hr;
-
-        std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
-
-        hr = D3D11Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
-        if (FAILED(hr)) {
-            LOG_E("DX11Render: Failed to get shader reflection. HR: 0x%x", hr);
-            return inputLayoutDesc;
-        }
-
-        D3D11_SHADER_DESC shaderDesc;
-        hr = shaderReflection->GetDesc(&shaderDesc);
-        if (FAILED(hr)) {
-            LOG_E("DX11Render: Failed to get shaderDesc. HR: 0x%x", hr);
-            return inputLayoutDesc;
-        }
-
-        for (uint32_t x = 0; x < shaderDesc.InputParameters; ++x) {
-            D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
-            hr = shaderReflection->GetInputParameterDesc(x, &paramDesc);
-            if (FAILED(hr)) {
-                LOG_E("DX11Render: Failed to get shader param desc. HR: 0x%x", hr);
-                return inputLayoutDesc;
-            }
-
-            D3D11_INPUT_ELEMENT_DESC ied;
-            ied.SemanticName = paramDesc.SemanticName;
-            ied.SemanticIndex = paramDesc.SemanticIndex;
-            ied.InputSlot = 0;
-            ied.AlignedByteOffset = x == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
-            ied.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-            ied.InstanceDataStepRate = 0;
-
-            switch (paramDesc.Mask) {
-            case 1:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            case 3:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            case 7:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            case 15:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            default:
-                LOG_E("DX11Render: Unexpected paramdesc mask encountered!: %d", paramDesc.Mask);
-                return inputLayoutDesc;
-                break;
-            }
-
-            inputLayoutDesc.emplace_back(ied);
-        }
-        return inputLayoutDesc;
     }
 
     void RenderDeviceDX11::PrintDisplayAdapterInfo() {

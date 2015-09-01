@@ -52,6 +52,9 @@
     <ClInclude Include="..\gfx\dx11\DX11ConstantBufferCache.h">
       <Filter>gfx\dx11</Filter>
     </ClInclude>
+    <ClInclude Include="..\gfx\dx11\DX11InputLayoutCache.h">
+      <Filter>gfx\dx11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp">
@@ -67,6 +70,9 @@
       <Filter>gfx\gl</Filter>
     </ClCompile>
     <ClCompile Include="..\gfx\dx11\DX11ConstantBufferCache.cpp">
+      <Filter>gfx\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp">
       <Filter>gfx\dx11</Filter>
     </ClCompile>
   </ItemGroup>
