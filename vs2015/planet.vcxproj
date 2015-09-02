@@ -19,7 +19,7 @@
     <ClInclude Include="..\DebugRenderer.h" />
     <ClInclude Include="..\Frustum.h" />
     <ClInclude Include="..\gfx\AttribLayout.h" />
-    <ClInclude Include="..\gfx\dx11\DX11ConstantBufferCache.h" />
+    <ClInclude Include="..\gfx\dx11\DX11ConstantBufferHelpers.h" />
     <ClInclude Include="..\gfx\dx11\DX11InputLayoutCache.h" />
     <ClInclude Include="..\gfx\dx11\DX11RenderDevice.h" />
     <ClInclude Include="..\gfx\gl\GLRenderDevice.h" />
@@ -40,7 +40,6 @@
     <ClCompile Include="..\Camera.cpp" />
     <ClCompile Include="..\DebugRenderer.cpp" />
     <ClCompile Include="..\Frustum.cpp" />
-    <ClCompile Include="..\gfx\dx11\DX11ConstantBufferCache.cpp" />
     <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp" />
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp" />
     <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp" />
@@ -50,7 +49,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32A60293-4AF5-43BB-A314-BC8382DFA22B}</ProjectGuid>
     <RootNamespace>planet</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -81,6 +80,10 @@
     <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -104,12 +107,18 @@ copy /Y /D "$(SolutionDir)..\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libnoise.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y /D "$(SolutionDir)..\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
+copy /Y /D "$(SolutionDir)..\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

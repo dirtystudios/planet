@@ -2,6 +2,8 @@
 #include "../../Log.h"
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
+#include <glm/glm.hpp>
+#include "DX11ConstantBufferHelpers.h"
 
 #define SafeGet(id, idx) id[idx];
 
@@ -90,13 +92,19 @@ namespace graphics {
     }
     
     void RenderDeviceDX11::SetIndexBuffer(IndexBufferHandle handle) {
+        if (m_currentState.indexBufferHandle == handle) {
+            m_pendingState.indexBufferHandle = m_currentState.indexBufferHandle;
+            m_pendingState.indexBuffer = m_currentState.indexBuffer;
+            return;
+        }
+
         IndexBufferDX11* indexBuff = Get(m_indexBuffers, handle);
         if (!indexBuff) {
             LOG_E("DX11RenderDev: Invalid Handle given to SetIndexBuffer.");
             return;
         }
-        // todo: format?
-        m_devcon->IASetIndexBuffer(indexBuff->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+        m_pendingState.indexBufferHandle = handle;
+        m_pendingState.indexBuffer = indexBuff;
     }
 
     void RenderDeviceDX11::DestroyIndexBuffer(IndexBufferHandle handle) {
@@ -108,7 +116,6 @@ namespace graphics {
         if(indexBuff->indexBuffer)
             indexBuff->indexBuffer->Release();
         m_indexBuffers.erase(handle);
-        inputLayoutCache.RemoveInputLayout(handle);
     }
     
     VertexBufferHandle RenderDeviceDX11::CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage) {
@@ -141,14 +148,20 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::SetVertexBuffer(VertexBufferHandle handle) {
-        //!states needed
+        if (m_currentState.vertexBufferHandle == handle) {
+            m_pendingState.vertexBufferHandle = m_currentState.vertexBufferHandle;
+            m_pendingState.vertexBuffer = m_currentState.vertexBuffer;
+            return;
+        }
+
         VertexBufferDX11* vb = Get(m_vertexBuffers, handle);
         if (!vb) {
             LOG_E("DX11RenderDev: Invalid Handle given to SetVertexBuffer.");
             return;
         }
-        uint32_t offset = 0;
-        m_devcon->IASetVertexBuffers(0, 1, &vb->vertexBuffer, &vb->layout.stride, &offset);
+
+        m_pendingState.vertexBufferHandle = handle;
+        m_pendingState.vertexBuffer = vb;
     }
 
     void RenderDeviceDX11::DestroyVertexBuffer(VertexBufferHandle handle) {
@@ -189,7 +202,12 @@ namespace graphics {
             return 0;
         }
 
-        hr = D3DCompile(source[0], strlen(source[0]), NULL, NULL, NULL, entryPoint, target, 0, 0, &blob, &errorBlob);
+        uint32_t flags = 0;
+#ifdef DEBUG_DX11
+        flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
+#endif 
+
+        hr = D3DCompile(source[0], strlen(source[0]), NULL, NULL, NULL, entryPoint, target, flags, 0, &blob, &errorBlob);
 
         if (FAILED(hr)){
             if (errorBlob){
@@ -218,7 +236,7 @@ namespace graphics {
             }
 
             uint32_t cBufferHandle = GenerateHandle();
-            cBufferHandle = CreateConstantBuffer(blob.Get(), cBufferHandle);
+            cBufferHandle = CreateConstantBuffer(blob.Get());
 
             uint32_t ilHandle = CreateInputLayout(blob.Get());
 
@@ -263,10 +281,10 @@ namespace graphics {
             m_inputLayouts.erase(shader->inputLayoutHandle);
         }
         if (shader->cbHandle) {
-            ConstantBufferDX11* cBuffer = Get(m_constantBuffers, shader->cbHandle);
+            // todo : delete me 
+            /*ConstantBufferDX11* cBuffer = Get(ntBuffers, shader->cbHandle);
             cBuffer->constantBuffer->Release();
-            m_constantBuffers.erase(shader->cbHandle);
-            cBufferCache.RemoveConstantBuffer(shader->cbHandle);
+            m_constantBuffers.erase(shader->cbHandle);*/
         }
         //todo: release rest of stuff
         m_shaders.erase(handle);
@@ -293,58 +311,74 @@ namespace graphics {
         return ilHandle;
     }
 
-    uint32_t RenderDeviceDX11::CreateConstantBuffer(ID3DBlob *vertexShader, uint32_t handle){
-        ID3D11Buffer* constantBuffer = NULL;
+    uint32_t RenderDeviceDX11::CreateConstantBuffer(ID3DBlob *vertexShader){
+        std::vector<ID3D11Buffer*> constantBuffers;
 
-        if (!cBufferCache.InsertConstantBuffer(vertexShader, handle)) {
-            return 0;
+        size_t numCBuffers = 0;
+        graphics::dx11::CBufferDescriptor* cBuffers = graphics::dx11::GenerateConstantBuffer(vertexShader, &numCBuffers);
+
+        for (uint32_t x = 0; x < numCBuffers; ++x) {
+
+            ID3D11Buffer* cBuffer;
+            D3D11_BUFFER_DESC cbDesc;
+            cbDesc.ByteWidth = cBuffers[x].totalSize;
+            cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+            cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+            cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            cbDesc.MiscFlags = 0;
+            cbDesc.StructureByteStride = 0;
+
+            HRESULT hr = m_dev->CreateBuffer(&cbDesc, NULL, &cBuffer);
+            if (FAILED(hr)) {
+                LOG_E("DX11RenderDev: Failed to Create ConstantBuffer. Hr: 0x%x", hr);
+                //todo: delete cbuffers?
+                return 0;
+            }
+            constantBuffers.emplace_back(cBuffer);
         }
-
-        D3D11_BUFFER_DESC cbDesc;
-        cbDesc.ByteWidth = cBufferCache.GetConstantBufferSize(handle);
-        cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-        cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        cbDesc.MiscFlags = 0;
-        cbDesc.StructureByteStride = 0;
-
-        // Not sure if need this or not, oops
-        D3D11_SUBRESOURCE_DATA InitData;
-        InitData.pSysMem = cBufferCache.GetConstantBufferData(handle);
-        InitData.SysMemPitch = 0;
-        InitData.SysMemSlicePitch = 0;
-
-        HRESULT hr = m_dev->CreateBuffer(&cbDesc, NULL, &constantBuffer);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed to Create ConstantBuffer. Hr: 0x%x", hr);
-            cBufferCache.RemoveConstantBuffer(handle);
-            return 0;
-        }
-
+        uint32_t handle = GenerateHandle();
         ConstantBufferDX11 cb = {};
-        cb.constantBuffer = constantBuffer;//constantBuffer.Get();
+        cb.cBufferDescs.assign(&cBuffers, &cBuffers + numCBuffers);
+        cb.constantBuffers = constantBuffers;
+        //cb.constantBuffer = constantBuffer;//constantBuffer.Get();
         m_constantBuffers.insert(std::make_pair(handle, cb));
 
         return handle;
     }
     
-    void RenderDeviceDX11::DestroyConstantBuffer(ConstantBufferCacheHandle handle) {
+    void RenderDeviceDX11::DestroyConstantBuffer(ConstantBufferHandle handle) {
         auto it = m_constantBuffers.find(handle);
         if(it == m_constantBuffers.end()) {
             return;
         }
         ConstantBufferDX11 &cb = (*it).second;
         
-        if(cb.constantBuffer) {
+        // todo: delete me 
+
+        /*if(cb.constantBuffer) {
             cb.constantBuffer->Release();
         } 
-        m_constantBuffers.erase(it);
+        m_constantBuffers.erase(it);*/
+    }
 
-        cBufferCache.RemoveConstantBuffer(handle);
+    void RenderDeviceDX11::DestroyInputLayout(uint32_t handle) {
+        InputLayoutDX11* inputLayout = Get(m_inputLayouts, handle);
+        if (!inputLayout) {
+                return;
+        }
+        if (inputLayout->inputLayout)
+            inputLayout->inputLayout->Release();
+        m_inputLayouts.erase(handle);
+        inputLayoutCache.RemoveInputLayout(handle);
     }
 
     void RenderDeviceDX11::SetVertexShader(ShaderHandle shaderHandle) {
-        //do state enginge
+        if (m_currentState.vertexShaderHandle == shaderHandle) {
+            m_pendingState.vertexShaderHandle = m_currentState.vertexShaderHandle;
+            m_pendingState.vertexShader = m_currentState.vertexShader;
+            return;
+        }
+
         ShaderDX11* shader = Get(m_shaders, shaderHandle);
         if (!shader) {
             LOG_E("DX11RenderDev: Invalid Shader handle given to SetVertexShader");
@@ -355,51 +389,62 @@ namespace graphics {
             return;
         }
 
-        m_devcon->VSSetShader(shader->vertexShader, 0, 0);
+        m_pendingState.vertexShaderHandle = shaderHandle;
+        m_pendingState.vertexShader = shader;
 
-        if (shader->cbHandle) {
-            //todo: support multiple constantbuffers
-            SetConstantBuffer(shader->cbHandle);
-        }
-
-        //todo: input layout cache
+        // Input Layouts are checked, as they can be the same between shaders
         if (shader->inputLayoutHandle) {
             SetInputLayout(shader->inputLayoutHandle);
+        }
+
+        // CBuffers are unique per shader, no other way. So they get set as long as they exist.
+        ConstantBufferDX11 *cb = Get(m_constantBuffers, shader->cbHandle);
+        if (cb) {
+            m_pendingState.vsCBuffer = cb;
         }
 
         //samplers
     }
 
     void RenderDeviceDX11::SetPixelShader(ShaderHandle shaderHandle) {
-        //something something state
+        if (m_currentState.pixelShaderHandle == shaderHandle) {
+            m_pendingState.pixelShaderHandle = m_currentState.pixelShaderHandle;
+            m_pendingState.pixelShader = m_currentState.pixelShader;
+
+            // Todo: state for cbuffers and friends
+            return;
+        }
+
         ShaderDX11* shader = Get(m_shaders, shaderHandle);
         if (!shader) {
             LOG_E("DX11RenderDev: Invalid Shader handle given to SetPixelShader");
             return;
         }
-        m_devcon->PSSetShader(shader->pixelShader, 0, 0);
+        if (shader->shaderType != ShaderType::FRAGMENT_SHADER) {
+            LOG_E("DX11RenderDev: Non Pixel Shader given to SetPixelShader.");
+            return;
+        }
+
+        m_pendingState.pixelShaderHandle = shaderHandle;
+        m_pendingState.pixelShader = shader;
 
         //todo: cbuffer, samplers, etc...
     }
 
     void RenderDeviceDX11::SetInputLayout(uint32_t inputLayoutHandle) {
-        //blah state
+        if (m_currentState.inputLayoutHandle == inputLayoutHandle) {
+            m_pendingState.inputLayoutHandle = inputLayoutHandle;
+            m_pendingState.inputLayout = m_currentState.inputLayout;
+            return;
+        }
+
         InputLayoutDX11* inputLayout = Get(m_inputLayouts, inputLayoutHandle);
         if (!inputLayout) {
             LOG_E("DX11RenderDev: Invalid handle give to SetInputLayout.");
             return;
         }
-        m_devcon->IASetInputLayout(inputLayout->inputLayout);
-    }
-
-    void RenderDeviceDX11::SetConstantBuffer(ConstantBufferCacheHandle handle) {
-        //blah state enginge
-        ConstantBufferDX11* cBuffer = Get(m_constantBuffers, handle);
-        if (!cBuffer) {
-            LOG_E("DX11RenderDev: Internal Error, Invalid handle given to SetConstantBuffer.");
-            return;
-        }
-        m_devcon->VSSetConstantBuffers(0, 1, &cBuffer->constantBuffer);
+        m_pendingState.inputLayoutHandle = inputLayoutHandle;
+        m_pendingState.inputLayout = inputLayout;
     }
     
     TextureHandle RenderDeviceDX11::CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data) {
@@ -486,15 +531,13 @@ namespace graphics {
 		case DXGI_FORMAT_R32G32B32_FLOAT:
 			formatByteSize = 12;
 			break;
+        case DXGI_FORMAT_R32G32B32A32_FLOAT:
+            formatByteSize = 16;
+            break;
 		default:
 			LOG_E("DX11RenderDev: Unsupported dataformat given for CreateTextureArray.");
 			return 0;
 		}
-
-		/*D3D11_SUBRESOURCE_DATA subData = { 0 };
-		subData.pSysMem = data;
-		subData.SysMemPitch = formatByteSize * width;
-		subData.SysMemSlicePitch = formatByteSize * width * height;*/
 
         HRESULT hr = m_dev->CreateTexture2D(&tdesc, NULL, &texture);
         if (FAILED(hr)){
@@ -558,41 +601,71 @@ namespace graphics {
 
     void RenderDeviceDX11::SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *paramName, void *data) {
         // todo: here we are just updating 'cache' 
-        //   need to make sure the actual map and update happens in...draw call?
+        // hopefully this is fast enough, bleh
         ShaderDX11 *shader = Get(m_shaders, handle);
         if (!shader) {
             LOG_E("DX11RenderDev: Invalid handle given to SetShaderParameter.");
             return;
         }
-        // hmm..to check the cbhandle or not
-        cBufferCache.UpdateConstantBuffer(shader->cbHandle, paramType, paramName, data);
 
-        //todo: put this call somewhere else
-        UpdateConstantBuffer(shader->cbHandle, cBufferCache.GetConstantBufferData(shader->cbHandle));
+        ConstantBufferDX11 *cBuffer = Get(m_constantBuffers, shader->cbHandle);
+        if (!cBuffer) {
+            LOG_E("DX11RenderDev: No Cbuffer set for shader in SetShaderParameter.");
+            return;
+        }
+
+        CBufferDescriptor *cBufferToUpdate = 0;
+        CBufferVariable *cBufVarToUpdate = 0;
+        uint32_t slot;
+        for (slot = 0; slot < cBuffer->cBufferDescs.size(); ++slot) {
+            auto it = cBuffer->cBufferDescs[slot]->details.find(paramName);
+            if (it == cBuffer->cBufferDescs[slot]->details.end()) {
+                continue;
+            }
+            cBufferToUpdate = cBuffer->cBufferDescs[slot];
+            cBufVarToUpdate = &it->second;
+            break;
+        }
+
+        if (!cBufferToUpdate || !cBufVarToUpdate) {
+            LOG_E("DX11RenderDev: Unknown paramName given to SetShaderParameter. Got: %s", paramName);
+            return;
+        }
+        if (cBufVarToUpdate->size != SizeofParam(paramType)) {
+            LOG_E("DX11RenderDev: Size Mismatch in SetShaderParameter. Expected %d. Got %d.", cBufVarToUpdate->size, SizeofParam(paramType));
+            return;
+        }
+        cBufferToUpdate->UpdateBufferData(cBufVarToUpdate, data);
+        
+        switch (shader->shaderType) {
+        case ShaderType::VERTEX_SHADER:
+            if (std::find(m_pendingState.vsCBufferDirtySlots.begin(), m_pendingState.vsCBufferDirtySlots.end(), slot) == m_pendingState.vsCBufferDirtySlots.end()) {
+                m_pendingState.vsCBufferDirtySlots.push_back(slot);
+            }
+            break;
+        default:
+            LOG_E("DX11RenderDev: Unsupported ShaderType for update in SetShaderParam.")
+            break;
+        }
     }
 
-    //todo: put this somewhere better
-    void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferCacheHandle handle, void* data) {
-        // This should be called in the draw function?
-        // something something state cache
-
-        ConstantBufferDX11 *cb = Get(m_constantBuffers, handle);
-        if (!cb){
-            LOG_E("DX11RenderDev: Invalid handle given to UpdateConstantBuffer.");
-            return;
-        }
+    void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferDX11* cb, std::vector<uint32_t> dirtySlots) {
 
         D3D11_MAPPED_SUBRESOURCE mappedResource;
-        HRESULT hr;
+        HRESULT hr = 0;
         
-        hr = m_devcon->Map(cb->constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Failed to map constant buffer: %d", handle);
-            return;
-        }
-        memcpy(mappedResource.pData, cBufferCache.GetConstantBufferData(handle), cBufferCache.GetConstantBufferSize(handle));
+        for (uint32_t x = 0; x < dirtySlots.size(); ++x) {
+            uint32_t slot = dirtySlots[x];
 
-        m_devcon->Unmap(cb->constantBuffer, 0);
+            hr = m_devcon->Map(cb->constantBuffers[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+            if (FAILED(hr)) {
+                LOG_E("DX11RenderDev: Failed to map constant buffer. HR: 0x%x", hr);
+                return;
+            }
+            memcpy(mappedResource.pData, cb->cBufferDescs[slot]->bufferData, cb->cBufferDescs[slot]->totalSize );
+
+            m_devcon->Unmap(cb->constantBuffers[slot], 0);
+        }
     }
     
     void RenderDeviceDX11::UpdateTexture(TextureHandle handle, void* data, size_t size) {
@@ -627,6 +700,12 @@ namespace graphics {
             }
             m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 12, width * 12 * height);
             break;
+        case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:
+            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RGBA) {
+                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
+            }
+            m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 16, width * 16 * height);
+            break;
         default:
             LOG_E("DX11RenderDev: Unsupported TextureFormat for UpdateTextureArray.");
         }
@@ -659,10 +738,23 @@ namespace graphics {
 
         switch (shader->shaderType) {
         case ShaderType::FRAGMENT_SHADER:
-            m_devcon->PSSetShaderResources((uint32_t)slot, 1, &texture->shaderResourceView);
+            //m_devcon->PSSetShaderResources((uint32_t)slot, 1, &texture->shaderResourceView);
+            LOG_E("DX11Render: SetShaderTexture shader type not supported.");
             break;
         case ShaderType::VERTEX_SHADER:
-            m_devcon->VSSetShaderResources((uint32_t)slot, 1, &texture->shaderResourceView);
+        {
+            auto it = m_currentState.vsTextures.find((uint32_t)slot);
+            if (it == m_currentState.vsTextures.end()) {
+                m_pendingState.vsTextures.insert(std::make_pair((uint32_t)slot, texture->shaderResourceView));
+                m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
+            }
+            else {
+                if (texture->shaderResourceView != it->second) {
+                    it->second = texture->shaderResourceView;
+                    m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
+                }
+            }
+        }
             break;
         default:
             LOG_E("DX11RenderDev: Invalid ShaderType given to SetShaderTexture.");
@@ -674,10 +766,51 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::DrawPrimitive(PrimitiveType primitiveType, uint32_t startVertex, uint32_t numVertices) {
+
+        if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle)
+            m_devcon->PSSetShader(m_pendingState.pixelShader->pixelShader, 0, 0);
+
+        if (m_pendingState.vertexShaderHandle != 0 && m_currentState.vertexShaderHandle != m_pendingState.vertexShaderHandle) {
+            m_devcon->VSSetShader(m_pendingState.vertexShader->vertexShader, 0, 0);
+            if (m_pendingState.vsCBuffer)
+                m_devcon->VSSetConstantBuffers(0, m_pendingState.vsCBuffer->constantBuffers.size(), m_pendingState.vsCBuffer->constantBuffers.data());
+        }
+
+        if (m_pendingState.vertexShaderHandle != 0 && m_pendingState.vsCBuffer)
+            UpdateConstantBuffer(m_pendingState.vsCBuffer, m_pendingState.vsCBufferDirtySlots);
+
+        if (m_pendingState.inputLayoutHandle != 0 && m_currentState.inputLayoutHandle != m_pendingState.inputLayoutHandle)
+            m_devcon->IASetInputLayout(m_pendingState.inputLayout->inputLayout);
+
+        if (m_pendingState.vertexBufferHandle != 0 && m_currentState.vertexBufferHandle != m_pendingState.vertexBufferHandle) {
+            uint32_t offset = 0;
+            m_devcon->IASetVertexBuffers(0, 1, &m_pendingState.vertexBuffer->vertexBuffer, &m_pendingState.vertexBuffer->layout.stride, &offset);
+        }
+
+        if (m_pendingState.vsDirtyTextureSlots.size()) {
+            // todo: batch these calls
+            for (uint32_t x = 0; x < m_pendingState.vsDirtyTextureSlots.size(); ++x) {
+                m_devcon->VSSetShaderResources((uint32_t)m_pendingState.vsDirtyTextureSlots[x], 1, &m_pendingState.vsTextures.at(x));
+            }
+        }
+
+        // todo: format?
+        if (m_pendingState.indexBufferHandle != 0 && m_currentState.indexBufferHandle != m_pendingState.indexBufferHandle)
+            m_devcon->IASetIndexBuffer(m_pendingState.indexBuffer->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
         D3D11_PRIMITIVE_TOPOLOGY type = SafeGet(PrimitiveTypeDX11, (uint32_t)primitiveType);
-        m_devcon->IASetPrimitiveTopology(type);
+        m_pendingState.primitiveType = type;
+
+        if (m_currentState.primitiveType != type)
+            m_devcon->IASetPrimitiveTopology(type);
+
         m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), NULL);
         m_devcon->Draw(numVertices, startVertex);
+        
+        //cleanup state before set
+        m_pendingState.vsCBufferDirtySlots.clear();
+        m_pendingState.vsDirtyTextureSlots.clear();
+        m_currentState = m_pendingState;
     }
 
     // Currently ignoreing samplerhandle, just using default

@@ -49,10 +49,10 @@
     <ClInclude Include="..\gfx\gl\GLUtils.h">
       <Filter>gfx\gl</Filter>
     </ClInclude>
-    <ClInclude Include="..\gfx\dx11\DX11ConstantBufferCache.h">
+    <ClInclude Include="..\gfx\dx11\DX11InputLayoutCache.h">
       <Filter>gfx\dx11</Filter>
     </ClInclude>
-    <ClInclude Include="..\gfx\dx11\DX11InputLayoutCache.h">
+    <ClInclude Include="..\gfx\dx11\DX11ConstantBufferHelpers.h">
       <Filter>gfx\dx11</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,9 +68,6 @@
     <ClCompile Include="..\SystemSDL2.cpp" />
     <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp">
       <Filter>gfx\gl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\gfx\dx11\DX11ConstantBufferCache.cpp">
-      <Filter>gfx\dx11</Filter>
     </ClCompile>
     <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp">
       <Filter>gfx\dx11</Filter>

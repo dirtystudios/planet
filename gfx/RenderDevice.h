@@ -53,12 +53,14 @@ namespace graphics {
     enum class TextureFormat : uint32_t{
         R32F = 0,
         RGB32F,
+        RGBA32F,
         COUNT
     };
 
     enum class DataFormat : uint32_t {
         RED = 0,
         RGB,
+        RGBA,
         COUNT
     };
 

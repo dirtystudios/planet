@@ -9,11 +9,15 @@
 #include "../RenderDevice.h"
 #include "../AttribLayout.h"
 #include "../ParamType.h"
-#include "DX11ConstantBufferCache.h"
 #include "DX11InputLayoutCache.h"
 #include <unordered_map>
 
 namespace graphics {
+    // Cheating here with this
+    namespace dx11 {
+        class CBufferDescriptor;
+    }
+    using namespace graphics::dx11;
 
     static D3D11_USAGE BufferUsageDX11[(uint32_t)BufferUsage::COUNT] = {
         D3D11_USAGE_IMMUTABLE, // Static
@@ -22,20 +26,23 @@ namespace graphics {
 
     static DXGI_FORMAT TextureFormatDX11[(uint32_t)TextureFormat::COUNT] = {
         DXGI_FORMAT_R32_FLOAT,          // R32F
-        DXGI_FORMAT_R32G32B32_FLOAT, // RGB32F
+        DXGI_FORMAT_R32G32B32_FLOAT,    // RGB32F
+        DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBAF
     };
 
     static DXGI_FORMAT DataFormatDX11[(uint32_t)DataFormat::COUNT] = {
         DXGI_FORMAT_R32_FLOAT,          // Red
-        DXGI_FORMAT_R32G32B32_FLOAT, // RBG
+        DXGI_FORMAT_R32G32B32_FLOAT,    // RGB
+        DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBA
     };
     
     static D3D11_PRIMITIVE_TOPOLOGY PrimitiveTypeDX11[(uint32_t)PrimitiveType::COUNT] = {
-        D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, //triangles!
-        D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST, //patches_4?
+        D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,               // triangles!
+        D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST,  // patches_4?
     };
 
     typedef uint32_t SamplerHandle;
+    typedef uint32_t ConstantBufferHandle;
 
     struct IndexBufferDX11 {
         ID3D11Buffer* indexBuffer = NULL;
@@ -45,9 +52,11 @@ namespace graphics {
         ID3D11Buffer* vertexBuffer = NULL;
         VertLayout layout;
     };
-
+    
+    // For shader cb optimizations, 'constantBuffer' can be an array here
     struct ConstantBufferDX11 {
-        ID3D11Buffer* constantBuffer = NULL;
+        std::vector<ID3D11Buffer*> constantBuffers;
+        std::vector<CBufferDescriptor*> cBufferDescs;
     };
     
     //K this is best i can do for now
@@ -56,14 +65,14 @@ namespace graphics {
         ShaderType shaderType;
         ID3D11VertexShader *vertexShader;
         ID3D11PixelShader *pixelShader;
-        ConstantBufferCacheHandle cbHandle;
+        ConstantBufferHandle cbHandle;
         uint32_t inputLayoutHandle; // vertex only?
         uint32_t samplers; // not implemented yet
     };
     
     struct TextureDX11 {
         ID3D11Texture2D* texture; // ID3D11Resource instead? 
-        ID3D11ShaderResourceView* shaderResourceView; // what do with this...one per tex for now?
+        ID3D11ShaderResourceView* shaderResourceView; 
         DXGI_FORMAT format;
     };
 
@@ -94,9 +103,45 @@ namespace graphics {
         ComPtr<IDXGIFactory> m_factory;
         ComPtr<ID3D11RenderTargetView> renderTarget;
 
-        // Cache / Reflection
-        DX11ConstantBufferCache cBufferCache;
         DX11InputLayoutCache inputLayoutCache;
+
+        // todo: rip this out and merge things...
+        struct DX11State {
+            IndexBufferHandle indexBufferHandle;
+            IndexBufferDX11 *indexBuffer;
+
+            ShaderHandle vertexShaderHandle;
+            ShaderDX11 *vertexShader;
+
+            ConstantBufferDX11* vsCBuffer;
+            std::vector<uint32_t> vsCBufferDirtySlots;
+
+            std::unordered_map<uint32_t, ID3D11ShaderResourceView*> vsTextures;
+            std::vector<uint32_t> vsDirtyTextureSlots;
+
+            ShaderHandle pixelShaderHandle;
+            ShaderDX11 *pixelShader;
+
+            InputLayoutCacheHandle inputLayoutHandle;
+            InputLayoutDX11 *inputLayout;
+
+            VertexBufferHandle vertexBufferHandle;
+            VertexBufferDX11* vertexBuffer;
+
+            D3D11_PRIMITIVE_TOPOLOGY primitiveType;
+
+            DX11State() {
+                vertexShaderHandle = 0;
+                vertexShader = 0;
+                pixelShaderHandle = 0;
+                pixelShader = 0;
+                inputLayoutHandle = 0;
+                inputLayout = 0;
+                primitiveType = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+            }
+        };
+
+        DX11State m_currentState, m_pendingState;
 
     public:
         RenderDeviceDX11() {};
@@ -149,12 +194,11 @@ namespace graphics {
 
         uint32_t CreateInputLayout(ID3DBlob *Shader);
         void SetInputLayout(uint32_t inputLayoutHandle);
-        uint32_t DestroyInputLayout(uint32_t handle);
+        void DestroyInputLayout(uint32_t handle);
 
-        uint32_t CreateConstantBuffer(ID3DBlob *vertexShader, uint32_t handle);
-        void SetConstantBuffer(ConstantBufferCacheHandle handle);
-        void UpdateConstantBuffer(ConstantBufferCacheHandle handle, void* data);
-        void DestroyConstantBuffer(ConstantBufferCacheHandle handle);
+        uint32_t CreateConstantBuffer(ID3DBlob *vertexShader);
+        void UpdateConstantBuffer(ConstantBufferDX11* cb, std::vector<uint32_t> dirtySlots);
+        void DestroyConstantBuffer(ConstantBufferHandle handle);
 
         inline uint32_t GenerateHandle() {
             static uint32_t key = 0;

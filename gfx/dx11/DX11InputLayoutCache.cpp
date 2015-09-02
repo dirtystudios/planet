@@ -58,8 +58,11 @@ namespace graphics {
         ComPtr<ID3D11ShaderReflection> shaderReflection;
         HRESULT hr;
         std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
-
+#ifdef D3D11Reflect
         hr = D3D11Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
+#else
+        hr = D3D12Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
+#endif
         if (FAILED(hr)) {
             LOG_E("DX11Render: Failed to get shader reflection. HR: 0x%x", hr);
             return inputLayoutDesc;
