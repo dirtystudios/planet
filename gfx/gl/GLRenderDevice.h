@@ -104,12 +104,14 @@ namespace graphics {
 
     static GLenum texture_format_mapping[(uint32_t)TextureFormat::COUNT] = {
         GL_R32F,
-        GL_RGB32F
+        GL_RGB32F,
+        GL_RGBA32F,
     };
 
     static GLenum data_format_mapping[(uint32_t)DataFormat::COUNT] = {
         GL_RED,
-        GL_RGB
+        GL_RGB,
+        GL_RGBA,
     };
 
     static GLenum data_type_mapping[(uint32_t)DataType::COUNT] = {

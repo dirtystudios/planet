@@ -11,7 +11,7 @@ SamplerState heightmapElevationsSampler : register(s0);
 SamplerState heightmapNormalsSampler: register(s1);
 
 Texture2DArray<float> terrainHeightTileArray : register(t0);
-Texture2DArray<float3> terrainNormalTileArray : register(t1);
+Texture2DArray<float4> terrainNormalTileArray : register(t1);
 
 struct VS_INPUT {
 	float2 vPos : POSITION;

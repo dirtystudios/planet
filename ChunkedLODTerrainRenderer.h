@@ -107,7 +107,7 @@ public:
 //        assert(_program);
 
         graphics::TextureHandle heightmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::R32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
-        graphics::TextureHandle normalmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::RGB32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
+        graphics::TextureHandle normalmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::RGBA32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
         assert(heightmap_texture_array && normalmap_texture_array);
 
         _gpu_tile_buffer = new GPUTileBuffer(TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE, heightmap_texture_array);
@@ -232,7 +232,7 @@ public:
                     }
                 } else {
                     std::vector<float> elevation_data;
-                    std::vector<glm::vec3> normal_data;
+                    std::vector<glm::vec4> normal_data;
 
                     // lambda cant capture static const var
                     uint32_t terrain_quad_resolution = TERRAIN_QUAD_RESOLUTION;
@@ -254,7 +254,7 @@ public:
                     std::function<void(GPUTile* tile)> pass_normals_func = [&](GPUTile* tile) -> void {
                         //tile->CopyData(terrain_quad_resolution, terrain_quad_resolution, GL_RGB, normal_data.data());
                         _render_device->UpdateTextureArray(tile->texture_array_id, tile->index, terrain_quad_resolution, 
-                            terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RGB, normal_data.data());
+                            terrain_quad_resolution, graphics::DataType::FLOAT, graphics::DataFormat::RGBA, normal_data.data());
                     };
 
                     Tile* elevations_tile = _lru_tile_cache->Get(node->lod, node->tx, node->ty, generate_heightmap_func);
@@ -377,7 +377,7 @@ private:
         const glm::vec2& size,
         const glm::uvec2& resolution,
         uint32_t lod,
-        std::vector<glm::vec3>* generated_normal_data) {
+        std::vector<glm::vec4>* generated_normal_data) {
 
         // convert from 2D index to 1D index, clamping to edges (ex. i=-1 => i=0)
         auto get_index = [&](int32_t i, int32_t j) -> int32_t {
@@ -415,7 +415,7 @@ private:
 
                 float x = -((br - bl) + (2.f * (r - l)) + (tr - tl));
                 float y = -((tl - bl) + (2.f * (t - b)) + (tr - br));
-                glm::vec3 normal = glm::normalize(glm::vec3(scale * x, scale * y, z));
+                glm::vec4 normal = glm::normalize(glm::vec4(scale * x, scale * y, z, 1.0f));
 
                 generated_normal_data->push_back(normal);
             }
@@ -426,7 +426,7 @@ private:
     void GenerateHeightmapRegion(uint32_t lod, const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,
                                  std::function<float(double x, double y, double z)> heightmap_generator,
                                  std::vector<float>* elevation_data, float* elevation_max, float* elevation_min,
-                                 std::vector<glm::vec3>* normal_data) {
+                                 std::vector<glm::vec4>* normal_data) {
         GenerateHeightmapRegion(center, size, resolution, heightmap_generator, elevation_data, elevation_max, elevation_min);
         GenerateHeightmapRegionNormals(*elevation_data, size, resolution, lod, normal_data);
     }
