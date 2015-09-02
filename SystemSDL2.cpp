@@ -15,9 +15,13 @@
 #include <map>
 
 #ifdef _WIN32
-//#include "DeviceRenderDX11.h"
 #include "gfx\dx11\DX11RenderDevice.h"
 #endif
+#include "gfx\gl\GLRenderDevice.h"
+
+#define DX11_BACKEND
+//#define GL_BACKEND
+
 
 #ifndef WIN32
 //typedef void* HWND;
@@ -105,11 +109,11 @@ int sys::Run(app::Application* app){
 
     SDL_GL_CreateContext(_window);
 
-#ifdef _WIN32
+#if  defined(_WIN32) && defined(GL_BACKEND)
     // start GLEW extension handler
-    /*glewExperimental = GL_TRUE;
+    glewExperimental = GL_TRUE;
     glewInit();
-    glGetError();*/
+    glGetError();
 #endif
 
     SDL_SysWMinfo info;
@@ -126,8 +130,12 @@ int sys::Run(app::Application* app){
             /*_deviceRender = new DeviceRenderDX11();
             initRtn = _deviceRender->init(info.info.win.window);
             _app->SetDeviceRender(_deviceRender);*/
+#ifdef DX11_BACKEND
             _app->renderDevice = new graphics::RenderDeviceDX11();
             _app->renderDevice->InitializeDevice(info.info.win.window);
+#elif defined(GL_BACKEND)
+            _app->renderDevice = new graphics::RenderDeviceGL();
+#endif
             break;
         case SDL_SYSWM_COCOA: subsystem = "Apple OS X"; break;
         case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
@@ -188,8 +196,9 @@ int sys::Run(app::Application* app){
         }
 
         _app->OnFrame(&_app_state, dt);
-        //_app->GetDeviceRender().SwapBuffers();
-        //SDL_GL_SwapWindow(_window);
+#ifdef GL_BACKEND
+        SDL_GL_SwapWindow(_window);
+#endif
         _app->renderDevice->SwapBuffers();
         dt = GetTime() - start;
     }
