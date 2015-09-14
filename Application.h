@@ -1,6 +1,6 @@
 #ifndef __application_h__
 #define __application_h__
-#include "gfx\RenderDevice.h"
+#include "gfx/RenderDevice.h"
 
 namespace app {
     enum class KeyCode {

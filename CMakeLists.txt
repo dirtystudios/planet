@@ -27,6 +27,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(OpenGL REQUIRED)
 find_package(LIBNOISE REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(GLFW REQUIRED)
 
 #set(SDL2_BUILDING_LIBRARY true)
 #add_subdirectory("SDL-Mirror")
@@ -53,17 +55,20 @@ include_directories(
     ${LIBNOISE_INCLUDE_DIRS} 
     ${GLEW_INCLUDE_DIRS}
     ${SDL2_INCLUDE_DIR}
+    ${GLFW_INCLUDE_DIR2}
 )
 
 set(LIBS        
     ${OPENGL_LIBRARIES}    
     ${LIBNOISE_LIBRARIES}
     ${GLEW_LIBRARY}
-    ${SDL2_LIBRARIES}
+    ${SDL2_LIBRARY}
+    ${GLFW_LIBRARIES}
 )
 
 set(GFX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.cpp
+
 )
 
 set(GFX_HEADERS
@@ -72,10 +77,11 @@ set(GFX_HEADERS
 )
 
 set(GFX_GL_SOURCES
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/gfx/gl/GLRenderDevice.cpp
 )
 
 set(GFX_GL_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/gfx/gl/GLRenderDevice.h
     ${CMAKE_CURRENT_SOURCE_DIR}/GLHelpers.h
 )
 
@@ -106,6 +112,8 @@ set(ALL_HEADERS
     ${GFX_HEADERS}
     ${GFX_GL_HEADERS}
 )
+
+message("rawr: ${SDL2_LIBRARY}")
 
 # create application
 add_executable(dg ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${ALL_SOURCES} ${ALL_HEADERS})

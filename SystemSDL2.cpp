@@ -15,12 +15,12 @@
 #include <map>
 
 #ifdef _WIN32
-#include "gfx\dx11\DX11RenderDevice.h"
+#include "gfx/dx11/DX11RenderDevice.h"
 #endif
-#include "gfx\gl\GLRenderDevice.h"
+#include "gfx/gl/GLRenderDevice.h"
 
-#define DX11_BACKEND
-//#define GL_BACKEND
+//#define DX11_BACKEND
+#define GL_BACKEND
 
 
 #ifndef WIN32
@@ -99,6 +99,7 @@ int sys::Run(app::Application* app){
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     _window = SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width, _window_height, SDL_WINDOW_OPENGL);
 
@@ -107,7 +108,9 @@ int sys::Run(app::Application* app){
         return -1;
     }
 
-    SDL_GL_CreateContext(_window);
+    SDL_GLContext glcontext = SDL_GL_CreateContext(_window);
+    printf("%s\n", SDL_GetError() );
+    SDL_GL_MakeCurrent(_window, glcontext);
 
 #if  defined(_WIN32) && defined(GL_BACKEND)
     // start GLEW extension handler
@@ -137,8 +140,11 @@ int sys::Run(app::Application* app){
             _app->renderDevice = new graphics::RenderDeviceGL();
 #endif
             break;
-        case SDL_SYSWM_COCOA: subsystem = "Apple OS X"; break;
-        case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
+        case SDL_SYSWM_COCOA: 
+            subsystem = "Apple OS X"; 
+            _app->renderDevice = new graphics::RenderDeviceGL();
+            break;
+        //case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
         }
     }
 	
@@ -147,7 +153,7 @@ int sys::Run(app::Application* app){
     LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch, subsystem);
 
     if (initRtn != 0){
-        LOG_E("DeviceRender Init Failed.");
+        LOG_E("%s", "DeviceRender Init Failed.");
         return -1;
     }
 
@@ -204,6 +210,8 @@ int sys::Run(app::Application* app){
     }
 
     _app->OnShutdown();
+
+    // TOOD:: cleaned dyanmic memory
     SDL_DestroyWindow(_window);
     SDL_Quit();
     return 0;

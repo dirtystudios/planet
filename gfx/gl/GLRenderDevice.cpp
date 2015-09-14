@@ -448,7 +448,8 @@ namespace graphics {
 
     }
     void RenderDeviceGL::Clear(float r, float g, float b, float a) {
-
+        glClearColor(r, g, b, a);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
     void RenderDeviceGL::SetRasterizerState(uint32_t state) {
         _pending_state.raster_state = state;
