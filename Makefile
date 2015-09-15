@@ -211,29 +211,29 @@ Frustum.cpp.s:
 	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/Frustum.cpp.s
 .PHONY : Frustum.cpp.s
 
-SystemGLFW3.o: SystemGLFW3.cpp.o
-.PHONY : SystemGLFW3.o
+SystemSDL2.o: SystemSDL2.cpp.o
+.PHONY : SystemSDL2.o
 
 # target to build an object file
-SystemGLFW3.cpp.o:
-	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/SystemGLFW3.cpp.o
-.PHONY : SystemGLFW3.cpp.o
+SystemSDL2.cpp.o:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/SystemSDL2.cpp.o
+.PHONY : SystemSDL2.cpp.o
 
-SystemGLFW3.i: SystemGLFW3.cpp.i
-.PHONY : SystemGLFW3.i
+SystemSDL2.i: SystemSDL2.cpp.i
+.PHONY : SystemSDL2.i
 
 # target to preprocess a source file
-SystemGLFW3.cpp.i:
-	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/SystemGLFW3.cpp.i
-.PHONY : SystemGLFW3.cpp.i
+SystemSDL2.cpp.i:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/SystemSDL2.cpp.i
+.PHONY : SystemSDL2.cpp.i
 
-SystemGLFW3.s: SystemGLFW3.cpp.s
-.PHONY : SystemGLFW3.s
+SystemSDL2.s: SystemSDL2.cpp.s
+.PHONY : SystemSDL2.s
 
 # target to generate assembly for a file
-SystemGLFW3.cpp.s:
-	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/SystemGLFW3.cpp.s
-.PHONY : SystemGLFW3.cpp.s
+SystemSDL2.cpp.s:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/SystemSDL2.cpp.s
+.PHONY : SystemSDL2.cpp.s
 
 gfx/gl/GLRenderDevice.o: gfx/gl/GLRenderDevice.cpp.o
 .PHONY : gfx/gl/GLRenderDevice.o
@@ -304,9 +304,9 @@ help:
 	@echo "... Frustum.o"
 	@echo "... Frustum.i"
 	@echo "... Frustum.s"
-	@echo "... SystemGLFW3.o"
-	@echo "... SystemGLFW3.i"
-	@echo "... SystemGLFW3.s"
+	@echo "... SystemSDL2.o"
+	@echo "... SystemSDL2.i"
+	@echo "... SystemSDL2.s"
 	@echo "... gfx/gl/GLRenderDevice.o"
 	@echo "... gfx/gl/GLRenderDevice.i"
 	@echo "... gfx/gl/GLRenderDevice.s"

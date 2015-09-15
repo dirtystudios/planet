@@ -102,12 +102,6 @@ ChunkedLoDTerrainRenderer* terrain_renderer;
 
 void App::OnStart() {
     //render_device = new graphics::RenderDeviceDX11();
-    
-    
-    LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
-    LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
-    LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
     glClearColor(0.1f, 0.1f, 0.1f, 1.f);
     glClearDepth(1.0f);
     glDepthFunc(GL_LESS);

@@ -15,6 +15,21 @@
 
 namespace graphics {
     RenderDeviceGL::RenderDeviceGL() {
+        LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
+        LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+        LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
+        LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
+        glClearColor(0.1f, 0.1f, 0.1f, 1.f);
+        glClearDepth(1.0f);
+        glDepthFunc(GL_LESS);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
+
+     //   glEnable(GL_BLEND);
+     //   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+     //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         GL_CHECK(glGenProgramPipelines(1, &_pipeline));
         GL_CHECK(glBindProgramPipeline(_pipeline));
     }
