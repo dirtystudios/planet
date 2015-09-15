@@ -7,6 +7,7 @@
 #include "GPUTileBuffer.h"
 #include "LRUTileCache.h"
 #include "gfx/RenderDevice.h"
+#include "utilities/File.h"
 
 struct Material {
 
@@ -91,10 +92,11 @@ private:
 
 public:
     ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
-        std::string vs_contents = ReadFileContents("C:/Users/Jake/Documents/gitrepos/planet/shaders/DX11/terrain_vs.hlsl");
+        // Bleh, theres probably a better way for this
+        std::string vs_contents = ReadFileContents(fs::AppendPathProcessDir("../../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_vs" + render_device->DeviceConfig.ShaderExtension));
         const char* vs_src = vs_contents.c_str();
 
-        std::string fs_contents = ReadFileContents("C:/Users/Jake/Documents/gitrepos/planet/shaders/DX11/terrain_ps.hlsl");
+        std::string fs_contents = ReadFileContents(fs::AppendPathProcessDir("../../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_fs" + render_device->DeviceConfig.ShaderExtension));
         const char* fs_src = fs_contents.c_str();
 
         // Note(eugene): cleanup shaders

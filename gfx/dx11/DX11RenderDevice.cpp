@@ -870,6 +870,9 @@ namespace graphics {
     }
 
     int RenderDeviceDX11::InitializeDevice(void* args) {
+        DeviceConfig.DeviceAbbreviation = "DX11";
+        DeviceConfig.ShaderExtension = ".hlsl";
+
         m_hwnd = static_cast<HWND>(args);
 
         D3D_FEATURE_LEVEL FeatureLevelsRequested[] = {

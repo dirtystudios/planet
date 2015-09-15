@@ -69,6 +69,11 @@ namespace graphics {
         COUNT
     };
 
+    struct DeviceConfiguration {
+        std::string DeviceAbbreviation;
+        // Extension including dot
+        std::string ShaderExtension;
+    };
 
     typedef uint32_t VertexBufferHandle;
     typedef uint32_t ShaderHandle;
@@ -78,6 +83,8 @@ namespace graphics {
 
     class RenderDevice {
     public:
+        DeviceConfiguration             DeviceConfig;
+
         virtual int                     InitializeDevice(void *args) = 0;
         virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage) = 0;
         virtual void                    DestroyIndexBuffer(IndexBufferHandle handle) = 0;

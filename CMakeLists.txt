@@ -68,7 +68,6 @@ set(LIBS
 
 set(GFX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.cpp
-
 )
 
 set(GFX_HEADERS
@@ -84,6 +83,14 @@ set(GFX_GL_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/gfx/gl/GLRenderDevice.h
     ${CMAKE_CURRENT_SOURCE_DIR}/GLHelpers.h
 )
+
+set(UTIL_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.cpp
+}
+
+set(UTIL_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.h
+}
 
 set(GAME_SOURCES    
     ${CMAKE_CURRENT_SOURCE_DIR}/App.cpp
@@ -105,12 +112,14 @@ set(ALL_SOURCES
     ${GAME_SOURCES}
     ${GFX_SOURCES}
     ${GFX_GL_SOURCES}
+    ${UTIL_SOURCES}
 )
 
 set(ALL_HEADERS   
     ${GAME_HEADERS} 
     ${GFX_HEADERS}
     ${GFX_GL_HEADERS}
+    ${UTIL_SOURCES}
 )
 
 message("rawr: ${SDL2_LIBRARY}")

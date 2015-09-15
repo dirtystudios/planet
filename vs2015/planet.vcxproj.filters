@@ -10,6 +10,9 @@
     <Filter Include="gfx\dx11">
       <UniqueIdentifier>{cf6ffee8-b924-482d-b025-24459b7f39f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utilities">
+      <UniqueIdentifier>{685d0ef9-e619-42ff-9e81-c5f15e5234d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\gfx\AttribLayout.h">
@@ -55,6 +58,9 @@
     <ClInclude Include="..\gfx\dx11\DX11ConstantBufferHelpers.h">
       <Filter>gfx\dx11</Filter>
     </ClInclude>
+    <ClInclude Include="..\utilities\File.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp">
@@ -71,6 +77,9 @@
     </ClCompile>
     <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp">
       <Filter>gfx\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\utilities\File.cpp">
+      <Filter>utilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

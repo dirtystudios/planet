@@ -15,6 +15,9 @@
 
 namespace graphics {
     RenderDeviceGL::RenderDeviceGL() {
+        DeviceConfig.ShaderExtension = ".glsl";
+        DeviceConfig.DeviceAbbreviation = "GL";
+
         GL_CHECK(glGenProgramPipelines(1, &_pipeline));
         GL_CHECK(glBindProgramPipeline(_pipeline));
     }
