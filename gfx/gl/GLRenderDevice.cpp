@@ -645,7 +645,10 @@ namespace graphics {
         return ++key;
     }
 
-    void PrintDisplayAdapterInfo() {
-
+    void RenderDeviceGL::PrintDisplayAdapterInfo() {
+        LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
+        LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+        LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
+        LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
     }
 }

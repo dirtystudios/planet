@@ -101,6 +101,8 @@ namespace graphics {
 
         virtual void                    SwapBuffers() = 0;
 
+        virtual void                    PrintDisplayAdapterInfo()=0;
+
         // "Commands"
         virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, DataType data_type, DataFormat data_format, void* data) = 0;
         virtual void UpdateTexture(TextureHandle handle, void* data, size_t size) = 0;

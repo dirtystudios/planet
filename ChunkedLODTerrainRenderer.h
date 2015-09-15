@@ -346,7 +346,7 @@ private:
     void GenerateHeightmapRegion(const glm::dvec3& region_center,
         const glm::vec2& region_size,
         const glm::uvec2& resolution,
-        std::function<float(double x, double y, double z)> heightmap_generator,
+        std::function<double(double x, double y, double z)> heightmap_generator,
         std::vector<float>* data, float* max, float* min) {
 
         *max = std::numeric_limits<float>::min();
@@ -425,7 +425,7 @@ private:
     }
 
     void GenerateHeightmapRegion(uint32_t lod, const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,
-                                 std::function<float(double x, double y, double z)> heightmap_generator,
+                                 std::function<double(double x, double y, double z)> heightmap_generator,
                                  std::vector<float>* elevation_data, float* elevation_max, float* elevation_min,
                                  std::vector<glm::vec4>* normal_data) {
         GenerateHeightmapRegion(center, size, resolution, heightmap_generator, elevation_data, elevation_max, elevation_min);

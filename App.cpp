@@ -18,8 +18,6 @@ double frame_time = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
-//graphics::RenderDeviceDX11* render_device;
-
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
 
@@ -87,21 +85,14 @@ struct Transform {
 
 ChunkedLoDTerrainRenderer* terrain_renderer;
 
-void App::OnStart() {
-    //render_device = new graphics::RenderDeviceDX11();
-    
-    
-    LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
-    LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
-    LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
-    glClearColor(0.1f, 0.1f, 0.1f, 1.f);
+void App::OnStart() {  
+    /*glClearColor(0.1f, 0.1f, 0.1f, 1.f);
     glClearDepth(1.0f);
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
+    glCullFace(GL_BACK);*/
 
  //   glEnable(GL_BLEND);
  //   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -118,7 +109,7 @@ void App::OnStart() {
     desc.size = 10000;
     desc.x = 0;
     desc.y = 0;
-    desc.heightmap_generator = [&](double x, double y, double z) -> float {
+    desc.heightmap_generator = [&](double x, double y, double z) -> double {
                         noise::module::RidgedMulti mountain;
                         mountain.SetSeed(32);
                         mountain.SetFrequency(0.05);
@@ -150,7 +141,8 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
 
     if(accumulate > 1.0) {
         std::stringstream ss;
-        ss << "gfx | FPS: " << frame_count << " | Frame: " << total_frame_count;
+        ss << "gfx Device: " << renderDevice->DeviceConfig.DeviceAbbreviation;
+        ss << " | FPS: " << frame_count << " | Frame: " << total_frame_count;
         ss << " | Pos: " << cam.pos;
         sys::SetWindowTitle(ss.str().c_str());
         frame_count = 0;

@@ -143,6 +143,7 @@ int sys::Run(app::Application* app){
         return -1;
     }
 
+    _app->renderDevice->PrintDisplayAdapterInfo();
     _app->OnStart();
 
     double dt = 0;
