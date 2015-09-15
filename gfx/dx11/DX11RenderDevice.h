@@ -1,16 +1,14 @@
 #pragma once
 
-#include <Windows.h>
 #include <wrl.h>
 #include <d3d11.h>
 #include <DXGI.h>
 
+#include "gfx/RenderDevice.h"
+#include "gfx/AttribLayout.h"
+#include "gfx/ParamType.h"
 
-#include "../RenderDevice.h"
-#include "../AttribLayout.h"
-#include "../ParamType.h"
 #include "DX11InputLayoutCache.h"
-#include <unordered_map>
 
 namespace graphics {
     // Cheating here with this

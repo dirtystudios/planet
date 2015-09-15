@@ -1,7 +1,6 @@
 #ifndef __frustum_h__
 #define __frustum_h__
 
-#include <glm/glm.hpp>
 #include "BoundingBox.h"
 
 struct Frustum {

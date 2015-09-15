@@ -1,9 +1,10 @@
+#include "stdafx.h"
 //
 // Created by Eugene Sturm on 4/5/15.
 //
 
 #include "GLRenderDevice.h"
-#include "../../GLHelpers.h"
+#include "GLHelpers.h"
 
 #define ARRAY_LEN(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 #define SafeGet(x, idx) x[idx]

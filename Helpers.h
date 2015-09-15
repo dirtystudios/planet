@@ -1,9 +1,6 @@
 #ifndef __helpers_h__
 #define __helpers_h__
 
-#include <glm/glm.hpp>
-#include <sstream>
-#include <fstream>
 #include "Log.h"
 
 const glm::vec3 X_AXIS = glm::vec3(1, 0, 0);

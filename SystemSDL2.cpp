@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "System.h"
 
 #include "SDL.h"
@@ -5,14 +6,9 @@
 
 #ifdef _WIN32
 #include <GL/glew.h>
-#include <stdint.h>
-#else
-#include <unistd.h>
 #endif
 
-#include <iostream>
 #include "Log.h"
-#include <map>
 
 #ifdef _WIN32
 #include "gfx/dx11/DX11RenderDevice.h"
@@ -22,12 +18,6 @@
 //#define DX11_BACKEND
 #define GL_BACKEND
 
-
-#ifndef WIN32
-//typedef void* HWND;
-#endif
-
-//DeviceRender* _deviceRender = NULL;
 SDL_Window* _window = NULL;
 SDL_Event _e;
 int32_t _window_width = 800;
@@ -129,10 +119,6 @@ int sys::Run(app::Application* app){
         case SDL_SYSWM_X11: subsystem = "X Window System"; break;
         case SDL_SYSWM_WINDOWS:
             subsystem = "Microsoft Windows";
-            // This can be ignored for the time being
-            /*_deviceRender = new DeviceRenderDX11();
-            initRtn = _deviceRender->init(info.info.win.window);
-            _app->SetDeviceRender(_deviceRender);*/
 #ifdef DX11_BACKEND
             _app->renderDevice = new graphics::RenderDeviceDX11();
             _app->renderDevice->InitializeDevice(info.info.win.window);
@@ -157,7 +143,6 @@ int sys::Run(app::Application* app){
         return -1;
     }
 
-    //_app->SetDeviceRender(_deviceRender);
     _app->OnStart();
 
     double dt = 0;

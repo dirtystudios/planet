@@ -1,8 +1,8 @@
+#include "stdafx.h"
 #include "DX11RenderDevice.h"
-#include "../../Log.h"
+#include "Log.h"
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
-#include <glm/glm.hpp>
 #include "DX11ConstantBufferHelpers.h"
 
 #define SafeGet(id, idx) id[idx];

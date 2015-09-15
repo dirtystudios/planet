@@ -1,20 +1,5 @@
-#include <string>
+#include "stdafx.h"
 #include "File.h"
-#include <cstring>
-
-#ifdef _WIN32
-#include <Windows.h>
-#elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#include <sys/param.h>
-#include <sys/mount.h>
-#include <libgen.h>
-#else
-//linux?
-#include <limits.h>
-#include <unistd.h>
-#include <stdlib.h>
-#endif
 
 std::string fs::GetProcessDirectory() {
 #ifdef _WIN32

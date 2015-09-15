@@ -6,18 +6,13 @@
 #define __gl_helpers_h__
 
 #ifdef _WIN32
-#include <GL\glew.h>
-#include <stdint.h>
+#include <GL/glew.h>
 #else
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
 #endif
 
 #include "Log.h"
-#include <unordered_map>
-#include <fstream>
-#include <cassert>
-#include <vector>
 
 #ifndef NDEBUG
 #   define GL_CHECK(func) \

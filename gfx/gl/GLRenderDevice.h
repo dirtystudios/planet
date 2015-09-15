@@ -5,10 +5,9 @@
 #ifndef DG_RENDER_DEVICE_GL_H
 #define DG_RENDER_DEVICE_GL_H
 
-#include "../RenderDevice.h"
-#include <unordered_map>
+#include "gfx/RenderDevice.h"
 #include "GLUtils.h"
-#include "../AttribLayout.h"
+#include "gfx/AttribLayout.h"
 
 namespace graphics {
 

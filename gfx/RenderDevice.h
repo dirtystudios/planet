@@ -9,7 +9,6 @@
 #ifndef __dg__Graphics__
 #define __dg__Graphics__
 
-#include <stdint.h>
 #include "VertLayout.h"
 #include "MemLayout.h"
 

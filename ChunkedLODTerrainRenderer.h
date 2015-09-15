@@ -1,8 +1,7 @@
+#include "stdafx.h"
 #ifndef __chunked_lod_terrain_renderer_h__
 #define __chunked_lod_terrain_renderer_h__
 
-#include <map>
-#include <vector>
 #include "GLHelpers.h"
 #include "GPUTileBuffer.h"
 #include "LRUTileCache.h"

@@ -1,26 +1,13 @@
+#include "stdafx.h"
 #include "App.h"
-#include "GLHelpers.h"
-#include <glm/glm.hpp>
 #include "Camera.h"
-#include <vector>
 #include "System.h"
-#include <sstream>
 #include "Helpers.h"
-#include <list>
-#include <unordered_map>
-#include "BoundingBox.h"
-#include <queue>
-#include <glm/gtx/transform.hpp>
 #include <noise/noise.h>
 #include "Frustum.h"
 #include "DebugRenderer.h"
-#include <algorithm>
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
-
-#ifdef _WIN32
-#include <functional>
-#endif
 
 uint32_t frame_count = 0;
 double curr_frame_time = 0;

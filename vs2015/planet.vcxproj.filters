@@ -61,6 +61,7 @@
     <ClInclude Include="..\utilities\File.h">
       <Filter>utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp">
@@ -81,5 +82,6 @@
     <ClCompile Include="..\utilities\File.cpp">
       <Filter>utilities</Filter>
     </ClCompile>
+    <ClCompile Include="..\stdafx.cpp" />
   </ItemGroup>
 </Project>

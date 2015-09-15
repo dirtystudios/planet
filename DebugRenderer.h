@@ -1,10 +1,7 @@
 #ifndef __debug_renderer_h__
 #define __debug_renderer_h__
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/glm.hpp>
 #include "GLHelpers.h"
-#include <vector>
 
 class DebugRenderer {
 private:

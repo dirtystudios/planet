@@ -1,6 +1,5 @@
+#include "stdafx.h"
 #include "Camera.h"
-#include <glm/gtx/rotate_vector.hpp>
-#include <sstream>
 #include "Helpers.h"
 
 Camera::Camera(float fov_degrees/* = 45.f*/, float aspect_ratio/* = 4.f / 3.f*/, float znear/* = 0.001f*/, float zfar/* = 10000.f*/)

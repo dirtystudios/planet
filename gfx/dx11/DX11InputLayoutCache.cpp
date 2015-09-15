@@ -1,7 +1,8 @@
+#include "stdafx.h"
 #include "DX11InputLayoutCache.h"
 #include <wrl.h>
 
-#include "../../Log.h"
+#include "Log.h"
 
 using namespace Microsoft::WRL;
 

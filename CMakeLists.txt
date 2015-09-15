@@ -56,6 +56,7 @@ include_directories(
     ${GLEW_INCLUDE_DIRS}
     ${SDL2_INCLUDE_DIR}
     ${GLFW_INCLUDE_DIR2}
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 set(LIBS        
@@ -86,10 +87,12 @@ set(GFX_GL_HEADERS
 
 set(UTIL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp
 }
 
 set(UTIL_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h
 }
 
 set(GAME_SOURCES    
