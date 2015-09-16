@@ -144,17 +144,35 @@ int sys::Run(app::Application* app){
     }
 
     _app->renderDevice->PrintDisplayAdapterInfo();
+
+    int numJoysticks = SDL_NumJoysticks();
+    LOG_D("SDL: Num Joysticks Connected : %d", numJoysticks);
+
+    for (int x = 0; x < numJoysticks; ++x)
+    {
+        if (!SDL_IsGameController(x))
+        {
+            continue;
+        }
+        SDL_GameControllerOpen(x);
+        LOG_D("SDL: Opened Controller index: %d", x);
+    }
+
+
     _app->OnStart();
 
     double dt = 0;
     while (!shouldQuit) {
         double start = GetTime();
 
-        //handle events
-
         // Reset mouse movement, otherwise camera constantly moves around
         _app_state.cursor_state.delta_x = 0;
         _app_state.cursor_state.delta_y = 0;
+        
+        // need a 'deadzone' for stick reset;
+        _app_state.controllerState.rightStick.x = abs(_app_state.controllerState.rightStick.x) < 0.15 ? 0 : _app_state.controllerState.rightStick.x;
+        _app_state.controllerState.rightStick.y = abs(_app_state.controllerState.rightStick.y) < 0.15 ? 0 : _app_state.controllerState.rightStick.y;
+
         while (SDL_PollEvent(&_e) != 0) {
             //user quit
             if (_e.type == SDL_QUIT){
@@ -184,6 +202,40 @@ int sys::Run(app::Application* app){
             else if (_e.type == SDL_MOUSEMOTION){
                 _app_state.cursor_state.delta_x = _e.motion.xrel;
                 _app_state.cursor_state.delta_y = _e.motion.yrel;
+            }
+            else if (_e.type == SDL_CONTROLLERBUTTONDOWN || _e.type == SDL_CONTROLLERBUTTONUP) {
+                switch (_e.cbutton.button) {
+                case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_DOWN] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_UP] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_LEFT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_RIGHT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    break;
+                case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_RSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    break;
+                case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_LSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    break;
+                default: break;
+                }
+            }
+            else if (_e.type == SDL_CONTROLLERAXISMOTION) {
+                switch (_e.caxis.axis) {
+                case SDL_CONTROLLER_AXIS_RIGHTX:
+                    _app_state.controllerState.rightStick.x = (float)_e.caxis.value / 32767.0;
+                    break;
+                case SDL_CONTROLLER_AXIS_RIGHTY:
+                    _app_state.controllerState.rightStick.y = (float)_e.caxis.value / 32767.0;
+                    break;
+                default: break;
+                }
             }
         }
 

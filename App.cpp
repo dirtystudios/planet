@@ -77,6 +77,45 @@ void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_
     }
 }
 
+void HandleControllerInput(const app::ControllerState state, float dt) {
+    glm::vec3 translation(0, 0, 0);
+    float controllerSpeed = 2.0f;
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_UP)) {
+        translation.z += walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_DOWN)) {
+        translation.z -= walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_RIGHT)) {
+        translation.x += walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_LEFT)) {
+        translation.x -= walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_RSHOULDER)) {
+        translation.y -= walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_LSHOULDER)) {
+        translation.y += walk_speed * dt;
+    }
+
+    cam.Translate(translation);
+
+    glm::vec2 rightstick(state.rightStick.x, state.rightStick.y);
+    if (rightstick.x != 0 || rightstick.y != 0) {
+        float pitch = controllerSpeed * dt * rightstick.y;
+        float yaw = controllerSpeed * dt * rightstick.x;
+        cam.Pitch(-pitch);
+        cam.Yaw(-yaw);
+    }
+}
+
 struct Transform {
     glm::quat rotation;
     glm::vec3 position;
@@ -112,6 +151,8 @@ void App::OnStart() {
 
 void App::OnFrame(const app::AppState* app_state, float dt) {
     HandleInput(app_state->key_state, app_state->cursor_state, 1.f/60.f);
+
+    HandleControllerInput(app_state->controllerState, 1.f / 60.f);
 
     glm::mat4 proj = cam.BuildProjection();
     glm::mat4 view = cam.BuildView();
