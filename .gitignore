@@ -33,10 +33,14 @@
 *.userosscache
 *.sln.docstates
 ipch/
+*.enc
 
 # Visual Studio Profiler Files
 *.vspx
 *.psess
+
+# Random
+*.log
 
 # CMake Stuff
 /CMakeFiles/
