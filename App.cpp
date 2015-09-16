@@ -7,6 +7,7 @@
 #include "DebugRenderer.h"
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
+#include "TextRenderer.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -99,6 +100,7 @@ struct Transform {
 
 
 ChunkedLoDTerrainRenderer* terrain_renderer;
+TextRenderer* text_renderer;
 
 void App::OnStart() {    
     LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
@@ -117,7 +119,7 @@ void App::OnStart() {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
-
+    text_renderer = new TextRenderer();
     terrain_renderer = new ChunkedLoDTerrainRenderer();
 
     cam.MoveTo(0, 0, 1000);
@@ -150,6 +152,7 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
     terrain_renderer->Render(cam, frustum);
+    text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
   
     accumulate += dt;
     ++frame_count;

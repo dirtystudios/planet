@@ -45,3 +45,5 @@ ipch/
 CMakeCache.txt
 /dg.build/
 /dg.xcodeproj/
+cmake_install.cmake
+Makefile

@@ -28,6 +28,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(OpenGL REQUIRED)
 find_package(GLFW3 REQUIRED)
 find_package(LIBNOISE REQUIRED)
+find_package(FreeType REQUIRED)
 
 if (WIN32)
     find_package(GLEW REQUIRED)
@@ -46,6 +47,7 @@ include_directories(
     ${GLFW_INCLUDE_DIRS}     
     ${LIBNOISE_INCLUDE_DIRS} 
     ${GLEW_INCLUDE_DIRS}
+    ${FREETYPE_INCLUDE_DIRS}
 )
 
 set(LIBS        
@@ -53,6 +55,7 @@ set(LIBS
     ${OPENGL_LIBRARIES}    
     ${LIBNOISE_LIBRARIES}
     ${GLEW_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
 )
 
 set(GFX_SOURCES

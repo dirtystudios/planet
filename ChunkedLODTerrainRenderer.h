@@ -80,8 +80,8 @@ private:
 public:
     ChunkedLoDTerrainRenderer() {
         // Note(eugene): cleanup shaders
-        _shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_vs.glsl");
-        _shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "/Users/eugene.sturm/projects/misc/planet72/shaders/terrain_fs.glsl");
+        _shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "/Users/sturm/projects/planet72/shaders/terrain_vs.glsl");
+        _shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "/Users/sturm/projects/planet72/shaders/terrain_fs.glsl");
         assert(_shaders[0] && _shaders[1]);
         _program = gl::CreateProgram(_shaders, 2);
         assert(_program);
