@@ -86,18 +86,6 @@ struct Transform {
 ChunkedLoDTerrainRenderer* terrain_renderer;
 
 void App::OnStart() {  
-    /*glClearColor(0.1f, 0.1f, 0.1f, 1.f);
-    glClearDepth(1.0f);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);*/
-
- //   glEnable(GL_BLEND);
- //   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
- //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
