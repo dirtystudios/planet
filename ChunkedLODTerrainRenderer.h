@@ -416,7 +416,7 @@ private:
 
                 float x = -((br - bl) + (2.f * (r - l)) + (tr - tl));
                 float y = -((tl - bl) + (2.f * (t - b)) + (tr - br));
-                glm::vec4 normal = glm::normalize(glm::vec4(scale * x, scale * y, z, 1.0f));
+                glm::vec4 normal = glm::normalize(glm::vec4(scale * x, scale * y, z, 0.0f));
 
                 generated_normal_data->push_back(normal);
             }
