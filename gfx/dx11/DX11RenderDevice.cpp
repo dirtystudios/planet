@@ -301,8 +301,12 @@ namespace graphics {
         _textures.insert(std::make_pair(handle, texture));
         return handle;*/
     }
+    TextureHandle RenderDeviceDX11::CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data) {
+        LOG_E("DX11RenderDev: Unimplemented Command CreateTexture2D.");
+        return 0;
+    }
 
-    TextureHandle RenderDeviceDX11::CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data) {
+    TextureHandle RenderDeviceDX11::CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data) {
         //TODO-Jake: Implement this....
         LOG_E("DX11RenderDev: Unimplemented Command CreateTextureCube.");
         return 0;
@@ -685,7 +689,7 @@ namespace graphics {
         LOG_E("DX11RenderDev: Unimplemented Function UpdateTexture");
     }
 
-    void RenderDeviceDX11::UpdateTextureArray(TextureHandle handle, uint32_t arrayIndex, uint32_t width, uint32_t height, DataType dataType, DataFormat dataFormat, void* data){
+    void RenderDeviceDX11::UpdateTextureArray(TextureHandle handle, uint32_t arrayIndex, uint32_t width, uint32_t height, void* data) {
         TextureDX11 *texture = Get(m_textures, handle);
         if (!texture){
             LOG_E("DX11RenderDev: Invalid handle given to UpdateTextureArray.");
@@ -702,21 +706,12 @@ namespace graphics {
 
         switch (texture->format) {
         case DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT:
-            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RED) {
-                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
-            }
             m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 4, width * 4 * height);
             break;
         case DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT:
-            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RGB) {
-                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
-            }
             m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 12, width * 12 * height);
             break;
         case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:
-            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RGBA) {
-                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
-            }
             m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 16, width * 16 * height);
             break;
         default:

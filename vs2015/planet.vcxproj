@@ -40,6 +40,7 @@
     <ClInclude Include="..\LRUTileCache.h" />
     <ClInclude Include="..\stdafx.h" />
     <ClInclude Include="..\System.h" />
+    <ClInclude Include="..\TextRenderer.h" />
     <ClInclude Include="..\utilities\Callback.h" />
     <ClInclude Include="..\utilities\File.h" />
   </ItemGroup>

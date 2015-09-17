@@ -365,7 +365,7 @@ namespace graphics {
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_2D, id));
-        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_texture_desc.internal_format, width, height, 0, gl_texture_desc.data_format, gl_texture_desc.data_type, data));
+        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_texture_desc->internal_format, width, height, 0, gl_texture_desc->data_format, gl_texture_desc->data_type, data));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -386,7 +386,7 @@ namespace graphics {
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_2D, id));
-        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_texture_desc.internal_format, width, height, 0, gl_texture_desc.data_format, gl_texture_desc.data_type, data));
+        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_texture_desc->internal_format, width, height, 0, gl_texture_desc->data_format, gl_texture_desc->data_type, data));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -407,7 +407,7 @@ namespace graphics {
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_2D_ARRAY, id));
-        GL_CHECK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, levels, gl_texture_desc.internal_format, width, height, depth));
+        GL_CHECK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, levels, gl_texture_desc->internal_format, width, height, depth));
         glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -431,8 +431,8 @@ namespace graphics {
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, id));
         for(uint32_t side = 0; side < 6; ++side) {
-            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, gl_texture_desc.internal_format, width, height, 0, 
-                                  gl_texture_desc.data_type, gl_texture_desc.data_format, data[side]));
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, gl_texture_desc->internal_format, width, height, 0, 
+                                  gl_texture_desc->data_type, gl_texture_desc->data_format, data[side]));
         }
 
         GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));

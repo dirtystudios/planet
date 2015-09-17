@@ -154,9 +154,11 @@ namespace graphics {
         ShaderHandle            CreateShader(ShaderType shaderType, const char **source);
         void                    DestroyShader(ShaderHandle handle);
      
-        TextureHandle           CreateTexture2D(TextureFormat texFormat, DataType dataType, DataFormat dataFormat, uint32_t width, uint32_t height, void* data);
-        TextureHandle           CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
-        TextureHandle           CreateTextureCube(TextureFormat texFormat, DataType dataType, DataFormat dataFormat, uint32_t width, uint32_t height, void** data);
+        TextureHandle           CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data);
+        TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
+        TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
+        TextureHandle           CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data);
+
         void                    DestroyTexture(TextureHandle handle);
 
         void                    SwapBuffers();
@@ -164,7 +166,7 @@ namespace graphics {
         void                    PrintDisplayAdapterInfo();
 
         // Commands
-        void UpdateTextureArray(TextureHandle handle, uint32_t arrayIndex, uint32_t width, uint32_t height, DataType dataType, DataFormat dataFormat, void* data);
+        void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
         void UpdateTexture(TextureHandle handle, void* data, size_t size);
 
         void SetRasterizerState(uint32_t state);

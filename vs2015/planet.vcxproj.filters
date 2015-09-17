@@ -83,11 +83,9 @@
     <ClInclude Include="..\utilities\Callback.h">
       <Filter>utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\TextRenderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp">
-      <Filter>gfx\dx11</Filter>
-    </ClCompile>
     <ClCompile Include="..\App.cpp" />
     <ClCompile Include="..\Camera.cpp" />
     <ClCompile Include="..\DebugRenderer.cpp" />
@@ -109,6 +107,9 @@
     </ClCompile>
     <ClCompile Include="..\input\PlayerController.cpp">
       <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp">
+      <Filter>gfx\dx11</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

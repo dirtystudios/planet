@@ -206,14 +206,14 @@ namespace graphics {
       virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data);
       virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
       virtual TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
-      virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data);
+      virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data);
       virtual void                    DestroyTexture(TextureHandle handle);
 
       void                            SwapBuffers() {};
       void                            PrintDisplayAdapterInfo();
 
       // "Commands"
-      virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, DataType data_type, DataFormat data_format, void* data);
+      virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
       virtual void UpdateTexture(TextureHandle handle, void* data, size_t size);
       virtual void SetRasterizerState(uint32_t state);
       virtual void SetDepthState(uint32_t state);
