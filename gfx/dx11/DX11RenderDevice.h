@@ -143,7 +143,7 @@ namespace graphics {
 
     public:
         RenderDeviceDX11() {};
-        int                     InitializeDevice(void* args);
+        int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
 
         IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
         void                    DestroyIndexBuffer(IndexBufferHandle handle);

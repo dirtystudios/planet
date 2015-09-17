@@ -20,8 +20,8 @@
 
 SDL_Window* _window = NULL;
 SDL_Event _e;
-int32_t _window_width = 800;
-int32_t _window_height = 600;
+uint32_t _window_width = 800;
+uint32_t _window_height = 600;
 const char* _window_title = "dirty";
 app::AppState _app_state;
 app::Application* _app = { nullptr };
@@ -121,7 +121,7 @@ int sys::Run(app::Application* app){
             subsystem = "Microsoft Windows";
 #ifdef DX11_BACKEND
             _app->renderDevice = new graphics::RenderDeviceDX11();
-            _app->renderDevice->InitializeDevice(info.info.win.window);
+            _app->renderDevice->InitializeDevice(info.info.win.window, _window_height, _window_width);
 #elif defined(GL_BACKEND)
             _app->renderDevice = new graphics::RenderDeviceGL();
 #endif
