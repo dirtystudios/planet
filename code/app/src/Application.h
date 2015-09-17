@@ -1,6 +1,7 @@
 #ifndef __application_h__
 #define __application_h__
-#include "gfx/RenderDevice.h"
+
+#include "rendering/backend/RenderDevice.h"
 #include "input/InputCodes.h"
 
 namespace app {

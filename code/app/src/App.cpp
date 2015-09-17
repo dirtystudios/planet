@@ -1,13 +1,12 @@
-#include "stdafx.h"
+
 #include "App.h"
 #include "Camera.h"
 #include "System.h"
 #include "Helpers.h"
 #include <noise/noise.h>
 #include "Frustum.h"
-#include "DebugRenderer.h"
 #include "Log.h"
-#include "ChunkedLODTerrainRenderer.h"
+#include "rendering/ChunkedLODTerrainRenderer.h"
 //#include "TextRenderer.h"
 
 #include <glm/glm.hpp>

@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "System.h"
+#include "platform/System.h"
 #include "App.h"
 
 int main(int argc, char** argv) {

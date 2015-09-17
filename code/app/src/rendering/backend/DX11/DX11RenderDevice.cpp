@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "DX11RenderDevice.h"
 #include "Log.h"
 #include <d3dcompiler.h>

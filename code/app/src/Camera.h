@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 struct Camera {
     Camera(float fov_degrees = 45.f, float aspect_ratio = 1.33333f, float znear = 0.1f, float zfar = 10000.f);
 

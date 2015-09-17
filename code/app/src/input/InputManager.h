@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+
 #include "InputContext.h"
 #include "InputCodes.h"
 

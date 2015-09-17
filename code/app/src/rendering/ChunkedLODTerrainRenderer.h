@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #ifndef __chunked_lod_terrain_renderer_h__
 #define __chunked_lod_terrain_renderer_h__
 

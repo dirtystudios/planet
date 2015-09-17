@@ -17,178 +17,76 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     endif()
 endif()
 
+message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 message("CMAKE_CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_SOURCE_DIR}/libs)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 
 
-####### GRAPHICS LIBRARY #########
-FILE(GLOB GRAPHICS_SOURCES src/*.cpp)
-FILE(GLOB GRAPHICS_HEADERS src/*.h)
-
-FILE(GLOB GRAPHICS_GL_SOURCES src/GL/*.cpp src/GL/*/*.cpp)
-FILE(GLOB GRAPHICS_GL_HEADERS src/GL/*.cpp src/GL/*/*.cpp)
-
-find_package(OpenGL REQUIRED)
-message("${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-if(WIN32)
-    set(GLEW_ROOT_DIR ${CMAKE_SOURCE_DIR})
-    find_package(GLEW REQUIRED)
-    add_definitions(-DGLEW_STATIC)
-    include_directories(AFTER
-       ${GLEW_INCLUDE_DIRS}
-    )
-endif()
-
-set(GRAPHICS_LIBRARY_DEPS
-    ${OPENGL_LIBRARIES}
-    ${GLEW_LIBRARIES}
-)
-
-add_library(graphics STATIC ${GRAPHICS_SOURCES} ${GRAPHICS_HEADERS} ${GRAPHICS_GL_SOURCES} ${GRAPHICS_GL_HEADERS})
-target_link_libraries(graphics ${GRAPHICS_LIBRARY_DEPS})
 
 
+FILE(GLOB GRAPHICS_BACKEND_SOURCES code/app/src/rendering/backend/*.cpp)
+FILE(GLOB GRAPHICS_BACKEND_HEADERS code/app/src/rendering/backend/*.h)
+FILE(GLOB GRAPHICS_GL_BACKEND_SOURCES code/app/src/rendering/backend/GL/*.cpp)
+FILE(GLOB GRAPHICS_DX11_BACKEND_HEADERS code/app/src/rendering/backend/DX11/*.h)
 
+FILE(GLOB INPUT_SOURCES code/app/src/input/*.cpp)
+FILE(GLOB INPUT_HEADERS code/app/src/input/*.h)
 
+FILE(GLOB UTILITIES_SOURCES code/app/src/utilities/*.cpp)
+FILE(GLOB UTILITIES_HEADERS code/app/src/utilities/*.h)
 
+FILE(GLOB APP_SOURCES code/app/src/*.cpp)
+FILE(GLOB APP_HEADERS code/app/src/*.h)
 
+FILE(GLOB PLATFORM_SOURCES code/app/src/platform/*.cpp)
+FILE(GLOB PLATFORM_HEADERS code/app/src/platform/*.h)
 
-
-
-
+FILE(GLOB PLATFORM_SDL_SOURCES code/app/src/platform/SDL/*.cpp)
+FILE(GLOB PLATFORM_SDL_HEADERS code/app/src/platform/SDL/*.h)
+FILE(GLOB PLATFORM_GLFW3_SOURCES code/app/src/platform/GLFW3/*.cpp)
+FILE(GLOB PLATFORM_GLFW3_HEADERS code/app/src/platform/GLFW3/*.h)
 
 find_package(OpenGL REQUIRED)
 find_package(LIBNOISE REQUIRED)
 find_package(SDL2 REQUIRED)
-find_package(GLFW REQUIRED)
-
-#set(SDL2_BUILDING_LIBRARY true)
-#add_subdirectory("SDL-Mirror")
-
-# We only want the static library to build
-# set_target_properties(SDL2 SDL2main PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 find_package(FreeType REQUIRED)
 
-if (WIN32)
-    set(GLEW_ROOT_DIR ${CMAKE_SOURCE_DIR})
-    find_package(GLEW REQUIRED)
-    add_definitions(-DGLEW_STATIC)
-    #i give up
-    set(SDL2_INCLUDE_DIR "SDL-Mirror/include")
-    set(SDL2_LIBRARIES "../winlibs/SDL2")
-    
-    set(PLATFORM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include)
-elseif(APPLE)
-    set(PLATFORM_INCLUDE_DIRS "/usr/local/include")     
-endif()
-
-
 include_directories(
-    ${PLATFORM_INCLUDE_DIRS}          
+    "code/app/src/" 
+    "/usr/local/include"
     ${LIBNOISE_INCLUDE_DIRS} 
-    ${GLEW_INCLUDE_DIRS}
     ${SDL2_INCLUDE_DIR}
-    ${GLFW_INCLUDE_DIR2}
-    ${CMAKE_CURRENT_SOURCE_DIR}
     ${FREETYPE_INCLUDE_DIRS}
 )
 
-set(LIBS        
-    ${OPENGL_LIBRARIES}    
+set(LIBS
+    ${OPENGL_LIBRARIES}
     ${LIBNOISE_LIBRARIES}
-    ${GLEW_LIBRARY}
-    ${SDL2_LIBRARY}
-    ${GLFW_LIBRARIES}
-    ${GLEW_LIBRARIES}
+    ${SDL2_LIBRARY}S}
     ${FREETYPE_LIBRARIES}
 )
 
-set(GFX_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.cpp
-)
-
-set(GFX_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/DebugRenderer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ChunkedLODTerrainRenderer.h
-)
-
-set(GFX_GL_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/gfx/gl/GLRenderDevice.cpp
-)
-
-set(GFX_GL_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/gfx/gl/GLRenderDevice.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/GLHelpers.h
-)
-
-set(UTIL_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp
-)
-
-set(UTIL_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/Callback.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h
-)
-
-set(INPUT_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/input/PlayerController.cpp
-)
-
-set(INPUT_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/input/Controller.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputCodes.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputContext.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/input/PlayerController.h
-)
-
-set(GAME_SOURCES    
-    ${CMAKE_CURRENT_SOURCE_DIR}/App.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SystemSDL2.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.cpp        
-    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.cpp        
-)
-
-set(GAME_HEADERS    
-    ${CMAKE_CURRENT_SOURCE_DIR}/Application.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/App.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/System.h        
-    ${CMAKE_CURRENT_SOURCE_DIR}/Log.h    
-    ${CMAKE_CURRENT_SOURCE_DIR}/Camera.h    
-    ${CMAKE_CURRENT_SOURCE_DIR}/Frustum.h    
-)
-
-set(ALL_SOURCES        
-    ${GAME_SOURCES}
-    ${GFX_SOURCES}
-    ${GFX_GL_SOURCES}
-    ${UTIL_SOURCES}
-    ${INPUT_SOURCES}
-)
-
-set(ALL_HEADERS   
-    ${GAME_HEADERS} 
-    ${GFX_HEADERS}
-    ${GFX_GL_HEADERS}
-    ${UTIL_HEADERS}
-    ${INPUT_HEADERS}
-)
 
 # create application
-add_executable(dg ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${ALL_SOURCES} ${ALL_HEADERS})
+add_executable(dg code/app/src/main.cpp 
+    ${GRAPHICS_BACKEND_SOURCES} 
+    ${GRAPHICS_GL_BACKEND_SOURCES} 
+    ${INPUT_SOURCES}
+    ${UTILITIES_SOURCES}
+    ${APP_SOURCES}
+    ${PLATFORM_SOURCES}
+    ${PLATFORM_SDL_SOURCES}
+)
+
 target_link_libraries(dg ${LIBS})
 
-# Source groups for correct organization in Xcode
-source_group(src FILES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${GAME_SOURCES} ${GAME_HEADERS})
-source_group(src\\gfx FILES ${GFX_SOURCES} ${GFX_HEADERS})
-source_group(src\\gfx\\gl FILES ${GFX_GL_SOURCES} ${GFX_GL_HEADERS})
+
+
+
+

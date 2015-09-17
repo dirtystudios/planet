@@ -5,9 +5,9 @@
 #ifndef DG_RENDER_DEVICE_GL_H
 #define DG_RENDER_DEVICE_GL_H
 
-#include "graphics/RenderDevice.h"
-#include "graphics/GL/GLUtils.h"
-#include "graphics/AttribLayout.h"
+#include "rendering/backend/RenderDevice.h"
+#include "rendering/backend/GL/GLUtils.h"
+#include "rendering/backend/AttribLayout.h"
 #include <unordered_map>
 #include <cassert>
 

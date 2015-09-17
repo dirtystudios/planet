@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "DX11InputLayoutCache.h"
 #include <wrl.h>
 

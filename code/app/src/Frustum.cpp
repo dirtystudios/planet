@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "Frustum.h"
 
 Frustum::Frustum(const glm::mat4& projection, const glm::mat4& view) {
