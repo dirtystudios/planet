@@ -24,7 +24,7 @@ namespace input {
         std::vector<ContextBinding> contextActionBindings;
     public:
         template<ContextBindingType T>
-        void InputContext::BindContext(std::string name, InputContextCallback inputDelegate) {
+        void BindContext(std::string name, InputContextCallback inputDelegate) {
             ContextBinding contextBinding;
             contextBinding.mappingName = name;
             contextBinding.boundDelegate = inputDelegate;
@@ -36,7 +36,7 @@ namespace input {
         }
 
         template<ContextBindingType T>
-        int InputContext::GetNumContextBindings() {
+        int GetNumContextBindings() {
             switch (T) {
             case ContextBindingType::Action: return contextActionBindings.size();
             case ContextBindingType::Axis: return contextAxisBindings.size();
@@ -44,7 +44,7 @@ namespace input {
         }
 
         template<ContextBindingType T>
-        ContextBinding* InputContext::GetContextBinding(int index) {
+        ContextBinding* GetContextBinding(int index) {
             switch (T) {
             case ContextBindingType::Action: return &contextActionBindings[index];
             case ContextBindingType::Axis: return &contextAxisBindings[index];
