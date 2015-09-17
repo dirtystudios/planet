@@ -101,6 +101,7 @@ public:
         // Note(eugene): cleanup shaders
         _shaders[0] = _render_device->CreateShader(graphics::ShaderType::VERTEX_SHADER, &vs_src);
         _shaders[1] = _render_device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
+
         assert(_shaders[0] && _shaders[1]);
 
         //_program = _render_device->CreateProgram(_shaders, 2);

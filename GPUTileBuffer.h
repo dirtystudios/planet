@@ -2,6 +2,7 @@
 #define __gpu_tile_buffer_h__
 
 #include "gfx/RenderDevice.h"
+#include <list>
 
 struct GPUTile {
     GPUTile() {};

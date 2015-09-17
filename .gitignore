@@ -33,7 +33,11 @@
 *.userosscache
 *.sln.docstates
 ipch/
+<<<<<<< HEAD
 *.enc
+=======
+*.stackdump
+>>>>>>> origin/eugene/text-rendering-v1
 
 # Visual Studio Profiler Files
 *.vspx
@@ -50,3 +54,4 @@ CMakeCache.txt
 /dg.xcodeproj/
 Makefile
 cmake_install.cmake
+

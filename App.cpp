@@ -8,18 +8,31 @@
 #include "DebugRenderer.h"
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
+#include "TextRenderer.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <noise/noise.h>
+
+#include <functional>
+#include <queue>
+
+>>>>>>> origin/eugene/text-rendering-v1
 uint32_t frame_count = 0;
-double curr_frame_time = 0;
-double prev_frame_time = 0;
 double accumulate = 0;
 double total_frame_count = 0;
-double frame_time = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
+<<<<<<< HEAD
+=======
+bool z_toggle = false;
+bool z_pressed = false;
+>>>>>>> origin/eugene/text-rendering-v1
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
+
+
 
     glm::vec3 translation(0, 0, 0);
     if (key_state.IsPressed(app::KeyCode::KEY_1)) {
@@ -60,6 +73,15 @@ void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_
 
     if (key_state.IsPressed(app::KeyCode::KEY_W)) {
         translation.z += walk_speed * dt;
+    }
+
+    if(key_state.OnReleased(app::KeyCode::KEY_Z)) {
+        z_toggle = !z_toggle;
+        if(z_toggle) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    
+        }
     }
 
     cam.Translate(translation);
@@ -127,12 +149,14 @@ void App::OnStart() {
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
+    text_renderer = new TextRenderer();
+
 
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
 
     ChunkedLoDTerrainDesc desc;
-    desc.size = 10000;
+    desc.size = 5000;
     desc.x = 0;
     desc.y = 0;
     desc.heightmap_generator = [&](double x, double y, double z) -> double {
@@ -162,7 +186,8 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer->Render(cam, frustum);
-
+    text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
+  
     accumulate += dt;
     ++frame_count;
     ++total_frame_count;

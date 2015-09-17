@@ -1,10 +1,24 @@
+[BUGS]
+- In some places, LOD loses resolution as camera gets closer
+	- Seen with these params in flat areas
+	   	const uint32_t TERRAIN_QUAD_RESOLUTION { 64 };
+    	const float TERRAIN_SPLIT_FACTOR  { 1.5f };
+    	const uint32_t TERRAIN_MAX_LOD { 20 };
+    	const uint32_t NUM_QUAD_TREE_NODES  { 4 };
+    	const uint32_t GPU_TILE_BUFFER_SIZE  { 1024 };
+
+
+[Features]
+├─ API Agnostic Rendering
+
+
 ├─ XBOX Controller Support
 
 ├─ Shader Recompile
 └── Recompile shader changes on the fly
 
 ├─  Terrain shading
-├──  Generate heightmap normals using central differences
+├──  Generate heightmap normals using sobel filter
 ├───  Dependency between heightmap data and normal data during gpu tile production
 └──  Hardcode directional light in shaders from quick and dirty shading
 
@@ -13,7 +27,7 @@
 └── Smarter caching and creation of vertex data
 
 ├─ Text Rendering
-└──  Use freetype-gl library
+└──  Use freetype-gl library (/sigh, jake)
 
 ├─ Frustum Culling
 └──  Not perfect, get some false positives on edge of screen
@@ -25,6 +39,3 @@
 ├── Skirts
 ├── Better control of when LOD switches happen
 └── Morphing between LODs
-
-
-

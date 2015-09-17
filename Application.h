@@ -45,11 +45,20 @@ namespace app {
     };
 
     struct KeyState {
+        bool prev_pressed[256];
         bool pressed[256];
 
         bool IsPressed(app::KeyCode key) const {
             return pressed[(int)key];
         };
+
+        bool OnPressed(app::KeyCode key) const {
+            return pressed[(int)key] && !prev_pressed[(int)key];
+        }
+
+        bool OnReleased(app::KeyCode key) const {
+            return !pressed[(int)key] && prev_pressed[(int)key];   
+        }
     };
 
     struct CursorState {

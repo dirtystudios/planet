@@ -35,6 +35,7 @@ find_package(GLFW REQUIRED)
 
 # We only want the static library to build
 # set_target_properties(SDL2 SDL2main PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+find_package(FreeType REQUIRED)
 
 if (WIN32)
     set(GLEW_ROOT_DIR ${CMAKE_SOURCE_DIR})
@@ -57,6 +58,7 @@ include_directories(
     ${SDL2_INCLUDE_DIR}
     ${GLFW_INCLUDE_DIR2}
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${FREETYPE_INCLUDE_DIRS}
 )
 
 set(LIBS        
@@ -65,6 +67,8 @@ set(LIBS
     ${GLEW_LIBRARY}
     ${SDL2_LIBRARY}
     ${GLFW_LIBRARIES}
+    ${GLEW_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
 )
 
 set(GFX_SOURCES
