@@ -20,12 +20,13 @@ namespace input {
             ActionConfig(bool p_ignoreRelease) : ignoreRelease(p_ignoreRelease) {};
         };
 
-        enum class ContextPriority {
+        enum class ContextPriority : uint32_t {
             CONTEXT_MENU = 0,
             CONTEXT_PLAYER,
             CONTEXT_WORLD,
             COUNT,
         };
+
     private:
         struct MappingConfig {
             InputCode inputCode;
@@ -33,9 +34,15 @@ namespace input {
             ActionConfig actionConfig;
         };
 
+        struct ContextKeyHasher {
+            std::size_t operator()(const ContextPriority& k) const {
+                return (uint32_t)k;
+            }
+        };
+
         std::unordered_multimap<std::string, MappingConfig> axisMappings;
         std::unordered_multimap<std::string, MappingConfig> actionMappings;
-        std::unordered_multimap<ContextPriority, InputContext*> contextMappings;
+        std::unordered_multimap<ContextPriority, InputContext*, ContextKeyHasher> contextMappings;
         std::vector<int> actionCache;
 
     public:
