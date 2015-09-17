@@ -16,6 +16,7 @@
 *.so
 
 # Compiled Static Libs
+*.a
 *.lai
 *.la
 *.tlog
@@ -33,11 +34,8 @@
 *.userosscache
 *.sln.docstates
 ipch/
-<<<<<<< HEAD
 *.enc
-=======
 *.stackdump
->>>>>>> origin/eugene/text-rendering-v1
 
 # Visual Studio Profiler Files
 *.vspx
@@ -47,7 +45,7 @@ ipch/
 *.log
 
 # CMake Stuff
-/CMakeFiles/
+CMakeFiles/
 /CMakeScripts/
 CMakeCache.txt
 /dg.build/

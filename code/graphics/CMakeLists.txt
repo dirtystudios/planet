@@ -5,8 +5,8 @@ FILE(GLOB GRAPHICS_GL_SOURCES src/GL/*.cpp src/GL/*/*.cpp)
 FILE(GLOB GRAPHICS_GL_HEADERS src/GL/*.cpp src/GL/*/*.cpp)
 
 find_package(OpenGL REQUIRED)
-message("${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(WIN32)
     set(GLEW_ROOT_DIR ${CMAKE_SOURCE_DIR})

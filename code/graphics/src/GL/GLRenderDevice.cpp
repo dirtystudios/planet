@@ -2,7 +2,7 @@
 // Created by Eugene Sturm on 4/5/15.
 //
 
-#include "GLRenderDevice.h"
+#include "graphics/GL/GLRenderDevice.h"
 
 #ifdef _WIN32
     #include <GL/glew.h>
@@ -11,7 +11,7 @@
     #include <OpenGL/gl3ext.h>
 #endif
 
-#include "Log.h"
+#include "common/Log.h"
 
 #define ARRAY_LEN(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 #define SafeGet(x, idx) x[idx]

@@ -20,6 +20,17 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     endif()
 endif()
 
-include_directories(common)
 
+####################################
+Build Graphics Library
+####################################
+include_directories(common/include)
 add_subdirectory(graphics)
+
+####################################
+Build App
+####################################
+find_package(LIBNOISE REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(FreeType REQUIRED)

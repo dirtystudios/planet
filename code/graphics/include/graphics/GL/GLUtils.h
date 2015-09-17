@@ -10,7 +10,7 @@
 #else
 #include <OpenGL/gl3.h>
 #endif
-#include "Log.h"
+#include "common/Log.h"
 
 #ifndef NDEBUG
 #   define GL_CHECK(func) \
