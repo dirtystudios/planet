@@ -87,7 +87,7 @@ namespace graphics {
 
         IndexBufferHandle index_buffer_handle;
         VertexBufferHandle vertex_buffer_handle;
-    };
+    };    
 
     static GLenum buffer_usage_mapping[(uint32_t)BufferUsage::COUNT] = {
         GL_STATIC_DRAW,
@@ -101,10 +101,16 @@ namespace graphics {
         GL_FRAGMENT_SHADER
     };
 
-    static GLenum texture_format_mapping[(uint32_t)TextureFormat::COUNT] = {
-        GL_R32F,
-        GL_RGB32F,
-        GL_RGBA32F,
+    struct GLTextureFormatDesc {
+        GLenum internal_format;
+        GLenum data_type;
+        GLenum data_format;
+    };
+
+    static GLTextureFormatDesc texture_format_mapping[(uint32_t)TextureFormat::COUNT] = {
+        { GL_R32F, GL_FLOAT, GL_RED },
+        { GL_RGB32F, GL_FLOAT, GL_RGB },
+        { GL_RGBA32F, GL_FLOAT, GL_RGBA }
     };
 
     static GLenum data_format_mapping[(uint32_t)DataFormat::COUNT] = {
@@ -156,6 +162,7 @@ namespace graphics {
     struct TextureGL {
         GLuint id { 0 };
         GLenum target { GL_FALSE };
+        GLTextureFormatDesc* texture_desc { NULL };
     };
 
     struct VertexArrayObjectGL {
@@ -197,6 +204,7 @@ namespace graphics {
       virtual void                    DestroyShader(ShaderHandle handle);
 
       virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data);
+      virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
       virtual TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
       virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data);
       virtual void                    DestroyTexture(TextureHandle handle);

@@ -8,7 +8,7 @@
 #include "DebugRenderer.h"
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
-#include "TextRenderer.h"
+//#include "TextRenderer.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -17,18 +17,14 @@
 #include <functional>
 #include <queue>
 
->>>>>>> origin/eugene/text-rendering-v1
 uint32_t frame_count = 0;
 double accumulate = 0;
 double total_frame_count = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
-<<<<<<< HEAD
-=======
 bool z_toggle = false;
 bool z_pressed = false;
->>>>>>> origin/eugene/text-rendering-v1
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
 
@@ -149,7 +145,7 @@ void App::OnStart() {
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
-    text_renderer = new TextRenderer();
+    //text_renderer = new TextRenderer();
 
 
     cam.MoveTo(0, 0, 1000);
@@ -186,7 +182,7 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer->Render(cam, frustum);
-    text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
+    //text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
   
     accumulate += dt;
     ++frame_count;

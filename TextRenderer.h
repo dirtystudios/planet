@@ -1,6 +1,7 @@
 #ifndef __text_renderer_h__
 #define __text_renderer_h__
 
+#include "gfx/RenderDevice.h"
 #include "GLHelpers.h"
 #include <ft2build.h>
 #include <glm/detail/type_vec.hpp>
@@ -17,18 +18,24 @@ private:
         glm::ivec2 bearing;    
         GLuint     advance;  
     };
+    gfx::RenderDevice* _render_device;
     std::map<GLchar, Character> characters;
 
     GLuint _shaders[2];
-    GLuint _program;
     GLuint VAO, VBO;
 public:
-    TextRenderer() {
-        _shaders[0] = gl::CreateShaderFromFile(GL_VERTEX_SHADER, "/Users/sturm/projects/planet72/shaders/text_vs.glsl");
-        _shaders[1] = gl::CreateShaderFromFile(GL_FRAGMENT_SHADER, "/Users/sturm/projects/planet72/shaders/text_ps.glsl");
+    TextRenderer(gfx::RenderDevice* render_device) : _render_device(render_device) {
+        std::string vs_contents = ReadFileContents(fs::AppendPathProcessDir("../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/text_vs" + render_device->DeviceConfig.ShaderExtension));
+        const char* vs_src = vs_contents.c_str();
+
+        std::string fs_contents = ReadFileContents(fs::AppendPathProcessDir("../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/text_ps" + render_device->DeviceConfig.ShaderExtension));
+        const char* fs_src = fs_contents.c_str();
+
+        // Note(eugene): cleanup shaders
+        _shaders[0] = _render_device->CreateShader(graphics::ShaderType::VERTEX_SHADER, &vs_src);
+        _shaders[1] = _render_device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
+
         assert(_shaders[0] && _shaders[1]);
-        _program = gl::CreateProgram(_shaders, 2);
-        assert(_program);
 
         FT_Library ft;
         if (FT_Init_FreeType(&ft))
@@ -49,6 +56,7 @@ public:
                 continue;
             }
             // Generate texture
+            _render_device->CreateTexture2D(gfx::TextureFormat::R_UBYTE)
             GLuint texture;
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);

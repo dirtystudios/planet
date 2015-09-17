@@ -12,7 +12,8 @@ struct GPUTile {
     uint32_t index;
 
     void CopyData(uint32_t width, uint32_t height, GLenum format, void* data) {
-        gl::UpdateTexture2DArray(texture_array_id, format, GL_FLOAT, width, height, index, data);
+        assert(false);
+        //gl::UpdateTexture2DArray(texture_array_id, format, GL_FLOAT, width, height, index, data);
     }
 };
 

@@ -359,16 +359,13 @@ namespace graphics {
 //     }
 
 
-
-    TextureHandle RenderDeviceGL::CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data) {
-        GLenum gl_tex_format = SafeGet(texture_format_mapping, (uint32_t)tex_format);
-        GLenum gl_data_type = SafeGet(data_type_mapping, (uint32_t)data_type);
-        GLenum gl_data_format = SafeGet(data_format_mapping, (uint32_t)data_format);
+    TextureHandle RenderDeviceGL::CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data) {
+        GLTextureFormatDesc* gl_texture_desc = &SafeGet(texture_format_mapping, (uint32_t)tex_format);
 
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_2D, id));
-        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_tex_format, width, height, 0, gl_data_format, gl_data_type, data));
+        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_texture_desc.internal_format, width, height, 0, gl_texture_desc.data_format, gl_texture_desc.data_type, data));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -378,17 +375,39 @@ namespace graphics {
         TextureGL texture = {};
         texture.id = id;
         texture.target = GL_TEXTURE_2D;
+        texture.texture_desc = gl_texture_desc;
+        _textures.insert(std::make_pair(handle, texture));
+        return handle;
+    }
+
+    TextureHandle RenderDeviceGL::CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data) {
+        GLTextureFormatDesc* gl_texture_desc = &SafeGet(texture_format_mapping, (uint32_t)tex_format);
+        
+        GLuint id = 0;
+        GL_CHECK(glGenTextures(1, &id));
+        GL_CHECK(glBindTexture(GL_TEXTURE_2D, id));
+        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_texture_desc.internal_format, width, height, 0, gl_texture_desc.data_format, gl_texture_desc.data_type, data));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+
+        uint32_t handle = GenerateHandle();
+        TextureGL texture = {};
+        texture.id = id;
+        texture.target = GL_TEXTURE_2D;
+        texture.texture_desc = gl_texture_desc;
         _textures.insert(std::make_pair(handle, texture));
         return handle;
     }
 
     TextureHandle RenderDeviceGL::CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
-        GLenum gl_tex_format = SafeGet(texture_format_mapping, (uint32_t)tex_format);
+        GLTextureFormatDesc* gl_texture_desc = &SafeGet(texture_format_mapping, (uint32_t)tex_format);
 
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_2D_ARRAY, id));
-        GL_CHECK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, levels, gl_tex_format, width, height, depth));
+        GL_CHECK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, levels, gl_texture_desc.internal_format, width, height, depth));
         glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -399,21 +418,21 @@ namespace graphics {
         TextureGL texture = {};
         texture.id = id;
         texture.target = GL_TEXTURE_2D_ARRAY;
+        texture.texture_desc = gl_texture_desc;
         _textures.insert(std::make_pair(handle, texture));
 
         return handle;
     }
 
-    TextureHandle RenderDeviceGL::CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data) {
-        GLenum gl_tex_format = SafeGet(texture_format_mapping, (uint32_t)tex_format);
-        GLenum gl_data_type = SafeGet(data_type_mapping, (uint32_t)data_type);
-        GLenum gl_data_format = SafeGet(data_format_mapping, (uint32_t)data_format);
+    TextureHandle RenderDeviceGL::CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data) {
+        GLTextureFormatDesc* gl_texture_desc = &SafeGet(texture_format_mapping, (uint32_t)tex_format);
 
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, id));
         for(uint32_t side = 0; side < 6; ++side) {
-            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, gl_tex_format, width, height, 0, gl_data_type, gl_data_format, data[side]));
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, gl_texture_desc.internal_format, width, height, 0, 
+                                  gl_texture_desc.data_type, gl_texture_desc.data_format, data[side]));
         }
 
         GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -426,6 +445,7 @@ namespace graphics {
         TextureGL texture = {};
         texture.id = id;
         texture.target = GL_TEXTURE_CUBE_MAP;
+        texture.texture_desc = gl_texture_desc;
         _textures.insert(std::make_pair(handle, texture));
         return handle;
     }
@@ -448,17 +468,17 @@ namespace graphics {
     }
 
 
-    void RenderDeviceGL::UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, DataType data_type, DataFormat data_format, void* data) {
+    void RenderDeviceGL::UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data) {
         TextureGL* texture = Get<TextureGL>(_textures, handle);
         assert(texture);
         assert(texture->target == GL_TEXTURE_2D_ARRAY);
     
-        GLenum gl_data_type = SafeGet(data_type_mapping, (uint32_t)data_type);
-        GLenum gl_data_format = SafeGet(data_format_mapping, (uint32_t)data_format);
+        GLTextureFormatDesc* format_desc = texture->texture_desc;
     
         GL_CHECK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture->id));
         uint32_t xoffset = 0, yoffset = 0, level = 0, depth = 1;
-        GL_CHECK(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, level, xoffset, yoffset, array_index, width, height, depth, gl_data_format, gl_data_type, data));
+        GL_CHECK(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, level, xoffset, yoffset, array_index, width, height, depth, 
+                                 format_desc->data_format, format_desc->data_type, data));
     }
     void RenderDeviceGL::UpdateTexture(TextureHandle handle, void* data, size_t size) {
 
