@@ -27,9 +27,9 @@ namespace graphics {
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
 
-     //   glEnable(GL_BLEND);
-     //   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-     //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         GL_CHECK(glGenProgramPipelines(1, &_pipeline));
         GL_CHECK(glBindProgramPipeline(_pipeline));

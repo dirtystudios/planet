@@ -88,12 +88,12 @@ set(GFX_GL_HEADERS
 set(UTIL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp
-}
+)
 
 set(UTIL_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.h
     ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h
-}
+)
 
 set(GAME_SOURCES    
     ${CMAKE_CURRENT_SOURCE_DIR}/App.cpp
@@ -124,8 +124,6 @@ set(ALL_HEADERS
     ${GFX_GL_HEADERS}
     ${UTIL_SOURCES}
 )
-
-message("rawr: ${SDL2_LIBRARY}")
 
 # create application
 add_executable(dg ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${ALL_SOURCES} ${ALL_HEADERS})
