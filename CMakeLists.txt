@@ -134,13 +134,15 @@ set(ALL_SOURCES
     ${GFX_SOURCES}
     ${GFX_GL_SOURCES}
     ${UTIL_SOURCES}
+    ${INPUT_SOURCES}
 )
 
 set(ALL_HEADERS   
     ${GAME_HEADERS} 
     ${GFX_HEADERS}
     ${GFX_GL_HEADERS}
-    ${UTIL_SOURCES}
+    ${UTIL_HEADERS}
+    ${INPUT_HEADERS}
 )
 
 # create application
