@@ -283,6 +283,54 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+stdafx.o: stdafx.cpp.o
+.PHONY : stdafx.o
+
+# target to build an object file
+stdafx.cpp.o:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/stdafx.cpp.o
+.PHONY : stdafx.cpp.o
+
+stdafx.i: stdafx.cpp.i
+.PHONY : stdafx.i
+
+# target to preprocess a source file
+stdafx.cpp.i:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/stdafx.cpp.i
+.PHONY : stdafx.cpp.i
+
+stdafx.s: stdafx.cpp.s
+.PHONY : stdafx.s
+
+# target to generate assembly for a file
+stdafx.cpp.s:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/stdafx.cpp.s
+.PHONY : stdafx.cpp.s
+
+utilities/File.o: utilities/File.cpp.o
+.PHONY : utilities/File.o
+
+# target to build an object file
+utilities/File.cpp.o:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/utilities/File.cpp.o
+.PHONY : utilities/File.cpp.o
+
+utilities/File.i: utilities/File.cpp.i
+.PHONY : utilities/File.i
+
+# target to preprocess a source file
+utilities/File.cpp.i:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/utilities/File.cpp.i
+.PHONY : utilities/File.cpp.i
+
+utilities/File.s: utilities/File.cpp.s
+.PHONY : utilities/File.s
+
+# target to generate assembly for a file
+utilities/File.cpp.s:
+	$(MAKE) -f CMakeFiles/dg.dir/build.make CMakeFiles/dg.dir/utilities/File.cpp.s
+.PHONY : utilities/File.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -313,6 +361,12 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... stdafx.o"
+	@echo "... stdafx.i"
+	@echo "... stdafx.s"
+	@echo "... utilities/File.o"
+	@echo "... utilities/File.i"
+	@echo "... utilities/File.s"
 .PHONY : help
 
 
