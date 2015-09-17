@@ -58,9 +58,49 @@ namespace app {
         double delta_y;
     };
 
+    enum class ControllerKeyCode : uint32_t {
+        KEY_Y = 0,
+        KEY_X,
+        KEY_A,
+        KEY_B,
+        KEY_HAMBURGER, // 'Start'
+        KEY_CHEESE,    // 'Select'
+        KEY_UP,
+        KEY_DOWN,
+        KEY_RIGHT,
+        KEY_LEFT,
+        KEY_RSTICK,
+        KEY_LSTICK,
+        KEY_RSHOULDER,
+        KEY_LSHOULDER,
+        KEY_GUIDE,
+        COUNT,
+    };
+
+    struct ControllerKeyState {
+        bool pressed[(uint32_t)ControllerKeyCode::COUNT];
+        bool isPressed(app::ControllerKeyCode key) const {
+            return pressed[(uint32_t)key];
+        };
+    };
+
+    struct ControllerStick {
+        double x;
+        double y;
+    };
+
+    struct ControllerState {
+        ControllerKeyState keyState;
+        ControllerStick leftStick;
+        ControllerStick rightStick;
+        double rightTrigger;
+        double leftTrigger;
+    };
+
     struct AppState {    
         KeyState key_state;
         CursorState cursor_state;
+        ControllerState controllerState;
     };
 
     class Application {

@@ -1,26 +1,13 @@
+#include "stdafx.h"
 #include "App.h"
-#include "GLHelpers.h"
-#include <glm/glm.hpp>
 #include "Camera.h"
-#include <vector>
 #include "System.h"
-#include <sstream>
 #include "Helpers.h"
-#include <list>
-#include <unordered_map>
-#include "BoundingBox.h"
-#include <queue>
-#include <glm/gtx/transform.hpp>
 #include <noise/noise.h>
 #include "Frustum.h"
 #include "DebugRenderer.h"
-#include <algorithm>
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
-
-#ifdef _WIN32
-#include <functional>
-#endif
 
 uint32_t frame_count = 0;
 double curr_frame_time = 0;
@@ -31,8 +18,6 @@ double frame_time = 0;
 Camera cam;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
-//graphics::RenderDeviceDX11* render_device;
-
 
 void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
 
@@ -92,16 +77,53 @@ void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_
     }
 }
 
+void HandleControllerInput(const app::ControllerState state, float dt) {
+    glm::vec3 translation(0, 0, 0);
+    float controllerSpeed = 2.0f;
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_UP)) {
+        translation.z += walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_DOWN)) {
+        translation.z -= walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_RIGHT)) {
+        translation.x += walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_LEFT)) {
+        translation.x -= walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_RSHOULDER)) {
+        translation.y -= walk_speed * dt;
+    }
+
+    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_LSHOULDER)) {
+        translation.y += walk_speed * dt;
+    }
+
+    cam.Translate(translation);
+
+    glm::vec2 rightstick(state.rightStick.x, state.rightStick.y);
+    if (rightstick.x != 0 || rightstick.y != 0) {
+        float pitch = controllerSpeed * dt * rightstick.y;
+        float yaw = controllerSpeed * dt * rightstick.x;
+        cam.Pitch(-pitch);
+        cam.Yaw(-yaw);
+    }
+}
+
 struct Transform {
     glm::quat rotation;
     glm::vec3 position;
 };
 
-
 ChunkedLoDTerrainRenderer* terrain_renderer;
 
-void App::OnStart() {
-    //render_device = new graphics::RenderDeviceDX11();
+void App::OnStart() {  
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
@@ -113,7 +135,7 @@ void App::OnStart() {
     desc.size = 10000;
     desc.x = 0;
     desc.y = 0;
-    desc.heightmap_generator = [&](double x, double y, double z) -> float {
+    desc.heightmap_generator = [&](double x, double y, double z) -> double {
                         noise::module::RidgedMulti mountain;
                         mountain.SetSeed(32);
                         mountain.SetFrequency(0.05);
@@ -128,6 +150,8 @@ void App::OnStart() {
 
 void App::OnFrame(const app::AppState* app_state, float dt) {
     HandleInput(app_state->key_state, app_state->cursor_state, 1.f/60.f);
+
+    HandleControllerInput(app_state->controllerState, 1.f / 60.f);
 
     glm::mat4 proj = cam.BuildProjection();
     glm::mat4 view = cam.BuildView();
@@ -145,7 +169,8 @@ void App::OnFrame(const app::AppState* app_state, float dt) {
 
     if(accumulate > 1.0) {
         std::stringstream ss;
-        ss << "gfx | FPS: " << frame_count << " | Frame: " << total_frame_count;
+        ss << "gfx Device: " << renderDevice->DeviceConfig.DeviceAbbreviation;
+        ss << " | FPS: " << frame_count << " | Frame: " << total_frame_count;
         ss << " | Pos: " << cam.pos;
         sys::SetWindowTitle(ss.str().c_str());
         frame_count = 0;

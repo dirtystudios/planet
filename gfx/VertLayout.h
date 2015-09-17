@@ -1,8 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <stdint.h>
-#include <list>
 #include "ParamType.h"
 
 namespace graphics {

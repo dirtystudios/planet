@@ -1,6 +1,4 @@
 #pragma once
-#include <unordered_map>
-#include <stdint.h>
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 #include <d3d11.h>

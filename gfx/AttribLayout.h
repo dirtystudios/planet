@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <stdint.h>
 #include "VertLayout.h"
 
 namespace graphics {

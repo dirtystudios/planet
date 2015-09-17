@@ -1,14 +1,6 @@
 #ifndef __log_h__
 #define __log_h__
 
-#include <iostream>
-#include <iomanip>
-#include <cassert>
-
-#ifdef _WIN32
-#include <stdarg.h>
-#endif
-
 #if defined(_MSC_VER) && _MSC_VER < 1900
 
 #define snprintf c99_snprintf

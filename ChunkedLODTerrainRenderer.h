@@ -1,12 +1,12 @@
+#include "stdafx.h"
 #ifndef __chunked_lod_terrain_renderer_h__
 #define __chunked_lod_terrain_renderer_h__
 
-#include <map>
-#include <vector>
 #include "GLHelpers.h"
 #include "GPUTileBuffer.h"
 #include "LRUTileCache.h"
 #include "gfx/RenderDevice.h"
+#include "utilities/File.h"
 
 struct Material {
 
@@ -91,10 +91,11 @@ private:
 
 public:
     ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
-        std::string vs_contents = ReadFileContents("C:/Users/Jake/Documents/gitrepos/planet/shaders/DX11/terrain_vs.hlsl");
+        // Bleh, theres probably a better way for this
+        std::string vs_contents = ReadFileContents(fs::AppendPathProcessDir("../../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_vs" + render_device->DeviceConfig.ShaderExtension));
         const char* vs_src = vs_contents.c_str();
 
-        std::string fs_contents = ReadFileContents("C:/Users/Jake/Documents/gitrepos/planet/shaders/DX11/terrain_ps.hlsl");
+        std::string fs_contents = ReadFileContents(fs::AppendPathProcessDir("../../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_fs" + render_device->DeviceConfig.ShaderExtension));
         const char* fs_src = fs_contents.c_str();
 
         // Note(eugene): cleanup shaders
@@ -345,7 +346,7 @@ private:
     void GenerateHeightmapRegion(const glm::dvec3& region_center,
         const glm::vec2& region_size,
         const glm::uvec2& resolution,
-        std::function<float(double x, double y, double z)> heightmap_generator,
+        std::function<double(double x, double y, double z)> heightmap_generator,
         std::vector<float>* data, float* max, float* min) {
 
         *max = std::numeric_limits<float>::min();
@@ -415,7 +416,7 @@ private:
 
                 float x = -((br - bl) + (2.f * (r - l)) + (tr - tl));
                 float y = -((tl - bl) + (2.f * (t - b)) + (tr - br));
-                glm::vec4 normal = glm::normalize(glm::vec4(scale * x, scale * y, z, 1.0f));
+                glm::vec4 normal = glm::normalize(glm::vec4(scale * x, scale * y, z, 0.0f));
 
                 generated_normal_data->push_back(normal);
             }
@@ -424,7 +425,7 @@ private:
     }
 
     void GenerateHeightmapRegion(uint32_t lod, const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution,
-                                 std::function<float(double x, double y, double z)> heightmap_generator,
+                                 std::function<double(double x, double y, double z)> heightmap_generator,
                                  std::vector<float>* elevation_data, float* elevation_max, float* elevation_min,
                                  std::vector<glm::vec4>* normal_data) {
         GenerateHeightmapRegion(center, size, resolution, heightmap_generator, elevation_data, elevation_max, elevation_min);

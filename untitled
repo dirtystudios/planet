@@ -1,9 +1,0 @@
-
-
-namespace gfx {
-    namespace backend {
-
-        VertexBufferRef CreateVertexBuffer();
-
-    }
-}

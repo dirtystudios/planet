@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "Frustum.h"
-#include <glm/gtc/matrix_access.hpp>
 
 Frustum::Frustum(const glm::mat4& projection, const glm::mat4& view) {
     glm::mat4 view_proj = projection * view;

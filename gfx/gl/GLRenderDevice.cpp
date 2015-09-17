@@ -1,9 +1,10 @@
+#include "stdafx.h"
 //
 // Created by Eugene Sturm on 4/5/15.
 //
 
 #include "GLRenderDevice.h"
-#include "../../GLHelpers.h"
+#include "GLHelpers.h"
 
 #define ARRAY_LEN(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 #define SafeGet(x, idx) x[idx]
@@ -15,10 +16,9 @@
 
 namespace graphics {
     RenderDeviceGL::RenderDeviceGL() {
-        LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
-        LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-        LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
-        LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
+        DeviceConfig.ShaderExtension = ".glsl";
+        DeviceConfig.DeviceAbbreviation = "GL";
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.f);
         glClearDepth(1.0f);
         glDepthFunc(GL_LESS);
@@ -30,6 +30,7 @@ namespace graphics {
      //   glEnable(GL_BLEND);
      //   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
      //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
         GL_CHECK(glGenProgramPipelines(1, &_pipeline));
         GL_CHECK(glBindProgramPipeline(_pipeline));
     }
@@ -656,7 +657,10 @@ namespace graphics {
         return ++key;
     }
 
-    void PrintDisplayAdapterInfo() {
-
+    void RenderDeviceGL::PrintDisplayAdapterInfo() {
+        LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
+        LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+        LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
+        LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
     }
 }

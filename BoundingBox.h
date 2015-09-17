@@ -1,8 +1,6 @@
 #ifndef __bounding_box_h__
 #define __bounding_box_h__
 
-#include <glm/glm.hpp>
-
 struct BoundingBox {
     BoundingBox(glm::vec3 min, glm::vec3 max) : min(min), max(max) {};
     BoundingBox() {};

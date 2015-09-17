@@ -33,7 +33,9 @@
     <ClInclude Include="..\Helpers.h" />
     <ClInclude Include="..\Log.h" />
     <ClInclude Include="..\LRUTileCache.h" />
+    <ClInclude Include="..\stdafx.h" />
     <ClInclude Include="..\System.h" />
+    <ClInclude Include="..\utilities\File.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\App.cpp" />
@@ -44,7 +46,9 @@
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp" />
     <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\stdafx.cpp" />
     <ClCompile Include="..\SystemSDL2.cpp" />
+    <ClCompile Include="..\utilities\File.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32A60293-4AF5-43BB-A314-BC8382DFA22B}</ProjectGuid>
@@ -76,7 +80,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\;..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
   </PropertyGroup>
@@ -90,6 +94,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

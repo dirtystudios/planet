@@ -6,14 +6,11 @@
 #define DG_GLUTILS_H
 
 #ifdef _WIN32
-#include "../../include/GL/glew.h"
+#include "include/GL/glew.h"
 #else
 #include <OpenGL/gl3.h>
 #endif
-#include "../../Log.h"
-#include <unordered_map>
-#include <functional>
-#include <iostream>
+#include "Log.h"
 
 #ifndef NDEBUG
 #   define GL_CHECK(func) \

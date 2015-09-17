@@ -1,16 +1,11 @@
 #pragma once
 
-#include <string>
-#include <cstring>
-#include <unordered_map>
-#include <vector>
-#include <memory>
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 #include <wrl.h>
 
-#include "../ParamType.h"
-#include "../../Log.h"
+#include "gfx/ParamType.h"
+#include "Log.h"
 
 using namespace Microsoft::WRL;
 

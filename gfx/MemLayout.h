@@ -1,8 +1,6 @@
 #ifndef __mem_layout_h__
 #define __mem_layout_h__
 
-#include <vector>
-
 namespace graphics {
 
    struct StructureElement {

@@ -1,7 +1,6 @@
 #ifndef __gpu_tile_buffer_h__
 #define __gpu_tile_buffer_h__
 
-
 #include "gfx/RenderDevice.h"
 
 struct GPUTile {
