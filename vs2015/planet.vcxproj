@@ -90,11 +90,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\;..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
+    <TargetName>$(ProjectName)-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
