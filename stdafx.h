@@ -36,10 +36,13 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <new>
 #include <queue>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <sys/types.h>

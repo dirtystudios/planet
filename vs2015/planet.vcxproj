@@ -31,10 +31,16 @@
     <ClInclude Include="..\GLHelpers.h" />
     <ClInclude Include="..\GPUTileBuffer.h" />
     <ClInclude Include="..\Helpers.h" />
+    <ClInclude Include="..\input\Controller.h" />
+    <ClInclude Include="..\input\InputCodes.h" />
+    <ClInclude Include="..\input\InputContext.h" />
+    <ClInclude Include="..\input\InputManager.h" />
+    <ClInclude Include="..\input\PlayerController.h" />
     <ClInclude Include="..\Log.h" />
     <ClInclude Include="..\LRUTileCache.h" />
     <ClInclude Include="..\stdafx.h" />
     <ClInclude Include="..\System.h" />
+    <ClInclude Include="..\utilities\Callback.h" />
     <ClInclude Include="..\utilities\File.h" />
   </ItemGroup>
   <ItemGroup>
@@ -45,6 +51,8 @@
     <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp" />
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp" />
     <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp" />
+    <ClCompile Include="..\input\InputManager.cpp" />
+    <ClCompile Include="..\input\PlayerController.cpp" />
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\stdafx.cpp" />
     <ClCompile Include="..\SystemSDL2.cpp" />

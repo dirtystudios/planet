@@ -8,6 +8,8 @@
 #include "DebugRenderer.h"
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
+#include "input/InputManager.h"
+#include "input/PlayerController.h"
 
 uint32_t frame_count = 0;
 double curr_frame_time = 0;
@@ -16,115 +18,51 @@ double accumulate = 0;
 double total_frame_count = 0;
 double frame_time = 0;
 Camera cam;
+input::InputManager* inputManager;
+controllers::PlayerController* playerController;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
 
-void HandleInput(const app::KeyState& key_state, const app::CursorState& cursor_state, float dt) {
+void SetupInput() {
+    inputManager = new input::InputManager();
+    // Handle Key Mappings
+    // Keyboard n mouse
+    inputManager->AddAxisMapping("MoveForward", input::InputCode::INPUT_KEY_W, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("MoveBackward", input::InputCode::INPUT_KEY_S, input::InputManager::AxisConfig(-1.0, 0));
+    inputManager->AddAxisMapping("MoveRight", input::InputCode::INPUT_KEY_D, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("MoveLeft", input::InputCode::INPUT_KEY_A, input::InputManager::AxisConfig(-1.0, 0));
 
-    glm::vec3 translation(0, 0, 0);
-    if (key_state.IsPressed(app::KeyCode::KEY_1)) {
-        walk_speed = 600.f;
-    }
+    /*inputManager->AddActionMapping("MoveSpeedSlow", input::InputCode::INPUT_KEY_3, input::InputManager::ActionConfig(true));
+    inputManager->AddActionMapping("MoveSpeedNormal", input::InputCode::INPUT_KEY_2, input::InputManager::ActionConfig(true));
+    inputManager->AddActionMapping("MoveSpeedFast", input::InputCode::INPUT_KEY_1, input::InputManager::ActionConfig(true));*/
+    inputManager->AddActionMapping("LookMode", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false));
 
-    if (key_state.IsPressed(app::KeyCode::KEY_2)) {
-        walk_speed = 100.f;
-    }
+    inputManager->AddAxisMapping("LookUp", input::InputCode::INPUT_MOUSE_YAXISRELATIVE, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("LookDown", input::InputCode::INPUT_MOUSE_YAXISRELATIVE, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("LookLeft", input::InputCode::INPUT_MOUSE_XAXISRELATIVE, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("LookRight", input::InputCode::INPUT_MOUSE_XAXISRELATIVE, input::InputManager::AxisConfig(1.0, 0));
 
-    if (key_state.IsPressed(app::KeyCode::KEY_3)) {
-        walk_speed = 15.f;
-    }
+    // Controller
+    inputManager->AddAxisMapping("MoveForward", input::InputCode::INPUT_GAMEPAD_UP, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("MoveBackwards", input::InputCode::INPUT_GAMEPAD_DOWN, input::InputManager::AxisConfig(-1.0, 0));
+    inputManager->AddAxisMapping("MoveRight", input::InputCode::INPUT_GAMEPAD_RIGHT, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("MoveLeft", input::InputCode::INPUT_GAMEPAD_LEFT, input::InputManager::AxisConfig(-1.0, 0));
 
-    if (key_state.IsPressed(app::KeyCode::KEY_W)) {
-        translation.z += walk_speed * dt;
-    }
+    inputManager->AddAxisMapping("LookUp", input::InputCode::INPUT_GAMEPAD_RSTICKY, input::InputManager::AxisConfig(1.0, 0.15));
+    inputManager->AddAxisMapping("LookDown", input::InputCode::INPUT_GAMEPAD_RSTICKY, input::InputManager::AxisConfig(1.0, 0.15));
+    inputManager->AddAxisMapping("LookLeft", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15));
+    inputManager->AddAxisMapping("LookRight", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15));
 
-    if (key_state.IsPressed(app::KeyCode::KEY_A)) {
-        translation.x -= walk_speed * dt;
-    }
-
-    if (key_state.IsPressed(app::KeyCode::KEY_S)) {
-        translation.z -= walk_speed * dt;
-    }
-
-    if (key_state.IsPressed(app::KeyCode::KEY_D)) {
-        translation.x += walk_speed * dt;
-    }
-
-    if (key_state.IsPressed(app::KeyCode::KEY_Q)) {
-        translation.y += walk_speed * dt;
-    }
-
-    if (key_state.IsPressed(app::KeyCode::KEY_E)) {
-        translation.y -= walk_speed * dt;
-    }
-
-    if (key_state.IsPressed(app::KeyCode::KEY_W)) {
-        translation.z += walk_speed * dt;
-    }
-
-    cam.Translate(translation);
-    if (translation != glm::vec3(0, 0, 0)) {
-
-    }
-    
-
-    glm::vec2 mouse_delta(cursor_state.delta_x, cursor_state.delta_y);
-    if(mouse_delta.x != 0 || mouse_delta.y != 0) {
-        float pitch = mouse_speed * dt * mouse_delta.y;
-        float yaw = mouse_speed * dt * mouse_delta.x;
-        cam.Pitch(pitch);
-        cam.Yaw(-yaw);
-    }
+    // Create context and controllers
+    input::InputContext* inputContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_PLAYER);
+    playerController = new controllers::PlayerController(&cam, inputContext);
 }
-
-void HandleControllerInput(const app::ControllerState state, float dt) {
-    glm::vec3 translation(0, 0, 0);
-    float controllerSpeed = 2.0f;
-
-    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_UP)) {
-        translation.z += walk_speed * dt;
-    }
-
-    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_DOWN)) {
-        translation.z -= walk_speed * dt;
-    }
-
-    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_RIGHT)) {
-        translation.x += walk_speed * dt;
-    }
-
-    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_LEFT)) {
-        translation.x -= walk_speed * dt;
-    }
-
-    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_RSHOULDER)) {
-        translation.y -= walk_speed * dt;
-    }
-
-    if (state.keyState.isPressed(app::ControllerKeyCode::KEY_LSHOULDER)) {
-        translation.y += walk_speed * dt;
-    }
-
-    cam.Translate(translation);
-
-    glm::vec2 rightstick(state.rightStick.x, state.rightStick.y);
-    if (rightstick.x != 0 || rightstick.y != 0) {
-        float pitch = controllerSpeed * dt * rightstick.y;
-        float yaw = controllerSpeed * dt * rightstick.x;
-        cam.Pitch(-pitch);
-        cam.Yaw(-yaw);
-    }
-}
-
-struct Transform {
-    glm::quat rotation;
-    glm::vec3 position;
-};
-
 
 ChunkedLoDTerrainRenderer* terrain_renderer;
 
 void App::OnStart() {  
+    SetupInput();
+
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
@@ -145,14 +83,11 @@ void App::OnStart() {
                     };
 
     terrain_renderer->RegisterTerrain(desc);
-
 }
 
-
-void App::OnFrame(const app::AppState* app_state, float dt) {
-    HandleInput(app_state->key_state, app_state->cursor_state, 1.f/60.f);
-
-    HandleControllerInput(app_state->controllerState, 1.f / 60.f);
+void App::OnFrame(const std::vector<float>& inputValues, float dt) {
+    inputManager->ProcessInputs(inputValues, 1.f / 60.f);
+    playerController->DoUpdate(1.f / 60.f);
 
     glm::mat4 proj = cam.BuildProjection();
     glm::mat4 view = cam.BuildView();

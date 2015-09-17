@@ -13,6 +13,9 @@
     <Filter Include="utilities">
       <UniqueIdentifier>{685d0ef9-e619-42ff-9e81-c5f15e5234d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{ead8cc48-3664-4ab2-9bae-314db253323f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\gfx\AttribLayout.h">
@@ -62,6 +65,24 @@
       <Filter>utilities</Filter>
     </ClInclude>
     <ClInclude Include="..\stdafx.h" />
+    <ClInclude Include="..\input\InputContext.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\InputManager.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\InputCodes.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\PlayerController.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\Controller.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\utilities\Callback.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp">
@@ -83,5 +104,11 @@
       <Filter>utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\stdafx.cpp" />
+    <ClCompile Include="..\input\InputManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\input\PlayerController.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

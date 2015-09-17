@@ -6,7 +6,7 @@
 class App : public app::Application {
 public:
     void OnStart() final;
-    void OnFrame(const app::AppState* app_state, float dt) final;
+    void OnFrame(const std::vector<float>& inputValues, float dt) final;
     void OnShutdown() final;
     
 };

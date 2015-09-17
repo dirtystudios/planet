@@ -23,9 +23,9 @@ SDL_Event _e;
 uint32_t _window_width = 800;
 uint32_t _window_height = 600;
 const char* _window_title = "dirty";
-app::AppState _app_state;
 app::Application* _app = { nullptr };
 bool shouldQuit = false;
+std::vector<float> inputValues((int)input::InputCode::COUNT);
 
 int filterSDLEvents(void* userdata, SDL_Event* event){
     //what im going to do here is just weed out any key's we dont want
@@ -51,9 +51,9 @@ int filterSDLEvents(void* userdata, SDL_Event* event){
     return 1;
 }
 
-#define MAP_KEY_SDL(x, y) SDLK_##x, app::KeyCode::KEY_##y
-app::KeyCode GetKeyCodeFromGLFWKey(int glfw_key) {
-    static std::map<int, app::KeyCode> glfw_mapping = {
+#define MAP_KEY_SDL(x, y) SDLK_##x, input::InputCode::INPUT_KEY_##y
+input::InputCode GetKeyCodeFromGLFWKey(int glfw_key) {
+    static std::map<int, input::InputCode> glfw_mapping = {
         { MAP_KEY_SDL(a, A) },
         { MAP_KEY_SDL(d, D) },
         { MAP_KEY_SDL(e, E) },
@@ -66,7 +66,7 @@ app::KeyCode GetKeyCodeFromGLFWKey(int glfw_key) {
         { MAP_KEY_SDL(3, 3) },
     };
     auto it = glfw_mapping.find(glfw_key);
-    return it == glfw_mapping.end() ? app::KeyCode::KEY_UNKNOWN : it->second;
+    return it == glfw_mapping.end() ? input::InputCode::KEY_UNKNOWN : it->second;
 }
 
 void sys::SetWindowTitle(const char* title) {
@@ -166,12 +166,8 @@ int sys::Run(app::Application* app){
         double start = GetTime();
 
         // Reset mouse movement, otherwise camera constantly moves around
-        _app_state.cursor_state.delta_x = 0;
-        _app_state.cursor_state.delta_y = 0;
-        
-        // need a 'deadzone' for stick reset;
-        _app_state.controllerState.rightStick.x = abs(_app_state.controllerState.rightStick.x) < 0.15 ? 0 : _app_state.controllerState.rightStick.x;
-        _app_state.controllerState.rightStick.y = abs(_app_state.controllerState.rightStick.y) < 0.15 ? 0 : _app_state.controllerState.rightStick.y;
+        inputValues[(int)input::InputCode::INPUT_MOUSE_XAXISRELATIVE] = 0;
+        inputValues[(int)input::InputCode::INPUT_MOUSE_YAXISRELATIVE] = 0;
 
         while (SDL_PollEvent(&_e) != 0) {
             //user quit
@@ -190,7 +186,7 @@ int sys::Run(app::Application* app){
                 case SDLK_1:
                 case SDLK_2:
                 case SDLK_3:
-                    _app_state.key_state.pressed[(int)GetKeyCodeFromGLFWKey(_e.key.keysym.sym)] = _e.type == SDL_KEYDOWN ? true : false;
+                    inputValues[(int)GetKeyCodeFromGLFWKey(_e.key.keysym.sym)] = _e.type == SDL_KEYDOWN ? true : false;
                     break;
                 case SDLK_ESCAPE:
                     shouldQuit = true;
@@ -200,28 +196,38 @@ int sys::Run(app::Application* app){
                 }
             }
             else if (_e.type == SDL_MOUSEMOTION){
-                _app_state.cursor_state.delta_x = _e.motion.xrel;
-                _app_state.cursor_state.delta_y = _e.motion.yrel;
+                inputValues[(int)input::InputCode::INPUT_MOUSE_XAXISRELATIVE] = _e.motion.xrel;
+                inputValues[(int)input::InputCode::INPUT_MOUSE_YAXISRELATIVE] = _e.motion.yrel;
+            }
+            else if (_e.type == SDL_MOUSEBUTTONDOWN || _e.type == SDL_MOUSEBUTTONUP) {
+                switch (_e.button.button) {
+                case SDL_BUTTON_LEFT:
+                    inputValues[(int)input::InputCode::INPUT_MOUSE_KEY1] = _e.button.type == SDL_MOUSEBUTTONDOWN ? true : false;
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    inputValues[(int)input::InputCode::INPUT_MOUSE_KEY2] = _e.button.type == SDL_MOUSEBUTTONDOWN ? true : false;
+                    break;
+                }
             }
             else if (_e.type == SDL_CONTROLLERBUTTONDOWN || _e.type == SDL_CONTROLLERBUTTONUP) {
                 switch (_e.cbutton.button) {
                 case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_DOWN] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_DOWN] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_UP] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_UP] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_LEFT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_LEFT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_RIGHT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RIGHT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
                     break;
                 case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_RSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
                     break;
                 case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-                    _app_state.controllerState.keyState.pressed[(int)app::ControllerKeyCode::KEY_LSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_LSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
                     break;
                 default: break;
                 }
@@ -229,17 +235,17 @@ int sys::Run(app::Application* app){
             else if (_e.type == SDL_CONTROLLERAXISMOTION) {
                 switch (_e.caxis.axis) {
                 case SDL_CONTROLLER_AXIS_RIGHTX:
-                    _app_state.controllerState.rightStick.x = (float)_e.caxis.value / 32767.0;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKX] = (float)_e.caxis.value / 32767.0;
                     break;
                 case SDL_CONTROLLER_AXIS_RIGHTY:
-                    _app_state.controllerState.rightStick.y = (float)_e.caxis.value / 32767.0;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKY] = (float)_e.caxis.value / 32767.0;
                     break;
                 default: break;
                 }
             }
         }
 
-        _app->OnFrame(&_app_state, dt);
+        _app->OnFrame(inputValues, dt);
 #ifdef GL_BACKEND
         SDL_GL_SwapWindow(_window);
 #endif
