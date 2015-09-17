@@ -96,7 +96,21 @@ set(UTIL_SOURCES
 
 set(UTIL_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/File.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/Callback.h
     ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h
+)
+
+set(INPUT_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/input/PlayerController.cpp
+)
+
+set(INPUT_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/input/Controller.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputCodes.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputContext.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/input/InputManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/input/PlayerController.h
 )
 
 set(GAME_SOURCES    

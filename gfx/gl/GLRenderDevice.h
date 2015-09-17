@@ -193,7 +193,7 @@ namespace graphics {
         ContextStateGL _pending_state;
     public:
       RenderDeviceGL();
-      virtual int                     InitializeDevice(void *args) { return 1; };
+      virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) { return 1; };
       virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
       virtual void                    DestroyIndexBuffer(IndexBufferHandle handle);
 

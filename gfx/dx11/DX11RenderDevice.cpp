@@ -882,11 +882,11 @@ namespace graphics {
         m_samplers.erase(handle);
     }
 
-    int RenderDeviceDX11::InitializeDevice(void* args) {
+    int RenderDeviceDX11::InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) {
         DeviceConfig.DeviceAbbreviation = "DX11";
         DeviceConfig.ShaderExtension = ".hlsl";
 
-        m_hwnd = static_cast<HWND>(args);
+        m_hwnd = static_cast<HWND>(windowHandle);
 
         D3D_FEATURE_LEVEL FeatureLevelsRequested[] = {
             D3D_FEATURE_LEVEL_11_1,
@@ -946,11 +946,11 @@ namespace graphics {
         rasterDesc.FillMode = D3D11_FILL_SOLID;
         rasterDesc.CullMode = D3D11_CULL_BACK;
         rasterDesc.FrontCounterClockwise = true;
-        rasterDesc.AntialiasedLineEnable = false;
+        rasterDesc.AntialiasedLineEnable = true;
         rasterDesc.DepthBias = 0;
         rasterDesc.DepthBiasClamp = 0.0f;
-        rasterDesc.DepthClipEnable = false;
-        rasterDesc.MultisampleEnable = false;
+        rasterDesc.DepthClipEnable = true;
+        rasterDesc.MultisampleEnable = true;
         rasterDesc.ScissorEnable = false;
         rasterDesc.SlopeScaledDepthBias = 0.0f;
 
@@ -966,8 +966,8 @@ namespace graphics {
 
         //viewport?
         D3D11_VIEWPORT vp;
-        vp.Width = 800.0f;
-        vp.Height = 600.0f;
+        vp.Width = (float)windowWidth;
+        vp.Height = (float)windowHeight;
         vp.MinDepth = 0;
         vp.MaxDepth = 1;
         vp.TopLeftX = 0;

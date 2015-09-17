@@ -84,7 +84,7 @@ namespace graphics {
     public:
         DeviceConfiguration             DeviceConfig;
 
-        virtual int                     InitializeDevice(void *args) = 0;
+        virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) = 0;
         virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage) = 0;
         virtual void                    DestroyIndexBuffer(IndexBufferHandle handle) = 0;
 
