@@ -22,6 +22,10 @@ message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 message("CMAKE_CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 
+if(NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    message(FATAL_ERROR "Using cmake wont work for you")
+endif()
+
 set(SOURCE_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -60,16 +64,16 @@ find_package(SDL2 REQUIRED)
 find_package(FreeType REQUIRED)
 
 include_directories(
-    "${SOURCE_DIR_ROOT}/" 
-    "${SOURCE_DIR_ROOT}/rendering/"
-    "${SOURCE_DIR_ROOT}/rendering/backend/"
-    "${SOURCE_DIR_ROOT}/rendering/backend/GL"
-    "${SOURCE_DIR_ROOT}/rendering/"
-    "${SOURCE_DIR_ROOT}/utilities/"
-    "${SOURCE_DIR_ROOT}/platform/"
-    "${SOURCE_DIR_ROOT}/platform/SDL/"
-    "${SOURCE_DIR_ROOT}/input/"
-    "/usr/local/include"
+    ${SOURCE_DIR_ROOT}/ 
+    ${SOURCE_DIR_ROOT}/rendering/
+    ${SOURCE_DIR_ROOT}/rendering/backend/
+    ${SOURCE_DIR_ROOT}/rendering/backend/GL
+    ${SOURCE_DIR_ROOT}/rendering/
+    ${SOURCE_DIR_ROOT}/utilities/
+    ${SOURCE_DIR_ROOT}/platform/
+    ${SOURCE_DIR_ROOT}/platform/SDL/
+    ${SOURCE_DIR_ROOT}/input/
+    /usr/local/include
     ${LIBNOISE_INCLUDE_DIRS} 
     ${SDL2_INCLUDE_DIR}
     ${FREETYPE_INCLUDE_DIRS}
@@ -84,7 +88,8 @@ set(LIBS
 
 
 # create application
-add_executable(dg "${SOURCE_DIR_ROOT}/main.cpp"
+add_executable(dg 
+    ${SOURCE_DIR_ROOT}/main.cpp
     ${GRAPHICS_SOURCES}
     ${GRAPHICS_BACKEND_SOURCES} 
     ${GRAPHICS_GL_BACKEND_SOURCES} 
