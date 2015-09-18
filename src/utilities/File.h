@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace fs {
 
@@ -13,4 +14,9 @@ namespace fs {
     * Appends path/filename to process dir
     */
     std::string AppendPathProcessDir(const std::string& path);
+
+    /**
+     * Lists all non-directory files in given path
+    **/
+    std::vector<std::string> ListFilesInDirectory(const std::string& dir);
 }

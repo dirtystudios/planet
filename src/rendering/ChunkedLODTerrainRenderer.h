@@ -107,10 +107,6 @@ public:
 
         assert(_shaders[0] && _shaders[1]);
 
-        //_program = _render_device->CreateProgram(_shaders, 2);
-
-//        assert(_program);
-
         graphics::TextureHandle heightmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::R32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
         graphics::TextureHandle normalmap_texture_array = _render_device->CreateTextureArray(graphics::TextureFormat::RGBA32F, 1, TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION, GPU_TILE_BUFFER_SIZE);
         assert(heightmap_texture_array && normalmap_texture_array);
