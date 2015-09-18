@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="gfx">
+      <UniqueIdentifier>{225e2cf3-eca8-4865-8015-0568fb585198}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gfx\gl">
+      <UniqueIdentifier>{49b28ccc-4f56-4c48-b8d6-e064a90d6aa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gfx\dx11">
+      <UniqueIdentifier>{cf6ffee8-b924-482d-b025-24459b7f39f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utilities">
+      <UniqueIdentifier>{685d0ef9-e619-42ff-9e81-c5f15e5234d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{ead8cc48-3664-4ab2-9bae-314db253323f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\gfx\AttribLayout.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\MemLayout.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\ParamType.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\RenderDevice.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\VertLayout.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\dx11\DX11RenderDevice.h">
+      <Filter>gfx\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App.h" />
+    <ClInclude Include="..\Application.h" />
+    <ClInclude Include="..\BoundingBox.h" />
+    <ClInclude Include="..\Camera.h" />
+    <ClInclude Include="..\ChunkedLODTerrainRenderer.h" />
+    <ClInclude Include="..\DebugRenderer.h" />
+    <ClInclude Include="..\Frustum.h" />
+    <ClInclude Include="..\GLHelpers.h" />
+    <ClInclude Include="..\GPUTileBuffer.h" />
+    <ClInclude Include="..\Helpers.h" />
+    <ClInclude Include="..\Log.h" />
+    <ClInclude Include="..\LRUTileCache.h" />
+    <ClInclude Include="..\System.h" />
+    <ClInclude Include="..\gfx\gl\GLRenderDevice.h">
+      <Filter>gfx\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\gl\GLUtils.h">
+      <Filter>gfx\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\dx11\DX11InputLayoutCache.h">
+      <Filter>gfx\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\dx11\DX11ConstantBufferHelpers.h">
+      <Filter>gfx\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\utilities\File.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stdafx.h" />
+    <ClInclude Include="..\input\InputContext.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\InputManager.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\InputCodes.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\PlayerController.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\input\Controller.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\utilities\Callback.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TextRenderer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\App.cpp" />
+    <ClCompile Include="..\Camera.cpp" />
+    <ClCompile Include="..\DebugRenderer.cpp" />
+    <ClCompile Include="..\Frustum.cpp" />
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\SystemSDL2.cpp" />
+    <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp">
+      <Filter>gfx\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp">
+      <Filter>gfx\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\utilities\File.cpp">
+      <Filter>utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stdafx.cpp" />
+    <ClCompile Include="..\input\InputManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\input\PlayerController.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp">
+      <Filter>gfx\dx11</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
