@@ -22,35 +22,37 @@ message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 message("CMAKE_CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 
+set(SOURCE_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/rawr)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+FILE(GLOB GRAPHICS_SOURCES ${SOURCE_DIR_ROOT}/rendering/*.cpp)
+FILE(GLOB GRAPHICS_HEADERS ${SOURCE_DIR_ROOT}/rendering/*.h)
 
+FILE(GLOB GRAPHICS_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/*.cpp)
+FILE(GLOB GRAPHICS_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/*.h)
+FILE(GLOB GRAPHICS_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/GL/*.cpp)
+FILE(GLOB GRAPHICS_GL_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/GL/*.h)
+FILE(GLOB GRAPHICS_DX11_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/DX11/*.cpp)
+FILE(GLOB GRAPHICS_DX11_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/DX11/*.h)
 
+FILE(GLOB INPUT_SOURCES ${SOURCE_DIR_ROOT}/input/*.cpp)
+FILE(GLOB INPUT_HEADERS ${SOURCE_DIR_ROOT}/input/*.h)
 
+FILE(GLOB UTILITIES_SOURCES ${SOURCE_DIR_ROOT}/utilities/*.cpp)
+FILE(GLOB UTILITIES_HEADERS ${SOURCE_DIR_ROOT}/utilities/*.h)
 
-FILE(GLOB GRAPHICS_BACKEND_SOURCES code/app/src/rendering/backend/*.cpp)
-FILE(GLOB GRAPHICS_BACKEND_HEADERS code/app/src/rendering/backend/*.h)
-FILE(GLOB GRAPHICS_GL_BACKEND_SOURCES code/app/src/rendering/backend/GL/*.cpp)
-FILE(GLOB GRAPHICS_DX11_BACKEND_HEADERS code/app/src/rendering/backend/DX11/*.h)
+FILE(GLOB APP_SOURCES ${SOURCE_DIR_ROOT}/*.cpp)
+FILE(GLOB APP_HEADERS ${SOURCE_DIR_ROOT}/*.h)
 
-FILE(GLOB INPUT_SOURCES code/app/src/input/*.cpp)
-FILE(GLOB INPUT_HEADERS code/app/src/input/*.h)
+FILE(GLOB PLATFORM_SOURCES ${SOURCE_DIR_ROOT}/platform/*.cpp)
+FILE(GLOB PLATFORM_HEADERS ${SOURCE_DIR_ROOT}/platform/*.h)
 
-FILE(GLOB UTILITIES_SOURCES code/app/src/utilities/*.cpp)
-FILE(GLOB UTILITIES_HEADERS code/app/src/utilities/*.h)
-
-FILE(GLOB APP_SOURCES code/app/src/*.cpp)
-FILE(GLOB APP_HEADERS code/app/src/*.h)
-
-FILE(GLOB PLATFORM_SOURCES code/app/src/platform/*.cpp)
-FILE(GLOB PLATFORM_HEADERS code/app/src/platform/*.h)
-
-FILE(GLOB PLATFORM_SDL_SOURCES code/app/src/platform/SDL/*.cpp)
-FILE(GLOB PLATFORM_SDL_HEADERS code/app/src/platform/SDL/*.h)
-FILE(GLOB PLATFORM_GLFW3_SOURCES code/app/src/platform/GLFW3/*.cpp)
-FILE(GLOB PLATFORM_GLFW3_HEADERS code/app/src/platform/GLFW3/*.h)
+FILE(GLOB PLATFORM_SDL_SOURCES ${SOURCE_DIR_ROOT}/platform/SDL/*.cpp)
+FILE(GLOB PLATFORM_SDL_HEADERS ${SOURCE_DIR_ROOT}/platform/SDL/*.h)
+FILE(GLOB PLATFORM_GLFW3_SOURCES ${SOURCE_DIR_ROOT}/platform/GLFW3/*.cpp)
+FILE(GLOB PLATFORM_GLFW3_HEADERS ${SOURCE_DIR_ROOT}/platform/GLFW3/*.h)
 
 find_package(OpenGL REQUIRED)
 find_package(LIBNOISE REQUIRED)
@@ -58,7 +60,15 @@ find_package(SDL2 REQUIRED)
 find_package(FreeType REQUIRED)
 
 include_directories(
-    "code/app/src/" 
+    "${SOURCE_DIR_ROOT}/" 
+    "${SOURCE_DIR_ROOT}/rendering/"
+    "${SOURCE_DIR_ROOT}/rendering/backend/"
+    "${SOURCE_DIR_ROOT}/rendering/backend/GL"
+    "${SOURCE_DIR_ROOT}/rendering/"
+    "${SOURCE_DIR_ROOT}/utilities/"
+    "${SOURCE_DIR_ROOT}/platform/"
+    "${SOURCE_DIR_ROOT}/platform/SDL/"
+    "${SOURCE_DIR_ROOT}/input/"
     "/usr/local/include"
     ${LIBNOISE_INCLUDE_DIRS} 
     ${SDL2_INCLUDE_DIR}
@@ -68,13 +78,14 @@ include_directories(
 set(LIBS
     ${OPENGL_LIBRARIES}
     ${LIBNOISE_LIBRARIES}
-    ${SDL2_LIBRARY}S}
+    ${SDL2_LIBRARY}
     ${FREETYPE_LIBRARIES}
 )
 
 
 # create application
-add_executable(dg code/app/src/main.cpp 
+add_executable(dg "${SOURCE_DIR_ROOT}/main.cpp"
+    ${GRAPHICS_SOURCES}
     ${GRAPHICS_BACKEND_SOURCES} 
     ${GRAPHICS_GL_BACKEND_SOURCES} 
     ${INPUT_SOURCES}
@@ -85,6 +96,18 @@ add_executable(dg code/app/src/main.cpp
 )
 
 target_link_libraries(dg ${LIBS})
+
+# Source groups for correct organization in Xcode
+source_group(\\ FILES ${SOURCE_DIR_ROOT}/main.cpp ${APP_SOURCES} ${APP_HEADERS})
+source_group(input FILES ${INPUT_SOURCES} ${INPUT_HEADERS})
+source_group(platform FILES ${PLATFORM_SOURCES} ${PLATFORM_HEADERS})
+source_group(platform\\SDL FILES ${PLATFORM_SDL_SOURCES} ${PLATFORM_SDL_HEADERS})
+source_group(platform\\GLFW3 FILES ${PLATFORM_GLFW3_SOURCES} ${PLATFORM_GLFW3_HEADERS})
+source_group(utilities FILES ${UTILITIES_SOURCES} ${UTILITIES_HEADERS})
+source_group(rendering FILES ${GRAPHICS_SOURCES} ${GRAPHICS_HEADERS})
+source_group(rendering\\backend FILES ${GRAPHICS_BACKEND_SOURCES} ${GRAPHICS_BACKEND_HEADERS})
+source_group(rendering\\backend\\gl FILES ${GRAPHICS_GL_BACKEND_SOURCES} ${GRAPHICS_GL_BACKEND_HEADERS})
+source_group(rendering\\backend\\dx11 FILES ${GRAPHICS_DX11_BACKEND_SOURCES} ${GRAPHICS_DX11_BACKEND_HEADERS})
 
 
 

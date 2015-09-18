@@ -26,6 +26,11 @@
 *.ilk
 *.pch
 
+# Xcode Stuff
+*.xcodeproj
+*.build
+
+
 # Visual Studio Stuff
 *.opensdf
 *.sdf
