@@ -1,7 +1,3 @@
-//
-// Created by Eugene Sturm on 4/5/15.
-//
-
 #include "GLRenderDevice.h"
 
 #ifdef _WIN32
