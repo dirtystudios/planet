@@ -3,6 +3,7 @@
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 #include "DX11ConstantBufferHelpers.h"
+#include "xxhash.h"
 
 #define SafeGet(id, idx) id[idx];
 
@@ -723,8 +724,46 @@ namespace graphics {
         //bleh
     }
 
-    void RenderDeviceDX11::SetBlendState(uint32_t state) {
-        //no 
+    void RenderDeviceDX11::SetBlendState(const BlendState& blendState) {
+        // K try for 'fast-path'
+        int hash = XXH32(&blendState, sizeof(BlendState), 0);
+        if (m_currentState.blendStateHash == hash) {
+            m_pendingState.blendStateHash = hash;
+            m_pendingState.blendState = m_currentState.blendState;
+            return;
+        }
+
+        BlendStateDX11 *blendStateCheck = GetWithInt(m_blendStates, hash);
+        if (blendStateCheck) {
+            m_pendingState.blendStateHash = hash;
+            m_pendingState.blendState = blendStateCheck;
+            return;
+        }
+
+        D3D11_BLEND_DESC blendDesc;
+        ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
+        blendDesc.IndependentBlendEnable = false;
+        blendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+        blendDesc.RenderTarget[0].SrcBlendAlpha = SafeGet(BlendFuncDX11, (uint32_t)blendState.src_alpha_func);
+        blendDesc.RenderTarget[0].DestBlendAlpha = SafeGet(BlendFuncDX11, (uint32_t)blendState.dst_alpha_func);
+        blendDesc.RenderTarget[0].SrcBlend = SafeGet(BlendFuncDX11, (uint32_t)blendState.src_rgb_func);
+        blendDesc.RenderTarget[0].DestBlend = SafeGet(BlendFuncDX11, (uint32_t)blendState.dst_rgb_func);
+        blendDesc.RenderTarget[0].BlendOpAlpha = SafeGet(BlendModeDX11, (uint32_t)blendState.alpha_mode);
+        blendDesc.RenderTarget[0].BlendOp = SafeGet(BlendModeDX11, (uint32_t)blendState.rgb_mode);
+
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+        ID3D11BlendState* blendStateDX;
+        HRESULT hr = m_dev->CreateBlendState(&blendDesc, &blendStateDX);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Failed to CreateBlendState. Hr: 0x%x", hr);
+            return;
+        }
+
+        BlendStateDX11 blendStateDX11 = {};
+        blendStateDX11.blendState = blendStateDX;
+        m_blendStates.insert(std::make_pair(hash, blendStateDX11));
     }
 
     void RenderDeviceDX11::UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size) {
@@ -852,6 +891,13 @@ namespace graphics {
         if (m_currentState.primitiveType != type)
             m_devcon->IASetPrimitiveTopology(type);
 
+        if (m_pendingState.blendStateHash != 0 && m_currentState.blendStateHash != m_pendingState.blendStateHash) {
+            float blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            UINT sampleMask = 0xffffffff;
+            m_devcon->OMSetBlendState(m_pendingState.blendState->blendState, blendFactor, sampleMask);
+        }
+
+        // todo: rendertargets
         m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), NULL);
         m_devcon->Draw(numVertices, startVertex);
         
@@ -1014,24 +1060,6 @@ namespace graphics {
 
         // todo: deal with this?
         CreateSampler();
-
-        // todo: move this
-        ID3D11BlendState* blendState;
-        D3D11_BLEND_DESC blendDesc;
-        ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
-        blendDesc.IndependentBlendEnable = false;
-        blendDesc.RenderTarget[0].BlendEnable = TRUE;
-        blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-        blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-        blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-        blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-        blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        m_dev->CreateBlendState(&blendDesc, &blendState);
-        float blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        UINT sampleMask = 0xffffffff;
-        m_devcon->OMSetBlendState(blendState, blendFactor, sampleMask);
 
         return hr;
     }
