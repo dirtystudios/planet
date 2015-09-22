@@ -19,4 +19,6 @@ namespace fs {
      * Lists all non-directory files in given path
     **/
     std::vector<std::string> ListFilesInDirectory(const std::string& dir);
+
+    bool IsPathDirectory(std::string path);
 }

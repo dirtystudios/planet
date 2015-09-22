@@ -12,6 +12,16 @@ std::string fs::GetProcessDirectory() {
     return "";//dirPath;
 }
 
+// Untested -- jake
+bool fs::IsPathDirectory(std::string path) {
+    struct stat fileAtt;
+
+    if (stat(path.c_str(), &fileAtt) != 0)
+        throw errno;
+
+    return S_ISDIR(fileAtt.st_mode);
+}
+
 std::string fs::AppendPathProcessDir(const std::string& path) {
     std::string currentDir = fs::GetProcessDirectory();
     currentDir.append(path);

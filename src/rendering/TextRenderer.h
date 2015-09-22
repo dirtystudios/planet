@@ -34,10 +34,15 @@ private:
     graphics::VertexBufferHandle VBO;
 public:
     TextRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
-        std::string vs_contents = ReadFileContents(fs::AppendPathProcessDir("../src/rendering/shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/text_vs" + render_device->DeviceConfig.ShaderExtension));
+        std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
+        if (!fs::IsPathDirectory(shaderDirPath)) {
+            LOG_E("%s", "Invalid Directory Path given for ShaderDirectory. Attempting default.");
+            shaderDirPath = fs::AppendPathProcessDir("/shaders");
+        }
+        std::string vs_contents = ReadFileContents(shaderDirPath + "/" + render_device->DeviceConfig.DeviceAbbreviation + "/text_vs" + render_device->DeviceConfig.ShaderExtension);
         const char* vs_src = vs_contents.c_str();
 
-        std::string fs_contents = ReadFileContents(fs::AppendPathProcessDir("../src/rendering/shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/text_ps" + render_device->DeviceConfig.ShaderExtension));
+        std::string fs_contents = ReadFileContents(shaderDirPath + "/" + render_device->DeviceConfig.DeviceAbbreviation + "/text_ps" + render_device->DeviceConfig.ShaderExtension);
         const char* fs_src = fs_contents.c_str();
 
         // Note(eugene): cleanup shaders
