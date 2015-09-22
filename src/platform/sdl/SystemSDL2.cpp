@@ -1,28 +1,20 @@
-
 #include "System.h"
 
 #ifdef _WIN32
 #include "SDL.h"
 #include "SDL_syswm.h"
+#include <GL/glew.h>
+#include "DX11RenderDevice.h"
 #else
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
 #endif
 
-#ifdef _WIN32
-#include <GL/glew.h>
-#endif
-
-#include "Log.h"
-#include <map>
-
-#ifdef _WIN32
-#include "DX11RenderDevice.h"
-#endif
 #include "GLRenderDevice.h"
 
-//#define DX11_BACKEND
-#define GL_BACKEND
+#include "Log.h"
+#include "Config.h"
+#include <map>
 
 SDL_Window* _window = NULL;
 SDL_Event _e;
@@ -116,7 +108,12 @@ int sys::Run(app::Application* app){
         return -1;
     }
 
-    // Render device abstaction to come later, until then we can just init opengl for every version
+    std::string renderDeviceConfig =  config::Config::getInstance().GetConfigString("RenderDeviceSettings", "RenderDevice");
+    if (renderDeviceConfig != "directx11" && renderDeviceConfig != "opengl") {
+        renderDeviceConfig = "";
+        LOG_D("Invalid RenderDevice set in ini. Using Default for system. Given: %s", renderDeviceConfig);
+    }
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -133,28 +130,29 @@ int sys::Run(app::Application* app){
     printf("%s\n", SDL_GetError() );
     SDL_GL_MakeCurrent(_window, glcontext);
 
-#if  defined(_WIN32) && defined(GL_BACKEND)
-    // start GLEW extension handler
-    glewExperimental = GL_TRUE;
-    glewInit();
-    glGetError();
-#endif
-
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
     const char *subsystem = "Unknown System!";
     int initRtn = 0;
+    void* windowHandle = 0;
     if (SDL_GetWindowWMInfo(_window, &info)){
         switch (info.subsystem){
         case SDL_SYSWM_UNKNOWN: break;
         case SDL_SYSWM_X11: subsystem = "X Window System"; break;
         case SDL_SYSWM_WINDOWS:
             subsystem = "Microsoft Windows";
-#ifdef DX11_BACKEND
-            _app->renderDevice = new graphics::RenderDeviceDX11();
-            _app->renderDevice->InitializeDevice(info.info.win.window, _window_height, _window_width);
-#elif defined(GL_BACKEND)
-            _app->renderDevice = new graphics::RenderDeviceGL();
+#ifdef _WIN32
+            if (renderDeviceConfig == "opengl") {
+                // start GLEW extension handler
+                glewExperimental = GL_TRUE;
+                glewInit();
+                glGetError();
+                _app->renderDevice = new graphics::RenderDeviceGL();
+            }
+            else {
+                _app->renderDevice = new graphics::RenderDeviceDX11();
+                _app->renderDevice->InitializeDevice(info.info.win.window, _window_height, _window_width);
+            }
 #endif
             break;
         case SDL_SYSWM_COCOA: 
@@ -163,6 +161,9 @@ int sys::Run(app::Application* app){
             break;
         //case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
         }
+    }
+    else {
+        LOG_E("Couldn't get window information: %s\n", SDL_GetError());
     }
 	
     SDL_SetEventFilter(filterSDLEvents, NULL);
@@ -271,9 +272,11 @@ int sys::Run(app::Application* app){
         }
 
         _app->OnFrame(inputValues, dt);
-#ifdef GL_BACKEND
-        SDL_GL_SwapWindow(_window);
-#endif
+
+        // is there a different way we can swapbuffer?
+        if (renderDeviceConfig == "opengl") {
+            SDL_GL_SwapWindow(_window);
+        }
         _app->renderDevice->SwapBuffers();
         dt = GetTime() - start;
     }
