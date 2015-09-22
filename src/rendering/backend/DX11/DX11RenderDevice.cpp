@@ -1,4 +1,3 @@
-
 #include "DX11RenderDevice.h"
 #include "Log.h"
 #include <d3dcompiler.h>
@@ -105,15 +104,20 @@ namespace graphics {
         bufferDesc.Usage = SafeGet(BufferUsageDX11, (uint32_t)usage);
         bufferDesc.ByteWidth = size;
         bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        bufferDesc.CPUAccessFlags = 0;
+        if (bufferDesc.Usage == D3D11_USAGE_DYNAMIC)
+            bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        else
+            bufferDesc.CPUAccessFlags = 0;
         bufferDesc.MiscFlags = 0;
 
         D3D11_SUBRESOURCE_DATA initData;
-        initData.pSysMem = data;
-        initData.SysMemPitch = 0;
-        initData.SysMemSlicePitch = 0;
+        if (data) {
+            initData.pSysMem = data;
+            initData.SysMemPitch = 0;
+            initData.SysMemSlicePitch = 0;
+        }
 
-        HRESULT hr = m_dev->CreateBuffer(&bufferDesc, &initData, &vertexBuffer);
+        HRESULT hr = m_dev->CreateBuffer(&bufferDesc, data ? &initData : NULL, &vertexBuffer);
         if (FAILED(hr)) {
             LOG_E("DX11RenderDev: Failed to create Vertex buffer. HResult: 0x%x", hr);
             return 0;
@@ -198,16 +202,20 @@ namespace graphics {
         }
         case ShaderType::FRAGMENT_SHADER:
         {
-            // todo: cbuffer n anything else for fragment shader
+            // todo: anything else for fragment shader
             ID3D11PixelShader* pixelShader;
             hr = m_dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &pixelShader);
             if (FAILED(hr)) {
                 LOG_E("DX11RenderDev: Failed to Create PixelShader in CreateProgram. Hr: 0x%x", hr);
                 return 0;
             }
+
+            uint32_t cBufferHandle = GenerateHandle();
+            cBufferHandle = CreateConstantBuffer(blob.Get());
+
             shaderHandle = GenerateHandle();
             shader.pixelShader = pixelShader;//pixelShader.Get();
-            shader.cbHandle = 0;
+            shader.cbHandle = cBufferHandle;
             break;
         }
         // todo: the rest of the shaders
@@ -241,11 +249,11 @@ namespace graphics {
         return ilHandle;
     }
 
-    uint32_t RenderDeviceDX11::CreateConstantBuffer(ID3DBlob *vertexShader) {
+    uint32_t RenderDeviceDX11::CreateConstantBuffer(ID3DBlob *shaderBlob) {
         std::vector<ID3D11Buffer*> constantBuffers;
 
         size_t numCBuffers = 0;
-        graphics::dx11::CBufferDescriptor* cBuffers = graphics::dx11::GenerateConstantBuffer(vertexShader, &numCBuffers);
+        graphics::dx11::CBufferDescriptor* cBuffers = graphics::dx11::GenerateConstantBuffer(shaderBlob, &numCBuffers);
 
         for (uint32_t x = 0; x < numCBuffers; ++x) {
 
@@ -276,106 +284,72 @@ namespace graphics {
         return handle;
     }
 
-    TextureHandle RenderDeviceDX11::CreateTexture2D(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void* data) {
-        // TODO-Jake : Implement this...
-        LOG_E("DX11RenderDev: Unimplemented Command CreateTexture2D.");
-        return 0;
-
-        /* GLenum gl_tex_format = SafeGet(texture_format_mapping, (uint32_t)tex_format);
-        GLenum gl_data_type = SafeGet(data_type_mapping, (uint32_t)data_type);
-        GLenum gl_data_format = SafeGet(data_format_mapping, (uint32_t)data_format);
-
-        GLuint id = 0;
-        GL_CHECK(glGenTextures(1, &id));
-        GL_CHECK(glBindTexture(GL_TEXTURE_2D, id));
-        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_tex_format, width, height, 0, gl_data_format, gl_data_type, data));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
-        uint32_t handle = GenerateHandle();
-        TextureGL texture = {};
-        texture.id = id;
-        texture.target = GL_TEXTURE_2D;
-        _textures.insert(std::make_pair(handle, texture));
-        return handle;*/
-    }
-
-    TextureHandle RenderDeviceDX11::CreateTextureCube(TextureFormat tex_format, DataType data_type, DataFormat data_format, uint32_t width, uint32_t height, void** data) {
-        //TODO-Jake: Implement this....
-        LOG_E("DX11RenderDev: Unimplemented Command CreateTextureCube.");
-        return 0;
-
-        /*GLenum gl_tex_format = SafeGet(texture_format_mapping, (uint32_t)tex_format);
-        GLenum gl_data_type = SafeGet(data_type_mapping, (uint32_t)data_type);
-        GLenum gl_data_format = SafeGet(data_format_mapping, (uint32_t)data_format);
-
-        GLuint id = 0;
-        GL_CHECK(glGenTextures(1, &id));
-        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, id));
-        for(uint32_t side = 0; side < 6; ++side) {
-        GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, gl_tex_format, width, height, 0, gl_data_type, gl_data_format, data[side]));
-        }
-
-        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
-        uint32_t handle = GenerateHandle();
-        TextureGL texture = {};
-        texture.id = id;
-        texture.target = GL_TEXTURE_CUBE_MAP;
-        _textures.insert(std::make_pair(handle, texture));
-        return handle;*/
-    }
-
-    TextureHandle RenderDeviceDX11::CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
-        ID3D11Texture2D* texture;
+    TextureHandle RenderDeviceDX11::CreateTexture2D(TextureFormat texFormat, uint32_t width, uint32_t height, void* data) {
         DXGI_FORMAT dxFormat = SafeGet(TextureFormatDX11, (uint32_t)texFormat);
 
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
-
         tdesc.Width = width;
         tdesc.Height = height;
-        tdesc.MipLevels = /*Avicii - */levels;
-        tdesc.ArraySize = depth;
-
+        tdesc.MipLevels = 1;
+        tdesc.ArraySize = 1;
         tdesc.SampleDesc.Count = 1;
         tdesc.SampleDesc.Quality = 0;
         tdesc.Usage = D3D11_USAGE_DEFAULT;
         tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
         tdesc.CPUAccessFlags = 0;
         tdesc.MiscFlags = 0;
-
         tdesc.Format = dxFormat;
 
-        int formatByteSize = 0;
-        switch (dxFormat) {
-        case DXGI_FORMAT_R32_FLOAT:
-            formatByteSize = 4;
-            break;
-        case DXGI_FORMAT_R32G32B32_FLOAT:
-            formatByteSize = 12;
-            break;
-        case DXGI_FORMAT_R32G32B32A32_FLOAT:
-            formatByteSize = 16;
-            break;
-        default:
-            LOG_E("DX11RenderDev: Unsupported dataformat given for CreateTextureArray.");
-            return 0;
-        }
+        D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+        viewDesc.Format = tdesc.Format;
+        viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        viewDesc.Texture2D.MipLevels = 1;
+        viewDesc.Texture2D.MostDetailedMip = 0;
 
-        HRESULT hr = m_dev->CreateTexture2D(&tdesc, NULL, &texture);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed Creating Texture2DArray Hr: 0x%x", hr);
-            return 0;
-        }
+        return Texture2DCreator(&tdesc, &viewDesc, data);
+    }
 
-        // TODO-Jake: k this isnt the funnest, hopefully we can just make one per texture
-        ID3D11ShaderResourceView* shaderResourceView;
+    TextureHandle RenderDeviceDX11::CreateTextureCube(TextureFormat texFormat, uint32_t width, uint32_t height, void** data) {
+        DXGI_FORMAT dxFormat = SafeGet(TextureFormatDX11, (uint32_t)texFormat);
+
+        D3D11_TEXTURE2D_DESC tdesc = { 0 };
+        tdesc.Width = width;
+        tdesc.Height = height;
+        tdesc.MipLevels = 1;
+        tdesc.ArraySize = 1;
+        tdesc.SampleDesc.Count = 1;
+        tdesc.SampleDesc.Quality = 0;
+        tdesc.Usage = D3D11_USAGE_DEFAULT;
+        tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        tdesc.CPUAccessFlags = 0;
+        tdesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+        tdesc.Format = dxFormat;
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+        viewDesc.Format = tdesc.Format;
+        viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+        viewDesc.TextureCube.MipLevels = tdesc.MipLevels;
+        viewDesc.TextureCube.MostDetailedMip = 0;
+
+        return Texture2DCreator(&tdesc, &viewDesc, data);
+    }
+
+    TextureHandle RenderDeviceDX11::CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
+        DXGI_FORMAT dxFormat = SafeGet(TextureFormatDX11, (uint32_t)texFormat);
+
+        D3D11_TEXTURE2D_DESC tdesc = { 0 };
+        tdesc.Width = width;
+        tdesc.Height = height;
+        tdesc.MipLevels = /*Avicii - */levels;
+        tdesc.ArraySize = depth;
+        tdesc.SampleDesc.Count = 1;
+        tdesc.SampleDesc.Quality = 0;
+        tdesc.Usage = D3D11_USAGE_DEFAULT;
+        tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        tdesc.CPUAccessFlags = 0;
+        tdesc.MiscFlags = 0;
+        tdesc.Format = dxFormat;
+
         D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
         viewDesc.Format = tdesc.Format;
         viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
@@ -383,9 +357,29 @@ namespace graphics {
         viewDesc.Texture2DArray.MipLevels = levels;
         viewDesc.Texture2DArray.FirstArraySlice = 0;
         viewDesc.Texture2DArray.ArraySize = depth;
-        hr = m_dev->CreateShaderResourceView(texture, &viewDesc, &shaderResourceView);
+
+        return Texture2DCreator(&tdesc, &viewDesc, 0);
+    }
+
+    TextureHandle RenderDeviceDX11::Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data) {
+        ID3D11Texture2D* texture;
+        D3D11_SUBRESOURCE_DATA srd;
+        if (data) {
+            srd.pSysMem = data;
+            srd.SysMemPitch = GetFormatByteSize(tDesc->Format) * tDesc->Width;
+            srd.SysMemSlicePitch = 0; //?
+        }
+
+        HRESULT hr = m_dev->CreateTexture2D(tDesc, data ? &srd : NULL, &texture);
         if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed Creating shaderResourceView in Texture2DArray Hr: 0x%x", hr);
+            LOG_E("DX11RenderDev: Failed Creating Texture Hr: 0x%x", hr);
+            return 0;
+        }
+
+        ID3D11ShaderResourceView* shaderResourceView;
+        hr = m_dev->CreateShaderResourceView(texture, viewDesc, &shaderResourceView);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Failed Creating shaderResourceView Hr: 0x%x", hr);
             //texture.ReleaseAndGetAddressOf();
             texture->Release();
             return 0;
@@ -395,10 +389,11 @@ namespace graphics {
         TextureDX11 textureDX11 = {};
         textureDX11.texture = texture;//texture.Get();
         textureDX11.shaderResourceView = shaderResourceView;//shaderResourceView.Get();
-        textureDX11.format = dxFormat;
+        textureDX11.format = tDesc->Format;
         m_textures.insert(std::make_pair(handle, textureDX11));
 
         return handle;
+
     }
 #pragma endregion
 
@@ -581,7 +576,13 @@ namespace graphics {
         m_pendingState.pixelShaderHandle = shaderHandle;
         m_pendingState.pixelShader = shader;
 
-        //todo: cbuffer, samplers, etc...
+        // CBuffers are unique per shader, no other way. So they get set as long as they exist.
+        ConstantBufferDX11 *cb = Get(m_constantBuffers, shader->cbHandle);
+        if (cb) {
+            m_pendingState.psCBuffer = cb;
+        }
+
+        //todo: samplers, etc...
     }
 
     void RenderDeviceDX11::SetInputLayout(uint32_t inputLayoutHandle) {
@@ -656,6 +657,12 @@ namespace graphics {
                 m_pendingState.vsCBufferDirtySlots.push_back(slot);
             }
             break;
+        case ShaderType::FRAGMENT_SHADER:
+            if (std::find(m_pendingState.psCBufferDirtySlots.begin(), m_pendingState.psCBufferDirtySlots.end(), slot) == m_pendingState.psCBufferDirtySlots.end()) {
+                m_pendingState.psCBufferDirtySlots.push_back(slot);
+            }
+
+            break;
         default:
             LOG_E("DX11RenderDev: Unsupported ShaderType for update in SetShaderParam.")
             break;
@@ -685,7 +692,7 @@ namespace graphics {
         LOG_E("DX11RenderDev: Unimplemented Function UpdateTexture");
     }
 
-    void RenderDeviceDX11::UpdateTextureArray(TextureHandle handle, uint32_t arrayIndex, uint32_t width, uint32_t height, DataType dataType, DataFormat dataFormat, void* data){
+    void RenderDeviceDX11::UpdateTextureArray(TextureHandle handle, uint32_t arrayIndex, uint32_t width, uint32_t height, void* data) {
         TextureDX11 *texture = Get(m_textures, handle);
         if (!texture){
             LOG_E("DX11RenderDev: Invalid handle given to UpdateTextureArray.");
@@ -700,28 +707,12 @@ namespace graphics {
         box.right = width;
         box.bottom = height;
 
-        switch (texture->format) {
-        case DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT:
-            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RED) {
-                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
-            }
-            m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 4, width * 4 * height);
-            break;
-        case DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT:
-            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RGB) {
-                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
-            }
-            m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 12, width * 12 * height);
-            break;
-        case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:
-            if (dataType != DataType::FLOAT || dataFormat != DataFormat::RGBA) {
-                LOG_D("DX11RenderDev: UpdateTextureArray. Format / Type mismatch. Assuming texture format for size.");
-            }
-            m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * 16, width * 16 * height);
-            break;
-        default:
+        int formatByteSize = GetFormatByteSize(texture->format);
+        if (formatByteSize == 0) {
             LOG_E("DX11RenderDev: Unsupported TextureFormat for UpdateTextureArray.");
+            return;
         }
+        m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * formatByteSize, width * formatByteSize * height);
     }
 
     void RenderDeviceDX11::SetRasterizerState(uint32_t state) {
@@ -736,6 +727,31 @@ namespace graphics {
         //no 
     }
 
+    void RenderDeviceDX11::UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size) {
+        VertexBufferDX11* vBuffer = Get(m_vertexBuffers, vertexBufferHandle);
+        if (!vBuffer) {
+            LOG_E("DX11RenderDev: Invalid VertexBufferHandle given to UpdateVertexBuffer.");
+            return;
+        }
+        D3D11_BUFFER_DESC bufferDesc;
+        vBuffer->vertexBuffer->GetDesc(&bufferDesc);
+        if (bufferDesc.Usage != D3D11_USAGE_DYNAMIC) {
+            LOG_E("DX11RenderDev: Only dynamic buffer type updating allowed.");
+            return;
+        }
+
+        D3D11_MAPPED_SUBRESOURCE mappedResource;
+        HRESULT hr = 0;
+        hr = m_devcon->Map(vBuffer->vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Failed to map vertex buffer. HR: 0x%x", hr);
+            return;
+        }
+        memcpy(mappedResource.pData, data, size);
+
+        m_devcon->Unmap(vBuffer->vertexBuffer, 0);
+
+    }
     //todo...batch these calls!
     void RenderDeviceDX11::SetShaderTexture(ShaderHandle shaderHandle, TextureHandle textureHandle, TextureSlot slot) {
         ShaderDX11* shader = Get(m_shaders, shaderHandle);
@@ -751,8 +767,17 @@ namespace graphics {
 
         switch (shader->shaderType) {
         case ShaderType::FRAGMENT_SHADER:
-            //m_devcon->PSSetShaderResources((uint32_t)slot, 1, &texture->shaderResourceView);
-            LOG_E("DX11Render: SetShaderTexture shader type not supported.");
+        {
+            auto it = m_currentState.psTextures.find((uint32_t)slot);
+            if (it == m_currentState.psTextures.end()) {
+                m_pendingState.psTextures.insert(std::make_pair((uint32_t)slot, texture->shaderResourceView));
+                m_pendingState.psDirtyTextureSlots.emplace_back((uint32_t)slot);
+            }
+            else if (it->second != texture->shaderResourceView) {
+                m_pendingState.psTextures.at((uint32_t)slot) = texture->shaderResourceView;
+                m_pendingState.psDirtyTextureSlots.emplace_back((uint32_t)slot);
+            }
+        }
             break;
         case ShaderType::VERTEX_SHADER:
         {
@@ -761,11 +786,9 @@ namespace graphics {
                 m_pendingState.vsTextures.insert(std::make_pair((uint32_t)slot, texture->shaderResourceView));
                 m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
             }
-            else {
-                if (texture->shaderResourceView != it->second) {
-                    it->second = texture->shaderResourceView;
-                    m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
-                }
+            else if (it->second != texture->shaderResourceView) {
+                m_pendingState.vsTextures.at((uint32_t)slot) = texture->shaderResourceView;
+                m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
             }
         }
             break;
@@ -780,8 +803,11 @@ namespace graphics {
 
     void RenderDeviceDX11::DrawPrimitive(PrimitiveType primitiveType, uint32_t startVertex, uint32_t numVertices) {
 
-        if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle)
+        if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle) {
             m_devcon->PSSetShader(m_pendingState.pixelShader->pixelShader, 0, 0);
+            if (m_pendingState.psCBuffer)
+                m_devcon->PSSetConstantBuffers(0, m_pendingState.psCBuffer->constantBuffers.size(), m_pendingState.psCBuffer->constantBuffers.data());
+        }
 
         if (m_pendingState.vertexShaderHandle != 0 && m_currentState.vertexShaderHandle != m_pendingState.vertexShaderHandle) {
             m_devcon->VSSetShader(m_pendingState.vertexShader->vertexShader, 0, 0);
@@ -791,6 +817,9 @@ namespace graphics {
 
         if (m_pendingState.vertexShaderHandle != 0 && m_pendingState.vsCBuffer)
             UpdateConstantBuffer(m_pendingState.vsCBuffer, m_pendingState.vsCBufferDirtySlots);
+
+        if (m_pendingState.pixelShaderHandle != 0 && m_pendingState.psCBuffer)
+            UpdateConstantBuffer(m_pendingState.psCBuffer, m_pendingState.psCBufferDirtySlots);
 
         if (m_pendingState.inputLayoutHandle != 0 && m_currentState.inputLayoutHandle != m_pendingState.inputLayoutHandle)
             m_devcon->IASetInputLayout(m_pendingState.inputLayout->inputLayout);
@@ -804,6 +833,12 @@ namespace graphics {
             // todo: batch these calls
             for (uint32_t x = 0; x < m_pendingState.vsDirtyTextureSlots.size(); ++x) {
                 m_devcon->VSSetShaderResources((uint32_t)m_pendingState.vsDirtyTextureSlots[x], 1, &m_pendingState.vsTextures.at(x));
+            }
+        }
+
+        if (m_pendingState.psDirtyTextureSlots.size()) {
+            for (uint32_t x = 0; x < m_pendingState.psDirtyTextureSlots.size(); ++x) {
+                m_devcon->PSSetShaderResources((uint32_t)m_pendingState.psDirtyTextureSlots[x], 1, &m_pendingState.psTextures.at(x));
             }
         }
 
@@ -821,6 +856,8 @@ namespace graphics {
         m_devcon->Draw(numVertices, startVertex);
         
         //cleanup state before set
+        m_pendingState.psCBufferDirtySlots.clear();
+        m_pendingState.psDirtyTextureSlots.clear();
         m_pendingState.vsCBufferDirtySlots.clear();
         m_pendingState.vsDirtyTextureSlots.clear();
         m_currentState = m_pendingState;
@@ -855,6 +892,7 @@ namespace graphics {
     // Just call this in initialize to get the default made to use
     SamplerHandle RenderDeviceDX11::CreateSampler() {
         D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
+        samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
         ID3D11SamplerState* samplerState;
         HRESULT hr = m_dev->CreateSamplerState(&samplerDesc, &samplerState);
         if (FAILED(hr)){
@@ -976,6 +1014,24 @@ namespace graphics {
 
         // todo: deal with this?
         CreateSampler();
+
+        // todo: move this
+        ID3D11BlendState* blendState;
+        D3D11_BLEND_DESC blendDesc;
+        ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
+        blendDesc.IndependentBlendEnable = false;
+        blendDesc.RenderTarget[0].BlendEnable = TRUE;
+        blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        m_dev->CreateBlendState(&blendDesc, &blendState);
+        float blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        UINT sampleMask = 0xffffffff;
+        m_devcon->OMSetBlendState(blendState, blendFactor, sampleMask);
 
         return hr;
     }

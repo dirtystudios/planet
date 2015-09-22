@@ -41,6 +41,7 @@
 ipch/
 *.enc
 *.stackdump
+*.vcxprojResolveAssemblyReference.cache
 
 # Visual Studio Profiler Files
 *.vspx

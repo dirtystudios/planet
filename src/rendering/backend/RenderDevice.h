@@ -54,6 +54,7 @@ namespace graphics {
         R32F = 0,
         RGB32F,
         RGBA32F,
+        R_UBYTE,
         COUNT
     };
 
@@ -107,6 +108,8 @@ namespace graphics {
         // "Commands"
         virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data) = 0;
         virtual void UpdateTexture(TextureHandle handle, void* data, size_t size) = 0;
+        virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size) = 0;
+
         virtual void SetRasterizerState(uint32_t state) = 0;
         virtual void SetDepthState(uint32_t state) = 0;
         virtual void SetBlendState(uint32_t state) = 0;

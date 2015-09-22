@@ -96,10 +96,10 @@ private:
 public:
     ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
         // Bleh, theres probably a better way for this
-        std::string vs_contents = ReadFileContents(fs::AppendPathProcessDir("../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_vs" + render_device->DeviceConfig.ShaderExtension));
+        std::string vs_contents = ReadFileContents(fs::AppendPathProcessDir("../src/rendering/shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_vs" + render_device->DeviceConfig.ShaderExtension));
         const char* vs_src = vs_contents.c_str();
 
-        std::string fs_contents = ReadFileContents(fs::AppendPathProcessDir("../shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_fs" + render_device->DeviceConfig.ShaderExtension));
+        std::string fs_contents = ReadFileContents(fs::AppendPathProcessDir("../src/rendering/shaders/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_fs" + render_device->DeviceConfig.ShaderExtension));
         const char* fs_src = fs_contents.c_str();
 
         // Note(eugene): cleanup shaders

@@ -39,12 +39,15 @@ namespace input {
         std::unordered_multimap<uint32_t, InputContext*> contextMappings;
         std::vector<int> actionCache;
 
+        bool mappedKeyboard;
+
     public:
         InputManager();
         void AddActionMapping(std::string actionName, const InputCode& inputCode, const ActionConfig& actionConfig);
         void AddAxisMapping(std::string axisName, const InputCode& inputCode, const AxisConfig& axisConfig);
 
         InputContext* CreateNewContext(ContextPriority priority);
+        void PopulateDefaultKeyboardBindings();
 
         void ProcessInputs(const std::vector<float>& inputValues, float dt);
     };

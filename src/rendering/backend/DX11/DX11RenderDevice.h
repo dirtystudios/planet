@@ -19,13 +19,14 @@ namespace graphics {
 
     static D3D11_USAGE BufferUsageDX11[(uint32_t)BufferUsage::COUNT] = {
         D3D11_USAGE_IMMUTABLE, // Static
-        D3D11_USAGE_DEFAULT,   // Dynamic -- Default instead?
+        D3D11_USAGE_DYNAMIC,   // Dynamic
     };
 
     static DXGI_FORMAT TextureFormatDX11[(uint32_t)TextureFormat::COUNT] = {
         DXGI_FORMAT_R32_FLOAT,          // R32F
         DXGI_FORMAT_R32G32B32_FLOAT,    // RGB32F
         DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBAF
+        DXGI_FORMAT_R8_UNORM,            // Byte_UINT
     };
 
     static DXGI_FORMAT DataFormatDX11[(uint32_t)DataFormat::COUNT] = {
@@ -117,6 +118,12 @@ namespace graphics {
             std::unordered_map<uint32_t, ID3D11ShaderResourceView*> vsTextures;
             std::vector<uint32_t> vsDirtyTextureSlots;
 
+            ConstantBufferDX11* psCBuffer;
+            std::vector<uint32_t> psCBufferDirtySlots;
+
+            std::unordered_map<uint32_t, ID3D11ShaderResourceView*> psTextures;
+            std::vector<uint32_t> psDirtyTextureSlots;
+
             ShaderHandle pixelShaderHandle;
             ShaderDX11 *pixelShader;
 
@@ -143,46 +150,50 @@ namespace graphics {
 
     public:
         RenderDeviceDX11() {};
-        int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
+        virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
 
-        IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
-        void                    DestroyIndexBuffer(IndexBufferHandle handle);
+        virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
+        virtual void                    DestroyIndexBuffer(IndexBufferHandle handle);
         
-        VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage);
-        void                    DestroyVertexBuffer(VertexBufferHandle handle);
+        virtual VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage);
+        virtual void                    DestroyVertexBuffer(VertexBufferHandle handle);
         
-        ShaderHandle            CreateShader(ShaderType shaderType, const char **source);
-        void                    DestroyShader(ShaderHandle handle);
+        virtual ShaderHandle            CreateShader(ShaderType shaderType, const char **source);
+        virtual void                    DestroyShader(ShaderHandle handle);
      
-        TextureHandle           CreateTexture2D(TextureFormat texFormat, DataType dataType, DataFormat dataFormat, uint32_t width, uint32_t height, void* data);
-        TextureHandle           CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
-        TextureHandle           CreateTextureCube(TextureFormat texFormat, DataType dataType, DataFormat dataFormat, uint32_t width, uint32_t height, void** data);
-        void                    DestroyTexture(TextureHandle handle);
+        virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
+        virtual TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
+        virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data);
 
-        void                    SwapBuffers();
+        virtual void                    DestroyTexture(TextureHandle handle);
 
-        void                    PrintDisplayAdapterInfo();
+        virtual void                    SwapBuffers();
+
+        virtual void                    PrintDisplayAdapterInfo();
 
         // Commands
-        void UpdateTextureArray(TextureHandle handle, uint32_t arrayIndex, uint32_t width, uint32_t height, DataType dataType, DataFormat dataFormat, void* data);
-        void UpdateTexture(TextureHandle handle, void* data, size_t size);
+        virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
+        virtual void UpdateTexture(TextureHandle handle, void* data, size_t size);
+        virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size);
 
-        void SetRasterizerState(uint32_t state);
-        void SetDepthState(uint32_t state);
-        void SetBlendState(uint32_t state);
+        virtual void SetRasterizerState(uint32_t state);
+        virtual void SetDepthState(uint32_t state);
+        virtual void SetBlendState(uint32_t state);
 
-        void Clear(float r, float g, float b, float a);
-        void SetVertexShader(ShaderHandle shaderHandle);
-        void SetPixelShader(ShaderHandle shaderHandle);
-        void SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *param_name, void *data);
-        void SetShaderTexture(ShaderHandle shaderHandle, TextureHandle textureHandle, TextureSlot slot);
-        void SetVertexBuffer(VertexBufferHandle handle);
+        virtual void Clear(float r, float g, float b, float a);
+        virtual void SetVertexShader(ShaderHandle shaderHandle);
+        virtual void SetPixelShader(ShaderHandle shaderHandle);
+        virtual void SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *param_name, void *data);
+        virtual void SetShaderTexture(ShaderHandle shaderHandle, TextureHandle textureHandle, TextureSlot slot);
+        virtual void SetVertexBuffer(VertexBufferHandle handle);
 
-        void DrawPrimitive(PrimitiveType primitiveType, uint32_t startVertex, uint32_t numVertices);
+        virtual void DrawPrimitive(PrimitiveType primitiveType, uint32_t startVertex, uint32_t numVertices);
 
     private:
         //This goes here till renderDevice.h has it..too lazy
         void SetIndexBuffer(IndexBufferHandle handle);
+
+        TextureHandle Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data);
 
         //hack for now 
         int defaultSamplerHandle;
@@ -194,13 +205,24 @@ namespace graphics {
         void SetInputLayout(uint32_t inputLayoutHandle);
         void DestroyInputLayout(uint32_t handle);
 
-        uint32_t CreateConstantBuffer(ID3DBlob *vertexShader);
+        uint32_t CreateConstantBuffer(ID3DBlob *shaderBlob);
         void UpdateConstantBuffer(ConstantBufferDX11* cb, std::vector<uint32_t> dirtySlots);
         void DestroyConstantBuffer(ConstantBufferHandle handle);
 
         inline uint32_t GenerateHandle() {
             static uint32_t key = 0;
             return ++key;
+        }
+
+        int GetFormatByteSize(DXGI_FORMAT dxFormat) {
+            switch (dxFormat) {
+            case DXGI_FORMAT_R8_UINT: return 1;
+            case DXGI_FORMAT_R8_UNORM: return 1;
+            case DXGI_FORMAT_R32_FLOAT: return 4;
+            case DXGI_FORMAT_R32G32B32_FLOAT: return 12;
+            case DXGI_FORMAT_R32G32B32A32_FLOAT: return 16;
+            default: return 0;
+            }
         }
 
         template <class T> T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {

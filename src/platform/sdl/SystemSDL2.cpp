@@ -32,21 +32,43 @@ const char* _window_title = "dirty";
 app::Application* _app = { nullptr };
 bool shouldQuit = false;
 std::vector<float> inputValues((int)input::InputCode::COUNT);
+std::map<int, input::InputCode> sdlkMapping;
 
 int filterSDLEvents(void* userdata, SDL_Event* event){
     //what im going to do here is just weed out any key's we dont want
     if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
         switch (event->key.keysym.sym){
-        case SDLK_w:
         case SDLK_a:
-        case SDLK_s:
+        case SDLK_b:
+        case SDLK_c:
         case SDLK_d:
         case SDLK_e:
+        case SDLK_f:
+        case SDLK_g:
+        case SDLK_h:
+        case SDLK_i:
+        case SDLK_j:
+        case SDLK_k:
+        case SDLK_l:
+        case SDLK_m:
+        case SDLK_n:
+        case SDLK_o:
+        case SDLK_p:
         case SDLK_q:
+        case SDLK_r:
+        case SDLK_s:
+        case SDLK_t:
+        case SDLK_u:
+        case SDLK_v:
+        case SDLK_w:
+        case SDLK_x:
+        case SDLK_y:
+        case SDLK_z:
         case SDLK_1:
         case SDLK_2:
         case SDLK_3:
         case SDLK_ESCAPE:
+        case SDLK_BACKQUOTE:
             return 1;
             break;
         default:
@@ -57,22 +79,25 @@ int filterSDLEvents(void* userdata, SDL_Event* event){
     return 1;
 }
 
-#define MAP_KEY_SDL(x, y) SDLK_##x, input::InputCode::INPUT_KEY_##y
-input::InputCode GetKeyCodeFromGLFWKey(int glfw_key) {
-    static std::map<int, input::InputCode> glfw_mapping = {
-        { MAP_KEY_SDL(a, A) },
-        { MAP_KEY_SDL(d, D) },
-        { MAP_KEY_SDL(e, E) },
-        { MAP_KEY_SDL(q, Q) },
-        { MAP_KEY_SDL(r, R) },
-        { MAP_KEY_SDL(s, S) },
-        { MAP_KEY_SDL(w, W) },
-        { MAP_KEY_SDL(1, 1) },
-        { MAP_KEY_SDL(2, 2) },
-        { MAP_KEY_SDL(3, 3) },
-    };
-    auto it = glfw_mapping.find(glfw_key);
-    return it == glfw_mapping.end() ? input::InputCode::KEY_UNKNOWN : it->second;
+#define MAP_KEY_SDL(x, y) sdlkMapping.insert(std::make_pair(SDLK_##x, input::InputCode::INPUT_KEY_##y));
+void PopulateKeyMapping() {
+    for (int x = 0; x < (int)input::InputCode::INPUT_KEY_Z; ++x) {
+        sdlkMapping.insert(std::make_pair(SDLK_a + x, (input::InputCode)x));
+    }
+
+    for (int x = (int)input::InputCode::INPUT_KEY_0; x < (int)input::InputCode::INPUT_KEY_9; ++x) {
+        sdlkMapping.insert(std::make_pair(SDLK_0 + x, (input::InputCode)x));
+    }
+
+    MAP_KEY_SDL(LSHIFT, LEFT_SHIFT);
+    MAP_KEY_SDL(RSHIFT, RIGHT_SHIFT);
+    MAP_KEY_SDL(BACKQUOTE, TILDE);
+    MAP_KEY_SDL(BACKSPACE, BACKSPACE);
+}
+
+input::InputCode GetKeyCodeFromSDLKey(int glfw_key) {
+    auto it = sdlkMapping.find(glfw_key);
+    return it == sdlkMapping.end() ? input::InputCode::KEY_UNKNOWN : it->second;
 }
 
 void sys::SetWindowTitle(const char* title) {
@@ -141,6 +166,7 @@ int sys::Run(app::Application* app){
     }
 	
     SDL_SetEventFilter(filterSDLEvents, NULL);
+    PopulateKeyMapping();
 
     LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch, subsystem);
 
@@ -165,7 +191,7 @@ int sys::Run(app::Application* app){
     }
 
 
-    _app->OnStart();
+    _app->OnStart(_window_width, _window_height);
 
     double dt = 0;
     while (!shouldQuit) {
@@ -174,30 +200,22 @@ int sys::Run(app::Application* app){
         // Reset mouse movement, otherwise camera constantly moves around
         inputValues[(int)input::InputCode::INPUT_MOUSE_XAXISRELATIVE] = 0;
         inputValues[(int)input::InputCode::INPUT_MOUSE_YAXISRELATIVE] = 0;
+        
+        // Going to do this here, not sure if i should or not..may want to test how this works
+        int temp = SDL_GetModState();
+        inputValues[(int)input::InputCode::INPUT_KEY_CAPSLOCK] = ((temp & KMOD_CAPS) == KMOD_CAPS);
 
         while (SDL_PollEvent(&_e) != 0) {
-            //user quit
             if (_e.type == SDL_QUIT){
                 shouldQuit = true;
             }
             else if (_e.type == SDL_KEYDOWN || _e.type == SDL_KEYUP) {
-
-                switch (_e.key.keysym.sym){
-                case SDLK_w:
-                case SDLK_a:
-                case SDLK_s:
-                case SDLK_d:
-                case SDLK_e:
-                case SDLK_q:
-                case SDLK_1:
-                case SDLK_2:
-                case SDLK_3:
-                    inputValues[(int)GetKeyCodeFromGLFWKey(_e.key.keysym.sym)] = _e.type == SDL_KEYDOWN ? true : false;
-                    break;
+                // To enable more / new keys, add them to filter function and make sure map is set in GetKeyCode
+                switch (_e.key.keysym.sym) {
                 case SDLK_ESCAPE:
                     shouldQuit = true;
-                    break;
                 default:
+                    inputValues[(int)GetKeyCodeFromSDLKey(_e.key.keysym.sym)] = _e.type == SDL_KEYDOWN ? true : false;
                     break;
                 }
             }
@@ -215,6 +233,7 @@ int sys::Run(app::Application* app){
                     break;
                 }
             }
+            // todo: redo controller stuff here
             else if (_e.type == SDL_CONTROLLERBUTTONDOWN || _e.type == SDL_CONTROLLERBUTTONUP) {
                 switch (_e.cbutton.button) {
                 case SDL_CONTROLLER_BUTTON_DPAD_DOWN:

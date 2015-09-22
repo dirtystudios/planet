@@ -5,7 +5,7 @@
 
 class App : public app::Application {
 public:
-    void OnStart() final;
+    void OnStart(uint32_t windowWidth, uint32_t windowHeight) final;
     void OnFrame(const std::vector<float>& inputValues, float dt) final;
     void OnShutdown() final;
     

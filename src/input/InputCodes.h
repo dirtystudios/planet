@@ -28,6 +28,7 @@ namespace input {
         INPUT_KEY_X,
         INPUT_KEY_Y,
         INPUT_KEY_Z,
+        INPUT_KEY_0,
         INPUT_KEY_1,
         INPUT_KEY_2,
         INPUT_KEY_3,
@@ -37,8 +38,11 @@ namespace input {
         INPUT_KEY_7,
         INPUT_KEY_8,
         INPUT_KEY_9,
-        INPUT_KEY_0,
         INPUT_KEY_LEFT_SHIFT,
+        INPUT_KEY_RIGHT_SHIFT,
+        INPUT_KEY_TILDE,
+        INPUT_KEY_CAPSLOCK,
+        INPUT_KEY_BACKSPACE,
 
         // Mouse Codes
         INPUT_MOUSE_KEY1,

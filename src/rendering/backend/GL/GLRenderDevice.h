@@ -216,6 +216,7 @@ namespace graphics {
       // "Commands"
       virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
       virtual void UpdateTexture(TextureHandle handle, void* data, size_t size);
+      virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size) {};
       virtual void SetRasterizerState(uint32_t state);
       virtual void SetDepthState(uint32_t state);
       virtual void SetBlendState(uint32_t state);
