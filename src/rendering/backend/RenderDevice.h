@@ -69,6 +69,45 @@ namespace graphics {
         FLOAT = 0,
         COUNT
     };
+    
+    enum class BlendMode : uint32_t {
+        ADD = 0,
+        SUBTRACT,
+        REVERSE_SUBTRACT,
+        MIN,
+        MAX,
+        COUNT
+    };
+    
+    enum class BlendFunc : uint32_t {
+        ZERO = 0,
+        ONE, 
+        SRC_COLOR,
+        ONE_MINUS_SRC_COLOR,
+        SRC_ALPHA,
+        ONE_MINUS_SRC_ALPHA,
+        DST_ALPHA,
+        ONE_MINUS_DST_ALPHA,
+        CONSTANT_COLOR,
+        ONE_MINUS_CONSTANT_COLOR,
+        CONSTANT_ALPHA,
+        ONE_MINUS_CONSTANT_ALPHA,
+        SRC_ALPHA_SATURATE,
+        SRC1_COLOR,
+        ONE_MINUS_SRC1_COLOR,
+        SRC1_ALPHA,
+        ONE_MINUS_SRC1_ALPHA,
+        COUNT
+    };
+    
+    struct BlendState {
+        BlendFunc src_rgb_func      { graphics::BlendFunc::ONE  };
+        BlendFunc src_alpha_func    { graphics::BlendFunc::ZERO };
+        BlendFunc dst_rgb_func      { graphics::BlendFunc::ONE  };
+        BlendFunc dst_alpha_func    { graphics::BlendFunc::ZERO };
+        BlendMode rgb_mode          { graphics::BlendMode::ADD  };
+        BlendMode alpha_mode        { graphics::BlendMode::ADD  };
+    };
 
     struct DeviceConfiguration {
         std::string DeviceAbbreviation;
@@ -106,13 +145,14 @@ namespace graphics {
         virtual void                    PrintDisplayAdapterInfo()=0;
 
         // "Commands"
+        virtual void SetBlendState(const BlendState& blend_state) = 0;
+        
         virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data) = 0;
         virtual void UpdateTexture(TextureHandle handle, void* data, size_t size) = 0;
         virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size) = 0;
 
         virtual void SetRasterizerState(uint32_t state) = 0;
         virtual void SetDepthState(uint32_t state) = 0;
-        virtual void SetBlendState(uint32_t state) = 0;
 
         virtual void Clear(float r, float g, float b, float a) = 0;
         virtual void SetVertexShader(ShaderHandle shader_handle) = 0;

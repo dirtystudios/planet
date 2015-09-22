@@ -84,11 +84,12 @@ namespace graphics {
         ShaderHandle pixel_shader_handle;
 
         uint32_t raster_state;
-        uint32_t blend_state;
         uint32_t depth_state;
 
         IndexBufferHandle index_buffer_handle;
         VertexBufferHandle vertex_buffer_handle;
+        
+        BlendState blend_state;
     };    
 
     static GLenum buffer_usage_mapping[(uint32_t)BufferUsage::COUNT] = {
@@ -114,6 +115,34 @@ namespace graphics {
         { GL_RGB32F, GL_FLOAT, GL_RGB },
         { GL_RGBA32F, GL_FLOAT, GL_RGBA },
         { GL_RED, GL_UNSIGNED_BYTE, GL_RED }
+    };
+    
+    static GLenum blend_mode_mapping[(uint32_t)BlendMode::COUNT] = {
+        GL_FUNC_ADD,
+        GL_FUNC_SUBTRACT,
+        GL_FUNC_REVERSE_SUBTRACT,
+        GL_MIN,
+        GL_MAX,
+    };
+    
+    static GLenum blend_func_mapping[(uint32_t)BlendFunc::COUNT] = {
+        GL_ZERO,
+        GL_ONE, 
+        GL_SRC_COLOR,
+        GL_ONE_MINUS_SRC_COLOR,
+        GL_SRC_ALPHA,
+        GL_ONE_MINUS_SRC_ALPHA,
+        GL_DST_ALPHA,
+        GL_ONE_MINUS_DST_ALPHA,
+        GL_CONSTANT_COLOR,
+        GL_ONE_MINUS_CONSTANT_COLOR,
+        GL_CONSTANT_ALPHA,
+        GL_ONE_MINUS_CONSTANT_ALPHA,
+        GL_SRC_ALPHA_SATURATE,
+        GL_SRC1_COLOR,
+        GL_ONE_MINUS_SRC1_COLOR,
+        GL_SRC1_ALPHA,
+        GL_ONE_MINUS_SRC1_ALPHA,
     };
 
     static GLenum data_format_mapping[(uint32_t)DataFormat::COUNT] = {
@@ -215,12 +244,13 @@ namespace graphics {
         void                            PrintDisplayAdapterInfo();
 
         // "Commands"
+        virtual void SetBlendState(const BlendState& blend_state);
+        
         virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
         virtual void UpdateTexture(TextureHandle handle, void* data, size_t size); 
         virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size);
         virtual void SetRasterizerState(uint32_t state);
         virtual void SetDepthState(uint32_t state);
-        virtual void SetBlendState(uint32_t state);
 
         virtual void Clear(float r, float g, float b, float a);
         virtual void SetVertexShader(ShaderHandle shader_handle);

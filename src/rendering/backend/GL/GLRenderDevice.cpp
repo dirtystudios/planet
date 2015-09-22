@@ -490,9 +490,6 @@ namespace graphics {
     void RenderDeviceGL::SetDepthState(uint32_t state) {
         _pending_state.depth_state = state;
     }
-    void RenderDeviceGL::SetBlendState(uint32_t state) {
-        _pending_state.blend_state = state;
-    }
     void RenderDeviceGL::SetVertexShader(ShaderHandle shader_handle) {
         _pending_state.vertex_shader_handle = shader_handle;
     }
@@ -508,14 +505,27 @@ namespace graphics {
     void RenderDeviceGL::SetVertexBuffer(VertexBufferHandle handle) {
         _pending_state.vertex_buffer_handle = handle;
     }
+    void RenderDeviceGL::SetBlendState(const BlendState& blend_state) {
+        memcpy(&_pending_state.blend_state, &blend_state, sizeof(BlendState));
+    }
     
+    
+    // TODO: BIG TODO - need to cache currently bound state to avoid re-setting it
     void RenderDeviceGL::DrawPrimitive(PrimitiveType primitive_type, uint32_t start_vertex, uint32_t num_vertices) {
         //ResolveContextState(_current_state, _pending_state);
 
         
-            
-            
-        
+        // TODO: if we need to set a blend state....enable it then set the blend state, otherwise disable it
+        // Right now, were doing lazy version and just always setting it --- really lazy
+        GLenum rgb_mode = SafeGet(blend_mode_mapping, (uint32_t)_pending_state.blend_state.rgb_mode);
+        GLenum alpha_mode = SafeGet(blend_mode_mapping, (uint32_t)_pending_state.blend_state.alpha_mode);
+        GLenum src_rgb_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.src_rgb_func);
+        GLenum src_alpha_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.src_alpha_func);
+        GLenum dst_rgb_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.dst_rgb_func);
+        GLenum dst_alpha_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.dst_alpha_func);
+        GL_CHECK(glEnable(GL_BLEND));
+        GL_CHECK(glBlendEquationSeparate(rgb_mode, alpha_mode));
+        GL_CHECK(glBlendFuncSeparate(src_rgb_func, dst_rgb_func, src_alpha_func, dst_alpha_func));
 
         //if(_current_state.pixel_shader_handle != _pending_state.pixel_shader_handle) {
             ProgramGL* ps = Get<ProgramGL>(_programs, _pending_state.pixel_shader_handle);        

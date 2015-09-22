@@ -30,8 +30,7 @@ private:
     std::map<char, Character> characters;
 
     graphics::ShaderHandle _shaders[2];
-    //GLuint VAO, VBO;
-    graphics::VertexBufferHandle VBO;
+    graphics::VertexBufferHandle _vertex_buffer;
 public:
     TextRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
         std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
@@ -103,21 +102,17 @@ public:
 
         graphics::VertLayout layout;
         layout.Add(graphics::ParamType::Float4);
-        VBO = _render_device->CreateVertexBuffer(layout, 0, graphics::SizeofParam(graphics::ParamType::Float4) * 6, graphics::BufferUsage::DYNAMIC);
-        /*glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0); */
+        _vertex_buffer = _render_device->CreateVertexBuffer(layout, 0, graphics::SizeofParam(graphics::ParamType::Float4) * 6, graphics::BufferUsage::DYNAMIC);
     }
 
     void RenderText(std::string text, float x, float y, float scale, glm::vec3 color) {
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        graphics::BlendState blend_state;
+        blend_state.src_rgb_func = graphics::BlendFunc::SRC_ALPHA;
+        blend_state.src_alpha_func = blend_state.src_rgb_func;
+        blend_state.dst_rgb_func = graphics::BlendFunc::ONE_MINUS_SRC_ALPHA;
+        blend_state.dst_alpha_func = blend_state.dst_rgb_func;
+        _render_device->SetBlendState(blend_state);
+
         glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
         // Activate corresponding render state  
         _render_device->SetVertexShader(_shaders[0]);
@@ -150,9 +145,9 @@ public:
             // Render glyph texture over quad
 
             _render_device->SetShaderTexture(_shaders[1], ch.texture_id, graphics::TextureSlot::BASE);
-            _render_device->SetVertexBuffer(VBO);
+            _render_device->SetVertexBuffer(_vertex_buffer);
             // Update content of VBO memory
-            _render_device->UpdateVertexBuffer(VBO, vertices, sizeof(vertices));
+            _render_device->UpdateVertexBuffer(_vertex_buffer, vertices, sizeof(vertices));
 
             // Render quad
             _render_device->DrawPrimitive(graphics::PrimitiveType::TRIANGLES, 0, 6);
@@ -160,8 +155,6 @@ public:
             // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
             x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
         }
-        /*glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);*/
     }
 
 
