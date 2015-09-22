@@ -4,9 +4,9 @@
 #include <d3d11.h>
 #include <DXGI.h>
 
-#include "gfx/RenderDevice.h"
-#include "gfx/AttribLayout.h"
-#include "gfx/ParamType.h"
+#include "RenderDevice.h"
+#include "AttribLayout.h"
+#include "ParamType.h"
 
 #include "DX11InputLayoutCache.h"
 

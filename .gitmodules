@@ -1,0 +1,3 @@
+[submodule "external/SDL-mirror"]
+	path = external/SDL-mirror
+	url = https://github.com/spurious/SDL-mirror

@@ -4,7 +4,7 @@
 #include <d3dcompiler.inl>
 #include <wrl.h>
 
-#include "gfx/ParamType.h"
+#include "ParamType.h"
 #include "Log.h"
 
 using namespace Microsoft::WRL;

@@ -2,7 +2,8 @@
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 #include <d3d11.h>
-
+#include <vector>
+#include <unordered_map>
 
 namespace graphics {
     typedef uint32_t InputLayoutCacheHandle;

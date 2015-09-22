@@ -8,6 +8,7 @@
 #include "File.h"
 #include <map>
 #include <queue>
+#include <functional>
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"

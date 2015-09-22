@@ -11,53 +11,72 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\App.h" />
-    <ClInclude Include="..\Application.h" />
-    <ClInclude Include="..\BoundingBox.h" />
-    <ClInclude Include="..\Camera.h" />
-    <ClInclude Include="..\ChunkedLODTerrainRenderer.h" />
-    <ClInclude Include="..\DebugRenderer.h" />
-    <ClInclude Include="..\Frustum.h" />
-    <ClInclude Include="..\gfx\AttribLayout.h" />
-    <ClInclude Include="..\gfx\dx11\DX11ConstantBufferHelpers.h" />
-    <ClInclude Include="..\gfx\dx11\DX11InputLayoutCache.h" />
-    <ClInclude Include="..\gfx\dx11\DX11RenderDevice.h" />
-    <ClInclude Include="..\gfx\gl\GLRenderDevice.h" />
-    <ClInclude Include="..\gfx\gl\GLUtils.h" />
-    <ClInclude Include="..\gfx\MemLayout.h" />
-    <ClInclude Include="..\gfx\ParamType.h" />
-    <ClInclude Include="..\gfx\RenderDevice.h" />
-    <ClInclude Include="..\gfx\VertLayout.h" />
-    <ClInclude Include="..\GLHelpers.h" />
-    <ClInclude Include="..\GPUTileBuffer.h" />
-    <ClInclude Include="..\Helpers.h" />
-    <ClInclude Include="..\input\Controller.h" />
-    <ClInclude Include="..\input\InputCodes.h" />
-    <ClInclude Include="..\input\InputContext.h" />
-    <ClInclude Include="..\input\InputManager.h" />
-    <ClInclude Include="..\input\PlayerController.h" />
-    <ClInclude Include="..\Log.h" />
-    <ClInclude Include="..\LRUTileCache.h" />
-    <ClInclude Include="..\stdafx.h" />
-    <ClInclude Include="..\System.h" />
-    <ClInclude Include="..\TextRenderer.h" />
-    <ClInclude Include="..\utilities\Callback.h" />
-    <ClInclude Include="..\utilities\File.h" />
+    <ClCompile Include="..\src\App.cpp" />
+    <ClCompile Include="..\src\Camera.cpp" />
+    <ClCompile Include="..\src\Frustum.cpp" />
+    <ClCompile Include="..\src\input\InputManager.cpp" />
+    <ClCompile Include="..\src\input\PlayerController.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />
+    <ClCompile Include="..\src\rendering\backend\GL\GLRenderDevice.cpp" />
+    <ClCompile Include="..\src\utilities\osx\File_osx.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\App.cpp" />
-    <ClCompile Include="..\Camera.cpp" />
-    <ClCompile Include="..\DebugRenderer.cpp" />
-    <ClCompile Include="..\Frustum.cpp" />
-    <ClCompile Include="..\gfx\dx11\DX11InputLayoutCache.cpp" />
-    <ClCompile Include="..\gfx\dx11\DX11RenderDevice.cpp" />
-    <ClCompile Include="..\gfx\gl\GLRenderDevice.cpp" />
-    <ClCompile Include="..\input\InputManager.cpp" />
-    <ClCompile Include="..\input\PlayerController.cpp" />
-    <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\stdafx.cpp" />
-    <ClCompile Include="..\SystemSDL2.cpp" />
-    <ClCompile Include="..\utilities\File.cpp" />
+    <ClInclude Include="..\src\App.h" />
+    <ClInclude Include="..\src\Application.h" />
+    <ClInclude Include="..\src\BoundingBox.h" />
+    <ClInclude Include="..\src\Camera.h" />
+    <ClInclude Include="..\src\Frustum.h" />
+    <ClInclude Include="..\src\Helpers.h" />
+    <ClInclude Include="..\src\input\Controller.h" />
+    <ClInclude Include="..\src\input\InputCodes.h" />
+    <ClInclude Include="..\src\input\InputContext.h" />
+    <ClInclude Include="..\src\input\InputManager.h" />
+    <ClInclude Include="..\src\input\PlayerController.h" />
+    <ClInclude Include="..\src\Log.h" />
+    <ClInclude Include="..\src\platform\Platform.h" />
+    <ClInclude Include="..\src\platform\System.h" />
+    <ClInclude Include="..\src\rendering\backend\AttribLayout.h" />
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11ConstantBufferHelpers.h" />
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.h" />
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11RenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\GL\GLRenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\GL\GLUtils.h" />
+    <ClInclude Include="..\src\rendering\backend\MemLayout.h" />
+    <ClInclude Include="..\src\rendering\backend\ParamType.h" />
+    <ClInclude Include="..\src\rendering\backend\RenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\VertLayout.h" />
+    <ClInclude Include="..\src\rendering\ChunkedLODTerrainRenderer.h" />
+    <ClInclude Include="..\src\rendering\GPUTileBuffer.h" />
+    <ClInclude Include="..\src\rendering\LRUTileCache.h" />
+    <ClInclude Include="..\src\rendering\TextRenderer.h" />
+    <ClInclude Include="..\src\utilities\Callback.h" />
+    <ClInclude Include="..\src\utilities\File.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\rendering\shaders\GL\debug_fs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\debug_vs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_fs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_tcs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_tes.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_vs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\terrain_fs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\terrain_vs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\text_ps.glsl" />
+    <None Include="..\src\rendering\shaders\GL\text_vs.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_fs.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_vs.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32A60293-4AF5-43BB-A314-BC8382DFA22B}</ProjectGuid>
@@ -89,8 +108,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\;..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\src;..\src\input;..\src\platform;..\src\platform\sdl;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\SDL-mirror\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\external\winlibs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>$(ProjectName)-dbg</TargetName>
   </PropertyGroup>
@@ -105,15 +124,15 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libnoise.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y /D "$(SolutionDir)..\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
-copy /Y /D "$(SolutionDir)..\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
+      <Command>copy /Y /D "$(SolutionDir)..\external\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
+copy /Y /D "$(SolutionDir)..\external\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
