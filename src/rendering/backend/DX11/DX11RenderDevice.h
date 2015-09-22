@@ -40,6 +40,32 @@ namespace graphics {
         D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST,  // patches_4?
     };
 
+    static D3D11_BLEND_OP BlendModeDX11[(uint32_t)BlendMode::COUNT] = {
+        D3D11_BLEND_OP_ADD,
+        D3D11_BLEND_OP_SUBTRACT,
+        D3D11_BLEND_OP_REV_SUBTRACT,
+        D3D11_BLEND_OP_MIN,
+        D3D11_BLEND_OP_MAX,
+    };
+
+    static D3D11_BLEND BlendFuncDX11[(uint32_t)BlendFunc::COUNT] {
+        D3D11_BLEND_ZERO,
+        D3D11_BLEND_ONE,
+        D3D11_BLEND_SRC_COLOR,
+        D3D11_BLEND_INV_SRC_COLOR,
+        D3D11_BLEND_SRC_ALPHA,
+        D3D11_BLEND_INV_SRC_ALPHA,
+        D3D11_BLEND_DEST_ALPHA,
+        D3D11_BLEND_INV_DEST_ALPHA,
+        D3D11_BLEND_DEST_COLOR,
+        D3D11_BLEND_INV_DEST_COLOR,
+        D3D11_BLEND_SRC_ALPHA_SAT,
+        D3D11_BLEND_SRC1_COLOR,
+        D3D11_BLEND_INV_SRC1_COLOR,
+        D3D11_BLEND_SRC1_ALPHA,
+        D3D11_BLEND_INV_SRC1_ALPHA
+    };
+
     typedef uint32_t SamplerHandle;
     typedef uint32_t ConstantBufferHandle;
 
@@ -83,6 +109,10 @@ namespace graphics {
         ID3D11SamplerState* sampler;
     };
 
+    struct BlendStateDX11 {
+        ID3D11BlendState* blendState;
+    };
+
     using namespace Microsoft::WRL;
     class RenderDeviceDX11 : public RenderDevice {
     private:
@@ -94,6 +124,7 @@ namespace graphics {
         std::unordered_map<uint32_t, InputLayoutDX11> m_inputLayouts;
         std::unordered_map<uint32_t, TextureDX11> m_textures;
         std::unordered_map<uint32_t, SamplerDX11> m_samplers;
+        std::unordered_map<int, BlendStateDX11> m_blendStates;
 
         HWND m_hwnd;
         ComPtr<ID3D11Device> m_dev;
@@ -107,10 +138,10 @@ namespace graphics {
         // todo: rip this out and merge things...
         struct DX11State {
             IndexBufferHandle indexBufferHandle;
-            IndexBufferDX11 *indexBuffer;
+            IndexBufferDX11* indexBuffer;
 
             ShaderHandle vertexShaderHandle;
-            ShaderDX11 *vertexShader;
+            ShaderDX11* vertexShader;
 
             ConstantBufferDX11* vsCBuffer;
             std::vector<uint32_t> vsCBufferDirtySlots;
@@ -125,13 +156,16 @@ namespace graphics {
             std::vector<uint32_t> psDirtyTextureSlots;
 
             ShaderHandle pixelShaderHandle;
-            ShaderDX11 *pixelShader;
+            ShaderDX11* pixelShader;
 
             InputLayoutCacheHandle inputLayoutHandle;
-            InputLayoutDX11 *inputLayout;
+            InputLayoutDX11* inputLayout;
 
             VertexBufferHandle vertexBufferHandle;
             VertexBufferDX11* vertexBuffer;
+
+            int blendStateHash;
+            BlendStateDX11* blendState;
 
             D3D11_PRIMITIVE_TOPOLOGY primitiveType;
 
@@ -142,6 +176,8 @@ namespace graphics {
                 pixelShader = 0;
                 inputLayoutHandle = 0;
                 inputLayout = 0;
+                blendState = 0;
+                blendStateHash = 0;
                 primitiveType = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
             }
         };
@@ -178,7 +214,7 @@ namespace graphics {
 
         virtual void SetRasterizerState(uint32_t state);
         virtual void SetDepthState(uint32_t state);
-        virtual void SetBlendState(uint32_t state);
+        virtual void SetBlendState(const BlendState& blendState);
 
         virtual void Clear(float r, float g, float b, float a);
         virtual void SetVertexShader(ShaderHandle shaderHandle);
@@ -228,6 +264,14 @@ namespace graphics {
         template <class T> T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
             auto it = map.find(handle);
             if(it == map.end()) {
+                return nullptr;
+            }
+            return &(*it).second;
+        }
+
+        template <class T> T* GetWithInt(std::unordered_map<int, T> &map, int handle) {
+            auto it = map.find(handle);
+            if (it == map.end()) {
                 return nullptr;
             }
             return &(*it).second;

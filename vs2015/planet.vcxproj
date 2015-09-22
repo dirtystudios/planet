@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\external\xxhash\xxhash.c" />
     <ClCompile Include="..\src\App.cpp" />
     <ClCompile Include="..\src\Camera.cpp" />
     <ClCompile Include="..\src\Frustum.cpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\external\xxhash\xxhash.h" />
     <ClInclude Include="..\src\App.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\BoundingBox.h" />
@@ -115,7 +117,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\src;..\src\input;..\src\platform;..\src\platform\sdl;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\freetype2\include;..\external\SDL-mirror\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\input;..\src\platform;..\src\platform\sdl;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\freetype2\include;..\external\SDL-mirror\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>..\external\winlibs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>$(ProjectName)-dbg</TargetName>

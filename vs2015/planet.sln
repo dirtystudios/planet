@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "planet", "planet.vcxproj", "{32A60293-4AF5-43BB-A314-BC8382DFA22B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "externals", "externals", "{B5C0DA3D-131E-4146-A8A4-5C5C69088C92}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "externalProjects", "externalProjects", "{B5C0DA3D-131E-4146-A8A4-5C5C69088C92}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject
