@@ -70,6 +70,8 @@ namespace graphics {
         COUNT
     };
     
+    
+    
     enum class BlendMode : uint32_t {
         ADD = 0,
         SUBTRACT,
@@ -100,7 +102,57 @@ namespace graphics {
         COUNT
     };
     
+    enum class FillMode : uint32_t {
+        WIREFRAME = 0,
+        SOLID,
+        COUNT
+    };
+    
+    enum class CullMode : uint32_t {
+        NONE = 1,
+        FRONT,
+        BACK,
+        COUNT
+    };
+    
+    enum class WindingOrder : uint32_t {
+        FRONT_CCW = 0,
+        FRONT_CW,
+        COUNT
+    };
+    
+    enum class DepthWriteMask : uint32_t {
+        ZERO = 0,
+        ALL,
+        COUNT
+    };
+    
+    enum class DepthFunc : uint32_t {
+        NEVER        = 0,
+        LESS         ,
+        EQUAL        ,
+        LESS_EQUAL   ,
+        GREATER      ,
+        NOT_EQUAL    ,
+        GREATER_EQUAL,
+        ALWAYS       ,
+        COUNT
+    };
+    
+    struct DepthState {
+        bool enable                     { true };
+        DepthWriteMask depth_write_mask { DepthWriteMask::ALL };
+        DepthFunc depth_func            { DepthFunc::LESS };
+    };
+    
+    struct RasterState {
+        FillMode fill_mode          { FillMode::SOLID };
+        CullMode cull_mode          { CullMode::NONE };
+        WindingOrder winding_order  { WindingOrder::FRONT_CCW };        
+    };
+    
     struct BlendState {
+        bool enable                 { true };
         BlendFunc src_rgb_func      { graphics::BlendFunc::ONE  };
         BlendFunc src_alpha_func    { graphics::BlendFunc::ZERO };
         BlendFunc dst_rgb_func      { graphics::BlendFunc::ONE  };
@@ -146,13 +198,12 @@ namespace graphics {
 
         // "Commands"
         virtual void SetBlendState(const BlendState& blend_state) = 0;
+        virtual void SetRasterState(const DepthState& depth_state) = 0;
+        virtual void SetDepthState(const RasterState& raster_state) = 0;
         
         virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data) = 0;
         virtual void UpdateTexture(TextureHandle handle, void* data, size_t size) = 0;
         virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size) = 0;
-
-        virtual void SetRasterizerState(uint32_t state) = 0;
-        virtual void SetDepthState(uint32_t state) = 0;
 
         virtual void Clear(float r, float g, float b, float a) = 0;
         virtual void SetVertexShader(ShaderHandle shader_handle) = 0;

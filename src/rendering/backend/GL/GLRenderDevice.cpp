@@ -37,6 +37,7 @@ namespace graphics {
         GL_CHECK(glGenProgramPipelines(1, &_pipeline));
         GL_CHECK(glBindProgramPipeline(_pipeline));
     }
+    
     IndexBufferHandle RenderDeviceGL::CreateIndexBuffer(void* data, size_t size, BufferUsage usage) {
         uint32_t handle = GenerateHandle();
 
@@ -469,7 +470,7 @@ namespace graphics {
                                  format_desc->data_format, format_desc->data_type, data));
     }
     void RenderDeviceGL::UpdateTexture(TextureHandle handle, void* data, size_t size) {
-
+        assert(false);
     }
     
     void RenderDeviceGL::UpdateVertexBuffer(VertexBufferHandle handle, void* data, size_t size) {
@@ -484,12 +485,7 @@ namespace graphics {
         glClearColor(r, g, b, a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    void RenderDeviceGL::SetRasterizerState(uint32_t state) {
-        _pending_state.raster_state = state;
-    }
-    void RenderDeviceGL::SetDepthState(uint32_t state) {
-        _pending_state.depth_state = state;
-    }
+    
     void RenderDeviceGL::SetVertexShader(ShaderHandle shader_handle) {
         _pending_state.vertex_shader_handle = shader_handle;
     }
@@ -508,24 +504,55 @@ namespace graphics {
     void RenderDeviceGL::SetBlendState(const BlendState& blend_state) {
         memcpy(&_pending_state.blend_state, &blend_state, sizeof(BlendState));
     }
+    void RenderDeviceGL::SetRasterState(const DepthState& depth_state) {
+        memcpy(&_pending_state.depth_state, &depth_state, sizeof(DepthState));
+    }    
+    void RenderDeviceGL::SetDepthState(const RasterState& raster_state) {
+        memcpy(&_pending_state.raster_state, &raster_state, sizeof(RasterState));
+    }
     
     
     // TODO: BIG TODO - need to cache currently bound state to avoid re-setting it
     void RenderDeviceGL::DrawPrimitive(PrimitiveType primitive_type, uint32_t start_vertex, uint32_t num_vertices) {
         //ResolveContextState(_current_state, _pending_state);
 
+        // BIG TODO: Renderstate does not persist -- this is bad
+        if(_pending_state.raster_state.cull_mode == CullMode::NONE) {
+            GL_CHECK(glDisable(GL_CULL_FACE));
+        } else {
+            GL_CHECK(glEnable(GL_CULL_FACE));
+            GLenum cull_mode = SafeGet(cull_mode_mapping, (uint32_t)_pending_state.raster_state.cull_mode);
+            GL_CHECK(glCullFace(cull_mode));
+        }
+
+        GLenum winding_order = SafeGet(winding_order_mapping, (uint32_t)_pending_state.raster_state.winding_order);
+        GL_CHECK(glFrontFace(winding_order)); 
         
-        // TODO: if we need to set a blend state....enable it then set the blend state, otherwise disable it
-        // Right now, were doing lazy version and just always setting it --- really lazy
-        GLenum rgb_mode = SafeGet(blend_mode_mapping, (uint32_t)_pending_state.blend_state.rgb_mode);
-        GLenum alpha_mode = SafeGet(blend_mode_mapping, (uint32_t)_pending_state.blend_state.alpha_mode);
-        GLenum src_rgb_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.src_rgb_func);
-        GLenum src_alpha_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.src_alpha_func);
-        GLenum dst_rgb_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.dst_rgb_func);
-        GLenum dst_alpha_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.dst_alpha_func);
-        GL_CHECK(glEnable(GL_BLEND));
-        GL_CHECK(glBlendEquationSeparate(rgb_mode, alpha_mode));
-        GL_CHECK(glBlendFuncSeparate(src_rgb_func, dst_rgb_func, src_alpha_func, dst_alpha_func));
+        
+        if(!_pending_state.blend_state.enable) {
+            GL_CHECK(glDisable(GL_BLEND));
+        } else {
+            GLenum rgb_mode = SafeGet(blend_mode_mapping, (uint32_t)_pending_state.blend_state.rgb_mode);
+            GLenum alpha_mode = SafeGet(blend_mode_mapping, (uint32_t)_pending_state.blend_state.alpha_mode);
+            GLenum src_rgb_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.src_rgb_func);
+            GLenum src_alpha_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.src_alpha_func);
+            GLenum dst_rgb_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.dst_rgb_func);
+            GLenum dst_alpha_func = SafeGet(blend_func_mapping, (uint32_t)_pending_state.blend_state.dst_alpha_func);
+            GL_CHECK(glEnable(GL_BLEND));
+            GL_CHECK(glBlendEquationSeparate(rgb_mode, alpha_mode));
+            GL_CHECK(glBlendFuncSeparate(src_rgb_func, dst_rgb_func, src_alpha_func, dst_alpha_func));
+        }
+
+        if(!_pending_state.depth_state.enable) {
+            GL_CHECK(glDisable(GL_DEPTH_TEST));
+        } else {
+            GL_CHECK(glEnable(GL_DEPTH_TEST));
+            GLenum depth_write_mask = SafeGet(depth_write_mask_mapping, (uint32_t)_pending_state.depth_state.depth_write_mask);
+            GL_CHECK(glDepthMask(depth_write_mask));
+
+            GLenum depth_func = SafeGet(depth_func_mapping, (uint32_t)_pending_state.depth_state.depth_func);
+            GL_CHECK(glDepthFunc(depth_func));
+        }
 
         //if(_current_state.pixel_shader_handle != _pending_state.pixel_shader_handle) {
             ProgramGL* ps = Get<ProgramGL>(_programs, _pending_state.pixel_shader_handle);        
