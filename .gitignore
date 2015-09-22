@@ -16,6 +16,7 @@
 *.so
 
 # Compiled Static Libs
+*.a
 *.lai
 *.la
 *.tlog
@@ -25,6 +26,11 @@
 *.ilk
 *.pch
 
+# Xcode Stuff
+*.xcodeproj
+*.build
+
+
 # Visual Studio Stuff
 *.opensdf
 *.sdf
@@ -33,15 +39,22 @@
 *.userosscache
 *.sln.docstates
 ipch/
+*.enc
 *.stackdump
 
 # Visual Studio Profiler Files
 *.vspx
 *.psess
 
+# Random
+*.log
+
 # CMake Stuff
-/CMakeFiles/
+CMakeFiles/
 /CMakeScripts/
 CMakeCache.txt
 /dg.build/
 /dg.xcodeproj/
+Makefile
+cmake_install.cmake
+

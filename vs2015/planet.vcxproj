@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\App.cpp" />
+    <ClCompile Include="..\src\Camera.cpp" />
+    <ClCompile Include="..\src\Frustum.cpp" />
+    <ClCompile Include="..\src\input\InputManager.cpp" />
+    <ClCompile Include="..\src\input\PlayerController.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />
+    <ClCompile Include="..\src\rendering\backend\GL\GLRenderDevice.cpp" />
+    <ClCompile Include="..\src\utilities\osx\File_osx.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\App.h" />
+    <ClInclude Include="..\src\Application.h" />
+    <ClInclude Include="..\src\BoundingBox.h" />
+    <ClInclude Include="..\src\Camera.h" />
+    <ClInclude Include="..\src\Frustum.h" />
+    <ClInclude Include="..\src\Helpers.h" />
+    <ClInclude Include="..\src\input\Controller.h" />
+    <ClInclude Include="..\src\input\InputCodes.h" />
+    <ClInclude Include="..\src\input\InputContext.h" />
+    <ClInclude Include="..\src\input\InputManager.h" />
+    <ClInclude Include="..\src\input\PlayerController.h" />
+    <ClInclude Include="..\src\Log.h" />
+    <ClInclude Include="..\src\platform\Platform.h" />
+    <ClInclude Include="..\src\platform\System.h" />
+    <ClInclude Include="..\src\rendering\backend\AttribLayout.h" />
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11ConstantBufferHelpers.h" />
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.h" />
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11RenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\GL\GLRenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\GL\GLUtils.h" />
+    <ClInclude Include="..\src\rendering\backend\MemLayout.h" />
+    <ClInclude Include="..\src\rendering\backend\ParamType.h" />
+    <ClInclude Include="..\src\rendering\backend\RenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\VertLayout.h" />
+    <ClInclude Include="..\src\rendering\ChunkedLODTerrainRenderer.h" />
+    <ClInclude Include="..\src\rendering\GPUTileBuffer.h" />
+    <ClInclude Include="..\src\rendering\LRUTileCache.h" />
+    <ClInclude Include="..\src\rendering\TextRenderer.h" />
+    <ClInclude Include="..\src\utilities\Callback.h" />
+    <ClInclude Include="..\src\utilities\File.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\rendering\shaders\GL\debug_fs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\debug_vs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_fs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_tcs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_tes.glsl" />
+    <None Include="..\src\rendering\shaders\GL\planet_vs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\terrain_fs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\terrain_vs.glsl" />
+    <None Include="..\src\rendering\shaders\GL\text_ps.glsl" />
+    <None Include="..\src\rendering\shaders\GL\text_vs.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_fs.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_vs.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{32A60293-4AF5-43BB-A314-BC8382DFA22B}</ProjectGuid>
+    <RootNamespace>planet</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>..\src;..\src\input;..\src\platform;..\src\platform\sdl;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\SDL-mirror\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\external\winlibs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
+    <TargetName>$(ProjectName)-dbg</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libnoise.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y /D "$(SolutionDir)..\external\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
+copy /Y /D "$(SolutionDir)..\external\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libnoise.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y /D "$(SolutionDir)..\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
+copy /Y /D "$(SolutionDir)..\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

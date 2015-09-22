@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\App.cpp" />
+    <ClCompile Include="..\src\Camera.cpp" />
+    <ClCompile Include="..\src\Frustum.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\input\InputManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\input\PlayerController.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utilities\osx\File_osx.cpp">
+      <Filter>utilities\osx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utilities\win32\File_win32.cpp">
+      <Filter>utilities\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp">
+      <Filter>platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\GL\GLRenderDevice.cpp">
+      <Filter>rendering\backend\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\App.h" />
+    <ClInclude Include="..\src\Application.h" />
+    <ClInclude Include="..\src\BoundingBox.h" />
+    <ClInclude Include="..\src\Camera.h" />
+    <ClInclude Include="..\src\Frustum.h" />
+    <ClInclude Include="..\src\Helpers.h" />
+    <ClInclude Include="..\src\Log.h" />
+    <ClInclude Include="..\src\input\Controller.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\InputCodes.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\InputContext.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\InputManager.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\PlayerController.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\Callback.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\File.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\platform\Platform.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\platform\System.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\ChunkedLODTerrainRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\GPUTileBuffer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\LRUTileCache.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\TextRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\AttribLayout.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\MemLayout.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\ParamType.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\RenderDevice.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\VertLayout.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\GL\GLRenderDevice.h">
+      <Filter>rendering\backend\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\GL\GLUtils.h">
+      <Filter>rendering\backend\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11ConstantBufferHelpers.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11RenderDevice.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="input">
+      <UniqueIdentifier>{2f8e2753-a0c7-4416-9838-0dffe9b8c654}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{396d706c-67a6-4768-8a2c-2173bed8cdb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering">
+      <UniqueIdentifier>{cce84c1f-965a-4666-ba91-a0518441f020}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utilities">
+      <UniqueIdentifier>{b28f2dbc-e622-456f-a5ac-f7f812d83a04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utilities\osx">
+      <UniqueIdentifier>{07886d51-de58-4e2b-92a8-4d48a72b50d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utilities\win32">
+      <UniqueIdentifier>{55d80882-680f-4643-9e91-04ac0d136bf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\sdl">
+      <UniqueIdentifier>{605005e4-ac5c-4104-b727-92d47514a057}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\shaders">
+      <UniqueIdentifier>{7e6875de-be16-49ee-980e-1fa01905dac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\backend">
+      <UniqueIdentifier>{563d2a41-6878-4177-b83b-c1e2e964ba71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\shaders\DX11">
+      <UniqueIdentifier>{7e0d1e1e-2ce5-4004-a52f-f0feeb3f435e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\shaders\GL">
+      <UniqueIdentifier>{f8bdc793-c949-4a95-831c-16e414eba916}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\backend\DX11">
+      <UniqueIdentifier>{cc9dd77c-40d4-4e05-9c5c-c5745798a3c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\backend\GL">
+      <UniqueIdentifier>{64177181-7fe9-404d-8eaa-b793f574463b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\rendering\shaders\GL\debug_fs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\debug_vs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\planet_fs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\planet_tcs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\planet_tes.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\planet_vs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\terrain_fs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\terrain_vs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\text_ps.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+    <None Include="..\src\rendering\shaders\GL\text_vs.glsl">
+      <Filter>rendering\shaders\GL</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_fs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_vs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
