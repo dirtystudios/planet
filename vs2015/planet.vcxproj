@@ -78,6 +78,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="freetype.vcxproj">
+      <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32A60293-4AF5-43BB-A314-BC8382DFA22B}</ProjectGuid>
     <RootNamespace>planet</RootNamespace>
@@ -108,7 +113,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\src;..\src\input;..\src\platform;..\src\platform\sdl;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\SDL-mirror\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\input;..\src\platform;..\src\platform\sdl;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\freetype2\include;..\external\SDL-mirror\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\external\winlibs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>$(ProjectName)-dbg</TargetName>
