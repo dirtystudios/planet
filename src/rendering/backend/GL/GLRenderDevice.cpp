@@ -471,6 +471,15 @@ namespace graphics {
     void RenderDeviceGL::UpdateTexture(TextureHandle handle, void* data, size_t size) {
 
     }
+    
+    void RenderDeviceGL::UpdateVertexBuffer(VertexBufferHandle handle, void* data, size_t size) {
+        VertexBufferGL* vertex_buffer = Get<VertexBufferGL>(_vertex_buffers, handle);
+        assert(vertex_buffer);
+
+        GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id));
+        GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
+        
+    }
     void RenderDeviceGL::Clear(float r, float g, float b, float a) {
         glClearColor(r, g, b, a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -499,6 +508,7 @@ namespace graphics {
     void RenderDeviceGL::SetVertexBuffer(VertexBufferHandle handle) {
         _pending_state.vertex_buffer_handle = handle;
     }
+    
     void RenderDeviceGL::DrawPrimitive(PrimitiveType primitive_type, uint32_t start_vertex, uint32_t num_vertices) {
         //ResolveContextState(_current_state, _pending_state);
 

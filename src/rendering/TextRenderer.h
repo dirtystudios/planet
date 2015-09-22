@@ -127,11 +127,6 @@ public:
         _render_device->SetShaderParameter(_shaders[1], graphics::ParamType::Float3, "textColor", &textColor);
         _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "projection", &projection);
 
-        //glUniform3f(glGetUniformLocation(_program, "textColor"), color.x, color.y, color.z);
-        //gl::SetUniform(_program, "projection", ParamType::Float4x4, &projection);
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindVertexArray(VAO);
-
         // Iterate through all characters
         std::string::const_iterator c;
         for (c = text.begin(); c != text.end(); c++) {
@@ -153,18 +148,13 @@ public:
                 { xpos + w, ypos + h,   1.0, 0.0 }           
             };
             // Render glyph texture over quad
-            //glBindTexture(GL_TEXTURE_2D, ch.texture_id);
+
             _render_device->SetShaderTexture(_shaders[1], ch.texture_id, graphics::TextureSlot::BASE);
             _render_device->SetVertexBuffer(VBO);
             // Update content of VBO memory
             _render_device->UpdateVertexBuffer(VBO, vertices, sizeof(vertices));
 
-            /*glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); 
-            glBindBuffer(GL_ARRAY_BUFFER, 0); */
-
             // Render quad
-            /*glDrawArrays(GL_TRIANGLES, 0, 6);*/
             _render_device->DrawPrimitive(graphics::PrimitiveType::TRIANGLES, 0, 6);
 
             // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
