@@ -112,7 +112,6 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     glm::mat4 world = glm::mat4();
     Frustum frustum(proj, view);
 
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer->Render(cam, frustum);

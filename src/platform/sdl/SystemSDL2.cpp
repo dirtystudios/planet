@@ -111,7 +111,7 @@ int sys::Run(app::Application* app){
     std::string renderDeviceConfig =  config::Config::getInstance().GetConfigString("RenderDeviceSettings", "RenderDevice");
     if (renderDeviceConfig != "directx11" && renderDeviceConfig != "opengl") {
         renderDeviceConfig = "";
-        LOG_D("Invalid RenderDevice set in ini. Using Default for system. Given: %s", renderDeviceConfig);
+        LOG_D("Invalid RenderDevice set in ini. Using Default for system. Given: %s", renderDeviceConfig.c_str());
     }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);

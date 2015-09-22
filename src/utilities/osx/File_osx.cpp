@@ -2,14 +2,20 @@
 #include "util.h"
 #include <dirent.h>
 #include <iostream>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <cassert>
 
 std::string fs::GetProcessDirectory() {
-    // char path[MAXPATHLEN];
-    // uint32_t size = sizeof(path);
-    // _NSGetExecutablePath(path, &size);
-    // std::string dirPath(dirname(path));
-    // dirPath.append("/");
-    return "";//dirPath;
+    char current_path[FILENAME_MAX];    
+
+
+    if (!getcwd(current_path, sizeof(current_path))) {
+        assert(false);
+    }
+    
+    return std::string(current_path);
 }
 
 // Untested -- jake

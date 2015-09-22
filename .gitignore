@@ -6,6 +6,7 @@
 
 # Compile bin Dir
 /bin/planet.ini
+/bin/Debug/planet.ini
 /bin/*.exe
 /bin/*.dll
 

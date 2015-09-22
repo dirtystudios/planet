@@ -368,12 +368,18 @@ namespace graphics {
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_2D, id));
+        if(tex_format == TextureFormat::R_UBYTE) {
+            GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+        }
         GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, gl_texture_desc->internal_format, width, height, 0, gl_texture_desc->data_format, gl_texture_desc->data_type, data));
+        if(tex_format == TextureFormat::R_UBYTE) {
+            GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
+        }
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
+        
         uint32_t handle = GenerateHandle();
         TextureGL texture = {};
         texture.id = id;
@@ -538,6 +544,10 @@ namespace graphics {
                 }
                 case ParamType::Float4x4: {
                     GL_CHECK(glProgramUniformMatrix4fv(program->id, location, 1, GL_FALSE, (float*)data));
+                    break;
+                }
+                case ParamType::Float3: {
+                    GL_CHECK(glProgramUniform3fv(program->id, location, 1, (float*)data));
                     break;
                 }
                 default: {

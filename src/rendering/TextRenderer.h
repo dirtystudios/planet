@@ -74,7 +74,7 @@ public:
         for (unsigned char c = 0; c < 128; c++) {
             // Load character glyph 
             if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-                LOG_D("ERROR::FREETYTPE: Failed to load Glyph");
+                LOG_D("%s", "ERROR::FREETYTPE: Failed to load Glyph");
                 continue;
             }
 
@@ -120,7 +120,6 @@ public:
         //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
         // Activate corresponding render state  
-        //glUseProgram(_program);
         _render_device->SetVertexShader(_shaders[0]);
         _render_device->SetPixelShader(_shaders[1]);
 

@@ -46,7 +46,7 @@ namespace input {
                         if (std::find(inputHandled.begin(), inputHandled.end(), inputCode) == inputHandled.end() 
                             || std::find(tempAllowAxis.begin(), tempAllowAxis.end(), inputCode) != tempAllowAxis.end()) {
                             float newValue = inputValues[inputCode];
-                            newValue = abs(newValue) < it2->second.axisConfig.deadZone ? 0 : newValue;
+                            newValue = fabs(newValue) < it2->second.axisConfig.deadZone ? 0 : newValue;
                             contextBinding->boundDelegate(newValue * scale);
                             inputHandled.emplace_back(inputCode);
                             tempAllowAxis.emplace_back(inputCode);

@@ -112,7 +112,8 @@ namespace graphics {
     static GLTextureFormatDesc texture_format_mapping[(uint32_t)TextureFormat::COUNT] = {
         { GL_R32F, GL_FLOAT, GL_RED },
         { GL_RGB32F, GL_FLOAT, GL_RGB },
-        { GL_RGBA32F, GL_FLOAT, GL_RGBA }
+        { GL_RGBA32F, GL_FLOAT, GL_RGBA },
+        { GL_RED, GL_UNSIGNED_BYTE, GL_RED }
     };
 
     static GLenum data_format_mapping[(uint32_t)DataFormat::COUNT] = {
