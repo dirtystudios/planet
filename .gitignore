@@ -4,8 +4,10 @@
 # Swap Files
 *.swp
 
-# Compile Dir
-/bin/
+# Compile bin Dir
+/bin/planet.ini
+/bin/*.exe
+/bin/*.dll
 
 # Compiled Object files
 *.slo
@@ -29,7 +31,6 @@
 # Xcode Stuff
 *.xcodeproj
 *.build
-
 
 # Visual Studio Stuff
 *.opensdf
