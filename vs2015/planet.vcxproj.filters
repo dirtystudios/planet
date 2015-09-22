@@ -14,9 +14,6 @@
     <ClCompile Include="..\src\utilities\osx\File_osx.cpp">
       <Filter>utilities\osx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\utilities\win32\File_win32.cpp">
-      <Filter>utilities\win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp">
       <Filter>platform\sdl</Filter>
     </ClCompile>
@@ -28,6 +25,9 @@
     </ClCompile>
     <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp">
       <Filter>rendering\backend\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utilities\win32\File_win32.cpp">
+      <Filter>utilities\win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +106,12 @@
     </ClInclude>
     <ClInclude Include="..\src\rendering\backend\DX11\DX11RenderDevice.h">
       <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\Config.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\IniParser.h">
+      <Filter>utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -56,7 +56,9 @@
     <ClInclude Include="..\src\rendering\LRUTileCache.h" />
     <ClInclude Include="..\src\rendering\TextRenderer.h" />
     <ClInclude Include="..\src\utilities\Callback.h" />
+    <ClInclude Include="..\src\utilities\Config.h" />
     <ClInclude Include="..\src\utilities\File.h" />
+    <ClInclude Include="..\src\utilities\IniParser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\rendering\shaders\GL\debug_fs.glsl" />
