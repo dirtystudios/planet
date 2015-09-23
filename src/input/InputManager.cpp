@@ -47,8 +47,9 @@ namespace input {
                             || std::find(tempAllowAxis.begin(), tempAllowAxis.end(), inputCode) != tempAllowAxis.end()) {
                             float newValue = inputValues[inputCode];
                             newValue = fabs(newValue) < it2->second.axisConfig.deadZone ? 0 : newValue;
-                            contextBinding->boundDelegate(newValue * scale);
-                            inputHandled.emplace_back(inputCode);
+                            if (contextBinding->boundDelegate(newValue * scale)) {
+                                inputHandled.emplace_back(inputCode);
+                            }
                             tempAllowAxis.emplace_back(inputCode);
                         }
                     }
@@ -65,7 +66,9 @@ namespace input {
                             if (newValue != prevValue
                                 && ((it2->second.actionConfig.ignoreRelease && newValue == 0)
                                     || (!it2->second.actionConfig.ignoreRelease))) {
-                                contextBinding->boundDelegate(newValue);
+                                if (contextBinding->boundDelegate(newValue)) {
+                                    inputHandled.emplace_back(inputCode);
+                                }
                             }
                             actionCache[inputCode] = newValue;
                         }

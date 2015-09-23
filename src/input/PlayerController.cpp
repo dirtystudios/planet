@@ -22,56 +22,65 @@ namespace controllers {
         m_inputContext->BindContext<input::ContextBindingType::Action>("LookMode", BIND_MEM_CB(&PlayerController::LookMode, this));
     }
 
-    void PlayerController::LookMode(float value) {
+    bool PlayerController::LookMode(float value) {
         lookMode = value > 0;
+        return true;
     }
 
-    void PlayerController::MoveForward(float value) {
+    bool PlayerController::MoveForward(float value) {
         if (value > 0) {
             moveInput.z += value * walkSpeed;
         }
+        return true;
     }
 
-    void PlayerController::MoveBackward(float value) {
+    bool PlayerController::MoveBackward(float value) {
         if (value < 0) {
             moveInput.z += value * walkSpeed;
         }
+        return true;
     }
 
-    void PlayerController::MoveLeft(float value) {
+    bool PlayerController::MoveLeft(float value) {
         if (value < 0) {
             moveInput.x += value * walkSpeed;
         }
+        return true;
     }
 
-    void PlayerController::MoveRight(float value) {
+    bool PlayerController::MoveRight(float value) {
         if (value > 0) {
             moveInput.x += value * walkSpeed;
         }
+        return true;
     }
 
-    void PlayerController::LookUp(float value) {
+    bool PlayerController::LookUp(float value) {
         if (value > 0) {
             lookInput.y += value * lookSpeed;
         }
+        return true;
     }
 
-    void PlayerController::LookDown(float value) {
+    bool PlayerController::LookDown(float value) {
         if (value < 0) {
             lookInput.y += value * lookSpeed;
         }
+        return true;
     }
 
-    void PlayerController::LookRight(float value) {
+    bool PlayerController::LookRight(float value) {
         if (value > 0) {
             lookInput.x += value * lookSpeed;
         }
+        return true;
     }
 
-    void PlayerController::LookLeft(float value) {
+    bool PlayerController::LookLeft(float value) {
         if (value < 0) {
             lookInput.x += value * lookSpeed;
         }
+        return true;
     }
 
     void PlayerController::DoUpdate(float dt) {

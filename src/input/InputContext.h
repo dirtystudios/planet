@@ -1,14 +1,12 @@
 #pragma once
-//#include <srutil/delegate/delegate.hpp>
 #include "Callback.h"
 #include <string>
 #include <vector>
 
 
 namespace input {
-    //typedef void(*InputContextDelegate)(float value);
-    //using InputContextDelegate = srutil::delegate1<void, float>;
-    typedef Callback<void(float)> InputContextCallback;
+    // float is value of key, return true if input was handled in function and should 'eat' the key
+    typedef Callback<bool(float)> InputContextCallback;
 
     struct ContextBinding {
         std::string mappingName;
@@ -42,6 +40,7 @@ namespace input {
             switch (T) {
             case ContextBindingType::Action: return contextActionBindings.size();
             case ContextBindingType::Axis: return contextAxisBindings.size();
+            default: return 0;
             }
         }
 
@@ -50,6 +49,7 @@ namespace input {
             switch (T) {
             case ContextBindingType::Action: return &contextActionBindings[index];
             case ContextBindingType::Axis: return &contextAxisBindings[index];
+            default: return 0;
             }
         }
     };

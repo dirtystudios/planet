@@ -18,17 +18,17 @@ namespace controllers {
 
         PlayerController(Camera* camera, input::InputContext *inputContext);
 
-        void LookMode(float value);
+        bool LookMode(float value);
 
-        void MoveForward(float value);
-        void MoveBackward(float value);
-        void MoveLeft(float value);
-        void MoveRight(float value);
+        bool MoveForward(float value);
+        bool MoveBackward(float value);
+        bool MoveLeft(float value);
+        bool MoveRight(float value);
 
-        void LookUp(float value);
-        void LookDown(float value);
-        void LookRight(float value);
-        void LookLeft(float value);
+        bool LookUp(float value);
+        bool LookDown(float value);
+        bool LookRight(float value);
+        bool LookLeft(float value);
 
         void DoUpdate(float dt);
     };
