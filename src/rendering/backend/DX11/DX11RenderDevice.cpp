@@ -7,7 +7,9 @@
 
 #define SafeGet(id, idx) id[idx];
 
+#ifdef _DEBUG
 #define DEBUG_DX11
+#endif
 
 // Debug Helper Functions
 

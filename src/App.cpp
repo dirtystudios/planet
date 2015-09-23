@@ -11,8 +11,9 @@
 #include "glm/glm.hpp"
 
 #include "InputManager.h"
+#include "UIManager.h"
 #include "PlayerController.h"
-//#include "ConsoleController.h"
+#include "ConsoleUI.h"
 
 uint32_t frame_count = 0;
 double accumulate = 0;
@@ -20,7 +21,9 @@ double total_frame_count = 0;
 Camera cam;
 input::InputManager* inputManager;
 controllers::PlayerController* playerController;
-//controllers::ConsoleController* consoleController;
+ChunkedLoDTerrainRenderer* terrain_renderer;
+ui::UIManager* uiManager;
+ui::ConsoleUI* consoleUI;
 TextRenderer* text_renderer;
 float mouse_speed = 1.f;
 float walk_speed = 300.f;
@@ -32,7 +35,7 @@ void SetupInput(uint32_t width, uint32_t height) {
     // Need generic fallback keys for textbox's and UI elements, theres probly a better place to put this
     inputManager->PopulateDefaultKeyboardBindings();
 
-    // Add Console Button
+    // Console Trigger
     inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_TILDE, input::InputManager::ActionConfig(true));
 
     // Handle Key Mappings
@@ -63,26 +66,26 @@ void SetupInput(uint32_t width, uint32_t height) {
     inputManager->AddAxisMapping("LookLeft", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15));
     inputManager->AddAxisMapping("LookRight", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15));
 
-
     // Create context and controllers
     input::InputContext* inputContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_PLAYER);
     playerController = new controllers::PlayerController(&cam, inputContext);
-
-    input::InputContext* consoleContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
-    //consoleController = new controllers::ConsoleController(consoleContext, width, height/3);
-
 }
 
-ChunkedLoDTerrainRenderer* terrain_renderer;
+void SetupUI(graphics::RenderDevice* renderDevice, float width, float height) {
+    input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
+    uiManager = new ui::UIManager(uiContext, renderDevice, (uint32_t)width, (uint32_t)height);
+    // Hard code consoleFrame for now, meh...stuff like this could be lua/xml, eventually
+    consoleUI = new ui::ConsoleUI(uiManager, uiContext);
+}
 
 void App::OnStart(uint32_t windowWidth, uint32_t windowHeight) {
     SetupInput(windowWidth, windowHeight);
+    SetupUI(renderDevice, windowWidth, windowHeight);
 
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
     text_renderer = new TextRenderer(renderDevice);
-
 
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
@@ -105,7 +108,6 @@ void App::OnStart(uint32_t windowWidth, uint32_t windowHeight) {
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     inputManager->ProcessInputs(inputValues, 1.f / 60.f);
     playerController->DoUpdate(1.f / 60.f);
-    //consoleController->DoUpdate(1.f / 60.f);
 
     glm::mat4 proj = cam.BuildProjection();
     glm::mat4 view = cam.BuildView();
@@ -115,6 +117,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
     terrain_renderer->Render(cam, frustum);
+    uiManager->DoUpdate(1.f / 60.f);
     text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
   
     accumulate += dt;
