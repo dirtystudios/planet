@@ -12,8 +12,6 @@ namespace graphics {
     private:
         struct DX11InputLayout {
             std::vector<D3D11_INPUT_ELEMENT_DESC> elements;
-            //todo -- 
-            uint32_t hash() { return 0; }
         };
 
         std::unordered_map<InputLayoutCacheHandle, DX11InputLayout> m_inputLayouts;
@@ -26,10 +24,5 @@ namespace graphics {
 
     private: 
         std::vector<D3D11_INPUT_ELEMENT_DESC> GenerateInputLayout(ID3DBlob* pShaderBlob);
-
-        inline uint32_t GenerateHandle() {
-            static uint32_t key = 0;
-            return ++key;
-        }
     };
 }

@@ -1,7 +1,7 @@
 
 #include "DX11InputLayoutCache.h"
 #include <wrl.h>
-
+#include "xxhash.h"
 #include "Log.h"
 
 using namespace Microsoft::WRL;
@@ -10,19 +10,22 @@ namespace graphics {
     InputLayoutCacheHandle DX11InputLayoutCache::InsertInputLayout(ID3DBlob* shaderBlob) {
         std::vector<D3D11_INPUT_ELEMENT_DESC> ieds = GenerateInputLayout(shaderBlob);
 
-        if (ieds.size() == 0) {
-            // either invalid, or there's really no input layout specified
+        // either invalid, or there's really no input layout specified
+        if (ieds.size() == 0) 
             return 0;
-        }
 
-        //todo: hash stuff
+        uint32_t hash = XXH32(&ieds[0], sizeof(D3D11_INPUT_ELEMENT_DESC) * ieds.size(), 0);
+
+        auto it = m_inputLayouts.find(hash);
+        if (it != m_inputLayouts.end()) {
+            return hash;
+        }
+        
         DX11InputLayout inputLayout;
         inputLayout.elements = ieds;
+        m_inputLayouts.insert(std::make_pair(hash, inputLayout));
 
-        uint32_t handle = GenerateHandle();
-        m_inputLayouts.insert(std::make_pair(handle, inputLayout));
-
-        return handle;
+        return hash;
     }
 
     const D3D11_INPUT_ELEMENT_DESC* DX11InputLayoutCache::GetInputLayoutData(InputLayoutCacheHandle handle) {

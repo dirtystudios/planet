@@ -159,9 +159,9 @@ namespace graphics {
         std::unordered_map<uint32_t, InputLayoutDX11> m_inputLayouts;
         std::unordered_map<uint32_t, TextureDX11> m_textures;
         std::unordered_map<uint32_t, SamplerDX11> m_samplers;
-        std::unordered_map<int, BlendStateDX11> m_blendStates;
-        std::unordered_map<int, RasterStateDX11> m_rasterStates;
-        std::unordered_map<int, DepthStateDX11> m_depthStates;
+        std::unordered_map<uint32_t, BlendStateDX11> m_blendStates;
+        std::unordered_map<uint32_t, RasterStateDX11> m_rasterStates;
+        std::unordered_map<uint32_t, DepthStateDX11> m_depthStates;
 
         HWND m_hwnd;
         ComPtr<ID3D11Device> m_dev;
@@ -313,14 +313,6 @@ namespace graphics {
         template <class T> T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
             auto it = map.find(handle);
             if(it == map.end()) {
-                return nullptr;
-            }
-            return &(*it).second;
-        }
-
-        template <class T> T* GetWithInt(std::unordered_map<int, T> &map, int handle) {
-            auto it = map.find(handle);
-            if (it == map.end()) {
                 return nullptr;
             }
             return &(*it).second;

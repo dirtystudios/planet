@@ -238,7 +238,6 @@ namespace graphics {
         InputLayoutCacheHandle ilHandle = inputLayoutCache.InsertInputLayout(shader);
         ID3D11InputLayout* inputLayout;
 
-        //todo, handle cache / same hash/handle
         if (!ilHandle) {
             LOG_D("DX11Render: Invalid or empty input layout defined in shader.");
             return 0;
@@ -699,7 +698,7 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::SetRasterState(const RasterState& rasterState) {
-        int hash = XXH32(&rasterState, sizeof(RasterState), 0);
+        uint32_t hash = XXH32(&rasterState, sizeof(RasterState), 0);
 
         if (m_currentState.rasterStateHash == hash) {
             m_pendingState.rasterStateHash = hash;
@@ -707,7 +706,7 @@ namespace graphics {
             return;
         }
 
-        RasterStateDX11 *rasterStateCheck = GetWithInt(m_rasterStates, hash);
+        RasterStateDX11 *rasterStateCheck = Get(m_rasterStates, hash);
         if (rasterStateCheck) {
             m_pendingState.rasterStateHash = hash;
             m_pendingState.rasterState = rasterStateCheck;
@@ -739,14 +738,14 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::SetDepthState(const DepthState& depthState) {
-        int hash = XXH32(&depthState, sizeof(DepthState), 0);
+        uint32_t hash = XXH32(&depthState, sizeof(DepthState), 0);
         if (m_currentState.depthStateHash == hash) {
             m_pendingState.depthStateHash = hash;
             m_pendingState.depthState = m_currentState.depthState;
             return;
         }
 
-        DepthStateDX11* depthStateCheck = GetWithInt(m_depthStates, hash);
+        DepthStateDX11* depthStateCheck = Get(m_depthStates, hash);
         if (depthStateCheck) {
             m_pendingState.depthStateHash= hash;
             m_pendingState.depthState= depthStateCheck;
@@ -783,14 +782,14 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::SetBlendState(const BlendState& blendState) {
-        int hash = XXH32(&blendState, sizeof(BlendState), 0);
+        uint32_t hash = XXH32(&blendState, sizeof(BlendState), 0);
         if (m_currentState.blendStateHash == hash) {
             m_pendingState.blendStateHash = hash;
             m_pendingState.blendState = m_currentState.blendState;
             return;
         }
 
-        BlendStateDX11 *blendStateCheck = GetWithInt(m_blendStates, hash);
+        BlendStateDX11 *blendStateCheck = Get(m_blendStates, hash);
         if (blendStateCheck) {
             m_pendingState.blendStateHash = hash;
             m_pendingState.blendState = blendStateCheck;
