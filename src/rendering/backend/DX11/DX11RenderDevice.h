@@ -66,6 +66,33 @@ namespace graphics {
         D3D11_BLEND_INV_SRC1_ALPHA
     };
 
+    static D3D11_FILL_MODE FillModeDX11[(uint32_t)FillMode::COUNT] {
+        D3D11_FILL_WIREFRAME,
+        D3D11_FILL_SOLID
+    };
+
+    static D3D11_CULL_MODE CullModeDX11[(uint32_t)CullMode::COUNT] {
+        D3D11_CULL_NONE,
+        D3D11_CULL_FRONT,
+        D3D11_CULL_BACK
+    };
+
+    static D3D11_DEPTH_WRITE_MASK DepthWriteMaskDX11[(uint32_t)DepthWriteMask::COUNT] {
+        D3D11_DEPTH_WRITE_MASK_ZERO,
+        D3D11_DEPTH_WRITE_MASK_ALL
+    };
+
+    static D3D11_COMPARISON_FUNC DepthFuncDX11[(uint32_t)DepthFunc::COUNT] {
+        D3D11_COMPARISON_NEVER,
+        D3D11_COMPARISON_LESS,
+        D3D11_COMPARISON_EQUAL,
+        D3D11_COMPARISON_LESS_EQUAL,
+        D3D11_COMPARISON_GREATER,
+        D3D11_COMPARISON_NOT_EQUAL,
+        D3D11_COMPARISON_GREATER_EQUAL,
+        D3D11_COMPARISON_ALWAYS
+    };
+
     typedef uint32_t SamplerHandle;
     typedef uint32_t ConstantBufferHandle;
 
@@ -113,6 +140,14 @@ namespace graphics {
         ID3D11BlendState* blendState;
     };
 
+    struct RasterStateDX11 {
+        ID3D11RasterizerState* rasterState;
+    };
+
+    struct DepthStateDX11 {
+        ID3D11DepthStencilState* depthState;
+    };
+
     using namespace Microsoft::WRL;
     class RenderDeviceDX11 : public RenderDevice {
     private:
@@ -125,6 +160,8 @@ namespace graphics {
         std::unordered_map<uint32_t, TextureDX11> m_textures;
         std::unordered_map<uint32_t, SamplerDX11> m_samplers;
         std::unordered_map<int, BlendStateDX11> m_blendStates;
+        std::unordered_map<int, RasterStateDX11> m_rasterStates;
+        std::unordered_map<int, DepthStateDX11> m_depthStates;
 
         HWND m_hwnd;
         ComPtr<ID3D11Device> m_dev;
@@ -132,6 +169,8 @@ namespace graphics {
         ComPtr<IDXGISwapChain> m_swapchain;
         ComPtr<IDXGIFactory> m_factory;
         ComPtr<ID3D11RenderTargetView> renderTarget;
+        ComPtr<ID3D11Texture2D> m_depthTex;
+        ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
         DX11InputLayoutCache inputLayoutCache;
 
@@ -167,6 +206,12 @@ namespace graphics {
             int blendStateHash;
             BlendStateDX11* blendState;
 
+            int rasterStateHash;
+            RasterStateDX11* rasterState;
+
+            int depthStateHash;
+            DepthStateDX11* depthState;
+
             D3D11_PRIMITIVE_TOPOLOGY primitiveType;
 
             DX11State() {
@@ -178,6 +223,10 @@ namespace graphics {
                 inputLayout = 0;
                 blendState = 0;
                 blendStateHash = 0;
+                rasterState = 0;
+                rasterStateHash = 0;
+                depthState = 0;
+                depthStateHash = 0;
                 primitiveType = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
             }
         };

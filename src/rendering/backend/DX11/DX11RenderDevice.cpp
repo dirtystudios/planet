@@ -719,15 +719,98 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::SetRasterState(const RasterState& rasterState) {
-        //uhhh
+        int hash = XXH32(&rasterState, sizeof(RasterState), 0);
+
+        if (m_currentState.rasterStateHash == hash) {
+            m_pendingState.rasterStateHash = hash;
+            m_pendingState.rasterState = m_currentState.rasterState;
+            return;
+        }
+
+        RasterStateDX11 *rasterStateCheck = GetWithInt(m_rasterStates, hash);
+        if (rasterStateCheck) {
+            m_pendingState.rasterStateHash = hash;
+            m_pendingState.rasterState = rasterStateCheck;
+            return;
+        }
+
+        D3D11_RASTERIZER_DESC rasterDesc;
+        rasterDesc.AntialiasedLineEnable = true;
+        rasterDesc.DepthBias = 0;
+        rasterDesc.DepthBiasClamp = 0.0f;
+        rasterDesc.DepthClipEnable = true;
+        rasterDesc.MultisampleEnable = true;
+        rasterDesc.ScissorEnable = false;
+        rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+        rasterDesc.CullMode = SafeGet(CullModeDX11, (uint32_t)rasterState.cull_mode);
+        rasterDesc.FillMode = SafeGet(FillModeDX11, (uint32_t)rasterState.fill_mode);
+        rasterDesc.FrontCounterClockwise = rasterState.winding_order == WindingOrder::FRONT_CCW ? true : false;
+
+        ID3D11RasterizerState* rasterStateDX;
+        HRESULT hr = m_dev->CreateRasterizerState(&rasterDesc, &rasterStateDX);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Error Creating RasterState: 0x%x", hr);
+            return;
+        }
+
+        RasterStateDX11 rasterStateDX11 = {};
+        rasterStateDX11.rasterState = rasterStateDX;
+        auto it = m_rasterStates.insert(std::make_pair(hash, rasterStateDX11));
+
+        m_pendingState.rasterState = &it.first->second;
+        m_pendingState.rasterStateHash = hash;
     }
 
     void RenderDeviceDX11::SetDepthState(const DepthState& depthState) {
-        
+        int hash = XXH32(&depthState, sizeof(DepthState), 0);
+        if (m_currentState.depthStateHash == hash) {
+            m_pendingState.depthStateHash = hash;
+            m_pendingState.depthState = m_currentState.depthState;
+            return;
+        }
+
+        DepthStateDX11* depthStateCheck = GetWithInt(m_depthStates, hash);
+        if (depthStateCheck) {
+            m_pendingState.depthStateHash= hash;
+            m_pendingState.depthState= depthStateCheck;
+            return;
+        }
+
+        //todo: what to do about all these other options?
+        D3D11_DEPTH_STENCIL_DESC dsDesc;
+        dsDesc.StencilReadMask = 0xFF;
+        dsDesc.StencilWriteMask = 0xFF;
+        dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+        dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+        dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+        dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+        dsDesc.DepthEnable = depthState.enable;
+        dsDesc.StencilEnable = depthState.enable;
+        dsDesc.DepthWriteMask = SafeGet(DepthWriteMaskDX11, (uint32_t)depthState.depth_write_mask);
+        dsDesc.DepthFunc = SafeGet(DepthFuncDX11, (uint32_t)depthState.depth_func);
+
+        ID3D11DepthStencilState *depthStateDX;
+        HRESULT hr = m_dev->CreateDepthStencilState(&dsDesc, &depthStateDX);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Failed CreatingDepthStencilState Hr: 0x%x", hr);
+            return;
+        }
+
+        DepthStateDX11 depthStateDX11= {};
+        depthStateDX11.depthState = depthStateDX;
+        auto it = m_depthStates.insert(std::make_pair(hash, depthStateDX11));
+
+        m_pendingState.depthState =  &it.first->second;
+        m_pendingState.depthStateHash = hash;
     }
 
     void RenderDeviceDX11::SetBlendState(const BlendState& blendState) {
-        // K try for 'fast-path'
         int hash = XXH32(&blendState, sizeof(BlendState), 0);
         if (m_currentState.blendStateHash == hash) {
             m_pendingState.blendStateHash = hash;
@@ -745,8 +828,8 @@ namespace graphics {
         D3D11_BLEND_DESC blendDesc;
         ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
         blendDesc.IndependentBlendEnable = false;
-        blendDesc.RenderTarget[0].BlendEnable = (blendState.enable) ? TRUE : FALSE;
 
+        blendDesc.RenderTarget[0].BlendEnable = (blendState.enable) ? TRUE : FALSE;
         blendDesc.RenderTarget[0].SrcBlendAlpha = SafeGet(BlendFuncDX11, (uint32_t)blendState.src_alpha_func);
         blendDesc.RenderTarget[0].DestBlendAlpha = SafeGet(BlendFuncDX11, (uint32_t)blendState.dst_alpha_func);
         blendDesc.RenderTarget[0].SrcBlend = SafeGet(BlendFuncDX11, (uint32_t)blendState.src_rgb_func);
@@ -765,7 +848,10 @@ namespace graphics {
 
         BlendStateDX11 blendStateDX11 = {};
         blendStateDX11.blendState = blendStateDX;
-        m_blendStates.insert(std::make_pair(hash, blendStateDX11));
+        auto it = m_blendStates.insert(std::make_pair(hash, blendStateDX11));
+
+        m_pendingState.blendState = &it.first->second;
+        m_pendingState.blendStateHash = hash;
     }
 
     void RenderDeviceDX11::UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size) {
@@ -899,8 +985,14 @@ namespace graphics {
             m_devcon->OMSetBlendState(m_pendingState.blendState->blendState, blendFactor, sampleMask);
         }
 
+        if (m_pendingState.rasterStateHash != 0 && m_currentState.rasterStateHash != m_pendingState.rasterStateHash)
+            m_devcon->RSSetState(m_pendingState.rasterState->rasterState);
+
+        if (m_pendingState.depthStateHash != 0 && m_currentState.depthStateHash != m_pendingState.depthStateHash)
+            m_devcon->OMSetDepthStencilState(m_pendingState.depthState->depthState, 1);
+
         // todo: rendertargets
-        m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), NULL);
+        m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), m_depthStencilView.Get());
         m_devcon->Draw(numVertices, startVertex);
         
         //cleanup state before set
@@ -1024,31 +1116,47 @@ namespace graphics {
         ComPtr<ID3D11Texture2D> backbuffer;
         m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
 
-        // todo: what to do about this?
-        m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &renderTarget);
-
-        // TODO-Jake: move this to setRasterizerState
-        D3D11_RASTERIZER_DESC rasterDesc;
-        rasterDesc.FillMode = D3D11_FILL_SOLID;
-        rasterDesc.CullMode = D3D11_CULL_BACK;
-        rasterDesc.FrontCounterClockwise = true;
-        rasterDesc.AntialiasedLineEnable = true;
-        rasterDesc.DepthBias = 0;
-        rasterDesc.DepthBiasClamp = 0.0f;
-        rasterDesc.DepthClipEnable = true;
-        rasterDesc.MultisampleEnable = true;
-        rasterDesc.ScissorEnable = false;
-        rasterDesc.SlopeScaledDepthBias = 0.0f;
-
-        ComPtr<ID3D11RasterizerState> rasterState;
-
-        hr = m_dev->CreateRasterizerState(&rasterDesc, &rasterState);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Error Creating RasterState: 0x%x", hr);
+        D3D11_TEXTURE2D_DESC descDepth;
+        descDepth.Width = windowWidth;
+        descDepth.Height = windowHeight;
+        descDepth.MipLevels = 1;
+        descDepth.ArraySize = 1;
+        descDepth.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+        descDepth.SampleDesc.Count = 1;
+        descDepth.SampleDesc.Quality = 0;
+        descDepth.Usage = D3D11_USAGE_DEFAULT;
+        descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        descDepth.CPUAccessFlags = 0;
+        descDepth.MiscFlags = 0;
+        hr = m_dev->CreateTexture2D(&descDepth, NULL, &m_depthTex);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Error Creating Texture2d in Init. Hr: 0x%x", hr);
             return hr;
         }
 
-        m_devcon->RSSetState(rasterState.Get());
+        D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+        descDSV.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        descDSV.Texture2D.MipSlice = 0;
+        descDSV.Flags = 0;
+
+        // Create the depth stencil view
+        hr = m_dev->CreateDepthStencilView(m_depthTex.Get(), &descDSV, &m_depthStencilView); 
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Error Creating depthStencilView in Init. Hr: 0x%x", hr);
+            return hr;
+        }
+
+        // todo: what to do about this?
+        hr = m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &renderTarget);
+        if (FAILED(hr)) {
+            LOG_E("DX11RenderDev: Error Creating RenderTargetView in Init. Hr: 0x%x", hr);
+            return hr;
+        }
+
+        // Create and use default rasterize / depth
+        SetRasterState(RasterState());
+        SetDepthState(DepthState());
 
         //viewport?
         D3D11_VIEWPORT vp;
