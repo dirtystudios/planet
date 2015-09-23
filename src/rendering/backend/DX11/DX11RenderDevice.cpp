@@ -11,6 +11,27 @@
 #define DEBUG_DX11
 #endif
 
+#define DX11_CHECK(func) \
+do { \
+HRESULT hr = func;\
+if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); }  \
+}  \
+while (false)
+
+#define DX11_CHECK_RET0(func) \
+do { \
+HRESULT hr = func;\
+if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); return 0; }  \
+}  \
+while (false)
+
+#define DX11_CHECK_RET(func) \
+do { \
+HRESULT hr = func;\
+if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); return; }  \
+}  \
+while (false)
+
 // Debug Helper Functions
 
 #pragma region Debug Helper Functions
@@ -85,19 +106,13 @@ namespace graphics {
         initData.SysMemPitch = 0;
         initData.SysMemSlicePitch = 0;
 
-        HRESULT hr = m_dev->CreateBuffer(&bufferDesc, &initData, &indexBuffer);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Failed creating Index Buffer. HR: 0x%x", hr);
-            return 0;
-        }
-        else {
-            uint32_t handle = GenerateHandle();
-            IndexBufferDX11 ib;
-            ib.indexBuffer = indexBuffer;//indexBuffer.Get();
+        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, &initData, &indexBuffer));
+        uint32_t handle = GenerateHandle();
+        IndexBufferDX11 ib;
+        ib.indexBuffer = indexBuffer;//indexBuffer.Get();
 
-            m_indexBuffers.insert(std::make_pair(handle, ib));
-            return handle;
-        }
+        m_indexBuffers.insert(std::make_pair(handle, ib));
+        return handle;
     }
     
     VertexBufferHandle RenderDeviceDX11::CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage) {
@@ -120,11 +135,7 @@ namespace graphics {
             initData.SysMemSlicePitch = 0;
         }
 
-        HRESULT hr = m_dev->CreateBuffer(&bufferDesc, data ? &initData : NULL, &vertexBuffer);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed to create Vertex buffer. HResult: 0x%x", hr);
-            return 0;
-        }
+        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, data ? &initData : NULL, &vertexBuffer));
         uint32_t handle = GenerateHandle();
         VertexBufferDX11 vb = {};
         vb.vertexBuffer = vertexBuffer;//vertexBuffer.Get();
@@ -186,11 +197,7 @@ namespace graphics {
         case ShaderType::VERTEX_SHADER:
         {
             ID3D11VertexShader* vertexShader;
-            hr = m_dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &vertexShader);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to Create VertexShader in CreateProgram. Hr: 0x%x", hr);
-                return 0;
-            }
+            DX11_CHECK_RET0(m_dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &vertexShader));
 
             uint32_t cBufferHandle = GenerateHandle();
             cBufferHandle = CreateConstantBuffer(blob.Get());
@@ -207,11 +214,7 @@ namespace graphics {
         {
             // todo: anything else for fragment shader
             ID3D11PixelShader* pixelShader;
-            hr = m_dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &pixelShader);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to Create PixelShader in CreateProgram. Hr: 0x%x", hr);
-                return 0;
-            }
+            DX11_CHECK_RET0(m_dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &pixelShader));
 
             uint32_t cBufferHandle = GenerateHandle();
             cBufferHandle = CreateConstantBuffer(blob.Get());
@@ -241,11 +244,8 @@ namespace graphics {
             return 0;
         }
 
-        HRESULT hr = m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), inputLayoutCache.GetInputLayoutSize(ilHandle), shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout);
-        if (FAILED(hr)) {
-            LOG_E("DX11Render: Failed to Create Input Layout. HR: 0x%x", hr);
-            return 0;
-        }
+        DX11_CHECK_RET0(m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), inputLayoutCache.GetInputLayoutSize(ilHandle), 
+                                                 shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout));
         InputLayoutDX11 inputLayoutDx11;
         inputLayoutDx11.inputLayout = inputLayout;//inputLayout.Get();
         m_inputLayouts.insert(std::make_pair(ilHandle, inputLayoutDx11));
@@ -269,12 +269,8 @@ namespace graphics {
             cbDesc.MiscFlags = 0;
             cbDesc.StructureByteStride = 0;
 
-            HRESULT hr = m_dev->CreateBuffer(&cbDesc, NULL, &cBuffer);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to Create ConstantBuffer. Hr: 0x%x", hr);
-                //todo: delete cbuffers?
-                return 0;
-            }
+            //todo: delete cbuffers?
+            DX11_CHECK_RET0(m_dev->CreateBuffer(&cbDesc, NULL, &cBuffer));
             constantBuffers.emplace_back(cBuffer);
         }
         uint32_t handle = GenerateHandle();
@@ -373,17 +369,11 @@ namespace graphics {
             srd.SysMemSlicePitch = 0; //?
         }
 
-        HRESULT hr = m_dev->CreateTexture2D(tDesc, data ? &srd : NULL, &texture);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed Creating Texture Hr: 0x%x", hr);
-            return 0;
-        }
+        DX11_CHECK_RET0(m_dev->CreateTexture2D(tDesc, data ? &srd : NULL, &texture));
 
         ID3D11ShaderResourceView* shaderResourceView;
-        hr = m_dev->CreateShaderResourceView(texture, viewDesc, &shaderResourceView);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed Creating shaderResourceView Hr: 0x%x", hr);
-            //texture.ReleaseAndGetAddressOf();
+        DX11_CHECK(m_dev->CreateShaderResourceView(texture, viewDesc, &shaderResourceView));
+        if (!shaderResourceView) {
             texture->Release();
             return 0;
         }
@@ -396,7 +386,6 @@ namespace graphics {
         m_textures.insert(std::make_pair(handle, textureDX11));
 
         return handle;
-
     }
 #pragma endregion
 
@@ -412,7 +401,6 @@ namespace graphics {
             indexBuff->indexBuffer->Release();
         m_indexBuffers.erase(handle);
     }
-
 
     void RenderDeviceDX11::DestroyVertexBuffer(VertexBufferHandle handle) {
         auto it = m_vertexBuffers.find(handle);
@@ -610,10 +598,7 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::SwapBuffers() {
-        HRESULT hr = m_swapchain->Present(1, 0);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error on present? Hr: 0x%x", hr);
-        }
+        DX11_CHECK(m_swapchain->Present(1, 0));
     }
 
     void RenderDeviceDX11::SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *paramName, void *data) {
@@ -673,19 +658,14 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferDX11* cb, std::vector<uint32_t> dirtySlots) {
-
-        D3D11_MAPPED_SUBRESOURCE mappedResource;
-        HRESULT hr = 0;
+        D3D11_MAPPED_SUBRESOURCE *mappedResource;
         
         for (uint32_t x = 0; x < dirtySlots.size(); ++x) {
             uint32_t slot = dirtySlots[x];
 
-            hr = m_devcon->Map(cb->constantBuffers[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to map constant buffer. HR: 0x%x", hr);
-                return;
-            }
-            memcpy(mappedResource.pData, cb->cBufferDescs[slot]->bufferData, cb->cBufferDescs[slot]->totalSize );
+            DX11_CHECK_RET(m_devcon->Map(cb->constantBuffers[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, mappedResource));
+
+            memcpy(mappedResource->pData, cb->cBufferDescs[slot]->bufferData, cb->cBufferDescs[slot]->totalSize );
 
             m_devcon->Unmap(cb->constantBuffers[slot], 0);
         }
@@ -748,11 +728,7 @@ namespace graphics {
         rasterDesc.FrontCounterClockwise = rasterState.winding_order == WindingOrder::FRONT_CCW ? true : false;
 
         ID3D11RasterizerState* rasterStateDX;
-        HRESULT hr = m_dev->CreateRasterizerState(&rasterDesc, &rasterStateDX);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating RasterState: 0x%x", hr);
-            return;
-        }
+        DX11_CHECK_RET(m_dev->CreateRasterizerState(&rasterDesc, &rasterStateDX));
 
         RasterStateDX11 rasterStateDX11 = {};
         rasterStateDX11.rasterState = rasterStateDX;
@@ -796,11 +772,7 @@ namespace graphics {
         dsDesc.DepthFunc = SafeGet(DepthFuncDX11, (uint32_t)depthState.depth_func);
 
         ID3D11DepthStencilState *depthStateDX;
-        HRESULT hr = m_dev->CreateDepthStencilState(&dsDesc, &depthStateDX);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed CreatingDepthStencilState Hr: 0x%x", hr);
-            return;
-        }
+        DX11_CHECK_RET(m_dev->CreateDepthStencilState(&dsDesc, &depthStateDX));
 
         DepthStateDX11 depthStateDX11= {};
         depthStateDX11.depthState = depthStateDX;
@@ -840,11 +812,7 @@ namespace graphics {
         blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
         ID3D11BlendState* blendStateDX;
-        HRESULT hr = m_dev->CreateBlendState(&blendDesc, &blendStateDX);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed to CreateBlendState. Hr: 0x%x", hr);
-            return;
-        }
+        DX11_CHECK_RET(m_dev->CreateBlendState(&blendDesc, &blendStateDX));
 
         BlendStateDX11 blendStateDX11 = {};
         blendStateDX11.blendState = blendStateDX;
@@ -868,12 +836,7 @@ namespace graphics {
         }
 
         D3D11_MAPPED_SUBRESOURCE mappedResource;
-        HRESULT hr = 0;
-        hr = m_devcon->Map(vBuffer->vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed to map vertex buffer. HR: 0x%x", hr);
-            return;
-        }
+        DX11_CHECK_RET(m_devcon->Map(vBuffer->vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
         memcpy(mappedResource.pData, data, size);
 
         m_devcon->Unmap(vBuffer->vertexBuffer, 0);
@@ -1034,10 +997,7 @@ namespace graphics {
         D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
         samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
         ID3D11SamplerState* samplerState;
-        HRESULT hr = m_dev->CreateSamplerState(&samplerDesc, &samplerState);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Failed creating samplerState HR: 0x%x", hr);
-        }
+        DX11_CHECK_RET0(m_dev->CreateSamplerState(&samplerDesc, &samplerState));
 
         uint32_t handle = GenerateHandle();
         SamplerDX11 samplerDX11 = {};
@@ -1077,22 +1037,13 @@ namespace graphics {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-        HRESULT hr = D3D11CreateDevice(
+        DX11_CHECK_RET0(D3D11CreateDevice(
             nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, FeatureLevelsRequested, numLevelsRequested, D3D11_SDK_VERSION,
-            &m_dev, nullptr, &m_devcon);
-
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Error Creating D3D11Device: 0x%x", hr);
-            return hr;
-        }
+            &m_dev, nullptr, &m_devcon));
 
         InitDX11DebugLayer(m_dev.Get());
 
-        hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&m_factory));
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Error Creating DXGIFactory: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&m_factory)));
 
         DXGI_SWAP_CHAIN_DESC sd;
         ZeroMemory(&sd, sizeof(sd));
@@ -1107,11 +1058,7 @@ namespace graphics {
         sd.OutputWindow = m_hwnd;
         sd.Windowed = true;
 
-        hr = m_factory->CreateSwapChain(m_dev.Get(), &sd, &m_swapchain);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Error Creating Swapchain: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(m_factory->CreateSwapChain(m_dev.Get(), &sd, &m_swapchain));
 
         ComPtr<ID3D11Texture2D> backbuffer;
         m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
@@ -1128,11 +1075,7 @@ namespace graphics {
         descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
         descDepth.CPUAccessFlags = 0;
         descDepth.MiscFlags = 0;
-        hr = m_dev->CreateTexture2D(&descDepth, NULL, &m_depthTex);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating Texture2d in Init. Hr: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(m_dev->CreateTexture2D(&descDepth, NULL, &m_depthTex));
 
         D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
         descDSV.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
@@ -1141,18 +1084,10 @@ namespace graphics {
         descDSV.Flags = 0;
 
         // Create the depth stencil view
-        hr = m_dev->CreateDepthStencilView(m_depthTex.Get(), &descDSV, &m_depthStencilView); 
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating depthStencilView in Init. Hr: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(m_dev->CreateDepthStencilView(m_depthTex.Get(), &descDSV, &m_depthStencilView));
 
         // todo: what to do about this?
-        hr = m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &renderTarget);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating RenderTargetView in Init. Hr: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &renderTarget));
 
         // Create and use default rasterize / depth
         SetRasterState(RasterState());
@@ -1171,7 +1106,7 @@ namespace graphics {
         // todo: deal with this?
         CreateSampler();
 
-        return hr;
+        return 1;
     }
 
     void RenderDeviceDX11::PrintDisplayAdapterInfo() {
