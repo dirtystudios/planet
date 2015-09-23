@@ -83,13 +83,12 @@ namespace graphics {
         ShaderHandle vertex_shader_handle;
         ShaderHandle pixel_shader_handle;
 
-        uint32_t raster_state;
-        uint32_t depth_state;
-
         IndexBufferHandle index_buffer_handle;
         VertexBufferHandle vertex_buffer_handle;
         
         BlendState blend_state;
+        RasterState raster_state;
+        DepthState depth_state;
     };    
 
     static GLenum buffer_usage_mapping[(uint32_t)BufferUsage::COUNT] = {
@@ -124,7 +123,34 @@ namespace graphics {
         GL_MIN,
         GL_MAX,
     };
-    
+
+    static GLenum cull_mode_mapping[(uint32_t)CullMode::COUNT] = {
+        GL_FALSE,
+        GL_FRONT,
+        GL_BACK
+    };
+
+    static GLenum winding_order_mapping[(uint32_t)WindingOrder::COUNT] = {
+        GL_CCW,
+        GL_CW,
+    };
+
+    static GLenum depth_write_mask_mapping[(uint32_t)DepthWriteMask::COUNT] = {
+        GL_FALSE,
+        GL_TRUE,
+    };
+
+    static GLenum depth_func_mapping[(uint32_t)DepthFunc::COUNT] = {
+        GL_NEVER,
+        GL_LESS ,
+        GL_EQUAL,
+        GL_LEQUAL,
+        GL_GREATER,
+        GL_NOTEQUAL,
+        GL_GEQUAL,
+        GL_ALWAYS ,
+    };
+
     static GLenum blend_func_mapping[(uint32_t)BlendFunc::COUNT] = {
         GL_ZERO,
         GL_ONE, 
@@ -225,40 +251,40 @@ namespace graphics {
         ContextStateGL _pending_state;
     public:
         RenderDeviceGL();
-        virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) { return 1; };
-        virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
-        virtual void                    DestroyIndexBuffer(IndexBufferHandle handle);
+        int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) { return 1; };
+        IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
+        void                    DestroyIndexBuffer(IndexBufferHandle handle);
 
-        virtual VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage);
-        virtual void                    DestroyVertexBuffer(VertexBufferHandle handle);
+        VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage);
+        void                    DestroyVertexBuffer(VertexBufferHandle handle);
 
-        virtual ShaderHandle            CreateShader(ShaderType shader_type, const char **source);
-        virtual void                    DestroyShader(ShaderHandle handle);
+        ShaderHandle            CreateShader(ShaderType shader_type, const char **source);
+        void                    DestroyShader(ShaderHandle handle);
 
-        virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
-        virtual TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
-        virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data);
-        virtual void                    DestroyTexture(TextureHandle handle);
+        TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
+        TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
+        TextureHandle           CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data);
+        void                    DestroyTexture(TextureHandle handle);
 
-        void                            SwapBuffers() {};
-        void                            PrintDisplayAdapterInfo();
+        void                    SwapBuffers() {};
+        void                    PrintDisplayAdapterInfo();
 
         // "Commands"
-        virtual void SetBlendState(const BlendState& blend_state);
+        void SetBlendState(const BlendState& blend_state);
+        void SetRasterState(const DepthState& depth_state);
+        void SetDepthState(const RasterState& raster_state);
         
-        virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
-        virtual void UpdateTexture(TextureHandle handle, void* data, size_t size); 
-        virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size);
-        virtual void SetRasterizerState(uint32_t state);
-        virtual void SetDepthState(uint32_t state);
+        void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
+        void UpdateTexture(TextureHandle handle, void* data, size_t size); 
+        void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size);
 
-        virtual void Clear(float r, float g, float b, float a);
-        virtual void SetVertexShader(ShaderHandle shader_handle);
-        virtual void SetPixelShader(ShaderHandle shader_handle);
-        virtual void SetShaderParameter(ShaderHandle handle, ParamType param_type, const char *param_name, void *data);
-        virtual void SetShaderTexture(ShaderHandle shader_handle, TextureHandle texture_handle, TextureSlot slot);
-        virtual void SetVertexBuffer(VertexBufferHandle handle);
-        virtual void DrawPrimitive(PrimitiveType primitive_type, uint32_t start_vertex, uint32_t num_vertices);
+        void Clear(float r, float g, float b, float a);
+        void SetVertexShader(ShaderHandle shader_handle);
+        void SetPixelShader(ShaderHandle shader_handle);
+        void SetShaderParameter(ShaderHandle handle, ParamType param_type, const char *param_name, void *data);
+        void SetShaderTexture(ShaderHandle shader_handle, TextureHandle texture_handle, TextureSlot slot);
+        void SetVertexBuffer(VertexBufferHandle handle);
+        void DrawPrimitive(PrimitiveType primitive_type, uint32_t start_vertex, uint32_t num_vertices);
 
     private:
         template <class T> T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
