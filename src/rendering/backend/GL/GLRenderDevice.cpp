@@ -504,10 +504,10 @@ namespace graphics {
     void RenderDeviceGL::SetBlendState(const BlendState& blend_state) {
         memcpy(&_pending_state.blend_state, &blend_state, sizeof(BlendState));
     }
-    void RenderDeviceGL::SetRasterState(const DepthState& depth_state) {
+    void RenderDeviceGL::SetDepthState(const DepthState& depth_state) {
         memcpy(&_pending_state.depth_state, &depth_state, sizeof(DepthState));
     }    
-    void RenderDeviceGL::SetDepthState(const RasterState& raster_state) {
+    void RenderDeviceGL::SetRasterState(const RasterState& raster_state) {
         memcpy(&_pending_state.raster_state, &raster_state, sizeof(RasterState));
     }
     

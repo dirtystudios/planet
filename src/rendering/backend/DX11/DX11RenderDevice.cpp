@@ -718,12 +718,12 @@ namespace graphics {
         m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * formatByteSize, width * formatByteSize * height);
     }
 
-    void RenderDeviceDX11::SetRasterizerState(uint32_t state) {
+    void RenderDeviceDX11::SetRasterState(const RasterState& rasterState) {
         //uhhh
     }
 
-    void RenderDeviceDX11::SetDepthState(uint32_t state) {
-        //bleh
+    void RenderDeviceDX11::SetDepthState(const DepthState& depthState) {
+        
     }
 
     void RenderDeviceDX11::SetBlendState(const BlendState& blendState) {
@@ -745,7 +745,7 @@ namespace graphics {
         D3D11_BLEND_DESC blendDesc;
         ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
         blendDesc.IndependentBlendEnable = false;
-        blendDesc.RenderTarget[0].BlendEnable = TRUE;
+        blendDesc.RenderTarget[0].BlendEnable = (blendState.enable) ? TRUE : FALSE;
 
         blendDesc.RenderTarget[0].SrcBlendAlpha = SafeGet(BlendFuncDX11, (uint32_t)blendState.src_alpha_func);
         blendDesc.RenderTarget[0].DestBlendAlpha = SafeGet(BlendFuncDX11, (uint32_t)blendState.dst_alpha_func);

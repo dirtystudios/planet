@@ -35,6 +35,7 @@ namespace ui {
 
         void RenderFrame(float x, float y, uint32_t width, uint32_t height) {
             graphics::BlendState blend_state;
+            blend_state.enable = true;
             blend_state.src_rgb_func = graphics::BlendFunc::SRC_ALPHA;
             blend_state.src_alpha_func = blend_state.src_rgb_func;
             blend_state.dst_rgb_func = graphics::BlendFunc::ONE_MINUS_SRC_ALPHA;

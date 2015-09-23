@@ -271,8 +271,8 @@ namespace graphics {
 
         // "Commands"
         void SetBlendState(const BlendState& blend_state);
-        void SetRasterState(const DepthState& depth_state);
-        void SetDepthState(const RasterState& raster_state);
+        void SetDepthState(const DepthState& depth_state);
+        void SetRasterState(const RasterState& raster_state);
         
         void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
         void UpdateTexture(TextureHandle handle, void* data, size_t size); 

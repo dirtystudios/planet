@@ -109,7 +109,7 @@ namespace graphics {
     };
     
     enum class CullMode : uint32_t {
-        NONE = 1,
+        NONE = 0,
         FRONT,
         BACK,
         COUNT
@@ -140,7 +140,7 @@ namespace graphics {
     };
     
     struct DepthState {
-        bool enable                     { true };
+        bool enable                     { false };
         DepthWriteMask depth_write_mask { DepthWriteMask::ALL };
         DepthFunc depth_func            { DepthFunc::LESS };
     };
@@ -152,7 +152,7 @@ namespace graphics {
     };
     
     struct BlendState {
-        bool enable                 { true };
+        bool enable                 { false };
         BlendFunc src_rgb_func      { graphics::BlendFunc::ONE  };
         BlendFunc src_alpha_func    { graphics::BlendFunc::ZERO };
         BlendFunc dst_rgb_func      { graphics::BlendFunc::ONE  };
@@ -198,8 +198,8 @@ namespace graphics {
 
         // "Commands"
         virtual void SetBlendState(const BlendState& blend_state) = 0;
-        virtual void SetRasterState(const DepthState& depth_state) = 0;
-        virtual void SetDepthState(const RasterState& raster_state) = 0;
+        virtual void SetDepthState(const DepthState& depth_state) = 0;
+        virtual void SetRasterState(const RasterState& raster_state) = 0;
         
         virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data) = 0;
         virtual void UpdateTexture(TextureHandle handle, void* data, size_t size) = 0;

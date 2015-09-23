@@ -212,8 +212,8 @@ namespace graphics {
         virtual void UpdateTexture(TextureHandle handle, void* data, size_t size);
         virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size);
 
-        virtual void SetRasterizerState(uint32_t state);
-        virtual void SetDepthState(uint32_t state);
+        virtual void SetRasterState(const RasterState& rasterState);
+        virtual void SetDepthState(const DepthState& depthState);
         virtual void SetBlendState(const BlendState& blendState);
 
         virtual void Clear(float r, float g, float b, float a);

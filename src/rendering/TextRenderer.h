@@ -107,6 +107,7 @@ public:
 
     void RenderText(std::string text, float x, float y, float scale, glm::vec3 color) {
         graphics::BlendState blend_state;
+        blend_state.enable = true;
         blend_state.src_rgb_func = graphics::BlendFunc::SRC_ALPHA;
         blend_state.src_alpha_func = blend_state.src_rgb_func;
         blend_state.dst_rgb_func = graphics::BlendFunc::ONE_MINUS_SRC_ALPHA;
