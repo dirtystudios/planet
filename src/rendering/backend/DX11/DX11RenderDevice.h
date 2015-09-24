@@ -151,6 +151,7 @@ namespace graphics {
     using namespace Microsoft::WRL;
     class RenderDeviceDX11 : public RenderDevice {
     private:
+        uint32_t m_winWidth, m_winHeight;
         std::unordered_map<uint32_t, IndexBufferDX11> m_indexBuffers;
         std::unordered_map<uint32_t, VertexBufferDX11> m_vertexBuffers;
         std::unordered_map<uint32_t, ConstantBufferDX11> m_constantBuffers;
@@ -169,7 +170,6 @@ namespace graphics {
         ComPtr<IDXGISwapChain> m_swapchain;
         ComPtr<IDXGIFactory> m_factory;
         ComPtr<ID3D11RenderTargetView> renderTarget;
-        ComPtr<ID3D11Texture2D> m_depthTex;
         ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
         DX11InputLayoutCache inputLayoutCache;
@@ -253,7 +253,7 @@ namespace graphics {
         virtual void                    DestroyTexture(TextureHandle handle);
 
         virtual void                    SwapBuffers();
-
+        virtual void                    ResizeWindow(uint32_t width, uint32_t height);
         virtual void                    PrintDisplayAdapterInfo();
 
         // Commands
@@ -279,6 +279,10 @@ namespace graphics {
         void SetIndexBuffer(IndexBufferHandle handle);
 
         TextureHandle Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data);
+
+        // Resize Functions, 'Reset' means it recreates based on window size
+        void ResetViewport();
+        void ResetDepthStencilTexture();
 
         //hack for now 
         int defaultSamplerHandle;

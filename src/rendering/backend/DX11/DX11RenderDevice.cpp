@@ -594,6 +594,7 @@ namespace graphics {
     void RenderDeviceDX11::Clear(float r, float g, float b, float a) {
         float RGBA[4] = { r, g, b, a };
         m_devcon->ClearRenderTargetView(renderTarget.Get(), RGBA);
+        m_devcon->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
     }
 
     void RenderDeviceDX11::SwapBuffers() {
@@ -657,14 +658,14 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferDX11* cb, std::vector<uint32_t> dirtySlots) {
-        D3D11_MAPPED_SUBRESOURCE *mappedResource;
+        D3D11_MAPPED_SUBRESOURCE mappedResource;
         
         for (uint32_t x = 0; x < dirtySlots.size(); ++x) {
             uint32_t slot = dirtySlots[x];
 
-            DX11_CHECK_RET(m_devcon->Map(cb->constantBuffers[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, mappedResource));
+            DX11_CHECK_RET(m_devcon->Map(cb->constantBuffers[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
 
-            memcpy(mappedResource->pData, cb->cBufferDescs[slot]->bufferData, cb->cBufferDescs[slot]->totalSize );
+            memcpy(mappedResource.pData, cb->cBufferDescs[slot]->bufferData, cb->cBufferDescs[slot]->totalSize );
 
             m_devcon->Unmap(cb->constantBuffers[slot], 0);
         }
@@ -953,8 +954,6 @@ namespace graphics {
         if (m_pendingState.depthStateHash != 0 && m_currentState.depthStateHash != m_pendingState.depthStateHash)
             m_devcon->OMSetDepthStencilState(m_pendingState.depthState->depthState, 1);
 
-        // todo: rendertargets
-        m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), m_depthStencilView.Get());
         m_devcon->Draw(numVertices, startVertex);
         
         //cleanup state before set
@@ -1019,11 +1018,66 @@ namespace graphics {
         m_samplers.erase(handle);
     }
 
+    void RenderDeviceDX11::ResetDepthStencilTexture() {
+        ComPtr<ID3D11Texture2D> depthTex;
+        D3D11_TEXTURE2D_DESC descDepth;
+        descDepth.Width = m_winWidth;
+        descDepth.Height = m_winHeight;
+        descDepth.MipLevels = 1;
+        descDepth.ArraySize = 1;
+        descDepth.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+        descDepth.SampleDesc.Count = 1;
+        descDepth.SampleDesc.Quality = 0;
+        descDepth.Usage = D3D11_USAGE_DEFAULT;
+        descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        descDepth.CPUAccessFlags = 0;
+        descDepth.MiscFlags = 0;
+        DX11_CHECK_RET(m_dev->CreateTexture2D(&descDepth, NULL, &depthTex));
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+        descDSV.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        descDSV.Texture2D.MipSlice = 0;
+        descDSV.Flags = 0;
+        DX11_CHECK_RET(m_dev->CreateDepthStencilView(depthTex.Get(), &descDSV, &m_depthStencilView));
+    }
+
+    void RenderDeviceDX11::ResetViewport() {
+        D3D11_VIEWPORT vp;
+        vp.Width = (float)m_winWidth;
+        vp.Height = (float)m_winHeight;
+        vp.MinDepth = 0;
+        vp.MaxDepth = 1;
+        vp.TopLeftX = 0;
+        vp.TopLeftY = 0;
+        m_devcon->RSSetViewports(1, &vp);
+    }
+
+    void RenderDeviceDX11::ResizeWindow(uint32_t width, uint32_t height) {
+        if (m_winWidth == width && m_winHeight == height)
+            return; 
+
+        m_winWidth = width;
+        m_winHeight = height;
+
+        renderTarget.Reset();
+
+        DX11_CHECK_RET(m_swapchain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
+        ComPtr<ID3D11Texture2D> backBufferPtr;
+        DX11_CHECK_RET(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBufferPtr));
+        DX11_CHECK_RET(m_dev->CreateRenderTargetView(backBufferPtr.Get(), 0, renderTarget.GetAddressOf()));
+        ResetDepthStencilTexture();
+        ResetViewport();
+        m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), m_depthStencilView.Get());
+    }
+
     int RenderDeviceDX11::InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) {
         DeviceConfig.DeviceAbbreviation = "DX11";
         DeviceConfig.ShaderExtension = ".hlsl";
 
         m_hwnd = static_cast<HWND>(windowHandle);
+        m_winWidth = windowWidth;
+        m_winHeight = windowHeight;
 
         D3D_FEATURE_LEVEL FeatureLevelsRequested[] = {
             D3D_FEATURE_LEVEL_11_1,
@@ -1046,8 +1100,8 @@ namespace graphics {
 
         DXGI_SWAP_CHAIN_DESC sd;
         ZeroMemory(&sd, sizeof(sd));
-        sd.BufferDesc.Width = 0;
-        sd.BufferDesc.Height = 0;
+        sd.BufferDesc.Width = m_winWidth;
+        sd.BufferDesc.Height = m_winHeight;
         sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         sd.SampleDesc.Count = 1;
@@ -1056,51 +1110,21 @@ namespace graphics {
         sd.BufferCount = 2;
         sd.OutputWindow = m_hwnd;
         sd.Windowed = true;
-
         DX11_CHECK_RET0(m_factory->CreateSwapChain(m_dev.Get(), &sd, &m_swapchain));
 
         ComPtr<ID3D11Texture2D> backbuffer;
-        m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
+        DX11_CHECK_RET0(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer));
 
-        D3D11_TEXTURE2D_DESC descDepth;
-        descDepth.Width = windowWidth;
-        descDepth.Height = windowHeight;
-        descDepth.MipLevels = 1;
-        descDepth.ArraySize = 1;
-        descDepth.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-        descDepth.SampleDesc.Count = 1;
-        descDepth.SampleDesc.Quality = 0;
-        descDepth.Usage = D3D11_USAGE_DEFAULT;
-        descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-        descDepth.CPUAccessFlags = 0;
-        descDepth.MiscFlags = 0;
-        DX11_CHECK_RET0(m_dev->CreateTexture2D(&descDepth, NULL, &m_depthTex));
-
-        D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-        descDSV.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-        descDSV.Texture2D.MipSlice = 0;
-        descDSV.Flags = 0;
-
-        // Create the depth stencil view
-        DX11_CHECK_RET0(m_dev->CreateDepthStencilView(m_depthTex.Get(), &descDSV, &m_depthStencilView));
-
-        // todo: what to do about this?
-        DX11_CHECK_RET0(m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &renderTarget));
+        DX11_CHECK_RET0(m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, renderTarget.GetAddressOf()));
 
         // Create and use default rasterize / depth
         SetRasterState(RasterState());
         SetDepthState(DepthState());
 
-        //viewport?
-        D3D11_VIEWPORT vp;
-        vp.Width = (float)windowWidth;
-        vp.Height = (float)windowHeight;
-        vp.MinDepth = 0;
-        vp.MaxDepth = 1;
-        vp.TopLeftX = 0;
-        vp.TopLeftY = 0;
-        m_devcon->RSSetViewports(1, &vp);
+        ResetDepthStencilTexture();
+        ResetViewport();
+
+        m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), m_depthStencilView.Get());
 
         // todo: deal with this?
         CreateSampler();
@@ -1110,9 +1134,9 @@ namespace graphics {
 
     void RenderDeviceDX11::PrintDisplayAdapterInfo() {
         ComPtr<IDXGIAdapter> adapter;
-        m_factory->EnumAdapters(0, &adapter);
+        DX11_CHECK(m_factory->EnumAdapters(0, &adapter));
         auto adapterDesc = DXGI_ADAPTER_DESC();
-        adapter->GetDesc(&adapterDesc);
+        DX11_CHECK(adapter->GetDesc(&adapterDesc));
 
         char buffer[128];
         wcstombs_s(0, buffer, 128, adapterDesc.Description, 128);
