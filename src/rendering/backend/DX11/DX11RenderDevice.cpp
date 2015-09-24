@@ -5,98 +5,9 @@
 #include "DX11ConstantBufferHelpers.h"
 #include "xxhash.h"
 
+#include "DX11Utils.h"
+
 #define SafeGet(id, idx) id[idx];
-
-#ifdef _DEBUG
-#define DEBUG_DX11
-#endif
-
-#define DX11_CHECK(func) \
-do { \
-HRESULT hr = func;\
-if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); }  \
-}  \
-while (false)
-
-#define DX11_CHECK_RET0(func) \
-do { \
-HRESULT hr = func;\
-if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); return 0; }  \
-}  \
-while (false)
-
-#define DX11_CHECK_RET(func) \
-do { \
-HRESULT hr = func;\
-if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); return; }  \
-}  \
-while (false)
-
-// Debug Helper Functions
-
-#pragma region Debug Helper Functions
-
-// Helper sets a D3D resource name string (used by PIX and debug layer leak reporting).
-inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_z_ const char *name)
-{
-#ifdef DEBUG_DX11
-    resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
-#else
-    UNREFERENCED_PARAMETER(resource);
-    UNREFERENCED_PARAMETER(name);
-#endif
-}
-
-void OutputLiveObjects(ID3D11Device* dev) {
-#ifdef DEBUG_DX11
-    ID3D11Debug *d3dDebug = nullptr;
-    if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug)))
-    {
-        DX11_CHECK(d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY));
-        d3dDebug->Release();
-    }
-#endif
-}
-
-// Debug Initializtion
-
-void InitDX11DebugLayer(ID3D11Device* dev) {
-
-#ifdef DEBUG_DX11
-    ID3D11Debug *d3dDebug = nullptr;
-    if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug)))
-    {
-        ID3D11InfoQueue *d3dInfoQueue = nullptr;
-        if (SUCCEEDED(d3dDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue)))
-        {
-            //d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
-            //d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, true);
-
-            D3D11_MESSAGE_ID hide[] =
-            {
-                D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
-                // Add more message IDs here as needed
-            };
-
-            /*D3D11_INFO_QUEUE_FILTER filter;
-            memset(&filter, 0, sizeof(filter));
-            filter.DenyList.NumIDs = _countof(hide);
-            filter.DenyList.pIDList = hide;
-            d3dInfoQueue->AddStorageFilterEntries(&filter);*/
-            d3dInfoQueue->Release();
-        }
-        else {
-            LOG_E("DX11Render: Failed to Create d3dDebugInfoQueue.");
-            d3dDebug->Release();
-        }
-    }
-    else {
-        LOG_E("DX11Render: Failed to Create d3dDebug Interface.");
-    }
-#endif
-}
-
-#pragma endregion
 
 namespace graphics {
 
@@ -303,7 +214,6 @@ namespace graphics {
 
     TextureHandle RenderDeviceDX11::CreateTexture2D(TextureFormat texFormat, uint32_t width, uint32_t height, void* data) {
         DXGI_FORMAT dxFormat = SafeGet(TextureFormatDX11, (uint32_t)texFormat);
-
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -323,17 +233,16 @@ namespace graphics {
         viewDesc.Texture2D.MipLevels = 1;
         viewDesc.Texture2D.MostDetailedMip = 0;
 
-        return Texture2DCreator(&tdesc, &viewDesc, data);
+        return Texture2DCreator(&tdesc, texFormat, &viewDesc, data);
     }
 
     TextureHandle RenderDeviceDX11::CreateTextureCube(TextureFormat texFormat, uint32_t width, uint32_t height, void** data) {
         DXGI_FORMAT dxFormat = SafeGet(TextureFormatDX11, (uint32_t)texFormat);
-
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
         tdesc.MipLevels = 1;
-        tdesc.ArraySize = 1;
+        tdesc.ArraySize = 6;
         tdesc.SampleDesc.Count = 1;
         tdesc.SampleDesc.Quality = 0;
         tdesc.Usage = D3D11_USAGE_DEFAULT;
@@ -347,13 +256,13 @@ namespace graphics {
         viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
         viewDesc.TextureCube.MipLevels = tdesc.MipLevels;
         viewDesc.TextureCube.MostDetailedMip = 0;
+        
 
-        return Texture2DCreator(&tdesc, &viewDesc, data);
+        return Texture2DCreator(&tdesc, texFormat, &viewDesc, data);
     }
 
     TextureHandle RenderDeviceDX11::CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
         DXGI_FORMAT dxFormat = SafeGet(TextureFormatDX11, (uint32_t)texFormat);
-
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -375,19 +284,54 @@ namespace graphics {
         viewDesc.Texture2DArray.FirstArraySlice = 0;
         viewDesc.Texture2DArray.ArraySize = depth;
 
-        return Texture2DCreator(&tdesc, &viewDesc, 0);
+        return Texture2DCreator(&tdesc, texFormat, &viewDesc, 0);
     }
 
-    TextureHandle RenderDeviceDX11::Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data) {
+    TextureHandle RenderDeviceDX11::Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, TextureFormat texFormat, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data) {
+        // todo: try not to use m/calloc?
         ComPtr<ID3D11Texture2D> texture;
-        D3D11_SUBRESOURCE_DATA srd;
-        if (data) {
-            srd.pSysMem = data;
-            srd.SysMemPitch = GetFormatByteSize(tDesc->Format) * tDesc->Width;
-            srd.SysMemSlicePitch = 0; //?
-        }
+        D3D11_SUBRESOURCE_DATA srd[6];
 
-        DX11_CHECK_RET0(m_dev->CreateTexture2D(tDesc, data ? &srd : NULL, &texture));
+        void* newData = 0;
+        uint32_t *cubeData[6];
+        if (texFormat == TextureFormat::RGB_UBYTE) {
+            if (tDesc->MiscFlags == D3D11_RESOURCE_MISC_TEXTURECUBE) {
+                uint32_t numPixels = tDesc->Width * tDesc->Height;
+                for (int x = 0; x < 6; ++x) {
+                    cubeData[x] = (uint32_t *)calloc(numPixels, 4);
+                    void** dataCast = (void**)data;
+                    Convert24BitTo32Bit(dataCast[x], cubeData[x], numPixels);
+                }
+                newData = &cubeData[0];
+            }
+        }
+        if (data) {
+            if (tDesc->MiscFlags == D3D11_RESOURCE_MISC_TEXTURECUBE) {
+                for (int x = 0; x < 6; ++x) {
+                    char** tempCast = (char**)(newData ? newData : data);
+                    srd[x].pSysMem = tempCast[x];
+                    srd[x].SysMemPitch = GetFormatByteSize(tDesc->Format) * tDesc->Width;
+                    srd[x].SysMemSlicePitch = 0;
+                }
+            }
+            else {
+                srd[0].pSysMem = newData ? newData : data;
+                srd[0].SysMemPitch = GetFormatByteSize(tDesc->Format) * tDesc->Width;
+                srd[0].SysMemSlicePitch = 0;
+            }
+        }
+        DX11_CHECK(m_dev->CreateTexture2D(tDesc, data ? srd : NULL, &texture));
+        if (newData) {
+            if (tDesc->MiscFlags == D3D11_RESOURCE_MISC_TEXTURECUBE) {
+                for (int x = 0; x < 6; ++x) {
+                    void** dataCast = (void**)newData;
+                    free(dataCast[x]);
+                }
+            }
+        }
+        if (!texture)
+            return 0;
+
 
         ComPtr<ID3D11ShaderResourceView> shaderResourceView;
         DX11_CHECK(m_dev->CreateShaderResourceView(texture.Get(), viewDesc, &shaderResourceView));
@@ -403,9 +347,8 @@ namespace graphics {
         textureDX11.texture = texture.Get();
         textureDX11.shaderResourceView = shaderResourceView.Get();
         textureDX11.format = tDesc->Format;
+        textureDX11.requestedFormat = texFormat;
         m_textures.emplace(handle, textureDX11);
-        
-
         return handle;
     }
 #pragma endregion
@@ -715,6 +658,9 @@ namespace graphics {
             LOG_E("DX11RenderDev: Unsupported TextureFormat for UpdateTextureArray.");
             return;
         }
+        if (texture->requestedFormat == TextureFormat::RGB_UBYTE) {
+            LOG_E("DX11RenderDev: Unsupported TextureFormat to Update.")
+        }
         m_devcon->UpdateSubresource(texture->texture, D3D11CalcSubresource(0, arrayIndex, 1), &box, data, width * formatByteSize, width * formatByteSize * height);
     }
 
@@ -1016,7 +962,7 @@ namespace graphics {
     // Just call this in initialize to get the default made to use
     SamplerHandle RenderDeviceDX11::CreateSampler() {
         D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
-        samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+        //samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
         ID3D11SamplerState* samplerState;
         DX11_CHECK_RET0(m_dev->CreateSamplerState(&samplerDesc, &samplerState));
 
