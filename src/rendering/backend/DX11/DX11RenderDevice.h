@@ -26,13 +26,8 @@ namespace graphics {
         DXGI_FORMAT_R32_FLOAT,          // R32F
         DXGI_FORMAT_R32G32B32_FLOAT,    // RGB32F
         DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBAF
-        DXGI_FORMAT_R8_UNORM,            // Byte_UINT
-    };
-
-    static DXGI_FORMAT DataFormatDX11[(uint32_t)DataFormat::COUNT] = {
-        DXGI_FORMAT_R32_FLOAT,          // Red
-        DXGI_FORMAT_R32G32B32_FLOAT,    // RGB
-        DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBA
+        DXGI_FORMAT_R8_UNORM,           // Byte_UINT
+        DXGI_FORMAT_R8G8B8A8_UNORM,     // RGB_UINT, Converted before load
     };
     
     static D3D11_PRIMITIVE_TOPOLOGY PrimitiveTypeDX11[(uint32_t)PrimitiveType::COUNT] = {
@@ -124,6 +119,7 @@ namespace graphics {
         ID3D11Texture2D* texture; // ID3D11Resource instead? 
         ID3D11ShaderResourceView* shaderResourceView; 
         DXGI_FORMAT format;
+        TextureFormat requestedFormat;
     };
 
     struct InputLayoutDX11 {
@@ -276,7 +272,7 @@ namespace graphics {
         //This goes here till renderDevice.h has it..too lazy
         void SetIndexBuffer(IndexBufferHandle handle);
 
-        TextureHandle Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data);
+        TextureHandle Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, TextureFormat texFormat, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data);
 
         // Resize Functions, 'Reset' means it recreates based on window size
         void ResetViewport();
@@ -306,6 +302,7 @@ namespace graphics {
             case DXGI_FORMAT_R8_UINT: return 1;
             case DXGI_FORMAT_R8_UNORM: return 1;
             case DXGI_FORMAT_R32_FLOAT: return 4;
+            case DXGI_FORMAT_R8G8B8A8_UNORM: return 4;
             case DXGI_FORMAT_R32G32B32_FLOAT: return 12;
             case DXGI_FORMAT_R32G32B32A32_FLOAT: return 16;
             default: return 0;

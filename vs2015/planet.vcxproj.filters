@@ -38,6 +38,10 @@
     <ClCompile Include="..\src\ui\UIManager.cpp">
       <Filter>ui</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp">
+      <Filter>rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Image_stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -140,6 +144,16 @@
     <ClInclude Include="..\src\ui\UIManager.h">
       <Filter>ui</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\rendering\SkyboxRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ext\stb_image.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Image.h" />
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11Utils.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">
@@ -190,6 +204,9 @@
     <Filter Include="ui">
       <UniqueIdentifier>{ca62908e-eb5e-46e8-812b-db5d719e2767}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ext">
+      <UniqueIdentifier>{68a0873f-f450-419b-8945-7f38cb3126c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\rendering\shaders\GL\debug_fs.glsl">
@@ -222,25 +239,5 @@
     <None Include="..\src\rendering\shaders\GL\text_vs.glsl">
       <Filter>rendering\shaders\GL</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_fs.hlsl">
-      <Filter>rendering\shaders\DX11</Filter>
-    </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_vs.hlsl">
-      <Filter>rendering\shaders\DX11</Filter>
-    </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\text_ps.hlsl">
-      <Filter>rendering\shaders\DX11</Filter>
-    </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\text_vs.hlsl">
-      <Filter>rendering\shaders\DX11</Filter>
-    </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\ui_ps.hlsl">
-      <Filter>rendering\shaders\DX11</Filter>
-    </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\ui_vs.hlsl">
-      <Filter>rendering\shaders\DX11</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
