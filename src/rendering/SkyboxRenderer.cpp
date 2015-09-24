@@ -143,14 +143,16 @@ void SkyboxRenderer::OnSubmit(Camera *camera) {
     glm::mat4 model = translate * scale;
     
     graphics::RasterState raster_state;
-    raster_state.cull_mode = graphics::CullMode::FRONT;
+    raster_state.cull_mode = graphics::CullMode::NONE;
     graphics::DepthState depth_state;
     depth_state.depth_func = graphics::DepthFunc::LESS_EQUAL;
+    depth_state.enable = true;
     
     _device->SetVertexShader(_sky_shaders[0]);
     _device->SetPixelShader(_sky_shaders[1]);
     _device->SetVertexBuffer(_sky_box_mesh);
     _device->SetShaderParameter(_sky_shaders[0], graphics::ParamType::Float4x4, "world", (void*)glm::value_ptr(persp_view * model));
+    _device->SetShaderTexture(_sky_shaders[1], _sky_box_texture, graphics::TextureSlot::BASE);
     _device->SetDepthState(depth_state);
     _device->SetRasterState(raster_state);
 
