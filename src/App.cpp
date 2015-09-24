@@ -7,6 +7,7 @@
 #include "Log.h"
 #include "ChunkedLODTerrainRenderer.h"
 #include "TextRenderer.h"
+#include "SkyboxRenderer.h"
 
 #include "glm/glm.hpp"
 
@@ -22,6 +23,7 @@ Camera cam;
 input::InputManager* inputManager;
 controllers::PlayerController* playerController;
 ChunkedLoDTerrainRenderer* terrain_renderer;
+SkyboxRenderer* skybox_renderer;
 ui::UIManager* uiManager;
 ui::ConsoleUI* consoleUI;
 TextRenderer* text_renderer;
@@ -86,6 +88,7 @@ void App::OnStart(uint32_t windowWidth, uint32_t windowHeight) {
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
     text_renderer = new TextRenderer(renderDevice);
+    skybox_renderer = new SkyboxRenderer(renderDevice);
 
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
@@ -115,10 +118,13 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     Frustum frustum(proj, view);
 
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
+//    skybox_renderer->OnSubmit(&cam);
+    terrain_renderer->Render(cam, frustum);
 
-    terrain_renderer->Render(cam, frustum);    
-    text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
+// TODO:: On Opengl ui frames flicker -- fix state management
     uiManager->DoUpdate(1.f / 60.f);
+    text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
+    
   
     accumulate += dt;
     ++frame_count;

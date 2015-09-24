@@ -55,6 +55,7 @@ namespace graphics {
         RGB32F,
         RGBA32F,
         R_UBYTE,
+        RGB_UBYTE,
         COUNT
     };
 

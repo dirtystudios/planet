@@ -54,6 +54,8 @@ FILE(GLOB UTILITIES_OSX_HEADERS ${SOURCE_DIR_ROOT}/utilities/osx/*.h)
 FILE(GLOB APP_SOURCES ${SOURCE_DIR_ROOT}/*.cpp)
 FILE(GLOB APP_HEADERS ${SOURCE_DIR_ROOT}/*.h)
 
+FILE(GLOB EXT_HEADERS ${SOURCE_DIR_ROOT}/ext/*.h)
+
 FILE(GLOB UI_SOURCES ${SOURCE_DIR_ROOT}/ui/*.cpp)
 FILE(GLOB UI_HEADERS ${SOURCE_DIR_ROOT}/ui/*.h)
 
@@ -83,6 +85,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/platform/SDL/
     ${SOURCE_DIR_ROOT}/input/
     ${SOURCE_DIR_ROOT}/ui/
+    ${SOURCE_DIR_ROOT}/ext/
     /usr/local/include
     ${LIBNOISE_INCLUDE_DIRS} 
     ${SDL2_INCLUDE_DIR}
@@ -124,6 +127,7 @@ source_group(utilities FILES ${UTILITIES_SOURCES} ${UTILITIES_HEADERS})
 source_group(utilities\\win32 FILES ${UTILITIES_WIN32_SOURCES} ${UTILITIES_WIN32_HEADERS})
 source_group(utilities\\osx FILES ${UTILITIES_OSX_SOURCES} ${UTILITIES_OSX_HEADERS})
 source_group(ui FILES ${UI_SOURCES} ${UI_HEADERS})
+source_group(ext FILES ${EXT_HEADERS})
 source_group(rendering FILES ${GRAPHICS_SOURCES} ${GRAPHICS_HEADERS})
 source_group(rendering\\backend FILES ${GRAPHICS_BACKEND_SOURCES} ${GRAPHICS_BACKEND_HEADERS})
 source_group(rendering\\backend\\gl FILES ${GRAPHICS_GL_BACKEND_SOURCES} ${GRAPHICS_GL_BACKEND_HEADERS})

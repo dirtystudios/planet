@@ -110,10 +110,11 @@ namespace graphics {
     };
 
     static GLTextureFormatDesc texture_format_mapping[(uint32_t)TextureFormat::COUNT] = {
-        { GL_R32F, GL_FLOAT, GL_RED },
-        { GL_RGB32F, GL_FLOAT, GL_RGB },
-        { GL_RGBA32F, GL_FLOAT, GL_RGBA },
-        { GL_RED, GL_UNSIGNED_BYTE, GL_RED }
+        { GL_R32F, GL_FLOAT, GL_RED }, //R32F
+        { GL_RGB32F, GL_FLOAT, GL_RGB }, //RGB32F
+        { GL_RGBA32F, GL_FLOAT, GL_RGBA }, //RGBA32f
+        { GL_RED, GL_UNSIGNED_BYTE, GL_RED }, //R_UBYTE
+        { GL_RGB, GL_UNSIGNED_BYTE, GL_RGB } //RGB_UBYTE
     };
     
     static GLenum blend_mode_mapping[(uint32_t)BlendMode::COUNT] = {

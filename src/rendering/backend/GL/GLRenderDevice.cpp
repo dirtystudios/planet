@@ -415,13 +415,13 @@ namespace graphics {
 
     TextureHandle RenderDeviceGL::CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data) {
         GLTextureFormatDesc* gl_texture_desc = &SafeGet(texture_format_mapping, (uint32_t)tex_format);
-
+        assert(width == height);
         GLuint id = 0;
         GL_CHECK(glGenTextures(1, &id));
         GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, id));
         for(uint32_t side = 0; side < 6; ++side) {
             GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, gl_texture_desc->internal_format, width, height, 0, 
-                                  gl_texture_desc->data_type, gl_texture_desc->data_format, data[side]));
+                                  gl_texture_desc->data_format, gl_texture_desc->data_type, data[side]));
         }
 
         GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
