@@ -117,9 +117,9 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
 
-    terrain_renderer->Render(cam, frustum);
-    uiManager->DoUpdate(1.f / 60.f);
+    terrain_renderer->Render(cam, frustum);    
     text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
+    uiManager->DoUpdate(1.f / 60.f);
   
     accumulate += dt;
     ++frame_count;

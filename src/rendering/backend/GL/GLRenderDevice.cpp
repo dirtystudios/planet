@@ -597,8 +597,16 @@ namespace graphics {
                     GL_CHECK(glProgramUniform3fv(program->id, location, 1, (float*)data));
                     break;
                 }
+                case ParamType::Float2: {
+                    GL_CHECK(glProgramUniform2fv(program->id, location, 1, (float*)data));
+                    break;
+                }
+                case ParamType::Float4: {
+                    GL_CHECK(glProgramUniform4fv(program->id, location, 1, (float*)data));
+                    break;
+                }
                 default: {
-                    LOG_E("gfx", "Unsupported uniform type");
+                    LOG_E("Unsupported uniform type %d", param_type);
                 }
             }
         }
