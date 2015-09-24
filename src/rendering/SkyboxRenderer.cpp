@@ -66,7 +66,7 @@ void MakeCube(SkyboxVertex* vertices, float x, float y, float z, float scale = 1
 graphics::VertLayout SkyboxVertex::layout = { { graphics::ParamType::Float3 } };
 
 SkyboxRenderer::SkyboxRenderer(graphics::RenderDevice *device) : _device(device) {
-     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
+    std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     if (!fs::IsPathDirectory(shaderDirPath)) {
         LOG_E("%s","Invalid Directory Path given for ShaderDirectory. Attempting default.");
         shaderDirPath = fs::AppendPathProcessDir("/shaders");
@@ -84,13 +84,25 @@ SkyboxRenderer::SkyboxRenderer(graphics::RenderDevice *device) : _device(device)
 
     assert(_sky_shaders[0] && _sky_shaders[1]);
 
+    std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
+    if (!fs::IsPathDirectory(assetDirPath)) {
+        LOG_E("%s", "Invalid Directory Path given for AssetDirectory. Attempting default.");
+        shaderDirPath = fs::AppendPathProcessDir("/assets");
+    }
+
     Image skybox_images[6] = { 0 };
-    if(!LoadImageFromFile("/Users/eugene.sturm/projects/misc/voxel_time/skybox/TropicalSunnyDayLeft2048.png", &skybox_images[0]))   { LOG_D("%s", "failed to load image"); }
-    if(!LoadImageFromFile("/Users/eugene.sturm/projects/misc/voxel_time/skybox/TropicalSunnyDayRight2048.png", &skybox_images[1]))  { LOG_D("%s", "failed to load image"); }
-    if(!LoadImageFromFile("/Users/eugene.sturm/projects/misc/voxel_time/skybox/TropicalSunnyDayUp2048.png", &skybox_images[2]))     { LOG_D("%s", "failed to load image"); }
-    if(!LoadImageFromFile("/Users/eugene.sturm/projects/misc/voxel_time/skybox/TropicalSunnyDayDown2048.png", &skybox_images[3]))   { LOG_D("%s", "failed to load image"); }
-    if(!LoadImageFromFile("/Users/eugene.sturm/projects/misc/voxel_time/skybox/TropicalSunnyDayFront2048.png", &skybox_images[4]))  { LOG_D("%s", "failed to load image"); }
-    if(!LoadImageFromFile("/Users/eugene.sturm/projects/misc/voxel_time/skybox/TropicalSunnyDayBack2048.png", &skybox_images[5]))   { LOG_D("%s", "failed to load image"); }
+    std::string imagePaths[6] = {
+        "/skybox/TropicalSunnyDayLeft2048.png",
+        "/skybox/TropicalSunnyDayRight2048.png",
+        "/skybox/TropicalSunnyDayUp2048.png",
+        "/skybox/TropicalSunnyDayDown2048.png",
+        "/skybox/TropicalSunnyDayFront2048.png",
+        "/skybox/TropicalSunnyDayBack2048.png"
+    };
+
+    for (int x = 0; x < 6; ++x) {
+        if (!LoadImageFromFile((assetDirPath + imagePaths[x]).c_str(), &skybox_images[x])) { LOG_D("Failed to load image: %s", imagePaths[x]); }
+    }
 
     LOG_D("w: %d h:%d", skybox_images[0].width, skybox_images[0].height);
 
