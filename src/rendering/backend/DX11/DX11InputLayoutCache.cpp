@@ -18,11 +18,13 @@ namespace graphics {
 
         auto it = m_inputLayouts.find(hash);
         if (it != m_inputLayouts.end()) {
+            it->second.numRefs++;
             return hash;
         }
         
         DX11InputLayout inputLayout;
         inputLayout.elements = ieds;
+        inputLayout.numRefs = 1;
         m_inputLayouts.insert(std::make_pair(hash, inputLayout));
 
         return hash;
@@ -54,8 +56,9 @@ namespace graphics {
         if (it == m_inputLayouts.end()) {
             return;
         }
-
-        m_inputLayouts.erase(handle);
+        it->second.numRefs--;
+        if (it->second.numRefs == 0)
+            m_inputLayouts.erase(handle);
     }
 
     std::vector<D3D11_INPUT_ELEMENT_DESC> DX11InputLayoutCache::GenerateInputLayout(ID3DBlob* pShaderBlob) {

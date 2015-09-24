@@ -12,6 +12,7 @@ namespace graphics {
     private:
         struct DX11InputLayout {
             std::vector<D3D11_INPUT_ELEMENT_DESC> elements;
+            uint32_t numRefs;
         };
 
         std::unordered_map<InputLayoutCacheHandle, DX11InputLayout> m_inputLayouts;

@@ -105,21 +105,19 @@ namespace graphics {
         VertLayout layout;
     };
     
-    // For shader cb optimizations, 'constantBuffer' can be an array here
     struct ConstantBufferDX11 {
         std::vector<ID3D11Buffer*> constantBuffers;
         std::vector<CBufferDescriptor*> cBufferDescs;
     };
     
-    //K this is best i can do for now
     // depending on type, only certain interface is populated
     struct ShaderDX11 {
         ShaderType shaderType;
         ID3D11VertexShader *vertexShader;
         ID3D11PixelShader *pixelShader;
         ConstantBufferHandle cbHandle;
-        uint32_t inputLayoutHandle; // vertex only?
-        uint32_t samplers; // not implemented yet
+        uint32_t inputLayoutHandle;
+        //uint32_t samplers; // not implemented yet
     };
     
     struct TextureDX11 {
@@ -156,7 +154,6 @@ namespace graphics {
         std::unordered_map<uint32_t, VertexBufferDX11> m_vertexBuffers;
         std::unordered_map<uint32_t, ConstantBufferDX11> m_constantBuffers;
         std::unordered_map<uint32_t, ShaderDX11> m_shaders;
-        // todo: put cache in for inputlayouts;
         std::unordered_map<uint32_t, InputLayoutDX11> m_inputLayouts;
         std::unordered_map<uint32_t, TextureDX11> m_textures;
         std::unordered_map<uint32_t, SamplerDX11> m_samplers;
@@ -169,7 +166,7 @@ namespace graphics {
         ComPtr<ID3D11DeviceContext> m_devcon;
         ComPtr<IDXGISwapChain> m_swapchain;
         ComPtr<IDXGIFactory> m_factory;
-        ComPtr<ID3D11RenderTargetView> renderTarget;
+        ComPtr<ID3D11RenderTargetView> m_renderTarget;
         ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
         DX11InputLayoutCache inputLayoutCache;
@@ -235,6 +232,7 @@ namespace graphics {
 
     public:
         RenderDeviceDX11() {};
+        ~RenderDeviceDX11();
         virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
 
         virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
@@ -314,12 +312,21 @@ namespace graphics {
             }
         }
 
-        template <class T> T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
+        template <class T> 
+        T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
             auto it = map.find(handle);
             if(it == map.end()) {
                 return nullptr;
             }
             return &(*it).second;
+        }
+
+        template <class T, typename FType> 
+        void ReleaseAllFromMap(std::unordered_map<uint32_t, T> &map, FType f) {
+            for (auto it = map.begin(); it != map.end(); ++it) {
+                if (it->second.*f)
+                    (it->second.*f)->Release();
+            }
         }
     };
 }
