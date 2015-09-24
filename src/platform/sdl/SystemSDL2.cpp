@@ -96,6 +96,13 @@ void sys::SetWindowTitle(const char* title) {
     SDL_SetWindowTitle(_window, title);
 }
 
+sys::SysWindowSize sys::GetWindowSize() {
+    SysWindowSize windowSize;
+    windowSize.height = _window_height;
+    windowSize.width = _window_width;
+    return windowSize;
+}
+
 float sys::GetTime() {
     //return seconds?
     return (float)(SDL_GetTicks()) / 1000.0;
@@ -119,7 +126,7 @@ int sys::Run(app::Application* app){
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    _window = SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width, _window_height, SDL_WINDOW_OPENGL);
+    _window = SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width, _window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     if (_window == NULL){
         LOG_E("SDL could not create window: %s", SDL_GetError());
@@ -192,7 +199,7 @@ int sys::Run(app::Application* app){
     }
 
 
-    _app->OnStart(_window_width, _window_height);
+    _app->OnStart();
 
     double dt = 0;
     while (!shouldQuit) {
@@ -210,6 +217,13 @@ int sys::Run(app::Application* app){
             if (_e.type == SDL_QUIT){
                 shouldQuit = true;
             }
+            else if (_e.type == SDL_WINDOWEVENT) {
+                if (_e.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    _window_width = (unsigned)_e.window.data1;
+                    _window_height = (unsigned)_e.window.data2;
+                    _app->renderDevice->ResizeWindow(_window_width, _window_height);
+                }
+            }
             else if (_e.type == SDL_KEYDOWN || _e.type == SDL_KEYUP) {
                 // To enable more / new keys, add them to filter function and make sure map is set in GetKeyCode
                 switch (_e.key.keysym.sym) {
@@ -223,6 +237,9 @@ int sys::Run(app::Application* app){
             else if (_e.type == SDL_MOUSEMOTION){
                 inputValues[(int)input::InputCode::INPUT_MOUSE_XAXISRELATIVE] = _e.motion.xrel;
                 inputValues[(int)input::InputCode::INPUT_MOUSE_YAXISRELATIVE] = _e.motion.yrel;
+
+                inputValues[(int)input::InputCode::INPUT_MOUSE_XAXIS] = _e.motion.x;
+                inputValues[(int)input::InputCode::INPUT_MOUSE_YAXIS] = _e.motion.y;
             }
             else if (_e.type == SDL_MOUSEBUTTONDOWN || _e.type == SDL_MOUSEBUTTONUP) {
                 switch (_e.button.button) {

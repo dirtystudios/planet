@@ -105,21 +105,19 @@ namespace graphics {
         VertLayout layout;
     };
     
-    // For shader cb optimizations, 'constantBuffer' can be an array here
     struct ConstantBufferDX11 {
         std::vector<ID3D11Buffer*> constantBuffers;
         std::vector<CBufferDescriptor*> cBufferDescs;
     };
     
-    //K this is best i can do for now
     // depending on type, only certain interface is populated
     struct ShaderDX11 {
         ShaderType shaderType;
         ID3D11VertexShader *vertexShader;
         ID3D11PixelShader *pixelShader;
         ConstantBufferHandle cbHandle;
-        uint32_t inputLayoutHandle; // vertex only?
-        uint32_t samplers; // not implemented yet
+        uint32_t inputLayoutHandle;
+        //uint32_t samplers; // not implemented yet
     };
     
     struct TextureDX11 {
@@ -151,25 +149,24 @@ namespace graphics {
     using namespace Microsoft::WRL;
     class RenderDeviceDX11 : public RenderDevice {
     private:
+        uint32_t m_winWidth, m_winHeight;
         std::unordered_map<uint32_t, IndexBufferDX11> m_indexBuffers;
         std::unordered_map<uint32_t, VertexBufferDX11> m_vertexBuffers;
         std::unordered_map<uint32_t, ConstantBufferDX11> m_constantBuffers;
         std::unordered_map<uint32_t, ShaderDX11> m_shaders;
-        // todo: put cache in for inputlayouts;
         std::unordered_map<uint32_t, InputLayoutDX11> m_inputLayouts;
         std::unordered_map<uint32_t, TextureDX11> m_textures;
         std::unordered_map<uint32_t, SamplerDX11> m_samplers;
-        std::unordered_map<int, BlendStateDX11> m_blendStates;
-        std::unordered_map<int, RasterStateDX11> m_rasterStates;
-        std::unordered_map<int, DepthStateDX11> m_depthStates;
+        std::unordered_map<uint32_t, BlendStateDX11> m_blendStates;
+        std::unordered_map<uint32_t, RasterStateDX11> m_rasterStates;
+        std::unordered_map<uint32_t, DepthStateDX11> m_depthStates;
 
         HWND m_hwnd;
         ComPtr<ID3D11Device> m_dev;
         ComPtr<ID3D11DeviceContext> m_devcon;
         ComPtr<IDXGISwapChain> m_swapchain;
         ComPtr<IDXGIFactory> m_factory;
-        ComPtr<ID3D11RenderTargetView> renderTarget;
-        ComPtr<ID3D11Texture2D> m_depthTex;
+        ComPtr<ID3D11RenderTargetView> m_renderTarget;
         ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
         DX11InputLayoutCache inputLayoutCache;
@@ -235,6 +232,7 @@ namespace graphics {
 
     public:
         RenderDeviceDX11() {};
+        ~RenderDeviceDX11();
         virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
 
         virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
@@ -253,7 +251,7 @@ namespace graphics {
         virtual void                    DestroyTexture(TextureHandle handle);
 
         virtual void                    SwapBuffers();
-
+        virtual void                    ResizeWindow(uint32_t width, uint32_t height);
         virtual void                    PrintDisplayAdapterInfo();
 
         // Commands
@@ -279,6 +277,10 @@ namespace graphics {
         void SetIndexBuffer(IndexBufferHandle handle);
 
         TextureHandle Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data);
+
+        // Resize Functions, 'Reset' means it recreates based on window size
+        void ResetViewport();
+        void ResetDepthStencilTexture();
 
         //hack for now 
         int defaultSamplerHandle;
@@ -310,7 +312,8 @@ namespace graphics {
             }
         }
 
-        template <class T> T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
+        template <class T> 
+        T* Get(std::unordered_map<uint32_t, T> &map, uint32_t handle) {
             auto it = map.find(handle);
             if(it == map.end()) {
                 return nullptr;
@@ -318,12 +321,12 @@ namespace graphics {
             return &(*it).second;
         }
 
-        template <class T> T* GetWithInt(std::unordered_map<int, T> &map, int handle) {
-            auto it = map.find(handle);
-            if (it == map.end()) {
-                return nullptr;
+        template <class T, typename FType> 
+        void ReleaseAllFromMap(std::unordered_map<uint32_t, T> &map, FType f) {
+            for (auto it = map.begin(); it != map.end(); ++it) {
+                if (it->second.*f)
+                    (it->second.*f)->Release();
             }
-            return &(*it).second;
         }
     };
 }

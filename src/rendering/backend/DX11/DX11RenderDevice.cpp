@@ -11,6 +11,27 @@
 #define DEBUG_DX11
 #endif
 
+#define DX11_CHECK(func) \
+do { \
+HRESULT hr = func;\
+if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); }  \
+}  \
+while (false)
+
+#define DX11_CHECK_RET0(func) \
+do { \
+HRESULT hr = func;\
+if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); return 0; }  \
+}  \
+while (false)
+
+#define DX11_CHECK_RET(func) \
+do { \
+HRESULT hr = func;\
+if(FAILED(hr)) { LOG_E("DX11 error in function: %s. line: %d HR: 0x%x (%s) %s\n", __FUNCTION__, __LINE__ ,hr , #func); assert(false); return; }  \
+}  \
+while (false)
+
 // Debug Helper Functions
 
 #pragma region Debug Helper Functions
@@ -26,9 +47,20 @@ inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_z_ const ch
 #endif
 }
 
+void OutputLiveObjects(ID3D11Device* dev) {
+#ifdef DEBUG_DX11
+    ID3D11Debug *d3dDebug = nullptr;
+    if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug)))
+    {
+        DX11_CHECK(d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY));
+        d3dDebug->Release();
+    }
+#endif
+}
+
 // Debug Initializtion
 
-void InitDX11DebugLayer(ID3D11Device* dev){
+void InitDX11DebugLayer(ID3D11Device* dev) {
 
 #ifdef DEBUG_DX11
     ID3D11Debug *d3dDebug = nullptr;
@@ -71,7 +103,7 @@ namespace graphics {
 #pragma region Create Commands
 
     IndexBufferHandle RenderDeviceDX11::CreateIndexBuffer(void* data, size_t size, BufferUsage usage) {
-        ID3D11Buffer* indexBuffer = NULL;
+        ComPtr<ID3D11Buffer> indexBuffer = NULL;
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -85,23 +117,18 @@ namespace graphics {
         initData.SysMemPitch = 0;
         initData.SysMemSlicePitch = 0;
 
-        HRESULT hr = m_dev->CreateBuffer(&bufferDesc, &initData, &indexBuffer);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Failed creating Index Buffer. HR: 0x%x", hr);
-            return 0;
-        }
-        else {
-            uint32_t handle = GenerateHandle();
-            IndexBufferDX11 ib;
-            ib.indexBuffer = indexBuffer;//indexBuffer.Get();
+        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, &initData, &indexBuffer));
+        uint32_t handle = GenerateHandle();
+        IndexBufferDX11 ib;
+        ib.indexBuffer = indexBuffer.Get();
 
-            m_indexBuffers.insert(std::make_pair(handle, ib));
-            return handle;
-        }
+        indexBuffer.Get()->AddRef();
+        m_indexBuffers.emplace(handle, ib);
+        return handle;
     }
     
     VertexBufferHandle RenderDeviceDX11::CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage) {
-        ID3D11Buffer* vertexBuffer = NULL;
+        ComPtr<ID3D11Buffer> vertexBuffer;
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
         bufferDesc.Usage = SafeGet(BufferUsageDX11, (uint32_t)usage);
@@ -120,17 +147,14 @@ namespace graphics {
             initData.SysMemSlicePitch = 0;
         }
 
-        HRESULT hr = m_dev->CreateBuffer(&bufferDesc, data ? &initData : NULL, &vertexBuffer);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed to create Vertex buffer. HResult: 0x%x", hr);
-            return 0;
-        }
+        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, data ? &initData : NULL, &vertexBuffer));
         uint32_t handle = GenerateHandle();
         VertexBufferDX11 vb = {};
-        vb.vertexBuffer = vertexBuffer;//vertexBuffer.Get();
+        vb.vertexBuffer = vertexBuffer.Get();
         vb.layout = layout;
 
-        m_vertexBuffers.insert(std::make_pair(handle, vb));
+        vertexBuffer.Get()->AddRef();
+        m_vertexBuffers.emplace(handle, vb);
         return handle;
     }
 
@@ -182,23 +206,20 @@ namespace graphics {
         uint32_t shaderHandle = 0;
         shader.shaderType = shaderType;
 
+        uint32_t cBufferHandle = GenerateHandle();
+        cBufferHandle = CreateConstantBuffer(blob.Get());
+
         switch (shaderType) {
         case ShaderType::VERTEX_SHADER:
         {
-            ID3D11VertexShader* vertexShader;
-            hr = m_dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &vertexShader);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to Create VertexShader in CreateProgram. Hr: 0x%x", hr);
-                return 0;
-            }
-
-            uint32_t cBufferHandle = GenerateHandle();
-            cBufferHandle = CreateConstantBuffer(blob.Get());
+            ComPtr<ID3D11VertexShader> vertexShader;
+            DX11_CHECK_RET0(m_dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &vertexShader));
 
             uint32_t ilHandle = CreateInputLayout(blob.Get());
 
+            vertexShader.Get()->AddRef();
             shaderHandle = GenerateHandle();
-            shader.vertexShader = vertexShader;//vertexShader.Get();
+            shader.vertexShader = vertexShader.Get();
             shader.cbHandle = cBufferHandle;
             shader.inputLayoutHandle = ilHandle;
             break;
@@ -206,18 +227,12 @@ namespace graphics {
         case ShaderType::FRAGMENT_SHADER:
         {
             // todo: anything else for fragment shader
-            ID3D11PixelShader* pixelShader;
-            hr = m_dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &pixelShader);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to Create PixelShader in CreateProgram. Hr: 0x%x", hr);
-                return 0;
-            }
+            ComPtr<ID3D11PixelShader> pixelShader;
+            DX11_CHECK_RET0(m_dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &pixelShader));
 
-            uint32_t cBufferHandle = GenerateHandle();
-            cBufferHandle = CreateConstantBuffer(blob.Get());
-
+            pixelShader.Get()->AddRef();
             shaderHandle = GenerateHandle();
-            shader.pixelShader = pixelShader;//pixelShader.Get();
+            shader.pixelShader = pixelShader.Get();
             shader.cbHandle = cBufferHandle;
             break;
         }
@@ -227,28 +242,26 @@ namespace graphics {
             return 0;
             break;
         }
-        m_shaders.insert(std::make_pair(shaderHandle, shader));
+        m_shaders.emplace(shaderHandle, shader);
         return shaderHandle;
     }
 
     uint32_t RenderDeviceDX11::CreateInputLayout(ID3DBlob *shader) {
         InputLayoutCacheHandle ilHandle = inputLayoutCache.InsertInputLayout(shader);
-        ID3D11InputLayout* inputLayout;
+        ComPtr<ID3D11InputLayout> inputLayout;
 
-        //todo, handle cache / same hash/handle
         if (!ilHandle) {
             LOG_D("DX11Render: Invalid or empty input layout defined in shader.");
             return 0;
         }
 
-        HRESULT hr = m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), inputLayoutCache.GetInputLayoutSize(ilHandle), shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout);
-        if (FAILED(hr)) {
-            LOG_E("DX11Render: Failed to Create Input Layout. HR: 0x%x", hr);
-            return 0;
-        }
+        DX11_CHECK_RET0(m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), inputLayoutCache.GetInputLayoutSize(ilHandle), 
+                                                 shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout));
+
+        inputLayout.Get()->AddRef();
         InputLayoutDX11 inputLayoutDx11;
-        inputLayoutDx11.inputLayout = inputLayout;//inputLayout.Get();
-        m_inputLayouts.insert(std::make_pair(ilHandle, inputLayoutDx11));
+        inputLayoutDx11.inputLayout = inputLayout.Get();
+        m_inputLayouts.emplace(ilHandle, inputLayoutDx11);
         return ilHandle;
     }
 
@@ -269,10 +282,12 @@ namespace graphics {
             cbDesc.MiscFlags = 0;
             cbDesc.StructureByteStride = 0;
 
-            HRESULT hr = m_dev->CreateBuffer(&cbDesc, NULL, &cBuffer);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to Create ConstantBuffer. Hr: 0x%x", hr);
-                //todo: delete cbuffers?
+            DX11_CHECK_RET0(m_dev->CreateBuffer(&cbDesc, NULL, &cBuffer));
+            if (!cBuffer) {
+                for (ID3D11Buffer* pcBuffer : constantBuffers) {
+                    pcBuffer->Release();
+                }
+                delete[] cBuffers;
                 return 0;
             }
             constantBuffers.emplace_back(cBuffer);
@@ -281,8 +296,7 @@ namespace graphics {
         ConstantBufferDX11 cb = {};
         cb.cBufferDescs.assign(&cBuffers, &cBuffers + numCBuffers);
         cb.constantBuffers = constantBuffers;
-        //cb.constantBuffer = constantBuffer;//constantBuffer.Get();
-        m_constantBuffers.insert(std::make_pair(handle, cb));
+        m_constantBuffers.emplace(handle, cb);
 
         return handle;
     }
@@ -365,7 +379,7 @@ namespace graphics {
     }
 
     TextureHandle RenderDeviceDX11::Texture2DCreator(D3D11_TEXTURE2D_DESC* tDesc, D3D11_SHADER_RESOURCE_VIEW_DESC* viewDesc, void* data) {
-        ID3D11Texture2D* texture;
+        ComPtr<ID3D11Texture2D> texture;
         D3D11_SUBRESOURCE_DATA srd;
         if (data) {
             srd.pSysMem = data;
@@ -373,30 +387,26 @@ namespace graphics {
             srd.SysMemSlicePitch = 0; //?
         }
 
-        HRESULT hr = m_dev->CreateTexture2D(tDesc, data ? &srd : NULL, &texture);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed Creating Texture Hr: 0x%x", hr);
-            return 0;
-        }
+        DX11_CHECK_RET0(m_dev->CreateTexture2D(tDesc, data ? &srd : NULL, &texture));
 
-        ID3D11ShaderResourceView* shaderResourceView;
-        hr = m_dev->CreateShaderResourceView(texture, viewDesc, &shaderResourceView);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed Creating shaderResourceView Hr: 0x%x", hr);
-            //texture.ReleaseAndGetAddressOf();
-            texture->Release();
+        ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+        DX11_CHECK(m_dev->CreateShaderResourceView(texture.Get(), viewDesc, &shaderResourceView));
+        if (!shaderResourceView) {
+            texture.Reset();
             return 0;
         }
 
         uint32_t handle = GenerateHandle();
+        texture.Get()->AddRef();
+        shaderResourceView.Get()->AddRef();
         TextureDX11 textureDX11 = {};
-        textureDX11.texture = texture;//texture.Get();
-        textureDX11.shaderResourceView = shaderResourceView;//shaderResourceView.Get();
+        textureDX11.texture = texture.Get();
+        textureDX11.shaderResourceView = shaderResourceView.Get();
         textureDX11.format = tDesc->Format;
-        m_textures.insert(std::make_pair(handle, textureDX11));
+        m_textures.emplace(handle, textureDX11);
+        
 
         return handle;
-
     }
 #pragma endregion
 
@@ -405,66 +415,65 @@ namespace graphics {
     void RenderDeviceDX11::DestroyIndexBuffer(IndexBufferHandle handle) {
         IndexBufferDX11* indexBuff = Get(m_indexBuffers, handle);
         if (!indexBuff) {
-            LOG_E("DX11RenderDev: Failed to DestroyIndexBuffer: %d", handle)
-                return;
+            LOG_D("DX11RenderDev: Failed to DestroyIndexBuffer: %d", handle);
+            return;
         }
         if (indexBuff->indexBuffer)
             indexBuff->indexBuffer->Release();
         m_indexBuffers.erase(handle);
     }
 
-
     void RenderDeviceDX11::DestroyVertexBuffer(VertexBufferHandle handle) {
-        auto it = m_vertexBuffers.find(handle);
-        if (it == m_vertexBuffers.end()) {
-            LOG_E("DX11RenderDev: Failed to DestroyVertexBuffer: %d", handle)
-                return;
+        VertexBufferDX11* vertexBuff = Get(m_vertexBuffers, handle);
+        if (!vertexBuff) {
+            LOG_D("DX11RenderDev: Failed to DestroyVertexBuffer: %d", handle);
+            return;
         }
-        VertexBufferDX11 &vb = (*it).second;
-
-        if (vb.vertexBuffer)
-            vb.vertexBuffer->Release();
-        m_vertexBuffers.erase(it);
+        if (vertexBuff->vertexBuffer)
+            vertexBuff->vertexBuffer->Release();
+        m_vertexBuffers.erase(handle);
     }
 
     void RenderDeviceDX11::DestroyShader(ShaderHandle handle) {
         ShaderDX11* shader = Get(m_shaders, handle);
         if (!shader) {
-            LOG_E("DX11RenderDev: Invalid handle given to DestroyShader");
+            LOG_D("DX11RenderDev: Invalid handle given to DestroyShader");
+            return;
         }
-        if (shader->inputLayoutHandle) {
-            InputLayoutDX11* il = Get(m_inputLayouts, shader->inputLayoutHandle);
-            il->inputLayout->Release();
-            m_inputLayouts.erase(shader->inputLayoutHandle);
-        }
-        if (shader->cbHandle) {
-            // todo : delete me 
-            /*ConstantBufferDX11* cBuffer = Get(ntBuffers, shader->cbHandle);
-            cBuffer->constantBuffer->Release();
-            m_constantBuffers.erase(shader->cbHandle);*/
-        }
-        //todo: release rest of stuff
+
+        if (shader->inputLayoutHandle)
+            DestroyInputLayout(shader->inputLayoutHandle);
+        
+        if (shader->cbHandle)
+            DestroyConstantBuffer(shader->cbHandle);
+    
+        if (shader->pixelShader)
+            shader->pixelShader->Release();
+       
+        if (shader->vertexShader)
+            shader->vertexShader->Release();
+      
+        //todo: samplers
         m_shaders.erase(handle);
     }
 
     void RenderDeviceDX11::DestroyConstantBuffer(ConstantBufferHandle handle) {
-        auto it = m_constantBuffers.find(handle);
-        if (it == m_constantBuffers.end()) {
+        ConstantBufferDX11* cBuffer = Get(m_constantBuffers, handle);
+        if (!cBuffer) {
+            LOG_D("DX11RenderDev: Invalid handle given to DestroyShader");
             return;
         }
-        ConstantBufferDX11 &cb = (*it).second;
-
-        // todo: delete me 
-
-        /*if(cb.constantBuffer) {
-        cb.constantBuffer->Release();
+        for (auto pcBuffer : cBuffer->constantBuffers) {
+            pcBuffer->Release();
         }
-        m_constantBuffers.erase(it);*/
+        cBuffer->cBufferDescs.clear();
+        m_constantBuffers.erase(handle);
     }
 
     void RenderDeviceDX11::DestroyInputLayout(uint32_t handle) {
         InputLayoutDX11* inputLayout = Get(m_inputLayouts, handle);
         if (!inputLayout) {
+            LOG_D("DX11RenderDev: Invalid handle given to DestroyInputLayout");
             return;
         }
         if (inputLayout->inputLayout)
@@ -476,7 +485,7 @@ namespace graphics {
     void RenderDeviceDX11::DestroyTexture(TextureHandle handle) {
         TextureDX11* texture = Get(m_textures, handle);
         if (!texture) {
-            LOG_E("DX11RenderDev: Invalid handle given to DestroyTexture.");
+            LOG_D("DX11RenderDev: Invalid handle given to DestroyTexture.");
             return;
         }
 
@@ -561,8 +570,6 @@ namespace graphics {
         if (m_currentState.pixelShaderHandle == shaderHandle) {
             m_pendingState.pixelShaderHandle = m_currentState.pixelShaderHandle;
             m_pendingState.pixelShader = m_currentState.pixelShader;
-
-            // Todo: state for cbuffers and friends
             return;
         }
 
@@ -606,14 +613,12 @@ namespace graphics {
 
     void RenderDeviceDX11::Clear(float r, float g, float b, float a) {
         float RGBA[4] = { r, g, b, a };
-        m_devcon->ClearRenderTargetView(renderTarget.Get(), RGBA);
+        m_devcon->ClearRenderTargetView(m_renderTarget.Get(), RGBA);
+        m_devcon->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
     }
 
     void RenderDeviceDX11::SwapBuffers() {
-        HRESULT hr = m_swapchain->Present(1, 0);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error on present? Hr: 0x%x", hr);
-        }
+        DX11_CHECK(m_swapchain->Present(1, 0));
     }
 
     void RenderDeviceDX11::SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *paramName, void *data) {
@@ -673,18 +678,13 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::UpdateConstantBuffer(ConstantBufferDX11* cb, std::vector<uint32_t> dirtySlots) {
-
         D3D11_MAPPED_SUBRESOURCE mappedResource;
-        HRESULT hr = 0;
         
         for (uint32_t x = 0; x < dirtySlots.size(); ++x) {
             uint32_t slot = dirtySlots[x];
 
-            hr = m_devcon->Map(cb->constantBuffers[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-            if (FAILED(hr)) {
-                LOG_E("DX11RenderDev: Failed to map constant buffer. HR: 0x%x", hr);
-                return;
-            }
+            DX11_CHECK_RET(m_devcon->Map(cb->constantBuffers[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
+
             memcpy(mappedResource.pData, cb->cBufferDescs[slot]->bufferData, cb->cBufferDescs[slot]->totalSize );
 
             m_devcon->Unmap(cb->constantBuffers[slot], 0);
@@ -719,7 +719,7 @@ namespace graphics {
     }
 
     void RenderDeviceDX11::SetRasterState(const RasterState& rasterState) {
-        int hash = XXH32(&rasterState, sizeof(RasterState), 0);
+        uint32_t hash = XXH32(&rasterState, sizeof(RasterState), 0);
 
         if (m_currentState.rasterStateHash == hash) {
             m_pendingState.rasterStateHash = hash;
@@ -727,7 +727,7 @@ namespace graphics {
             return;
         }
 
-        RasterStateDX11 *rasterStateCheck = GetWithInt(m_rasterStates, hash);
+        RasterStateDX11 *rasterStateCheck = Get(m_rasterStates, hash);
         if (rasterStateCheck) {
             m_pendingState.rasterStateHash = hash;
             m_pendingState.rasterState = rasterStateCheck;
@@ -747,30 +747,27 @@ namespace graphics {
         rasterDesc.FillMode = SafeGet(FillModeDX11, (uint32_t)rasterState.fill_mode);
         rasterDesc.FrontCounterClockwise = rasterState.winding_order == WindingOrder::FRONT_CCW ? true : false;
 
-        ID3D11RasterizerState* rasterStateDX;
-        HRESULT hr = m_dev->CreateRasterizerState(&rasterDesc, &rasterStateDX);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating RasterState: 0x%x", hr);
-            return;
-        }
+        ComPtr<ID3D11RasterizerState> rasterStateDX;
+        DX11_CHECK_RET(m_dev->CreateRasterizerState(&rasterDesc, &rasterStateDX));
 
         RasterStateDX11 rasterStateDX11 = {};
-        rasterStateDX11.rasterState = rasterStateDX;
-        auto it = m_rasterStates.insert(std::make_pair(hash, rasterStateDX11));
+        rasterStateDX11.rasterState = rasterStateDX.Get();
+        auto it = m_rasterStates.emplace(hash, rasterStateDX11);
+        rasterStateDX.Get()->AddRef();
 
         m_pendingState.rasterState = &it.first->second;
         m_pendingState.rasterStateHash = hash;
     }
 
     void RenderDeviceDX11::SetDepthState(const DepthState& depthState) {
-        int hash = XXH32(&depthState, sizeof(DepthState), 0);
+        uint32_t hash = XXH32(&depthState, sizeof(DepthState), 0);
         if (m_currentState.depthStateHash == hash) {
             m_pendingState.depthStateHash = hash;
             m_pendingState.depthState = m_currentState.depthState;
             return;
         }
 
-        DepthStateDX11* depthStateCheck = GetWithInt(m_depthStates, hash);
+        DepthStateDX11* depthStateCheck = Get(m_depthStates, hash);
         if (depthStateCheck) {
             m_pendingState.depthStateHash= hash;
             m_pendingState.depthState= depthStateCheck;
@@ -795,30 +792,27 @@ namespace graphics {
         dsDesc.DepthWriteMask = SafeGet(DepthWriteMaskDX11, (uint32_t)depthState.depth_write_mask);
         dsDesc.DepthFunc = SafeGet(DepthFuncDX11, (uint32_t)depthState.depth_func);
 
-        ID3D11DepthStencilState *depthStateDX;
-        HRESULT hr = m_dev->CreateDepthStencilState(&dsDesc, &depthStateDX);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed CreatingDepthStencilState Hr: 0x%x", hr);
-            return;
-        }
+        ComPtr<ID3D11DepthStencilState> depthStateDX;
+        DX11_CHECK_RET(m_dev->CreateDepthStencilState(&dsDesc, &depthStateDX));
 
         DepthStateDX11 depthStateDX11= {};
-        depthStateDX11.depthState = depthStateDX;
-        auto it = m_depthStates.insert(std::make_pair(hash, depthStateDX11));
+        depthStateDX11.depthState = depthStateDX.Get();
+        auto it = m_depthStates.emplace(hash, depthStateDX11);
+        depthStateDX.Get()->AddRef();
 
-        m_pendingState.depthState =  &it.first->second;
+        m_pendingState.depthState = &it.first->second;
         m_pendingState.depthStateHash = hash;
     }
 
     void RenderDeviceDX11::SetBlendState(const BlendState& blendState) {
-        int hash = XXH32(&blendState, sizeof(BlendState), 0);
+        uint32_t hash = XXH32(&blendState, sizeof(BlendState), 0);
         if (m_currentState.blendStateHash == hash) {
             m_pendingState.blendStateHash = hash;
             m_pendingState.blendState = m_currentState.blendState;
             return;
         }
 
-        BlendStateDX11 *blendStateCheck = GetWithInt(m_blendStates, hash);
+        BlendStateDX11 *blendStateCheck = Get(m_blendStates, hash);
         if (blendStateCheck) {
             m_pendingState.blendStateHash = hash;
             m_pendingState.blendState = blendStateCheck;
@@ -839,16 +833,13 @@ namespace graphics {
 
         blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-        ID3D11BlendState* blendStateDX;
-        HRESULT hr = m_dev->CreateBlendState(&blendDesc, &blendStateDX);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed to CreateBlendState. Hr: 0x%x", hr);
-            return;
-        }
+        ComPtr<ID3D11BlendState> blendStateDX;
+        DX11_CHECK_RET(m_dev->CreateBlendState(&blendDesc, &blendStateDX));
 
         BlendStateDX11 blendStateDX11 = {};
-        blendStateDX11.blendState = blendStateDX;
-        auto it = m_blendStates.insert(std::make_pair(hash, blendStateDX11));
+        blendStateDX11.blendState = blendStateDX.Get();
+        auto it = m_blendStates.emplace(hash, blendStateDX11);
+        blendStateDX.Get()->AddRef();
 
         m_pendingState.blendState = &it.first->second;
         m_pendingState.blendStateHash = hash;
@@ -868,12 +859,7 @@ namespace graphics {
         }
 
         D3D11_MAPPED_SUBRESOURCE mappedResource;
-        HRESULT hr = 0;
-        hr = m_devcon->Map(vBuffer->vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Failed to map vertex buffer. HR: 0x%x", hr);
-            return;
-        }
+        DX11_CHECK_RET(m_devcon->Map(vBuffer->vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
         memcpy(mappedResource.pData, data, size);
 
         m_devcon->Unmap(vBuffer->vertexBuffer, 0);
@@ -897,7 +883,7 @@ namespace graphics {
         {
             auto it = m_currentState.psTextures.find((uint32_t)slot);
             if (it == m_currentState.psTextures.end()) {
-                m_pendingState.psTextures.insert(std::make_pair((uint32_t)slot, texture->shaderResourceView));
+                m_pendingState.psTextures.emplace((uint32_t)slot, texture->shaderResourceView);
                 m_pendingState.psDirtyTextureSlots.emplace_back((uint32_t)slot);
             }
             else if (it->second != texture->shaderResourceView) {
@@ -910,7 +896,7 @@ namespace graphics {
         {
             auto it = m_currentState.vsTextures.find((uint32_t)slot);
             if (it == m_currentState.vsTextures.end()) {
-                m_pendingState.vsTextures.insert(std::make_pair((uint32_t)slot, texture->shaderResourceView));
+                m_pendingState.vsTextures.emplace((uint32_t)slot, texture->shaderResourceView);
                 m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
             }
             else if (it->second != texture->shaderResourceView) {
@@ -991,8 +977,6 @@ namespace graphics {
         if (m_pendingState.depthStateHash != 0 && m_currentState.depthStateHash != m_pendingState.depthStateHash)
             m_devcon->OMSetDepthStencilState(m_pendingState.depthState->depthState, 1);
 
-        // todo: rendertargets
-        m_devcon->OMSetRenderTargets(1, renderTarget.GetAddressOf(), m_depthStencilView.Get());
         m_devcon->Draw(numVertices, startVertex);
         
         //cleanup state before set
@@ -1034,15 +1018,12 @@ namespace graphics {
         D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
         samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
         ID3D11SamplerState* samplerState;
-        HRESULT hr = m_dev->CreateSamplerState(&samplerDesc, &samplerState);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Failed creating samplerState HR: 0x%x", hr);
-        }
+        DX11_CHECK_RET0(m_dev->CreateSamplerState(&samplerDesc, &samplerState));
 
         uint32_t handle = GenerateHandle();
         SamplerDX11 samplerDX11 = {};
         samplerDX11.sampler = samplerState;//samplerState.Get();
-        m_samplers.insert(std::make_pair(handle, samplerDX11));
+        m_samplers.emplace(handle, samplerDX11);
 
         //hack for now
         defaultSamplerHandle = handle;
@@ -1060,11 +1041,66 @@ namespace graphics {
         m_samplers.erase(handle);
     }
 
+    void RenderDeviceDX11::ResetDepthStencilTexture() {
+        ComPtr<ID3D11Texture2D> depthTex;
+        D3D11_TEXTURE2D_DESC descDepth;
+        descDepth.Width = m_winWidth;
+        descDepth.Height = m_winHeight;
+        descDepth.MipLevels = 1;
+        descDepth.ArraySize = 1;
+        descDepth.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+        descDepth.SampleDesc.Count = 1;
+        descDepth.SampleDesc.Quality = 0;
+        descDepth.Usage = D3D11_USAGE_DEFAULT;
+        descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        descDepth.CPUAccessFlags = 0;
+        descDepth.MiscFlags = 0;
+        DX11_CHECK_RET(m_dev->CreateTexture2D(&descDepth, NULL, &depthTex));
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+        descDSV.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        descDSV.Texture2D.MipSlice = 0;
+        descDSV.Flags = 0;
+        DX11_CHECK_RET(m_dev->CreateDepthStencilView(depthTex.Get(), &descDSV, &m_depthStencilView));
+    }
+
+    void RenderDeviceDX11::ResetViewport() {
+        D3D11_VIEWPORT vp;
+        vp.Width = (float)m_winWidth;
+        vp.Height = (float)m_winHeight;
+        vp.MinDepth = 0;
+        vp.MaxDepth = 1;
+        vp.TopLeftX = 0;
+        vp.TopLeftY = 0;
+        m_devcon->RSSetViewports(1, &vp);
+    }
+
+    void RenderDeviceDX11::ResizeWindow(uint32_t width, uint32_t height) {
+        if (m_winWidth == width && m_winHeight == height)
+            return; 
+
+        m_winWidth = width;
+        m_winHeight = height;
+
+        m_renderTarget.Reset();
+
+        DX11_CHECK_RET(m_swapchain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
+        ComPtr<ID3D11Texture2D> backBufferPtr;
+        DX11_CHECK_RET(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBufferPtr));
+        DX11_CHECK_RET(m_dev->CreateRenderTargetView(backBufferPtr.Get(), 0, m_renderTarget.GetAddressOf()));
+        ResetDepthStencilTexture();
+        ResetViewport();
+        m_devcon->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
+    }
+
     int RenderDeviceDX11::InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) {
         DeviceConfig.DeviceAbbreviation = "DX11";
         DeviceConfig.ShaderExtension = ".hlsl";
 
         m_hwnd = static_cast<HWND>(windowHandle);
+        m_winWidth = windowWidth;
+        m_winHeight = windowHeight;
 
         D3D_FEATURE_LEVEL FeatureLevelsRequested[] = {
             D3D_FEATURE_LEVEL_11_1,
@@ -1077,27 +1113,18 @@ namespace graphics {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-        HRESULT hr = D3D11CreateDevice(
+        DX11_CHECK_RET0(D3D11CreateDevice(
             nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, FeatureLevelsRequested, numLevelsRequested, D3D11_SDK_VERSION,
-            &m_dev, nullptr, &m_devcon);
-
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Error Creating D3D11Device: 0x%x", hr);
-            return hr;
-        }
+            &m_dev, nullptr, &m_devcon));
 
         InitDX11DebugLayer(m_dev.Get());
 
-        hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&m_factory));
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Error Creating DXGIFactory: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&m_factory)));
 
         DXGI_SWAP_CHAIN_DESC sd;
         ZeroMemory(&sd, sizeof(sd));
-        sd.BufferDesc.Width = 0;
-        sd.BufferDesc.Height = 0;
+        sd.BufferDesc.Width = m_winWidth;
+        sd.BufferDesc.Height = m_winHeight;
         sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         sd.SampleDesc.Count = 1;
@@ -1106,79 +1133,33 @@ namespace graphics {
         sd.BufferCount = 2;
         sd.OutputWindow = m_hwnd;
         sd.Windowed = true;
-
-        hr = m_factory->CreateSwapChain(m_dev.Get(), &sd, &m_swapchain);
-        if (FAILED(hr)){
-            LOG_E("DX11RenderDev: Error Creating Swapchain: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(m_factory->CreateSwapChain(m_dev.Get(), &sd, &m_swapchain));
 
         ComPtr<ID3D11Texture2D> backbuffer;
-        m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
+        DX11_CHECK_RET0(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer));
 
-        D3D11_TEXTURE2D_DESC descDepth;
-        descDepth.Width = windowWidth;
-        descDepth.Height = windowHeight;
-        descDepth.MipLevels = 1;
-        descDepth.ArraySize = 1;
-        descDepth.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-        descDepth.SampleDesc.Count = 1;
-        descDepth.SampleDesc.Quality = 0;
-        descDepth.Usage = D3D11_USAGE_DEFAULT;
-        descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-        descDepth.CPUAccessFlags = 0;
-        descDepth.MiscFlags = 0;
-        hr = m_dev->CreateTexture2D(&descDepth, NULL, &m_depthTex);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating Texture2d in Init. Hr: 0x%x", hr);
-            return hr;
-        }
-
-        D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-        descDSV.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-        descDSV.Texture2D.MipSlice = 0;
-        descDSV.Flags = 0;
-
-        // Create the depth stencil view
-        hr = m_dev->CreateDepthStencilView(m_depthTex.Get(), &descDSV, &m_depthStencilView); 
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating depthStencilView in Init. Hr: 0x%x", hr);
-            return hr;
-        }
-
-        // todo: what to do about this?
-        hr = m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &renderTarget);
-        if (FAILED(hr)) {
-            LOG_E("DX11RenderDev: Error Creating RenderTargetView in Init. Hr: 0x%x", hr);
-            return hr;
-        }
+        DX11_CHECK_RET0(m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, m_renderTarget.GetAddressOf()));
 
         // Create and use default rasterize / depth
         SetRasterState(RasterState());
         SetDepthState(DepthState());
 
-        //viewport?
-        D3D11_VIEWPORT vp;
-        vp.Width = (float)windowWidth;
-        vp.Height = (float)windowHeight;
-        vp.MinDepth = 0;
-        vp.MaxDepth = 1;
-        vp.TopLeftX = 0;
-        vp.TopLeftY = 0;
-        m_devcon->RSSetViewports(1, &vp);
+        ResetDepthStencilTexture();
+        ResetViewport();
+
+        m_devcon->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
 
         // todo: deal with this?
         CreateSampler();
 
-        return hr;
+        return 1;
     }
 
     void RenderDeviceDX11::PrintDisplayAdapterInfo() {
         ComPtr<IDXGIAdapter> adapter;
-        m_factory->EnumAdapters(0, &adapter);
+        DX11_CHECK(m_factory->EnumAdapters(0, &adapter));
         auto adapterDesc = DXGI_ADAPTER_DESC();
-        adapter->GetDesc(&adapterDesc);
+        DX11_CHECK(adapter->GetDesc(&adapterDesc));
 
         char buffer[128];
         wcstombs_s(0, buffer, 128, adapterDesc.Description, 128);
@@ -1195,5 +1176,32 @@ namespace graphics {
         LOG_D("DirectX Version: v%s", dxLevel);
         LOG_D("DisplayAdaterDesc: %s", buffer);
         LOG_D("VendorID:DeviceID 0x%x:0x%x", adapterDesc.VendorId, adapterDesc.DeviceId);
+    }
+
+    RenderDeviceDX11::~RenderDeviceDX11() {
+        ReleaseAllFromMap(m_indexBuffers, &IndexBufferDX11::indexBuffer);
+        ReleaseAllFromMap(m_vertexBuffers, &VertexBufferDX11::vertexBuffer);
+        for (auto it = m_constantBuffers.begin(); it != m_constantBuffers.end(); ++it) {
+            for (auto pcBuffer : it->second.constantBuffers) {
+                pcBuffer->Release();
+            }
+            it->second.cBufferDescs.clear();
+        }
+        ReleaseAllFromMap(m_shaders, &ShaderDX11::pixelShader);
+        ReleaseAllFromMap(m_shaders, &ShaderDX11::vertexShader);
+        ReleaseAllFromMap(m_inputLayouts, &InputLayoutDX11::inputLayout);
+        ReleaseAllFromMap(m_textures, &TextureDX11::texture);
+        ReleaseAllFromMap(m_textures, &TextureDX11::shaderResourceView);
+        ReleaseAllFromMap(m_samplers, &SamplerDX11::sampler);
+        ReleaseAllFromMap(m_blendStates, &BlendStateDX11::blendState);
+        ReleaseAllFromMap(m_rasterStates, &RasterStateDX11::rasterState);
+        ReleaseAllFromMap(m_depthStates, &DepthStateDX11::depthState);
+
+        m_depthStencilView.Reset();
+        m_devcon.Reset();
+        m_renderTarget.Reset();
+        m_swapchain.Reset();
+        m_factory.Reset();
+        m_dev.Reset();
     }
 }

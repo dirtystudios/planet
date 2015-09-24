@@ -268,6 +268,7 @@ namespace graphics {
         void                    DestroyTexture(TextureHandle handle);
 
         void                    SwapBuffers() {};
+        void                    ResizeWindow(uint32_t width, uint32_t height) {};
         void                    PrintDisplayAdapterInfo();
 
         // "Commands"
