@@ -10,10 +10,13 @@
 
 #include "RenderDevice.h"
 #include <ft2build.h>
-#include <glm/detail/type_vec.hpp>
-#include <glm/detail/type_vec2.hpp>
+#include "glm/detail/type_vec.hpp"
+#include "glm/detail/type_vec2.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 #include FT_FREETYPE_H
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
+#include "Config.h"
+#include "File.h"
 #include <map>
 
 #include "Log.h"

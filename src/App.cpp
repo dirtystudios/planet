@@ -5,7 +5,7 @@
 #include "noise/noise.h"
 #include "Frustum.h"
 #include "Log.h"
-#include "ChunkedLODTerrainRenderer.h"
+#include "ChunkedLoDTerrainRenderer.h"
 #include "TextRenderer.h"
 #include "SkyboxRenderer.h"
 

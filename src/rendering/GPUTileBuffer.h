@@ -3,6 +3,7 @@
 
 #include "RenderDevice.h"
 #include <list>
+#include "Log.h"
 
 struct GPUTile {
     GPUTile() {};
