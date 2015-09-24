@@ -25,10 +25,7 @@ ChunkedLoDTerrainRenderer* terrain_renderer;
 ui::UIManager* uiManager;
 ui::ConsoleUI* consoleUI;
 TextRenderer* text_renderer;
-float mouse_speed = 1.f;
-float walk_speed = 300.f;
-bool z_toggle = false;
-bool z_pressed = false;
+uint32_t windowWidth = 0, windowHeight = 0;
 
 void SetupInput(uint32_t width, uint32_t height) {
     inputManager = new input::InputManager();
@@ -71,14 +68,18 @@ void SetupInput(uint32_t width, uint32_t height) {
     playerController = new controllers::PlayerController(&cam, inputContext);
 }
 
-void SetupUI(graphics::RenderDevice* renderDevice, float width, float height) {
+void SetupUI(graphics::RenderDevice* renderDevice, uint32_t width, uint32_t height) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
-    uiManager = new ui::UIManager(uiContext, renderDevice, (uint32_t)width, (uint32_t)height);
+    uiManager = new ui::UIManager(uiContext, renderDevice, width, height);
     // Hard code consoleFrame for now, meh...stuff like this could be lua/xml, eventually
     consoleUI = new ui::ConsoleUI(uiManager, uiContext);
 }
 
-void App::OnStart(uint32_t windowWidth, uint32_t windowHeight) {
+void App::OnStart() {
+    sys::SysWindowSize windowSize = sys::GetWindowSize();
+    windowWidth = windowSize.width;
+    windowHeight = windowSize.height;
+
     SetupInput(windowWidth, windowHeight);
     SetupUI(renderDevice, windowWidth, windowHeight);
 
