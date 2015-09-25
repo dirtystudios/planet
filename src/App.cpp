@@ -15,6 +15,7 @@
 #include "UIManager.h"
 #include "PlayerController.h"
 #include "ConsoleUI.h"
+#include "KeyboardManager.h"
 
 uint32_t frame_count = 0;
 double accumulate = 0;
@@ -31,8 +32,6 @@ uint32_t windowWidth = 0, windowHeight = 0;
 
 void SetupInput(uint32_t width, uint32_t height) {
     inputManager = new input::InputManager();
-    // Need generic fallback keys for textbox's and UI elements, theres probly a better place to put this
-    inputManager->PopulateDefaultKeyboardBindings();
 
     // Console Trigger
     inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_TILDE, input::InputManager::ActionConfig(true));
@@ -72,7 +71,7 @@ void SetupInput(uint32_t width, uint32_t height) {
 
 void SetupUI(graphics::RenderDevice* renderDevice, uint32_t width, uint32_t height) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
-    uiManager = new ui::UIManager(uiContext, renderDevice, width, height);
+    uiManager = new ui::UIManager(inputManager->GetKeyboardManager(), renderDevice, width, height);
     // Hard code consoleFrame for now, meh...stuff like this could be lua/xml, eventually
     consoleUI = new ui::ConsoleUI(uiManager, uiContext);
 }
@@ -89,7 +88,8 @@ void App::OnStart() {
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
     text_renderer = new TextRenderer(renderDevice);
-    skybox_renderer = new SkyboxRenderer(renderDevice);
+    uiManager->SetTextRenderer(text_renderer);
+    //skybox_renderer = new SkyboxRenderer(renderDevice);
 
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);

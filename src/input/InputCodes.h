@@ -43,6 +43,7 @@ namespace input {
         INPUT_KEY_TILDE,
         INPUT_KEY_CAPSLOCK,
         INPUT_KEY_BACKSPACE,
+        INPUT_KEY_ESCAPE,
 
         // Mouse Codes
         INPUT_MOUSE_KEY1,

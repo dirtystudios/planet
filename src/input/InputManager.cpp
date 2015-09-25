@@ -1,9 +1,9 @@
 #include "InputManager.h"
+#include "Log.h"
 
 namespace input {
 
     InputManager::InputManager() {
-        mappedKeyboard = false;
         for (int x = 0; x < (uint32_t)InputCode::COUNT; ++x) {
             actionCache.emplace_back(0);
         }
@@ -29,8 +29,26 @@ namespace input {
         return inputContext;
     }
 
+    KeyboardManager* InputManager::GetKeyboardManager() {
+        return &m_keyboardManager;
+    }
+
     void InputManager::ProcessInputs(const std::vector<float>& inputValues, float dt) {
         std::vector<uint32_t> inputHandled;
+        // Call Keyboard handler first,
+        for (int x = 0; x < inputValues.size(); ++x) {
+            float prevValue = actionCache[x];
+            float newValue = inputValues[x];
+            bool handled = m_keyboardManager.HandlingKey((input::InputCode)x);
+            if (handled) {
+                inputHandled.emplace_back((uint32_t)x);
+            }
+            if (newValue != prevValue && handled) {
+                m_keyboardManager.HandleKeyPress((input::InputCode)x, (int)newValue);
+                actionCache[x] = newValue;
+            }
+        }
+
         // k, this is a lot of loops, ughhh
         for (int x = 0; x < (uint32_t)ContextPriority::COUNT; ++x) {
             auto its = contextMappings.equal_range(x);
@@ -76,54 +94,5 @@ namespace input {
                 }
             }
         }
-    }
-
-    void InputManager::PopulateDefaultKeyboardBindings() {
-        if (mappedKeyboard)
-            return;
-        mappedKeyboard = true;
-#define MapKeyboardKey(x) AddActionMapping("##x", InputCode::INPUT_##x, ActionConfig(false));
-        MapKeyboardKey(KEY_A);
-        MapKeyboardKey(KEY_B);
-        MapKeyboardKey(KEY_C);
-        MapKeyboardKey(KEY_D);
-        MapKeyboardKey(KEY_E);
-        MapKeyboardKey(KEY_F);
-        MapKeyboardKey(KEY_G);
-        MapKeyboardKey(KEY_H);
-        MapKeyboardKey(KEY_I);
-        MapKeyboardKey(KEY_J);
-        MapKeyboardKey(KEY_K);
-        MapKeyboardKey(KEY_L);
-        MapKeyboardKey(KEY_M);
-        MapKeyboardKey(KEY_N);
-        MapKeyboardKey(KEY_O);
-        MapKeyboardKey(KEY_P);
-        MapKeyboardKey(KEY_Q);
-        MapKeyboardKey(KEY_R);
-        MapKeyboardKey(KEY_S);
-        MapKeyboardKey(KEY_T);
-        MapKeyboardKey(KEY_U);
-        MapKeyboardKey(KEY_V);
-        MapKeyboardKey(KEY_W);
-        MapKeyboardKey(KEY_X);
-        MapKeyboardKey(KEY_Y);
-        MapKeyboardKey(KEY_Z);
-        MapKeyboardKey(KEY_0);
-        MapKeyboardKey(KEY_1);
-        MapKeyboardKey(KEY_2);
-        MapKeyboardKey(KEY_3);
-        MapKeyboardKey(KEY_4);
-        MapKeyboardKey(KEY_5);
-        MapKeyboardKey(KEY_6);
-        MapKeyboardKey(KEY_7);
-        MapKeyboardKey(KEY_8);
-        MapKeyboardKey(KEY_9);
-        MapKeyboardKey(KEY_LEFT_SHIFT);
-        MapKeyboardKey(KEY_RIGHT_SHIFT);
-        MapKeyboardKey(KEY_TILDE);
-        MapKeyboardKey(KEY_CAPSLOCK);
-        MapKeyboardKey(KEY_BACKSPACE);
-#undef MapKeyboardKey
     }
 }

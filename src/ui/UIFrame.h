@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <cstring>
+#include <string>
 
 namespace ui {
 
@@ -12,7 +13,10 @@ namespace ui {
 
     class UIFrame {
     public:
-        struct UIFrameDesc {
+        struct UIFrameDesc  {
+            UIFrameDesc()
+                : name(""), x(0), y(0), width(0), height(0), parent(0) {}
+
             std::string name;
             float x;
             float y;
@@ -20,7 +24,7 @@ namespace ui {
             uint32_t height;
             UIFrame *parent;
         };
-    private:
+    protected:
         UIFrameDesc m_frameDesc;
         FrameType m_frameType;
         bool m_acceptsInput, m_isShown;
@@ -35,5 +39,7 @@ namespace ui {
         void Show() { m_isShown = true; };
         void Hide() { m_isShown = false; };
         bool IsShown() { return m_isShown; };
+        UIFrame* GetParent() { return m_frameDesc.parent; };
+        virtual void DoUpdate(float dt) {};
     };
 }

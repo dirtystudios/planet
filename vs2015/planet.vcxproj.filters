@@ -42,6 +42,12 @@
       <Filter>rendering</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Image_stb.cpp" />
+    <ClCompile Include="..\src\rendering\ChunkedLoDTerrainRenderer.cpp">
+      <Filter>rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\input\KeyboardManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -153,6 +159,9 @@
     <ClInclude Include="..\src\Image.h" />
     <ClInclude Include="..\src\rendering\backend\DX11\DX11Utils.h">
       <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\KeyboardManager.h">
+      <Filter>input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

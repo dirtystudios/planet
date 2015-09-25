@@ -1,11 +1,10 @@
 #pragma once
-
 #include <unordered_map>
 #include "InputContext.h"
 #include "InputCodes.h"
+#include "KeyboardManager.h"
 
 namespace input {
-
     class InputManager {
     public:
         struct AxisConfig {
@@ -37,9 +36,8 @@ namespace input {
         std::unordered_multimap<std::string, MappingConfig> axisMappings;
         std::unordered_multimap<std::string, MappingConfig> actionMappings;
         std::unordered_multimap<uint32_t, InputContext*> contextMappings;
-        std::vector<int> actionCache;
-
-        bool mappedKeyboard;
+        std::vector<float> actionCache;
+        KeyboardManager m_keyboardManager;
 
     public:
         InputManager();
@@ -47,7 +45,8 @@ namespace input {
         void AddAxisMapping(std::string axisName, const InputCode& inputCode, const AxisConfig& axisConfig);
 
         InputContext* CreateNewContext(ContextPriority priority);
-        void PopulateDefaultKeyboardBindings();
+
+        KeyboardManager* GetKeyboardManager();
 
         void ProcessInputs(const std::vector<float>& inputValues, float dt);
     };

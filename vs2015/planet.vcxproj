@@ -17,12 +17,14 @@
     <ClCompile Include="..\src\Frustum.cpp" />
     <ClCompile Include="..\src\Image_stb.cpp" />
     <ClCompile Include="..\src\input\InputManager.cpp" />
+    <ClCompile Include="..\src\input\KeyboardManager.cpp" />
     <ClCompile Include="..\src\input\PlayerController.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />
     <ClCompile Include="..\src\rendering\backend\GL\GLRenderDevice.cpp" />
+    <ClCompile Include="..\src\rendering\ChunkedLoDTerrainRenderer.cpp" />
     <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp" />
     <ClCompile Include="..\src\ui\EditBox.cpp" />
     <ClCompile Include="..\src\ui\UIManager.cpp" />
@@ -45,6 +47,7 @@
     <ClInclude Include="..\src\input\InputCodes.h" />
     <ClInclude Include="..\src\input\InputContext.h" />
     <ClInclude Include="..\src\input\InputManager.h" />
+    <ClInclude Include="..\src\input\KeyboardManager.h" />
     <ClInclude Include="..\src\input\PlayerController.h" />
     <ClInclude Include="..\src\Log.h" />
     <ClInclude Include="..\src\platform\Platform.h" />

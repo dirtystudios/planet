@@ -1,6 +1,7 @@
 #pragma once
 #include "UIFrame.h"
 #include "UIManager.h"
+#include "EditBox.h"
 
 // In a perfect world something like this would be described in lua/xml
 
@@ -8,6 +9,7 @@ namespace ui {
     class ConsoleUI {
     private:
         UIFrame *consoleFrame;
+        EditBox *editBox;
     public:
         ConsoleUI(UIManager* uiManager, input::InputContext* inputContext) {
             inputContext->BindContext<input::ContextBindingType::Action>("ToggleConsole", BIND_MEM_CB(&ConsoleUI::HandleConsoleKey, this));
@@ -21,13 +23,28 @@ namespace ui {
             consoleFrame = new UIFrame(consoleFrameDesc, true);
             consoleFrame->Hide();
             uiManager->AddFrame(consoleFrame);
+
+            EditBox::EditBoxDesc editBoxDesc;
+            editBoxDesc.name = "ConsoleEditBox";
+            editBoxDesc.parent = consoleFrame;
+            editBoxDesc.height = 40;
+            editBoxDesc.width = 780;
+            editBoxDesc.x = 10.f;
+            editBoxDesc.y = 410;
+            editBoxDesc.textSize = 12.f;
+            editBox = new EditBox(editBoxDesc, true);
+            uiManager->AddFrame(editBox);
         }
 
         bool HandleConsoleKey(float value) {
-            if (consoleFrame->IsShown())
+            if (consoleFrame->IsShown()) {
                 consoleFrame->Hide();
-            else 
+                editBox->ClearFocus();
+            }
+            else {
                 consoleFrame->Show();
+                editBox->SetFocus();
+            }
             return true;
         }
     };

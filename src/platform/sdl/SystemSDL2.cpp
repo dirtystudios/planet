@@ -60,6 +60,7 @@ int filterSDLEvents(void* userdata, SDL_Event* event){
         case SDLK_2:
         case SDLK_3:
         case SDLK_ESCAPE:
+        case SDLK_BACKSPACE:
         case SDLK_BACKQUOTE:
             return 1;
             break;
@@ -85,6 +86,7 @@ void PopulateKeyMapping() {
     MAP_KEY_SDL(RSHIFT, RIGHT_SHIFT);
     MAP_KEY_SDL(BACKQUOTE, TILDE);
     MAP_KEY_SDL(BACKSPACE, BACKSPACE);
+    MAP_KEY_SDL(ESCAPE, ESCAPE);
 }
 
 input::InputCode GetKeyCodeFromSDLKey(int glfw_key) {
