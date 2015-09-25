@@ -33,6 +33,7 @@ namespace graphics {
     static D3D11_PRIMITIVE_TOPOLOGY PrimitiveTypeDX11[(uint32_t)PrimitiveType::COUNT] = {
         D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,               // triangles!
         D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST,  // patches_4?
+        D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,                  // LineStrip
     };
 
     static D3D11_BLEND_OP BlendModeDX11[(uint32_t)BlendMode::COUNT] = {

@@ -33,6 +33,7 @@ namespace graphics {
     enum class PrimitiveType : uint32_t {
         TRIANGLES = 0,
         PATCHES_4,
+        LINESTRIP,
         COUNT
     };
 
