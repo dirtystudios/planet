@@ -89,7 +89,7 @@ void App::OnStart() {
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
     text_renderer = new TextRenderer(renderDevice);
     uiManager->SetTextRenderer(text_renderer);
-    //skybox_renderer = new SkyboxRenderer(renderDevice);
+    skybox_renderer = new SkyboxRenderer(renderDevice);
 
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
@@ -110,8 +110,8 @@ void App::OnStart() {
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
-    inputManager->ProcessInputs(inputValues, 1.f / 60.f);
-    playerController->DoUpdate(1.f / 60.f);
+    inputManager->ProcessInputs(inputValues, dt * 1000 );
+    playerController->DoUpdate(dt);
 
     glm::mat4 proj = cam.BuildProjection();
     glm::mat4 view = cam.BuildView();
@@ -119,12 +119,13 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     Frustum frustum(proj, view);
 
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
-//    skybox_renderer->OnSubmit(&cam);
+    skybox_renderer->OnSubmit(&cam);
     terrain_renderer->Render(cam, frustum);
 
 // TODO:: On Opengl ui frames flicker -- fix state management
-    uiManager->DoUpdate(1.f / 60.f);
+    uiManager->DoUpdate(dt * 1000);
     text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
+    text_renderer->RenderCursor("asdfasdfasdsaasdf", 4, 0, 0, 1.f, glm::vec3(1, 1, 1));
     
   
     accumulate += dt;

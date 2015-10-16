@@ -11,7 +11,9 @@ namespace ui {
         m_uiRenderer->RenderFrame(frameDesc->x, frameDesc->y,
             frameDesc->width, frameDesc->height);
         if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
-            m_textRenderer->RenderText(((EditBox*)uiFrame)->GetText(), frameDesc->x, frameDesc->y, 1.0, glm::vec3(0.9, 0.9, 0.9));
+            float *tempColor = ((EditBox*)uiFrame)->GetColor();
+            glm::vec3 color = { tempColor[0], tempColor[1], tempColor[2] };
+            m_textRenderer->RenderText(((EditBox*)uiFrame)->GetText(), frameDesc->x, frameDesc->y, 1.0, color);
         }
     }
 
@@ -44,7 +46,8 @@ namespace ui {
                     wantsFocus = true;
                     m_focusedEditBox = (EditBox*)it->second;
                     m_drawCaret = true;
-                    m_keyboardManager->RestartCapture(m_focusedEditBox->GetText());
+                    // todo: where should cursor start? should save state?
+                    m_keyboardManager->RestartCapture(m_focusedEditBox->GetText(), 0);
                     m_cursorBlink = m_focusedEditBox->GetBlinkRate();
                 }
             }
@@ -69,12 +72,21 @@ namespace ui {
         }
     }
 
-    void UIManager::DoUpdate(float dt) {
-        ProcessFrames();
-        for (UIFrame* frame : m_uiFrames) {
-            frame->DoUpdate(dt);
+    void UIManager::PreProcess() {
+        // Before actual render, lets set text for edit box
+        if (m_focusedEditBox) {
+            // when text changes, reset cursor blink
+            // idk, every other program does, so why not us?
+            if (m_keyboardManager->TextHasChanged()) {
+                std::string text = m_keyboardManager->GetText();
+                m_focusedEditBox->SetText(text);
+                m_cursorBlink = m_focusedEditBox->GetBlinkRate();
+                m_drawCaret = true;
+            }
         }
+    }
 
+    void UIManager::PostProcess(float ms) {
         // Double check focusbox
         if (m_focusedEditBox && !m_focusedEditBox->HasFocus()) {
             m_focusedEditBox = 0;
@@ -84,17 +96,34 @@ namespace ui {
         }
 
         if (m_cursorBlink > 0)
-            m_cursorBlink -= dt;
+            m_cursorBlink -= ms;
 
-        // Draw Caret
+        // Draw Caret if necessary
         if (m_focusedEditBox) {
-            if (m_cursorBlink <= 0) m_drawCaret = !m_drawCaret;
-            m_cursorBlink = m_focusedEditBox->GetBlinkRate();
-            std::string text = m_keyboardManager->GetText();
-            m_focusedEditBox->SetText(text);
+            if (m_cursorBlink <= 0) {
+                m_drawCaret = !m_drawCaret;
+                m_cursorBlink = m_focusedEditBox->GetBlinkRate();
+            }
             if (m_drawCaret) {
-                //m_textRenderer->DrawCaret(0.0, 0.0, 1.f);
+                UIFrame::UIFrameDesc *temp = m_focusedEditBox->GetFrameDesc();
+                std::string text = m_keyboardManager->GetText();
+                // TODO: use scale and color?
+                m_textRenderer->RenderCursor(text,
+                    m_keyboardManager->GetCursorPosition(),
+                    temp->x, temp->y, 1.f, glm::vec3(1.f, 1.f, 1.f));
             }
         }
+    }
+
+    void UIManager::DoUpdate(float ms) {
+        PreProcess();
+
+        // Process hide/show/focus and render
+        ProcessFrames();
+        for (UIFrame* frame : m_uiFrames) {
+            frame->DoUpdate(ms);
+        }
+
+        PostProcess(ms);
     }
 }

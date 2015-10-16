@@ -33,18 +33,18 @@ namespace input {
         return &m_keyboardManager;
     }
 
-    void InputManager::ProcessInputs(const std::vector<float>& inputValues, float dt) {
+    void InputManager::ProcessInputs(const std::vector<float>& inputValues, float ms) {
         std::vector<uint32_t> inputHandled;
         // Call Keyboard handler first,
-        for (int x = 0; x < inputValues.size(); ++x) {
+        for (uint32_t x = 0; x < inputValues.size(); ++x) {
             float prevValue = actionCache[x];
             float newValue = inputValues[x];
             bool handled = m_keyboardManager.HandlingKey((input::InputCode)x);
             if (handled) {
                 inputHandled.emplace_back((uint32_t)x);
+                m_keyboardManager.HandleKeyPress((input::InputCode)x, (int)newValue, ms);
             }
             if (newValue != prevValue && handled) {
-                m_keyboardManager.HandleKeyPress((input::InputCode)x, (int)newValue);
                 actionCache[x] = newValue;
             }
         }

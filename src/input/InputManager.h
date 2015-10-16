@@ -48,6 +48,6 @@ namespace input {
 
         KeyboardManager* GetKeyboardManager();
 
-        void ProcessInputs(const std::vector<float>& inputValues, float dt);
+        void ProcessInputs(const std::vector<float>& inputValues, float ms);
     };
 }

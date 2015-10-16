@@ -8,7 +8,8 @@ namespace ui {
     public:
         struct EditBoxDesc : UIFrameDesc {
             float textSize; // ignored
-            float blinkSpeed;
+            float blinkSpeed; // in ms
+            float* color=0; // rgb, null = default
             //bool multiLine;
         };
         struct HighLightState {
@@ -27,12 +28,16 @@ namespace ui {
         TextBoxState m_textBoxState;
         HighLightState m_highlightState;
         EditBoxDesc m_editBoxDesc;
+        float m_color[3];
     public:
         EditBox(EditBoxDesc editBoxDesc, bool enableInput);
         void SetFocus();
         void ClearFocus();
         bool HasFocus();
         float GetBlinkRate();
+
+        void SetColor(float *color);
+        float* GetColor();
 
         std::string GetText();
         void SetText(std::string text);
@@ -45,7 +50,7 @@ namespace ui {
         uint32_t GetCursor();
 
         // Called by UIManager
-        void DoUpdate(float dt);
+        void DoUpdate(float ms);
         bool WantsFocus();
 
     };

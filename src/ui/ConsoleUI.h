@@ -32,6 +32,7 @@ namespace ui {
             editBoxDesc.x = 10.f;
             editBoxDesc.y = 410;
             editBoxDesc.textSize = 12.f;
+            editBoxDesc.blinkSpeed = 0.f;
             editBox = new EditBox(editBoxDesc, true);
             uiManager->AddFrame(editBox);
         }

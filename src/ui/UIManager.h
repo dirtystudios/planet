@@ -36,14 +36,16 @@ namespace ui {
         }
 
         void AddFrame(UIFrame* uiFrame);
-        void DoUpdate(float dt);
+        void DoUpdate(float ms);
         // hackish for now
         void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
 
     private:
         void RenderFrame(UIFrame* uiFrame);
-        void ProcessFrames();
 
+        void PreProcess();
+        void PostProcess(float ms);
+        void ProcessFrames();
         //void HandleKeyBoardPress(
         
         template <typename T, typename T2>

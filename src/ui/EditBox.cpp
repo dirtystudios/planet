@@ -8,6 +8,12 @@ namespace ui {
           m_cursorPos(0),
           m_editBoxDesc(editBoxDesc) {
         m_frameType = FrameType::EDITBOX;
+        if (editBoxDesc.blinkSpeed <= 0.0f) {
+            m_editBoxDesc.blinkSpeed = 530;
+        }
+        if (!editBoxDesc.color) {
+            m_color[0] = m_color[1] = m_color[2] = 1.f;
+        }
     }
 
     void EditBox::SetFocus() {
@@ -42,6 +48,16 @@ namespace ui {
         m_contents = text;
     }
 
+    void EditBox::SetColor(float *color) {
+        m_color[0] = color[0];
+        m_color[1] = color[1];
+        m_color[2] = color[2];
+    }
+
+    float* EditBox::GetColor() {
+        return m_color;
+    }
+
     void EditBox::AppendText(std::string text) {
         m_contents += text;
     }
@@ -74,7 +90,7 @@ namespace ui {
     }
 
     // Called by UIManager
-    void EditBox::DoUpdate(float dt) {
+    void EditBox::DoUpdate(float ms) {
         if (!m_isShown) 
             m_textBoxState = TextBoxState::UNFOCUSED;
 
