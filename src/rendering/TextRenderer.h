@@ -33,7 +33,9 @@ private:
     std::map<char, Character> characters;
 
     graphics::ShaderHandle _shaders[2];
-    graphics::VertexBufferHandle _vertex_buffer;
+    graphics::ShaderHandle _cursorShaders[2];
+    graphics::VertexBufferHandle _vertex_buffer, _cursor_vbuffer;
+    FT_Pos maxHeight = 0;
 public:
     TextRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
         std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
@@ -52,6 +54,20 @@ public:
         _shaders[1] = _render_device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
 
         assert(_shaders[0] && _shaders[1]);
+
+
+        // cursor shaders -- move me
+        vs_contents = ReadFileContents(shaderDirPath + "/" + render_device->DeviceConfig.DeviceAbbreviation + "/cursor_vs" + render_device->DeviceConfig.ShaderExtension);
+        vs_src = vs_contents.c_str();
+
+        fs_contents = ReadFileContents(shaderDirPath + "/" + render_device->DeviceConfig.DeviceAbbreviation + "/cursor_ps" + render_device->DeviceConfig.ShaderExtension);
+        fs_src = fs_contents.c_str();
+
+        // Note(eugene): cleanup shaders
+        _cursorShaders[0] = _render_device->CreateShader(graphics::ShaderType::VERTEX_SHADER, &vs_src);
+        _cursorShaders[1] = _render_device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
+
+        assert(_cursorShaders[0] && _cursorShaders[1]);
 
         FT_Library ft;
         int ftStatus = FT_Init_FreeType(&ft);
@@ -84,6 +100,8 @@ public:
 
             if (face->glyph->bitmap.width != 0 && face->glyph->bitmap.rows != 0) {
                 // Generate texture
+                if (face->glyph->bitmap.rows > maxHeight) maxHeight = face->glyph->bitmap.rows;
+
                 texHandle = _render_device->CreateTexture2D(graphics::TextureFormat::R_UBYTE,
                                                             face->glyph->bitmap.width,
                                                             face->glyph->bitmap.rows,
@@ -106,6 +124,7 @@ public:
         graphics::VertLayout layout;
         layout.Add(graphics::ParamType::Float4);
         _vertex_buffer = _render_device->CreateVertexBuffer(layout, 0, graphics::SizeofParam(graphics::ParamType::Float4) * 6, graphics::BufferUsage::DYNAMIC);
+        _cursor_vbuffer = _render_device->CreateVertexBuffer(layout, 0, graphics::SizeofParam(graphics::ParamType::Float4) * 2, graphics::BufferUsage::DYNAMIC);
     }
 
     void RenderText(std::string text, float x, float y, float scale, glm::vec3 color) {
@@ -134,8 +153,16 @@ public:
             float xpos = x + ch.bearing.x * scale;
             float ypos = y - (ch.size.y - ch.bearing.y) * scale;
 
+            // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+            x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+
+            // handle 'space'
+            if (*c == ' ')
+                continue;
+
             float w = ch.size.x * scale;
             float h = ch.size.y * scale;
+            
             // Update VBO for each character
             float vertices[6][4] = {
                 { xpos,     ypos + h,   0.0, 0.0 },            
@@ -155,13 +182,47 @@ public:
 
             // Render quad
             _render_device->DrawPrimitive(graphics::PrimitiveType::TRIANGLES, 0, 6);
-
-            // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-            x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
         }
     }
 
+    void RenderCursor(std::string text, uint32_t cursorPosition, float x, float y, float scale, glm::vec3 color) {
+        if (cursorPosition > text.length()) {
+            LOG_D("%s", "CursorRender: CursorPos larger than string, assuming end of text.");
+            cursorPosition = text.length();
+        }
 
+        graphics::BlendState blend_state;
+        blend_state.enable = true;
+        blend_state.src_rgb_func = graphics::BlendFunc::SRC_ALPHA;
+        blend_state.src_alpha_func = blend_state.src_rgb_func;
+        blend_state.dst_rgb_func = graphics::BlendFunc::ONE_MINUS_SRC_ALPHA;
+        blend_state.dst_alpha_func = blend_state.dst_rgb_func;
+        _render_device->SetBlendState(blend_state);
+
+        glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+
+        _render_device->SetVertexShader(_cursorShaders[0]);
+        _render_device->SetPixelShader(_cursorShaders[1]);
+
+        _render_device->SetShaderParameter(_cursorShaders[1], graphics::ParamType::Float3, "textColor", &color);
+        _render_device->SetShaderParameter(_cursorShaders[0], graphics::ParamType::Float4x4, "projection", &projection);
+
+        float cursorX = x;
+        for (int j = 0; j < cursorPosition; ++j) {
+            Character ch = characters[text[j]];
+            // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+            cursorX += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+        }
+
+        float vertices[2][4] = {
+            { cursorX, y,             0.f, 0.f},
+            { cursorX, y + maxHeight, 0.f, 0.f}
+        };
+
+        _render_device->SetVertexBuffer(_cursor_vbuffer);
+        _render_device->UpdateVertexBuffer(_cursor_vbuffer, vertices, sizeof(vertices));
+        _render_device->DrawPrimitive(graphics::PrimitiveType::LINESTRIP, 0, 2);
+    }
 };
 
 
