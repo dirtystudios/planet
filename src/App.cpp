@@ -34,7 +34,7 @@ void SetupInput(uint32_t width, uint32_t height) {
     inputManager = new input::InputManager();
 
     // Console Trigger
-    inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_TILDE, input::InputManager::ActionConfig(true));
+    inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK, input::InputManager::ActionConfig(true));
 
     // Handle Key Mappings
     // Keyboard n mouse for player

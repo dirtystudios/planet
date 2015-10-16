@@ -20,6 +20,9 @@
     <ClCompile Include="..\src\input\KeyboardManager.cpp" />
     <ClCompile Include="..\src\input\PlayerController.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\platform\glfw\SystemGLFW3.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />

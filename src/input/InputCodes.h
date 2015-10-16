@@ -2,6 +2,8 @@
 namespace input {
     enum class InputCode {
         // Keyboard
+
+        // Letters
         INPUT_KEY_A = 0,
         INPUT_KEY_B,
         INPUT_KEY_C,
@@ -28,6 +30,8 @@ namespace input {
         INPUT_KEY_X,
         INPUT_KEY_Y,
         INPUT_KEY_Z,
+
+        // Numbers
         INPUT_KEY_0,
         INPUT_KEY_1,
         INPUT_KEY_2,
@@ -38,12 +42,49 @@ namespace input {
         INPUT_KEY_7,
         INPUT_KEY_8,
         INPUT_KEY_9,
+
+        // Modifiers
         INPUT_KEY_LEFT_SHIFT,
         INPUT_KEY_RIGHT_SHIFT,
-        INPUT_KEY_TILDE,
+        INPUT_KEY_LEFT_CTRL,
+        INPUT_KEY_RIGHT_CTRL,
+        INPUT_KEY_LEFT_ALT,
+        INPUT_KEY_RIGHT_ALT,
+        INPUT_KEY_WINDOWS,
+
+        // Utility
         INPUT_KEY_CAPSLOCK,
         INPUT_KEY_BACKSPACE,
+        INPUT_KEY_INSERT,
+        INPUT_KEY_HOME,
+        INPUT_KEY_PAGEUP,
+        INPUT_KEY_DELETE,
+        INPUT_KEY_END,
+        INPUT_KEY_PAGEDOWN,
+        INPUT_KEY_TAB,
         INPUT_KEY_ESCAPE,
+        INPUT_KEY_ENTER,
+
+        // Symbols
+        INPUT_KEY_BACKTICK,
+        INPUT_KEY_HYPEN,
+        INPUT_KEY_EQUALS,
+        INPUT_KEY_LEFTSQUARE,
+        INPUT_KEY_RIGHTSQUARE,
+        INPUT_KEY_BACKSLASH,
+        INPUT_KEY_SEMICOLON,
+        INPUT_KEY_SINGLEQUOTE,
+        INPUT_KEY_COMMA,
+        INPUT_KEY_DOT,
+        INPUT_KEY_FORWARDSLASH,
+
+        INPUT_KEY_SPACE,
+
+        // Direction
+        INPUT_KEY_LEFT,
+        INPUT_KEY_RIGHT,
+        INPUT_KEY_UP,
+        INPUT_KEY_DOWN,
 
         // Mouse Codes
         INPUT_MOUSE_KEY1,

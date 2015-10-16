@@ -26,67 +26,55 @@ bool shouldQuit = false;
 std::vector<float> inputValues((int)input::InputCode::COUNT);
 std::map<int, input::InputCode> sdlkMapping;
 
-int filterSDLEvents(void* userdata, SDL_Event* event){
-    //what im going to do here is just weed out any key's we dont want
-    if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
-        switch (event->key.keysym.sym){
-        case SDLK_a:
-        case SDLK_b:
-        case SDLK_c:
-        case SDLK_d:
-        case SDLK_e:
-        case SDLK_f:
-        case SDLK_g:
-        case SDLK_h:
-        case SDLK_i:
-        case SDLK_j:
-        case SDLK_k:
-        case SDLK_l:
-        case SDLK_m:
-        case SDLK_n:
-        case SDLK_o:
-        case SDLK_p:
-        case SDLK_q:
-        case SDLK_r:
-        case SDLK_s:
-        case SDLK_t:
-        case SDLK_u:
-        case SDLK_v:
-        case SDLK_w:
-        case SDLK_x:
-        case SDLK_y:
-        case SDLK_z:
-        case SDLK_1:
-        case SDLK_2:
-        case SDLK_3:
-        case SDLK_ESCAPE:
-        case SDLK_BACKSPACE:
-        case SDLK_BACKQUOTE:
-            return 1;
-            break;
-        default:
-            return 0;
-        }
-    }
-    //keep any other events...for now
-    return 1;
-}
-
 #define MAP_KEY_SDL(x, y) sdlkMapping.insert(std::make_pair(SDLK_##x, input::InputCode::INPUT_KEY_##y));
 void PopulateKeyMapping() {
     for (int x = 0; x < (int)input::InputCode::INPUT_KEY_Z; ++x) {
         sdlkMapping.insert(std::make_pair(SDLK_a + x, (input::InputCode)x));
     }
 
-    for (int x = (int)input::InputCode::INPUT_KEY_0; x < (int)input::InputCode::INPUT_KEY_9; ++x) {
-        sdlkMapping.insert(std::make_pair(SDLK_0 + x, (input::InputCode)x));
+    int range = (int)input::InputCode::INPUT_KEY_9 - (int)input::InputCode::INPUT_KEY_0;
+    for (int x = 0; x <= range; ++x) {
+        sdlkMapping.insert(std::make_pair(SDLK_0 + x, (input::InputCode)(x + (int)input::InputCode::INPUT_KEY_0)));
     }
 
+    MAP_KEY_SDL(BACKQUOTE, BACKTICK);
+    MAP_KEY_SDL(MINUS, HYPEN);
+    MAP_KEY_SDL(EQUALS, EQUALS);
+    MAP_KEY_SDL(LEFTBRACKET, LEFTSQUARE);
+    MAP_KEY_SDL(RIGHTBRACKET, RIGHTSQUARE);
+    MAP_KEY_SDL(BACKSLASH, BACKSLASH);
+    MAP_KEY_SDL(SEMICOLON, SEMICOLON);
+    MAP_KEY_SDL(QUOTE, SINGLEQUOTE);
+    MAP_KEY_SDL(COMMA, COMMA);
+    MAP_KEY_SDL(PERIOD, DOT);
+    MAP_KEY_SDL(SLASH, FORWARDSLASH);
+    MAP_KEY_SDL(SPACE, SPACE);
+
+    MAP_KEY_SDL(LALT, LEFT_ALT);
+    MAP_KEY_SDL(RALT, RIGHT_ALT);
+    MAP_KEY_SDL(LCTRL, LEFT_CTRL);
+    MAP_KEY_SDL(RCTRL, RIGHT_CTRL);
+    MAP_KEY_SDL(LGUI, WINDOWS);
     MAP_KEY_SDL(LSHIFT, LEFT_SHIFT);
     MAP_KEY_SDL(RSHIFT, RIGHT_SHIFT);
-    MAP_KEY_SDL(BACKQUOTE, TILDE);
+
+    MAP_KEY_SDL(CAPSLOCK, CAPSLOCK);
     MAP_KEY_SDL(BACKSPACE, BACKSPACE);
+    MAP_KEY_SDL(INSERT, INSERT);
+    MAP_KEY_SDL(HOME, HOME);
+    MAP_KEY_SDL(PAGEUP, PAGEUP);
+#undef DELETE
+    MAP_KEY_SDL(DELETE, DELETE);
+    MAP_KEY_SDL(END, END);
+    MAP_KEY_SDL(PAGEDOWN, PAGEDOWN);
+    MAP_KEY_SDL(TAB, TAB);
     MAP_KEY_SDL(ESCAPE, ESCAPE);
+    MAP_KEY_SDL(RETURN, ENTER);
+
+    MAP_KEY_SDL(LEFT, LEFT);
+    MAP_KEY_SDL(RIGHT, RIGHT);
+    MAP_KEY_SDL(UP, UP);
+    MAP_KEY_SDL(DOWN, DOWN);
 }
 
 input::InputCode GetKeyCodeFromSDLKey(int glfw_key) {
@@ -175,7 +163,6 @@ int sys::Run(app::Application* app){
         LOG_E("Couldn't get window information: %s\n", SDL_GetError());
     }
 	
-    SDL_SetEventFilter(filterSDLEvents, NULL);
     PopulateKeyMapping();
 
     LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch, subsystem);
@@ -227,11 +214,10 @@ int sys::Run(app::Application* app){
                 }
             }
             else if (_e.type == SDL_KEYDOWN || _e.type == SDL_KEYUP) {
-                // To enable more / new keys, add them to filter function and make sure map is set in GetKeyCode
                 switch (_e.key.keysym.sym) {
                 case SDLK_ESCAPE:
                     shouldQuit = true;
-                default:
+                default: 
                     inputValues[(int)GetKeyCodeFromSDLKey(_e.key.keysym.sym)] = _e.type == SDL_KEYDOWN ? true : false;
                     break;
                 }

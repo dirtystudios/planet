@@ -48,6 +48,9 @@
     <ClCompile Include="..\src\input\KeyboardManager.cpp">
       <Filter>input</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\platform\glfw\SystemGLFW3.cpp">
+      <Filter>platform\glfw</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -215,6 +218,9 @@
     </Filter>
     <Filter Include="ext">
       <UniqueIdentifier>{68a0873f-f450-419b-8945-7f38cb3126c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\glfw">
+      <UniqueIdentifier>{1473fdb8-e50e-42d1-8f42-11e83a6dc9b9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
