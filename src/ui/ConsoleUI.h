@@ -20,8 +20,8 @@ namespace ui {
             consoleFrameDesc.width = 800;
             consoleFrameDesc.x = 0.f;
             consoleFrameDesc.y = 400.f;
+            consoleFrameDesc.shown = false;
             consoleFrame = new UIFrame(consoleFrameDesc, true);
-            consoleFrame->Hide();
             uiManager->AddFrame(consoleFrame);
 
             EditBox::EditBoxDesc editBoxDesc;
@@ -33,6 +33,7 @@ namespace ui {
             editBoxDesc.y = 410;
             editBoxDesc.textSize = 12.f;
             editBoxDesc.blinkSpeed = 0.f;
+            editBoxDesc.shown = true;
             editBox = new EditBox(editBoxDesc, true);
             uiManager->AddFrame(editBox);
         }

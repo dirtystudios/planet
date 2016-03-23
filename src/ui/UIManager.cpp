@@ -19,6 +19,7 @@ namespace ui {
 
     void UIManager::ProcessFrames() {
         // todo: this probly can be optimized better eventualy
+        // yea, this whole thing should be burned in a fiery blaze
 
         // K weed out frames not set to shown and any children
         auto m_tempTree = m_frameTree;
@@ -29,6 +30,7 @@ namespace ui {
             if (it->first == 0)
                 continue;
 
+            // Handle parent and any children
             if (!it->first->IsShown()) {
                 RemoveChildren(it->first, m_tempTree);
                 m_tempTree.erase(it->first);
@@ -63,8 +65,7 @@ namespace ui {
             }
         }
 
-
-        // K so, only 'shown' frames should be left
+        // K so, only 'shown' parents should be left, renderchildren handles the leaf's
         for (auto it = m_tempTree.begin(), end = m_tempTree.end(); it != end; it = m_tempTree.upper_bound(it->first)) {
             if (it->first == 0)
                 continue;

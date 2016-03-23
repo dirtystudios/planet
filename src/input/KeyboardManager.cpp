@@ -64,6 +64,7 @@ namespace input {
         case InputCode::INPUT_KEY_TAB:
         case InputCode::INPUT_KEY_ENTER:
         case InputCode::INPUT_KEY_ESCAPE:
+        case InputCode::INPUT_KEY_BACKTICK:
             return false;
         default: return m_isCapturing;
         }

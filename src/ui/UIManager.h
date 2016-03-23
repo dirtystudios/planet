@@ -60,15 +60,14 @@ namespace ui {
                 map.erase(frame);
         }
 
-        template <typename T, typename T2>
-        void RenderChildren(T *frame, std::unordered_multimap<T2, T2> &map) {
+        void RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map) {
+            if (!frame->IsShown())
+                return;
             RenderFrame(frame);
 
             auto its = map.equal_range(frame);
-            bool lastParent = true;
             for (auto it = its.first; it != its.second; ++it) {
                 RenderChildren(it->second, map);
-                lastParent = false;
             }
         }
     };

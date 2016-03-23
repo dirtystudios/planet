@@ -17,7 +17,7 @@ namespace ui {
     }
 
     void EditBox::SetFocus() {
-        if (!m_isShown)
+        if (!m_editBoxDesc.shown)
             return;
         if (m_textBoxState != TextBoxState::FOCUSED)
             m_textBoxState = TextBoxState::WANTSFOCUS;
@@ -91,7 +91,7 @@ namespace ui {
 
     // Called by UIManager
     void EditBox::DoUpdate(float ms) {
-        if (!m_isShown) 
+        if (!m_editBoxDesc.shown)
             m_textBoxState = TextBoxState::UNFOCUSED;
 
         if (m_textBoxState == TextBoxState::WANTSFOCUS)

@@ -33,9 +33,9 @@ private:
 };
 
 template<typename R, typename A1> // Undefined on purpose
-void operator==(const Callback<R(A1)>&, const Callback<R(A1)>&);
+void operator==(const Callback<R(A1)>&, const Callback<R(A1)>&) {};
 template<typename R, typename A1>
-void operator!=(const Callback<R(A1)>&, const Callback<R(A1)>&);
+void operator!=(const Callback<R(A1)>&, const Callback<R(A1)>&) {};
 
 template<typename R, class T, typename A1>
 struct DeduceMemCallbackTag
