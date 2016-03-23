@@ -35,15 +35,19 @@
 
 # Visual Studio Stuff
 *.opensdf
+*.opendb
 *.sdf
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+*.iobj
+*.ipdb
 ipch/
 *.enc
 *.stackdump
 *.vcxprojResolveAssemblyReference.cache
+/vs2015/*/*.lib
 
 # Visual Studio Profiler Files
 *.vspx
