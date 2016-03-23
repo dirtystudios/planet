@@ -41,6 +41,7 @@ namespace ui {
         void Hide() { m_frameDesc.shown = false; };
         bool IsShown() { return m_frameDesc.shown; };
         UIFrame* GetParent() { return m_frameDesc.parent; };
+		virtual void OnClick() {};
         virtual void DoUpdate(float ms) {};
     };
 }

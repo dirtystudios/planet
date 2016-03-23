@@ -33,6 +33,11 @@ uint32_t windowWidth = 0, windowHeight = 0;
 void SetupInput(uint32_t width, uint32_t height) {
     inputManager = new input::InputManager();
 
+	// 'hardcoded' mouse x, y and click
+	inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS, input::InputManager::AxisConfig(1.0, 0));
+	inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS, input::InputManager::AxisConfig(1.0, 0));
+	inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false));
+
     // Console Trigger
     inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK, input::InputManager::ActionConfig(true));
 
@@ -59,10 +64,10 @@ void SetupInput(uint32_t width, uint32_t height) {
     inputManager->AddAxisMapping("MoveRight", input::InputCode::INPUT_GAMEPAD_RIGHT, input::InputManager::AxisConfig(1.0, 0));
     inputManager->AddAxisMapping("MoveLeft", input::InputCode::INPUT_GAMEPAD_LEFT, input::InputManager::AxisConfig(-1.0, 0));
 
-    inputManager->AddAxisMapping("LookUp", input::InputCode::INPUT_GAMEPAD_RSTICKY, input::InputManager::AxisConfig(1.0, 0.15));
-    inputManager->AddAxisMapping("LookDown", input::InputCode::INPUT_GAMEPAD_RSTICKY, input::InputManager::AxisConfig(1.0, 0.15));
-    inputManager->AddAxisMapping("LookLeft", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15));
-    inputManager->AddAxisMapping("LookRight", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15));
+    inputManager->AddAxisMapping("LookUp", input::InputCode::INPUT_GAMEPAD_RSTICKY, input::InputManager::AxisConfig(1.0, 0.15f));
+    inputManager->AddAxisMapping("LookDown", input::InputCode::INPUT_GAMEPAD_RSTICKY, input::InputManager::AxisConfig(1.0, 0.15f));
+    inputManager->AddAxisMapping("LookLeft", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15f));
+    inputManager->AddAxisMapping("LookRight", input::InputCode::INPUT_GAMEPAD_RSTICKX, input::InputManager::AxisConfig(1.0, 0.15f));
 
     // Create context and controllers
     input::InputContext* inputContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_PLAYER);
@@ -71,7 +76,7 @@ void SetupInput(uint32_t width, uint32_t height) {
 
 void SetupUI(graphics::RenderDevice* renderDevice, uint32_t width, uint32_t height) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
-    uiManager = new ui::UIManager(inputManager->GetKeyboardManager(), renderDevice, width, height);
+    uiManager = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, renderDevice, width, height);
     // Hard code consoleFrame for now, meh...stuff like this could be lua/xml, eventually
     consoleUI = new ui::ConsoleUI(uiManager, uiContext);
 }

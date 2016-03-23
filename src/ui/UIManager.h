@@ -25,10 +25,17 @@ namespace ui {
         bool m_drawCaret = false;
         EditBox* m_focusedEditBox = 0;
         input::KeyboardManager* m_keyboardManager;
+		input::InputContext* m_uiInputContext;
+		bool m_mouseDown = false;
+		float m_mouseX=0.f, m_mouseY=0.f;
     public:
-        UIManager(input::KeyboardManager* keyboardManager, graphics::RenderDevice* renderDevice, uint32_t windowWidth, uint32_t windowHeight)
-            : m_windowWidth(windowWidth), m_windowHeight(windowHeight), m_keyboardManager(keyboardManager) {
+        UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, graphics::RenderDevice* renderDevice, uint32_t windowWidth, uint32_t windowHeight)
+            : m_windowWidth(windowWidth), m_windowHeight(windowHeight), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext) {
             m_uiRenderer = new UIRenderer(renderDevice, (float)windowWidth, (float)windowHeight);
+
+			m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", BIND_MEM_CB(&UIManager::HandleMouseX, this));
+			m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", BIND_MEM_CB(&UIManager::HandleMouseY, this));
+			m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1", BIND_MEM_CB(&UIManager::HandleMouse1, this));
             
         };
         ~UIManager() {
@@ -39,6 +46,10 @@ namespace ui {
         void DoUpdate(float ms);
         // hackish for now
         void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
+		
+		bool HandleMouseX(float xPos);
+		bool HandleMouseY(float yPos);
+		bool HandleMouse1(float value);
 
     private:
         void RenderFrame(UIFrame* uiFrame);

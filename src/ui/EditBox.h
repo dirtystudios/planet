@@ -49,6 +49,7 @@ namespace ui {
         void SetCursor(uint32_t pos);
         uint32_t GetCursor();
 
+		void OnClick();
         // Called by UIManager
         void DoUpdate(float ms);
         bool WantsFocus();

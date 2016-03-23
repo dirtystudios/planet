@@ -208,7 +208,7 @@ public:
         _render_device->SetShaderParameter(_cursorShaders[0], graphics::ParamType::Float4x4, "projection", &projection);
 
         float cursorX = x;
-        for (int j = 0; j < cursorPosition; ++j) {
+        for (uint32_t j = 0; j < cursorPosition; ++j) {
             Character ch = characters[text[j]];
             // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
             cursorX += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)

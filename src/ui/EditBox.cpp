@@ -89,6 +89,10 @@ namespace ui {
         return (m_textBoxState == TextBoxState::FOCUSED);
     }
 
+	void EditBox::OnClick() {
+		SetFocus();
+	}
+
     // Called by UIManager
     void EditBox::DoUpdate(float ms) {
         if (!m_editBoxDesc.shown)

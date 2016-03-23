@@ -59,28 +59,28 @@ namespace controllers {
         if (value > 0) {
             lookInput.y += value * lookSpeed;
         }
-        return true;
+        return lookMode;
     }
 
     bool PlayerController::LookDown(float value) {
         if (value < 0) {
             lookInput.y += value * lookSpeed;
         }
-        return true;
+        return lookMode;
     }
 
     bool PlayerController::LookRight(float value) {
         if (value > 0) {
             lookInput.x += value * lookSpeed;
         }
-        return true;
+        return lookMode;
     }
 
     bool PlayerController::LookLeft(float value) {
         if (value < 0) {
             lookInput.x += value * lookSpeed;
         }
-        return true;
+        return lookMode;
     }
 
     void PlayerController::DoUpdate(float dt) {

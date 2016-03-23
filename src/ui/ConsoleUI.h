@@ -21,7 +21,7 @@ namespace ui {
             consoleFrameDesc.x = 0.f;
             consoleFrameDesc.y = 400.f;
             consoleFrameDesc.shown = false;
-            consoleFrame = new UIFrame(consoleFrameDesc, true);
+            consoleFrame = new UIFrame(consoleFrameDesc, false);
             uiManager->AddFrame(consoleFrame);
 
             EditBox::EditBoxDesc editBoxDesc;

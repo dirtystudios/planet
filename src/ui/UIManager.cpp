@@ -1,6 +1,40 @@
 #include "UIManager.h"
 
 namespace ui {
+
+	bool UIManager::HandleMouseX(float xPos) {
+		m_mouseX = xPos;
+		return m_mouseDown;
+	}
+
+	bool UIManager::HandleMouseY(float yPos) {
+		m_mouseY = yPos;
+		return m_mouseDown;
+	}
+
+	bool UIManager::HandleMouse1(float value) {
+		if (value > 0) {
+			// ok.... we 'clicked', check if its within a frame and something we care about
+			// todo: handle/add layers and parent child relations
+			for (auto &uiFrame : m_uiFrames) {
+				if (uiFrame->AcceptingInput()) {
+					UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
+					if (m_mouseX > frameDesc->x
+						&& m_mouseX < (frameDesc->x + frameDesc->width)
+						&& m_mouseY > frameDesc->y
+						&& m_mouseY < (frameDesc->y + frameDesc->height)) {
+
+						uiFrame->OnClick();
+						m_mouseDown = true;
+						return true;
+					}
+				}
+			}
+		}
+		m_mouseDown = false;
+		return false;
+	}
+
     void UIManager::AddFrame(UIFrame* uiFrame) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame);
         m_uiFrames.emplace_back(uiFrame);
