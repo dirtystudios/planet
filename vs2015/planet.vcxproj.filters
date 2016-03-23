@@ -11,9 +11,6 @@
     <ClCompile Include="..\src\input\PlayerController.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\utilities\osx\File_osx.cpp">
-      <Filter>utilities\osx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp">
       <Filter>platform\sdl</Filter>
     </ClCompile>
@@ -48,8 +45,6 @@
     <ClCompile Include="..\src\input\KeyboardManager.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\platform\glfw\SystemGLFW3.cpp">
-      <Filter>platform\glfw</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

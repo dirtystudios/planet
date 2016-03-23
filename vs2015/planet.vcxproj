@@ -20,9 +20,6 @@
     <ClCompile Include="..\src\input\KeyboardManager.cpp" />
     <ClCompile Include="..\src\input\PlayerController.cpp" />
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\platform\glfw\SystemGLFW3.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />
@@ -31,9 +28,6 @@
     <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp" />
     <ClCompile Include="..\src\ui\EditBox.cpp" />
     <ClCompile Include="..\src\ui\UIManager.cpp" />
-    <ClCompile Include="..\src\utilities\osx\File_osx.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -134,9 +128,9 @@
     <TargetName>$(ProjectName)-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\include;..\SDL-mirror\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\winlibs;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)\</OutDir>
+    <IncludePath>..\src\utilities\win32;..\src\utilities;..\external\SDL-mirror\include;..\src\utilities\osx;..\src\input;..\src\ui;..\src;..\external\include;..\src\rendering;..\src\platform;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\rendering\backend;..\external\freetype2\include;..\external\xxhash;..\src\platform\sdl;..\src\platform\glfw;..\src\ext;$(IncludePath)</IncludePath>
+    <LibraryPath>..\external\winlibs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)\..\bin</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -170,10 +164,11 @@ copy /Y /D "$(SolutionDir)..\external\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>libnoise.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y /D "$(SolutionDir)..\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
-copy /Y /D "$(SolutionDir)..\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
+      <Command>copy /Y /D "$(SolutionDir)..\external\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
+copy /Y /D "$(SolutionDir)..\external\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
