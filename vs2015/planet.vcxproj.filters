@@ -45,7 +45,6 @@
     <ClCompile Include="..\src\input\KeyboardManager.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
