@@ -30,7 +30,7 @@ namespace ui {
         EditBoxDesc m_editBoxDesc;
         float m_color[3];
     public:
-        EditBox(EditBoxDesc editBoxDesc, bool enableInput);
+        EditBox(EditBoxDesc editBoxDesc);
         void SetFocus();
         void ClearFocus();
         bool HasFocus();

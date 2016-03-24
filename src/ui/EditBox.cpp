@@ -2,8 +2,8 @@
 
 namespace ui {
 
-    EditBox::EditBox(EditBoxDesc editBoxDesc, bool enableInput)
-        : UIFrame(editBoxDesc, enableInput),
+    EditBox::EditBox(EditBoxDesc editBoxDesc)
+        : UIFrame(editBoxDesc),
           m_textBoxState(TextBoxState::UNFOCUSED),
           m_cursorPos(0),
           m_editBoxDesc(editBoxDesc) {
@@ -19,6 +19,12 @@ namespace ui {
     void EditBox::SetFocus() {
         if (!m_editBoxDesc.shown)
             return;
+
+        // this state means we got focus back before acknowledging it
+        if (m_textBoxState == TextBoxState::WANTSCLEAR)
+            m_textBoxState = TextBoxState::FOCUSED;
+
+        // otherwise we still just 'want' focus
         if (m_textBoxState != TextBoxState::FOCUSED)
             m_textBoxState = TextBoxState::WANTSFOCUS;
     }

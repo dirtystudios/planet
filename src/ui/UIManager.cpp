@@ -3,21 +3,30 @@
 namespace ui {
 
 	bool UIManager::HandleMouseX(float xPos) {
+        // x is fine
 		m_mouseX = xPos;
 		return m_mouseDown;
 	}
 
 	bool UIManager::HandleMouseY(float yPos) {
-		m_mouseY = yPos;
+        // our y needs to be switched
+		m_mouseY = m_windowHeight - yPos;
 		return m_mouseDown;
 	}
 
 	bool UIManager::HandleMouse1(float value) {
 		if (value > 0) {
+            // dont give up mouse once its held until its released 
+            if (m_mouseDown) return true;
+
+            // hack currently
+            if (m_focusedEditBox) m_focusedEditBox->ClearFocus();
+
 			// ok.... we 'clicked', check if its within a frame and something we care about
 			// todo: handle/add layers and parent child relations
 			for (auto &uiFrame : m_uiFrames) {
-				if (uiFrame->AcceptingInput()) {
+                if (!uiFrame->IsShown()) continue;
+				if (uiFrame->GetFrameDesc()->acceptMouse) {
 					UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
 					if (m_mouseX > frameDesc->x
 						&& m_mouseX < (frameDesc->x + frameDesc->width)
@@ -26,10 +35,10 @@ namespace ui {
 
 						uiFrame->OnClick();
 						m_mouseDown = true;
-						return true;
 					}
 				}
 			}
+            return m_mouseDown;
 		}
 		m_mouseDown = false;
 		return false;
@@ -51,6 +60,17 @@ namespace ui {
         }
     }
 
+    void UIManager::RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map) {
+        if (!frame->IsShown())
+            return;
+        RenderFrame(frame);
+
+        auto its = map.equal_range(frame);
+        for (auto it = its.first; it != its.second; ++it) {
+            RenderChildren(it->second, map);
+        }
+    }
+
     void UIManager::ProcessFrames() {
         // todo: this probly can be optimized better eventualy
         // yea, this whole thing should be burned in a fiery blaze
@@ -65,7 +85,7 @@ namespace ui {
                 continue;
 
             // Handle parent and any children
-            if (!it->first->IsShown()) {
+            if (!it->first->GetFrameDesc()->shown) {
                 RemoveChildren(it->first, m_tempTree);
                 m_tempTree.erase(it->first);
             }

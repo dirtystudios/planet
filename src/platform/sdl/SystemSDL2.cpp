@@ -97,6 +97,13 @@ float sys::GetTime() {
     //return seconds?
     return (float)(SDL_GetTicks()) / 1000.0;
 }
+
+void sys::ShowCursor(bool showCursor) {
+    if (SDL_ShowCursor(showCursor ? SDL_ENABLE : SDL_DISABLE) < 0) {
+        LOG_E("SDL_ShowCursor failed setting %d. Error: %s", showCursor, SDL_GetError());
+    }
+}
+
 int sys::Run(app::Application* app){
     _app = app;
 

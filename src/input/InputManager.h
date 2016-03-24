@@ -16,8 +16,11 @@ namespace input {
 
         struct ActionConfig {
             bool ignoreRelease;
-            ActionConfig() : ignoreRelease(true) {};
-            ActionConfig(bool p_ignoreRelease) : ignoreRelease(p_ignoreRelease) {};
+            bool hideCursor;
+            bool ignoreHeld;
+            ActionConfig() : ignoreRelease(true), hideCursor(false), ignoreHeld(true) {};
+            ActionConfig(bool p_ignoreRelease, bool p_ignoreHeld, bool hideCursorDuringHandled) 
+                : ignoreRelease(p_ignoreRelease), ignoreHeld(p_ignoreHeld), hideCursor(hideCursorDuringHandled) {};
         };
 
         enum class ContextPriority : uint32_t {
@@ -38,6 +41,7 @@ namespace input {
         std::unordered_multimap<uint32_t, InputContext*> contextMappings;
         std::vector<float> actionCache;
         KeyboardManager m_keyboardManager;
+        bool m_showCursor = true;
 
     public:
         InputManager();
@@ -45,9 +49,12 @@ namespace input {
         void AddAxisMapping(std::string axisName, const InputCode& inputCode, const AxisConfig& axisConfig);
 
         InputContext* CreateNewContext(ContextPriority priority);
-
         KeyboardManager* GetKeyboardManager();
+        bool ShouldShowCursor();
 
         void ProcessInputs(const std::vector<float>& inputValues, float ms);
+
+    private:
+        bool ShouldSendActionEvent(float newValue, float prevValue, ActionConfig* actionConfig);
     };
 }

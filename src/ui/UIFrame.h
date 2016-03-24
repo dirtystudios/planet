@@ -15,7 +15,14 @@ namespace ui {
     public:
         struct UIFrameDesc  {
             UIFrameDesc()
-                : name(""), x(0), y(0), width(0), height(0), parent(0), shown(true) {}
+                : name("")
+                , x(0)
+                , y(0)
+                , width(0)
+                , height(0)
+                , parent(0)
+                , shown(true)
+                , acceptMouse(false) {}
 
             std::string name;
             float x;
@@ -23,23 +30,28 @@ namespace ui {
             uint32_t width;
             uint32_t height;
             bool shown;
+            bool acceptMouse;
             UIFrame *parent;
         };
     protected:
         UIFrameDesc m_frameDesc;
         FrameType m_frameType;
-        bool m_acceptsInput;
     public:
-        UIFrame(UIFrameDesc frameDesc, bool enableInput) :
+        UIFrame(UIFrameDesc frameDesc) :
             m_frameDesc(frameDesc),
-            m_acceptsInput(enableInput),
             m_frameType(FrameType::UIFRAME) {};
         UIFrameDesc* GetFrameDesc() { return &m_frameDesc; };
         FrameType GetFrameType() { return m_frameType; };
-        bool AcceptingInput() { return (m_acceptsInput && m_frameDesc.shown); };
         void Show() { m_frameDesc.shown = true; };
         void Hide() { m_frameDesc.shown = false; };
-        bool IsShown() { return m_frameDesc.shown; };
+        // Returns true if wants to be shown and all parent's are
+        bool IsShown() { 
+            if (!m_frameDesc.shown) return false;
+            if (m_frameDesc.parent) {
+                return m_frameDesc.parent->IsShown();
+            }
+            else return m_frameDesc.shown; 
+        };
         UIFrame* GetParent() { return m_frameDesc.parent; };
 		virtual void OnClick() {};
         virtual void DoUpdate(float ms) {};

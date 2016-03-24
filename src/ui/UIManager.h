@@ -57,7 +57,8 @@ namespace ui {
         void PreProcess();
         void PostProcess(float ms);
         void ProcessFrames();
-        //void HandleKeyBoardPress(
+
+        void RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map);
         
         template <typename T, typename T2>
         void RemoveChildren(T *frame, std::unordered_multimap<T2, T2> &map) {
@@ -69,17 +70,6 @@ namespace ui {
             }
             if (hasChildren)
                 map.erase(frame);
-        }
-
-        void RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map) {
-            if (!frame->IsShown())
-                return;
-            RenderFrame(frame);
-
-            auto its = map.equal_range(frame);
-            for (auto it = its.first; it != its.second; ++it) {
-                RenderChildren(it->second, map);
-            }
         }
     };
 }

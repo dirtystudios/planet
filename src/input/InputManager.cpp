@@ -9,6 +9,10 @@ namespace input {
         }
     }
 
+    bool InputManager::ShouldShowCursor() {
+        return m_showCursor;
+    }
+
     void InputManager::AddActionMapping(std::string actionName, const InputCode& inputCode, const ActionConfig& actionConfig) {
         MappingConfig mappingConfig;
         mappingConfig.inputCode= inputCode;
@@ -33,9 +37,30 @@ namespace input {
         return &m_keyboardManager;
     }
 
+    bool InputManager::ShouldSendActionEvent(float newValue, float prevValue, ActionConfig* actionConfig) {
+        // this is hurting my head, so this is the logic broken down
+        // we only send 'held' events if flagged, otherwise we only care about changes
+        if (newValue != prevValue) {
+            if (newValue > 0) {
+                return true;
+            }
+            else if (!actionConfig->ignoreRelease) {
+                return true;
+            }
+        }
+        else if (newValue > 0.f && !actionConfig->ignoreHeld) {
+            return true;
+        }
+        return false;
+    }
+
     void InputManager::ProcessInputs(const std::vector<float>& inputValues, float ms) {
+        //todo: ....why is this a vector? it could easily just be an array the size of inputvalues
         std::vector<uint32_t> inputHandled;
-        // Call Keyboard handler first,
+        // show the cursor by default
+        m_showCursor = true;
+
+        // Call Keyboard handler first, this handles focused typing interactions
         for (uint32_t x = 0; x < inputValues.size(); ++x) {
             float prevValue = actionCache[x];
             float newValue = inputValues[x];
@@ -44,12 +69,10 @@ namespace input {
                 inputHandled.emplace_back((uint32_t)x);
                 m_keyboardManager.HandleKeyPress((input::InputCode)x, (int)newValue, ms);
             }
-            if (newValue != prevValue && handled) {
-                actionCache[x] = newValue;
-            }
         }
 
         // k, this is a lot of loops, ughhh
+        // loop through the contexts by priority
         for (int x = 0; x < (uint32_t)ContextPriority::COUNT; ++x) {
             auto its = contextMappings.equal_range(x);
             for (auto it = its.first; it != its.second; ++it) {
@@ -72,27 +95,38 @@ namespace input {
                         }
                     }
                 }
+
+                // loop through each action
                 numBindings = it->second->GetNumContextBindings<ContextBindingType::Action>();
                 for (int y = 0; y < numBindings; ++y) {
                     ContextBinding* contextBinding = it->second->GetContextBinding<ContextBindingType::Action>(y);
+
+                    // is someone registered for this binding?
                     auto it2 = actionMappings.find(contextBinding->mappingName);
                     if (it2 != actionMappings.end()) {
                         uint32_t inputCode = (uint32_t)it2->second.inputCode;
+
+                        // find out what 'key/input' they are registered for and give it to them
+                        // but only if it hasn't already been 'handled' by a higher priority context
                         if (std::find(inputHandled.begin(), inputHandled.end(), inputCode) == inputHandled.end()) {
                             float prevValue = actionCache[inputCode];
                             float newValue = inputValues[inputCode];
-                            if (newValue != prevValue
-                                && ((it2->second.actionConfig.ignoreRelease && newValue == 0)
-                                    || (!it2->second.actionConfig.ignoreRelease))) {
+                            ActionConfig* actionConfig = &it2->second.actionConfig;
+
+                            // pass the key/input only if binding wants event and tag it as handled.
+                            if (ShouldSendActionEvent(newValue, prevValue, actionConfig)) {
+                                // did delegate 'handle' the input?
                                 if (contextBinding->boundDelegate(newValue)) {
                                     inputHandled.emplace_back(inputCode);
+
+                                    if (actionConfig->hideCursor) m_showCursor = newValue > 0 ? false : true;
                                 }
                             }
-                            actionCache[inputCode] = newValue;
                         }
                     }
                 }
             }
         }
+        actionCache = inputValues;
     }
 }
