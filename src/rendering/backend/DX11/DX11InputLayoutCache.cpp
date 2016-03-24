@@ -90,8 +90,23 @@ namespace graphics {
                 return inputLayoutDesc;
             }
 
+			const char* semanticName = nullptr;
+
+			for (auto &name : m_semanticNameCache) {
+				if (!strcmp(name.get(), paramDesc.SemanticName)) {
+					semanticName = name.get();
+					break;
+				}
+			}
+
+			// didnt find it
+			if (!semanticName) {
+				m_semanticNameCache.emplace_back(_strdup(paramDesc.SemanticName));
+				semanticName = m_semanticNameCache.at(m_semanticNameCache.size() - 1).get();
+			}
+
             D3D11_INPUT_ELEMENT_DESC ied;
-            ied.SemanticName = paramDesc.SemanticName;
+            ied.SemanticName = semanticName;
             ied.SemanticIndex = paramDesc.SemanticIndex;
             ied.InputSlot = 0;
             ied.AlignedByteOffset = x == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;

@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 namespace graphics {
     typedef uint32_t InputLayoutCacheHandle;
@@ -16,6 +17,9 @@ namespace graphics {
         };
 
         std::unordered_map<InputLayoutCacheHandle, DX11InputLayout> m_inputLayouts;
+
+		// This is to cache semanticstrings, apparently sometimes we lose the reference on windows 7
+		std::vector<std::unique_ptr<const char[]>> m_semanticNameCache;
 
     public:
         InputLayoutCacheHandle InsertInputLayout(ID3DBlob* shaderBlob);

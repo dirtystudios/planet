@@ -159,13 +159,19 @@ namespace graphics {
 
     uint32_t RenderDeviceDX11::CreateInputLayout(ID3DBlob *shader) {
         InputLayoutCacheHandle ilHandle = inputLayoutCache.InsertInputLayout(shader);
-        ComPtr<ID3D11InputLayout> inputLayout;
 
         if (!ilHandle) {
             LOG_D("DX11Render: Invalid or empty input layout defined in shader.");
             return 0;
         }
 
+		//reuse previously created one if possible
+		InputLayoutDX11* cachedInputLayout = Get(m_inputLayouts, ilHandle);
+		if (cachedInputLayout) {
+			return ilHandle;
+		}
+
+		ComPtr<ID3D11InputLayout> inputLayout;
         DX11_CHECK_RET0(m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), inputLayoutCache.GetInputLayoutSize(ilHandle), 
                                                  shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout));
 
