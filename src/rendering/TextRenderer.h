@@ -142,6 +142,8 @@ public:
         blend_state.dst_rgb_func = graphics::BlendFunc::ONE_MINUS_SRC_ALPHA;
         blend_state.dst_alpha_func = blend_state.dst_rgb_func;
         _render_device->SetBlendState(blend_state);
+        _render_device->SetRasterState(graphics::RasterState());
+        _render_device->SetDepthState(graphics::DepthState());
 
         glm::mat4 projection = glm::ortho(0.0f, winWidth, 0.0f, winHeight);
         // Activate corresponding render state  
@@ -205,6 +207,8 @@ public:
         blend_state.dst_rgb_func = graphics::BlendFunc::ONE_MINUS_SRC_ALPHA;
         blend_state.dst_alpha_func = blend_state.dst_rgb_func;
         _render_device->SetBlendState(blend_state);
+        _render_device->SetRasterState(graphics::RasterState());
+        _render_device->SetDepthState(graphics::DepthState());
 
         glm::mat4 projection = glm::ortho(0.0f, winWidth, 0.0f, winHeight);
 

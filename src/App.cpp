@@ -30,8 +30,7 @@ ui::ConsoleUI* consoleUI;
 TextRenderer* text_renderer;
 uint32_t windowWidth = 0, windowHeight = 0;
 
-void SetupInput(uint32_t width, uint32_t height) {
-    inputManager = new input::InputManager();
+void SetupInputBindings() {
 
 	// 'hardcoded' mouse x, y and click
 	inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS, input::InputManager::AxisConfig(1.0, 0));
@@ -51,6 +50,7 @@ void SetupInput(uint32_t width, uint32_t height) {
     /*inputManager->AddActionMapping("MoveSpeedSlow", input::InputCode::INPUT_KEY_3, input::InputManager::ActionConfig(true, true, false));
     inputManager->AddActionMapping("MoveSpeedNormal", input::InputCode::INPUT_KEY_2, input::InputManager::ActionConfig(true, true, false));
     inputManager->AddActionMapping("MoveSpeedFast", input::InputCode::INPUT_KEY_1, input::InputManager::ActionConfig(true, true, false));*/
+    inputManager->AddActionMapping("ToggleWireFrameMode", input::InputCode::INPUT_KEY_4, input::InputManager::ActionConfig(true, true, false));
     inputManager->AddActionMapping("LookMode", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false, false, true));
 
     inputManager->AddAxisMapping("LookUp", input::InputCode::INPUT_MOUSE_YAXISRELATIVE, input::InputManager::AxisConfig(1.0, 0));
@@ -72,6 +72,10 @@ void SetupInput(uint32_t width, uint32_t height) {
     // Create context and controllers
     input::InputContext* inputContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_PLAYER);
     playerController = new controllers::PlayerController(&cam, inputContext);
+
+    // hook up wireframe toggle
+    inputContext->BindContext<input::ContextBindingType::Action>(
+        "ToggleWireFrameMode", BIND_MEM_CB(&ChunkedLoDTerrainRenderer::ToggleWireFrameMode, terrain_renderer));
 }
 
 void SetupUI(graphics::RenderDevice* renderDevice, uint32_t width, uint32_t height) {
@@ -86,15 +90,17 @@ void App::OnStart() {
     windowWidth = windowSize.width;
     windowHeight = windowSize.height;
 
-    SetupInput(windowWidth, windowHeight);
-    SetupUI(renderDevice, windowWidth, windowHeight);
-
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
+    inputManager = new input::InputManager();
+
+    SetupUI(renderDevice, windowWidth, windowHeight);
 
     terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
     text_renderer = new TextRenderer(renderDevice);
     uiManager->SetTextRenderer(text_renderer);
     skybox_renderer = new SkyboxRenderer(renderDevice);
+
+    SetupInputBindings();
 
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
@@ -139,7 +145,6 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
     text_renderer->RenderCursor("asdfasdfasdsaasdf", 4, 0, 0, 1.f, glm::vec3(1, 1, 1));
     
-  
     accumulate += dt;
     ++frame_count;
     ++total_frame_count;

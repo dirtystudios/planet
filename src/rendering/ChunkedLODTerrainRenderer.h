@@ -74,6 +74,8 @@ private:
 
     graphics::RenderDevice* _render_device;
 
+    bool m_wireFrameMode = false;
+
 public:
     ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device);
     ~ChunkedLoDTerrainRenderer();
@@ -81,6 +83,9 @@ public:
     ChunkedLoDTerrainHandle RegisterTerrain(const ChunkedLoDTerrainDesc& desc);
     bool UnregisterTerrain(const ChunkedLoDTerrainHandle& handle);
     void Render(Camera& cam, Frustum& frustum);
+
+    // need dummy arg for inputCallback Definition
+    bool ToggleWireFrameMode(float notUsed) { m_wireFrameMode = !m_wireFrameMode; return true; }
 
 private:
     template <class T>

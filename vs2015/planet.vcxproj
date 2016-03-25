@@ -130,7 +130,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>..\src\utilities\win32;..\src\utilities;..\external\SDL-mirror\include;..\src\utilities\osx;..\src\input;..\src\ui;..\src;..\external\include;..\src\rendering;..\src\platform;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\rendering\backend;..\external\freetype2\include;..\external\xxhash;..\src\platform\sdl;..\src\platform\glfw;..\src\ext;$(IncludePath)</IncludePath>
     <LibraryPath>..\external\winlibs;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)\..\bin</OutDir>
+    <OutDir>$(SolutionDir)\..\bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

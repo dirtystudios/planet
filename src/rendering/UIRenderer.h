@@ -46,6 +46,8 @@ namespace ui {
             blend_state.dst_rgb_func = graphics::BlendFunc::ONE_MINUS_SRC_ALPHA;
             blend_state.dst_alpha_func = blend_state.dst_rgb_func;
             m_renderDevice->SetBlendState(blend_state);
+            m_renderDevice->SetDepthState(graphics::DepthState());
+            m_renderDevice->SetRasterState(graphics::RasterState());
 
             float w = (float)width;
             float h = (float)height;

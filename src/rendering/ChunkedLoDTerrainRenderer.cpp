@@ -113,8 +113,12 @@ void ChunkedLoDTerrainRenderer::Render(Camera& cam, Frustum& frustum) {
     _render_device->SetShaderTexture(_shaders[0], _gpu_tile_buffer->GetTextureId(), graphics::TextureSlot::BASE);
     _render_device->SetShaderTexture(_shaders[0], _heightmap_normals_buffer->GetTextureId(), graphics::TextureSlot::NORMAL);
 
+    graphics::RasterState wireFrameState;
+    wireFrameState.fill_mode = graphics::FillMode::WIREFRAME;
+
+    graphics::RasterState defaultFillState = graphics::RasterState();
+
     for(const ChunkedLoDTerrain& terrain : _terrains) {
-        //GL_CHECK(glBindVertexArray(terrain.vao));
 
         ChunkedLoDTerrainNode* root = terrain.root;
         std::queue<ChunkedLoDTerrainNode*> dfs_queue;
@@ -198,14 +202,12 @@ void ChunkedLoDTerrainRenderer::Render(Camera& cam, Frustum& frustum) {
                 _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Int32, "normals_tile_index", &normals_tile_index);
                 _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "world", &world);
                 _render_device->SetVertexBuffer(terrain.vb);
+                if (m_wireFrameMode)
+                    _render_device->SetRasterState(wireFrameState);
+                else
+                    _render_device->SetRasterState(defaultFillState);
                 _render_device->DrawPrimitive(graphics::PrimitiveType::TRIANGLES, 0, terrain.num_vertices);
-
-
-                //_render_device->DrawArrays(terrain.vb, 0, terrain.num_vertices);
-
-                //GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, terrain.num_vertices));
             }
-
         }
     }
 }
