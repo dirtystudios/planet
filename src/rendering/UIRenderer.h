@@ -33,6 +33,11 @@ namespace ui {
             m_vertexBuffer = m_renderDevice->CreateVertexBuffer(layout, 0, graphics::SizeofParam(graphics::ParamType::Float4) * 6, graphics::BufferUsage::DYNAMIC);
         }
 
+        void SetRenderWindowSize(uint32_t width, uint32_t height) {
+            m_winWidth = (float)width;
+            m_winHeight = (float)height;
+        }
+
         void RenderFrame(float x, float y, uint32_t width, uint32_t height) {
             graphics::BlendState blend_state;
             blend_state.enable = true;

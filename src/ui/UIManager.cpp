@@ -27,11 +27,13 @@ namespace ui {
 			for (auto &uiFrame : m_uiFrames) {
                 if (!uiFrame->IsShown()) continue;
 				if (uiFrame->GetFrameDesc()->acceptMouse) {
+                    // k this is a potential candidate, lets figure out its 'scaled' pos
 					UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
-					if (m_mouseX > frameDesc->x
-						&& m_mouseX < (frameDesc->x + frameDesc->width)
-						&& m_mouseY > frameDesc->y
-						&& m_mouseY < (frameDesc->y + frameDesc->height)) {
+                    FrameScale scaledFrame = GetScaledFrame(frameDesc);
+					if (m_mouseX > scaledFrame.x
+						&& m_mouseX < (scaledFrame.x + scaledFrame.width)
+						&& m_mouseY > scaledFrame.y
+						&& m_mouseY < (scaledFrame.y + scaledFrame.height)) {
 
 						uiFrame->OnClick();
 						m_mouseDown = true;
@@ -51,12 +53,16 @@ namespace ui {
 
     void UIManager::RenderFrame(UIFrame* uiFrame) {
         UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
-        m_uiRenderer->RenderFrame(frameDesc->x, frameDesc->y,
-            frameDesc->width, frameDesc->height);
+
+        //Handle scale
+        FrameScale scaledFrame = GetScaledFrame(frameDesc);
+
+        m_uiRenderer->RenderFrame(scaledFrame.x, scaledFrame.y,
+            scaledFrame.width, scaledFrame.height);
         if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
             float *tempColor = ((EditBox*)uiFrame)->GetColor();
             glm::vec3 color = { tempColor[0], tempColor[1], tempColor[2] };
-            m_textRenderer->RenderText(((EditBox*)uiFrame)->GetText(), frameDesc->x, frameDesc->y, 1.0, color);
+            m_textRenderer->RenderText(((EditBox*)uiFrame)->GetText(), scaledFrame.x, scaledFrame.y, 1.0, color);
         }
     }
 
@@ -162,10 +168,11 @@ namespace ui {
             if (m_drawCaret) {
                 UIFrame::UIFrameDesc *temp = m_focusedEditBox->GetFrameDesc();
                 std::string text = m_keyboardManager->GetText();
-                // TODO: use scale and color?
+                // TODO: color?
+                FrameScale scaledFrame = GetScaledFrame(temp);
                 m_textRenderer->RenderCursor(text,
                     m_keyboardManager->GetCursorPosition(),
-                    temp->x, temp->y, 1.f, glm::vec3(1.f, 1.f, 1.f));
+                    scaledFrame.x, scaledFrame.y, 1.f, glm::vec3(1.f, 1.f, 1.f));
             }
         }
     }

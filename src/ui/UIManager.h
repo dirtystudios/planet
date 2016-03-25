@@ -12,13 +12,23 @@
 namespace ui {
     class UIManager {
     private:
+        // positions are rendered based on this for now until i get relative positioning n stuff
+        const uint32_t INTERNAL_UI_RESOLUTION_HEIGHT { 600 };
+        const uint32_t INTERNAL_UI_RESOLUTION_WIDTH { 800 };
+
+        struct FrameScale {
+            float x;
+            float y;
+            uint32_t width, height;
+        };
+        
+
         UIRenderer *m_uiRenderer;
         TextRenderer* m_textRenderer;
         // should probly use a tree for this, oops
         // This stores <Parent, Child>
         std::unordered_multimap<UIFrame*, UIFrame*> m_frameTree;
         std::vector<UIFrame*> m_uiFrames;
-        std::vector<UIFrame*> m_prevShownUiFrames;
         uint32_t m_windowWidth, m_windowHeight;
         // only 1 thing should have focus at a time, so these can go here
         float m_cursorBlink = 0;
@@ -44,9 +54,17 @@ namespace ui {
 
         void AddFrame(UIFrame* uiFrame);
         void DoUpdate(float ms);
+
         // hackish for now
         void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
-		
+        void SetRenderWindowSize(uint32_t width, uint32_t height) {
+            m_windowWidth = width;
+            m_windowHeight = height;
+            m_uiRenderer->SetRenderWindowSize(m_windowWidth, m_windowHeight);
+        }
+
+        // Callbacks from inputmanager
+
 		bool HandleMouseX(float xPos);
 		bool HandleMouseY(float yPos);
 		bool HandleMouse1(float value);
@@ -60,6 +78,16 @@ namespace ui {
 
         void RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map);
         
+        FrameScale GetScaledFrame(UIFrame::UIFrameDesc* frameDesc) {
+            FrameScale scaledFrame;
+            scaledFrame.width = ((float)frameDesc->width / INTERNAL_UI_RESOLUTION_WIDTH) * m_windowWidth;
+            scaledFrame.height = ((float)frameDesc->height / INTERNAL_UI_RESOLUTION_HEIGHT) * m_windowHeight;
+
+            scaledFrame.x = (frameDesc->x / INTERNAL_UI_RESOLUTION_WIDTH) * m_windowWidth;
+            scaledFrame.y = (frameDesc->y / INTERNAL_UI_RESOLUTION_HEIGHT) * m_windowHeight;
+            return scaledFrame;
+        }
+
         template <typename T, typename T2>
         void RemoveChildren(T *frame, std::unordered_multimap<T2, T2> &map) {
             bool hasChildren = false;

@@ -115,6 +115,10 @@ void App::OnStart() {
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
+    sys::SysWindowSize windowSize = sys::GetWindowSize();
+    text_renderer->SetRenderWindowSize(windowSize.width, windowSize.height);
+    uiManager->SetRenderWindowSize(windowSize.width, windowSize.height);
+
     inputManager->ProcessInputs(inputValues, dt * 1000 );
 
     sys::ShowCursor(inputManager->ShouldShowCursor());

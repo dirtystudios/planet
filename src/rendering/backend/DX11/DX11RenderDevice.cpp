@@ -1069,7 +1069,17 @@ namespace graphics {
             nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, FeatureLevelsRequested, numLevelsRequested, D3D11_SDK_VERSION,
             &m_dev, nullptr, &m_devcon));
 
-        InitDX11DebugLayer(m_dev.Get());
+        // note to self, this might be needed for win7 support with just 11.0
+        // although initial tests show otherwise
+        /*if (hr == E_INVALIDARG)
+        {
+        hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
+        createDeviceFlags, &lvl[1], _countof(lvl) - 1,
+        D3D11_SDK_VERSION, &pDevice, &fl, &pContext);
+        }*/
+
+        // commenting this out seems to make diagnostic debugging work?, ugh
+        //InitDX11DebugLayer(m_dev.Get());
 
         DX11_CHECK_RET0(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&m_factory)));
 

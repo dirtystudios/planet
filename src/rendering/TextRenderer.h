@@ -36,6 +36,8 @@ private:
     graphics::ShaderHandle _cursorShaders[2];
     graphics::VertexBufferHandle _vertex_buffer, _cursor_vbuffer;
     FT_Pos maxHeight = 0;
+
+    float winWidth = 800.f, winHeight = 600.f;
 public:
     TextRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
         std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
@@ -127,6 +129,11 @@ public:
         _cursor_vbuffer = _render_device->CreateVertexBuffer(layout, 0, graphics::SizeofParam(graphics::ParamType::Float4) * 2, graphics::BufferUsage::DYNAMIC);
     }
 
+    void SetRenderWindowSize(uint32_t width, uint32_t height) {
+        winWidth = (float)width;
+        winHeight = (float)height;
+    }
+
     void RenderText(std::string text, float x, float y, float scale, glm::vec3 color) {
         graphics::BlendState blend_state;
         blend_state.enable = true;
@@ -136,7 +143,7 @@ public:
         blend_state.dst_alpha_func = blend_state.dst_rgb_func;
         _render_device->SetBlendState(blend_state);
 
-        glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+        glm::mat4 projection = glm::ortho(0.0f, winWidth, 0.0f, winHeight);
         // Activate corresponding render state  
         _render_device->SetVertexShader(_shaders[0]);
         _render_device->SetPixelShader(_shaders[1]);
@@ -199,7 +206,7 @@ public:
         blend_state.dst_alpha_func = blend_state.dst_rgb_func;
         _render_device->SetBlendState(blend_state);
 
-        glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+        glm::mat4 projection = glm::ortho(0.0f, winWidth, 0.0f, winHeight);
 
         _render_device->SetVertexShader(_cursorShaders[0]);
         _render_device->SetPixelShader(_cursorShaders[1]);
