@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "planet", "planet.vcxproj", "{32A60293-4AF5-43BB-A314-BC8382DFA22B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{683E8D87-1499-4AED-9134-B20DB945501B} = {683E8D87-1499-4AED-9134-B20DB945501B}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "externalProjects", "externalProjects", "{B5C0DA3D-131E-4146-A8A4-5C5C69088C92}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libnoise", "libnoise-build\libnoise.vcxproj", "{683E8D87-1499-4AED-9134-B20DB945501B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,11 +76,36 @@ Global
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|Win32.Build.0 = Release|Win32
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|x64.ActiveCfg = Release|x64
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|x64.Build.0 = Release|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Multithreaded|Win32.ActiveCfg = Debug|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Multithreaded|Win32.Build.0 = Debug|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Multithreaded|x64.ActiveCfg = Debug|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Multithreaded|x64.Build.0 = Debug|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Singlethreaded|Win32.ActiveCfg = Debug|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Singlethreaded|Win32.Build.0 = Debug|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Singlethreaded|x64.ActiveCfg = Debug|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug Singlethreaded|x64.Build.0 = Debug|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug|Win32.Build.0 = Debug|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug|x64.ActiveCfg = Debug|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Debug|x64.Build.0 = Debug|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Multithreaded|Win32.ActiveCfg = Release|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Multithreaded|Win32.Build.0 = Release|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Multithreaded|x64.ActiveCfg = Release|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Multithreaded|x64.Build.0 = Release|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Singlethreaded|Win32.ActiveCfg = Release|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Singlethreaded|Win32.Build.0 = Release|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Singlethreaded|x64.ActiveCfg = Release|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release Singlethreaded|x64.Build.0 = Release|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release|Win32.ActiveCfg = Release|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release|Win32.Build.0 = Release|Win32
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release|x64.ActiveCfg = Release|x64
+		{683E8D87-1499-4AED-9134-B20DB945501B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B} = {B5C0DA3D-131E-4146-A8A4-5C5C69088C92}
+		{683E8D87-1499-4AED-9134-B20DB945501B} = {B5C0DA3D-131E-4146-A8A4-5C5C69088C92}
 	EndGlobalSection
 EndGlobal
