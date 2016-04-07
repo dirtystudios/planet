@@ -2,54 +2,54 @@
 
 namespace ui {
 
-	bool UIManager::HandleMouseX(float xPos) {
+    bool UIManager::HandleMouseX(float xPos) {
         // x is fine
-		m_mouseX = xPos;
-		return m_mouseDown;
-	}
+        m_mouseX = xPos;
+        return m_mouseDown;
+    }
 
-	bool UIManager::HandleMouseY(float yPos) {
+    bool UIManager::HandleMouseY(float yPos) {
         // our y needs to be switched
-		m_mouseY = m_windowHeight - yPos;
-		return m_mouseDown;
-	}
+        m_mouseY = m_windowHeight - yPos;
+        return m_mouseDown;
+    }
 
-	bool UIManager::HandleMouse1(float value) {
-		if (value > 0) {
+    bool UIManager::HandleMouse1(float value) {
+        if (value > 0) {
             // dont give up mouse once its held until its released 
             if (m_mouseDown) return true;
 
             // hack currently
             if (m_focusedEditBox) m_focusedEditBox->ClearFocus();
 
-			// ok.... we 'clicked', check if its within a frame and something we care about
-			// todo: handle/add layers and parent child relations
-			for (auto &uiFrame : m_uiFrames) {
+            // ok.... we 'clicked', check if its within a frame and something we care about
+            // todo: handle/add layers and parent child relations
+            for (auto &uiFrame : m_uiFrames) {
                 if (!uiFrame->IsShown()) continue;
-				if (uiFrame->GetFrameDesc()->acceptMouse) {
+                if (uiFrame->GetFrameDesc()->acceptMouse) {
                     // k this is a potential candidate, lets figure out its 'scaled' pos
-					UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
+                    UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
                     FrameScale scaledFrame = GetScaledFrame(frameDesc);
-					if (m_mouseX > scaledFrame.x
-						&& m_mouseX < (scaledFrame.x + scaledFrame.width)
-						&& m_mouseY > scaledFrame.y
-						&& m_mouseY < (scaledFrame.y + scaledFrame.height)) {
+                    if (m_mouseX > scaledFrame.x
+                        && m_mouseX < (scaledFrame.x + scaledFrame.width)
+                        && m_mouseY > scaledFrame.y
+                        && m_mouseY < (scaledFrame.y + scaledFrame.height)) {
 
-						uiFrame->OnClick();
-						m_mouseDown = true;
-					}
-				}
-			}
+                        uiFrame->OnClick();
+                        m_mouseDown = true;
+                    }
+                }
+            }
             return m_mouseDown;
-		}
-		m_mouseDown = false;
-		return false;
-	}
+        }
+        m_mouseDown = false;
+        return false;
+    }
 
     void UIManager::AddFrame(UIFrame* uiFrame) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame);
         m_uiFrames.emplace_back(uiFrame);
-		m_parentFrames.emplace(uiFrame->GetParent());
+        m_parentFrames.emplace(uiFrame->GetParent());
     }
 
     void UIManager::RenderFrame(UIFrame* uiFrame) {
@@ -68,7 +68,7 @@ namespace ui {
     }
 
     void UIManager::RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map) {
-		RenderFrame(frame);
+        RenderFrame(frame);
 
         auto its = map.equal_range(frame);
         for (auto it = its.first; it != its.second; ++it) {
@@ -82,7 +82,7 @@ namespace ui {
 
         // K weed out frames not set to shown and any children
         auto m_shownFramesTree = m_frameTree;
-		
+        
         for (auto parentFrame : m_parentFrames) {
             // this *should* loop through just unique keys
             // Remove any keys from tempTree that arent shown, and any children, and their children....etc
@@ -92,7 +92,7 @@ namespace ui {
             // Handle parent and any children
             if (!parentFrame->GetFrameDesc()->shown) {
                 RemoveChildren(parentFrame, m_shownFramesTree);
-				m_shownFramesTree.erase(parentFrame);
+                m_shownFramesTree.erase(parentFrame);
             }
         }
 
@@ -125,11 +125,11 @@ namespace ui {
         }
 
         // K walking the tree, "hi impending stack overflow"
-		// m_temptree *should* contain only the shown frames
-		auto m_rootParentFrames = m_shownFramesTree.equal_range((UIFrame*)0);
-		for (auto it = m_rootParentFrames.first; it != m_rootParentFrames.second; ++it) {
-			if (it->second->GetFrameDesc()->shown)
-				RenderChildren(it->second, m_shownFramesTree);
+        // m_temptree *should* contain only the shown frames
+        auto m_rootParentFrames = m_shownFramesTree.equal_range((UIFrame*)0);
+        for (auto it = m_rootParentFrames.first; it != m_rootParentFrames.second; ++it) {
+            if (it->second->GetFrameDesc()->shown)
+                RenderChildren(it->second, m_shownFramesTree);
         }
     }
 
