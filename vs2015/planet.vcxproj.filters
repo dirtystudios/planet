@@ -26,9 +26,6 @@
     <ClCompile Include="..\src\utilities\win32\File_win32.cpp">
       <Filter>utilities\win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\external\xxhash\xxhash.c">
-      <Filter>external\xxhash</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ui\EditBox.cpp">
       <Filter>ui</Filter>
     </ClCompile>
@@ -129,9 +126,6 @@
     <ClInclude Include="..\src\utilities\IniParser.h">
       <Filter>utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\external\xxhash\xxhash.h">
-      <Filter>external\xxhash</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\rendering\UIRenderer.h">
       <Filter>rendering</Filter>
     </ClInclude>
@@ -200,12 +194,6 @@
     </Filter>
     <Filter Include="rendering\backend\GL">
       <UniqueIdentifier>{64177181-7fe9-404d-8eaa-b793f574463b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="external">
-      <UniqueIdentifier>{5f81366d-7a8c-4b07-b2a3-e0f947127b31}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="external\xxhash">
-      <UniqueIdentifier>{620a0f47-0a6d-4487-99ea-811bce6fd043}</UniqueIdentifier>
     </Filter>
     <Filter Include="ui">
       <UniqueIdentifier>{ca62908e-eb5e-46e8-812b-db5d719e2767}</UniqueIdentifier>

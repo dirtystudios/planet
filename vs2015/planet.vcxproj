@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\external\xxhash\xxhash.c" />
     <ClCompile Include="..\src\App.cpp" />
     <ClCompile Include="..\src\Camera.cpp" />
     <ClCompile Include="..\src\Frustum.cpp" />
@@ -31,7 +30,6 @@
     <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\external\xxhash\xxhash.h" />
     <ClInclude Include="..\src\App.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\BoundingBox.h" />
@@ -118,13 +116,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\src;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\SDL-mirror\include;..\external\xxhash;$(IncludePath)</IncludePath>
-    <LibraryPath>..\external\winlibs;libnoise-build\src\Debug;freetype-build\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\external\winlibs;libnoise-build\x86\src\Debug;freetype-build\x86\Debug;xxhash-build\x86\Debug;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>$(ProjectName)-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>..\src;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\utilities\osx;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\SDL-mirror\include;..\external\xxhash;$(IncludePath)</IncludePath>
-    <LibraryPath>..\external\winlibs;libnoise-build\src\Release;freetype-build\Release$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\external\winlibs;libnoise-build\x86\src\Release;freetype-build\x86\Release;xxhash-build\x86\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\..\bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -138,7 +136,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>noise.lib;freetype.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>noise.lib;freetype.lib;xxhash.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y /D "$(SolutionDir)..\external\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
@@ -158,7 +156,7 @@ copy /Y /D "$(SolutionDir)..\external\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>noise.lib;freetype.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>noise.lib;freetype.lib;xxhash.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>

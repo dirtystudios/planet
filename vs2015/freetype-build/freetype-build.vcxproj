@@ -62,41 +62,65 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakePreprocessorDefinitions></NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakePreprocessorDefinitions>
+    </NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>mkdir x86
+cd x86
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:build /p:Configuration=Debug</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeReBuildCommandLine>mkdir x86
+cd x86
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:rebuild /p:Configuration=Debug</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeCleanCommandLine>mkdir x86
+cd x86
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:clean /p:Configuration=Debug</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakePreprocessorDefinitions></NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakePreprocessorDefinitions>
+    </NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>mkdir x86
+cd x86
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:build /p:Configuration=Release</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeReBuildCommandLine>mkdir x86
+cd x86
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:rebuild /p:Configuration=Release</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeCleanCommandLine>mkdir x86
+cd x86
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:clean /p:Configuration=Release</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NMakeBuildCommandLine>cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeBuildCommandLine>mkdir x64
+cd x64
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:build /p:Configuration=Debug</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeReBuildCommandLine>mkdir x64
+cd x64
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:rebuild /p:Configuration=Debug</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeCleanCommandLine>mkdir x64
+cd x64
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:clean /p:Configuration=Debug</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <NMakeBuildCommandLine>cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeBuildCommandLine>mkdir x64
+cd x64
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:build /p:Configuration=Release</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeReBuildCommandLine>mkdir x64
+cd x64
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:rebuild /p:Configuration=Release</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../external/freetype2
+    <NMakeCleanCommandLine>mkdir x64
+cd x64
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/freetype2
 msbuild.exe freetype.vcxproj /t:clean /p:Configuration=Release</NMakeCleanCommandLine>
   </PropertyGroup>
-  <ItemDefinitionGroup>
-  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

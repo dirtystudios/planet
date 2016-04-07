@@ -19,9 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{683E8D87-1499-4AED-9134-B20DB945501B}</ProjectGuid>
+    <ProjectGuid>{B1907C53-95E8-41D3-881A-C79524721E5A}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -62,23 +61,23 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <NMakeOutput>
     </NMakeOutput>
     <NMakePreprocessorDefinitions>
     </NMakePreprocessorDefinitions>
     <NMakeBuildCommandLine>mkdir x86
 cd x86
-cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:build /p:Configuration=Debug</NMakeBuildCommandLine>
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:build /p:Configuration=Debug</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>mkdir x86
 cd x86
-cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:rebuild /p:Configuration=Debug</NMakeReBuildCommandLine>
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:rebuild /p:Configuration=Debug</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>mkdir x86
 cd x86
-cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:clean /p:Configuration=Debug</NMakeCleanCommandLine>
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:clean /p:Configuration=Debug</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeOutput>
@@ -87,44 +86,44 @@ msbuild.exe src/noise-static.vcxproj /t:clean /p:Configuration=Debug</NMakeClean
     </NMakePreprocessorDefinitions>
     <NMakeBuildCommandLine>mkdir x86
 cd x86
-cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:build /p:Configuration=Release</NMakeBuildCommandLine>
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:build /p:Configuration=Release</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>mkdir x86
 cd x86
-cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:rebuild /p:Configuration=Release</NMakeReBuildCommandLine>
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:rebuild /p:Configuration=Release</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>mkdir x86
 cd x86
-cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:clean /p:Configuration=Release</NMakeCleanCommandLine>
+cmake -G "Visual Studio 14 2015" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:clean /p:Configuration=Release</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <NMakeBuildCommandLine>mkdir x64
 cd x64
-cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:build /p:Configuration=Debug</NMakeBuildCommandLine>
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:build /p:Configuration=Debug</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>mkdir x64
 cd x64
-cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:rebuild /p:Configuration=Debug</NMakeReBuildCommandLine>
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:rebuild /p:Configuration=Debug</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>mkdir x64
 cd x64
-cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:clean /p:Configuration=Debug</NMakeCleanCommandLine>
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:clean /p:Configuration=Debug</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <NMakeBuildCommandLine>mkdir x64
 cd x64
-cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:build /p:Configuration=Release</NMakeBuildCommandLine>
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:build /p:Configuration=Release</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>mkdir x64
 cd x64
-cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:rebuild /p:Configuration=Release</NMakeReBuildCommandLine>
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:rebuild /p:Configuration=Release</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>mkdir x64
 cd x64
-cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/libnoise
-msbuild.exe src/noise-static.vcxproj /t:clean /p:Configuration=Release</NMakeCleanCommandLine>
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ../../../external/xxhash/cmake_unofficial
+msbuild.exe xxhashstatic.vcxproj /t:clean /p:Configuration=Release</NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>

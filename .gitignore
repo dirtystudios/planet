@@ -49,8 +49,8 @@ ipch/
 *.stackdump
 *.vcxprojResolveAssemblyReference.cache
 /vs2015/*/*.lib
-/vs2015/libnoise-build
-/vs2015/freetype-build
+/vs2015/*/x86/*
+/vs2015/*/x64/*
 
 # Visual Studio Profiler Files
 *.vspx
