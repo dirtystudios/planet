@@ -50,6 +50,7 @@ ipch/
 *.vcxprojResolveAssemblyReference.cache
 /vs2015/*/*.lib
 /vs2015/libnoise-build
+/vs2015/freetype-build
 
 # Visual Studio Profiler Files
 *.vspx
