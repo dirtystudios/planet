@@ -101,7 +101,7 @@ SkyboxRenderer::SkyboxRenderer(graphics::RenderDevice *device) : _device(device)
     };
 
     for (int x = 0; x < 6; ++x) {
-        if (!LoadImageFromFile((assetDirPath + imagePaths[x]).c_str(), &skybox_images[x])) { LOG_D("Failed to load image: %s", imagePaths[x]); }
+        if (!LoadImageFromFile((assetDirPath + imagePaths[x]).c_str(), &skybox_images[x])) { LOG_D("Failed to load image: %s", imagePaths[x].c_str()); }
     }
 
     LOG_D("w: %d h:%d", skybox_images[0].width, skybox_images[0].height);

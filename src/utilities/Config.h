@@ -1,5 +1,5 @@
 #pragma once
-#include "iniparser.h"
+#include "IniParser.h"
 #include "File.h"
 #include "Log.h"
 

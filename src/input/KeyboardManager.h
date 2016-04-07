@@ -27,7 +27,7 @@ namespace input {
         KeyboardManager();
         void HandleKeyPress(InputCode inputCode, int pressed, float dt);
         bool HandlingKey(InputCode inputCode);
-        void KeyboardManager::RestartCapture(std::string initial, uint32_t cursorPosition);
+        void RestartCapture(std::string initial, uint32_t cursorPosition);
         void StopCapture();
         std::string GetText();
         bool TextHasChanged();
