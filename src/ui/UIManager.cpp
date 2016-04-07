@@ -49,6 +49,7 @@ namespace ui {
     void UIManager::AddFrame(UIFrame* uiFrame) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame);
         m_uiFrames.emplace_back(uiFrame);
+		m_parentFrames.emplace(uiFrame->GetParent());
     }
 
     void UIManager::RenderFrame(UIFrame* uiFrame) {
@@ -67,9 +68,7 @@ namespace ui {
     }
 
     void UIManager::RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map) {
-        if (!frame->IsShown())
-            return;
-        RenderFrame(frame);
+		RenderFrame(frame);
 
         auto its = map.equal_range(frame);
         for (auto it = its.first; it != its.second; ++it) {
@@ -82,25 +81,25 @@ namespace ui {
         // yea, this whole thing should be burned in a fiery blaze
 
         // K weed out frames not set to shown and any children
-        auto m_tempTree = m_frameTree;
-        auto m_tempList = m_uiFrames;
-        for (auto it = m_frameTree.begin(), end = m_frameTree.end(); it != end; it = m_frameTree.upper_bound(it->first)) {
+        auto m_shownFramesTree = m_frameTree;
+		
+        for (auto parentFrame : m_parentFrames) {
             // this *should* loop through just unique keys
             // Remove any keys from tempTree that arent shown, and any children, and their children....etc
-            if (it->first == 0)
+            if (parentFrame == 0)
                 continue;
 
             // Handle parent and any children
-            if (!it->first->GetFrameDesc()->shown) {
-                RemoveChildren(it->first, m_tempTree);
-                m_tempTree.erase(it->first);
+            if (!parentFrame->GetFrameDesc()->shown) {
+                RemoveChildren(parentFrame, m_shownFramesTree);
+				m_shownFramesTree.erase(parentFrame);
             }
         }
 
         // Dumb way to handle edit box focus', oldest frame gets it first
         // If we ignore a 'wantsfocus' it will assume it has it after we call 'doupdate'
         bool wantsFocus = false;
-        for (auto it = m_tempTree.begin(); it != m_tempTree.end(); ++it) {
+        for (auto it = m_shownFramesTree.begin(); it != m_shownFramesTree.end(); ++it) {
             if (it->first == 0)
                 continue;
             if (it->second->GetFrameType() == FrameType::EDITBOX) {
@@ -115,7 +114,7 @@ namespace ui {
             }
         }
         if (wantsFocus) {
-            for (auto it = m_tempTree.begin(); it != m_tempTree.end(); ++it) {
+            for (auto it = m_shownFramesTree.begin(); it != m_shownFramesTree.end(); ++it) {
                 if (it->first == 0)
                     continue;
                 if (it->second->GetFrameType() == FrameType::EDITBOX 
@@ -125,11 +124,12 @@ namespace ui {
             }
         }
 
-        // K so, only 'shown' parents should be left, renderchildren handles the leaf's
-        for (auto it = m_tempTree.begin(), end = m_tempTree.end(); it != end; it = m_tempTree.upper_bound(it->first)) {
-            if (it->first == 0)
-                continue;
-            RenderChildren(it->first, m_tempTree);
+        // K walking the tree, "hi impending stack overflow"
+		// m_temptree *should* contain only the shown frames
+		auto m_rootParentFrames = m_shownFramesTree.equal_range((UIFrame*)0);
+		for (auto it = m_rootParentFrames.first; it != m_rootParentFrames.second; ++it) {
+			if (it->second->GetFrameDesc()->shown)
+				RenderChildren(it->second, m_shownFramesTree);
         }
     }
 

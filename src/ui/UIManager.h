@@ -8,6 +8,7 @@
 #include "KeyboardManager.h"
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 namespace ui {
     class UIManager {
@@ -28,6 +29,7 @@ namespace ui {
         // should probly use a tree for this, oops
         // This stores <Parent, Child>
         std::unordered_multimap<UIFrame*, UIFrame*> m_frameTree;
+		std::set<UIFrame*> m_parentFrames;
         std::vector<UIFrame*> m_uiFrames;
         uint32_t m_windowWidth, m_windowHeight;
         // only 1 thing should have focus at a time, so these can go here
