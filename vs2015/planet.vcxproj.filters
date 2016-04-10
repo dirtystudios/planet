@@ -42,6 +42,9 @@
     <ClCompile Include="..\src\input\KeyboardManager.cpp">
       <Filter>input</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\utilities\win32\Log_win32.cpp">
+      <Filter>utilities\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -50,7 +53,6 @@
     <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\Frustum.h" />
     <ClInclude Include="..\src\Helpers.h" />
-    <ClInclude Include="..\src\Log.h" />
     <ClInclude Include="..\src\input\Controller.h">
       <Filter>input</Filter>
     </ClInclude>
@@ -153,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="..\src\input\KeyboardManager.h">
       <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\Log.h">
+      <Filter>utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

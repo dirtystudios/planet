@@ -28,6 +28,7 @@
     <ClCompile Include="..\src\ui\EditBox.cpp" />
     <ClCompile Include="..\src\ui\UIManager.cpp" />
     <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
+    <ClCompile Include="..\src\utilities\win32\Log_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -44,7 +45,6 @@
     <ClInclude Include="..\src\input\InputManager.h" />
     <ClInclude Include="..\src\input\KeyboardManager.h" />
     <ClInclude Include="..\src\input\PlayerController.h" />
-    <ClInclude Include="..\src\Log.h" />
     <ClInclude Include="..\src\platform\Platform.h" />
     <ClInclude Include="..\src\platform\System.h" />
     <ClInclude Include="..\src\rendering\backend\AttribLayout.h" />
@@ -72,6 +72,7 @@
     <ClInclude Include="..\src\utilities\Config.h" />
     <ClInclude Include="..\src\utilities\File.h" />
     <ClInclude Include="..\src\utilities\IniParser.h" />
+    <ClInclude Include="..\src\utilities\Log.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\rendering\shaders\GL\debug_fs.glsl" />
