@@ -96,14 +96,14 @@ bool ChunkedLoDTerrainRenderer::UnregisterTerrain(const ChunkedLoDTerrainHandle&
     return false;
 }
 
-void ChunkedLoDTerrainRenderer::Render(Camera& cam, Frustum& frustum) {
+void ChunkedLoDTerrainRenderer::Render(Camera* cam, Frustum* frustum) {
     if(_terrains.size() == 0) {
         return;
     }
 
 
-    glm::mat4 proj = cam.BuildProjection();
-    glm::mat4 view = cam.BuildView();
+    glm::mat4 proj = cam->BuildProjection();
+    glm::mat4 view = cam->BuildView();
     glm::mat4 world = glm::mat4();
 
     _render_device->SetVertexShader(_shaders[0]);
@@ -128,7 +128,7 @@ void ChunkedLoDTerrainRenderer::Render(Camera& cam, Frustum& frustum) {
             ChunkedLoDTerrainNode* node = dfs_queue.front();
             dfs_queue.pop();
 
-            if(ShouldSplitNode(node, cam.pos)) {
+            if(ShouldSplitNode(node, cam->pos)) {
                 if(!node->children) {
                     float child_size = node->size / 2.f;
                     float half_child_size = child_size / 2.f;

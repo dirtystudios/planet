@@ -11,6 +11,12 @@
 #include "BoundingBox.h"
 #include "Camera.h"
 #include "Frustum.h"
+#include "Renderer.h"
+#include "Spatial.h"
+#include "ChunkedTerrain.h"
+#include "SimObj.h"
+
+
 
 
 struct ChunkedLoDTerrainDesc {
@@ -26,12 +32,17 @@ struct ChunkedLoDTerrainDesc {
 
 typedef uint32_t ChunkedLoDTerrainHandle;
 
-class ChunkedLoDTerrainRenderer {
+class ChunkedLoDTerrainRenderer : public Renderer {
 private:
     struct ChunkedLoDVertex {
         ChunkedLoDVertex(glm::vec2 pos, glm::vec2 tex) : pos(pos), tex(tex) {};
         glm::vec2 pos;
         glm::vec2 tex;
+    };
+
+    struct ChunkedTerrainRenderObj : public RenderObj {
+        ChunkedTerrainRenderObj() : RenderObj(RendererType::ChunkedTerrain) {};
+        uint32_t handle;
     };
 
     struct ChunkedLoDTerrainNode {
@@ -48,7 +59,7 @@ private:
         ChunkedLoDTerrainNode* children = { NULL };
     };
 
-    struct ChunkedLoDTerrain {
+    struct ChunkedLoDTerrain {  
         ChunkedLoDTerrainNode* root;
         graphics::VertexBufferHandle vb;
         std::function<double(double x, double y, double z)> heightmap_generator;
@@ -76,16 +87,48 @@ private:
 
     bool m_wireFrameMode = false;
 
+    std::vector<ChunkedTerrainRenderObj*> _objs;
 public:
     ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device);
     ~ChunkedLoDTerrainRenderer();
 
     ChunkedLoDTerrainHandle RegisterTerrain(const ChunkedLoDTerrainDesc& desc);
     bool UnregisterTerrain(const ChunkedLoDTerrainHandle& handle);
-    void Render(Camera& cam, Frustum& frustum);
+    void Render(Camera* cam, Frustum* frustum);
 
     // need dummy arg for inputCallback Definition
     bool ToggleWireFrameMode(float notUsed) { m_wireFrameMode = !m_wireFrameMode; return true; }
+
+
+
+    RenderObj* Register(SimObj* simObj) final {         
+        assert(simObj->HasComponents({ ComponentType::ChunkedTerrain, ComponentType::Spatial }));        
+        ChunkedTerrain* terrain = simObj->GetComponent<ChunkedTerrain>(ComponentType::ChunkedTerrain);
+        Spatial* spatial = simObj->GetComponent<Spatial>(ComponentType::Spatial);        
+
+
+
+        ChunkedLoDTerrainDesc desc;
+        desc.size = terrain->size;
+        desc.x = spatial->pos.x;
+        desc.y = spatial->pos.y;
+        desc.heightmap_generator = terrain->heightmapGenerator;
+
+        ChunkedTerrainRenderObj* renderObj = new ChunkedTerrainRenderObj();
+        renderObj->handle = RegisterTerrain(desc);
+
+        _objs.push_back(renderObj);
+        return renderObj;
+    }
+
+    void Unregister(RenderObj* renderObj) final {
+        assert(renderObj->GetRendererType() == RendererType::ChunkedTerrain);
+        _objs.erase(std::remove(begin(_objs), end(_objs), static_cast<ChunkedTerrainRenderObj*>(renderObj)), end(_objs));
+    }
+
+    void Submit(RenderView* renderView) final {
+        Render(renderView->camera, nullptr);
+    }
 
 private:
     template <class T>

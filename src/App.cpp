@@ -1,3 +1,4 @@
+#include "RenderEngine.h"
 #include "App.h"
 #include "Camera.h"
 #include "System.h"
@@ -8,7 +9,7 @@
 #include "ChunkedLoDTerrainRenderer.h"
 #include "TextRenderer.h"
 #include "SkyboxRenderer.h"
-
+#pragma
 #include "glm/glm.hpp"
 
 #include "InputManager.h"
@@ -16,6 +17,9 @@
 #include "PlayerController.h"
 #include "ConsoleUI.h"
 #include "KeyboardManager.h"
+#include "ChunkedTerrain.h"
+#include "Spatial.h"
+#include "Simulation.h"
 
 uint32_t frame_count = 0;
 double accumulate = 0;
@@ -29,6 +33,11 @@ ui::UIManager* uiManager;
 ui::ConsoleUI* consoleUI;
 TextRenderer* text_renderer;
 uint32_t windowWidth = 0, windowHeight = 0;
+RenderEngine* renderEngine;
+Simulation simulation;
+RenderView* playerView;
+Viewport* playerViewport;
+
 
 void SetupInputBindings() {
 
@@ -95,7 +104,11 @@ void App::OnStart() {
 
     SetupUI(renderDevice, windowWidth, windowHeight);
 
-    terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
+    playerViewport = new Viewport(); // dont care about this right now
+    playerView = new RenderView(&cam, playerViewport);
+
+    renderEngine = new RenderEngine(renderDevice, playerView);
+    // terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
     text_renderer = new TextRenderer(renderDevice);
     uiManager->SetTextRenderer(text_renderer);
     skybox_renderer = new SkyboxRenderer(renderDevice);
@@ -105,19 +118,39 @@ void App::OnStart() {
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
 
-    ChunkedLoDTerrainDesc desc;
-    desc.size = 5000;
-    desc.x = 0;
-    desc.y = 0;
-    desc.heightmap_generator = [&](double x, double y, double z) -> double {
-                        noise::module::RidgedMulti mountain;
-                        mountain.SetSeed(32);
-                        mountain.SetFrequency(0.05);
-                        mountain.SetOctaveCount(8);
-                        return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
-                    };
+    SimObj* terrainChunk = simulation.AddSimObj();
 
-    terrain_renderer->RegisterTerrain(desc);
+    ChunkedTerrain* terrain = terrainChunk->AddComponent<ChunkedTerrain>(ComponentType::ChunkedTerrain);
+    terrain->size = 5000;
+    terrain->heightmapGenerator = [&](double x, double y, double z) -> double 
+    {
+        noise::module::RidgedMulti mountain;
+        mountain.SetSeed(32);
+        mountain.SetFrequency(0.05);
+        mountain.SetOctaveCount(8);
+        return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
+    };
+
+    Spatial* spatial = terrainChunk->AddComponent<Spatial>(ComponentType::Spatial);
+    spatial->pos = glm::dvec3(0, 0, 0);
+
+    terrain->renderObj = renderEngine->Register(terrainChunk, RendererType::ChunkedTerrain);
+    assert(terrain->renderObj);
+
+
+    // ChunkedLoDTerrainDesc desc;
+    // desc.size = 5000;
+    // desc.x = 0;
+    // desc.y = 0;
+    // desc.heightmap_generator = [&](double x, double y, double z) -> double {
+    //                     noise::module::RidgedMulti mountain;
+    //                     mountain.SetSeed(32);
+    //                     mountain.SetFrequency(0.05);
+    //                     mountain.SetOctaveCount(8);
+    //                     return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
+                    // };
+
+    // terrain_renderer->RegisterTerrain(desc);
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
@@ -131,6 +164,13 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     playerController->DoUpdate(dt);
 
+
+
+    simulation.Update(dt);
+
+
+
+
     glm::mat4 proj = cam.BuildProjection();
     glm::mat4 view = cam.BuildView();
     glm::mat4 world = glm::mat4();
@@ -138,7 +178,8 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
     skybox_renderer->OnSubmit(&cam);
-    terrain_renderer->Render(cam, frustum);
+    renderEngine->RenderFrame();
+    // terrain_renderer->Render(cam, frustum);
 
 // TODO:: On Opengl ui frames flicker -- fix state management
     uiManager->DoUpdate(dt * 1000);

@@ -38,7 +38,9 @@ FIND_PATH(FREETYPE_INCLUDE_DIR_ft2build ft2build.h
 FIND_PATH(FREETYPE_INCLUDE_DIR_ft2build ft2build.h 
   PATHS
   /usr/local/X11R6/include
+  /usr/local/X11R6/include
   /usr/local/X11/include
+  /usr/local/include
   /usr/X11/include
   /sw/include
   /opt/local/include
@@ -53,6 +55,7 @@ FIND_PATH(FREETYPE_INCLUDE_DIR_freetype2 freetype/config/ftheader.h
 FIND_PATH(FREETYPE_INCLUDE_DIR_freetype2 freetype/config/ftheader.h 
   /usr/local/X11R6/include
   /usr/local/X11/include
+  /usr/local/include
   /usr/X11/include
   /sw/include
   /opt/local/include
