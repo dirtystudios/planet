@@ -102,12 +102,12 @@ namespace graphics {
         //      src and dst needs to be aligned to 16 bytes.
         //  If no ssse3 support or unaligned, slow path it is
         //--------------------------------
-        void Convert24BitTo32Bit(void* src, void* dst, uint32_t numPixels) {
+        void Convert24BitTo32Bit(std::uintptr_t src, std::uintptr_t dst, uint32_t numPixels) {
             int info[4];
             __cpuidex(info, 1, 0);
             bool hasSSSE3 = (info[2] & ((int)1 << 9)) != 0;
-            bool alignedSource = (((unsigned long)src & 15) == 0);
-            bool alignedDst = (((unsigned long)dst & 15) == 0);
+            bool alignedSource = ((src & 15) == 0);
+            bool alignedDst = ((dst & 15) == 0);
 
             if (alignedSource && alignedDst && hasSSSE3) {
                 __m128i *src128 = (__m128i*)src;

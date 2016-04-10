@@ -230,44 +230,44 @@ namespace graphics {
     public:
         RenderDeviceDX11() {};
         ~RenderDeviceDX11();
-        virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
+        int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
 
-        virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
-        virtual void                    DestroyIndexBuffer(IndexBufferHandle handle);
+        IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
+        void                    DestroyIndexBuffer(IndexBufferHandle handle);
         
-        virtual VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage);
-        virtual void                    DestroyVertexBuffer(VertexBufferHandle handle);
+        VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage);
+        void                    DestroyVertexBuffer(VertexBufferHandle handle);
         
-        virtual ShaderHandle            CreateShader(ShaderType shaderType, const char **source);
-        virtual void                    DestroyShader(ShaderHandle handle);
+        ShaderHandle            CreateShader(ShaderType shaderType, const char **source);
+        void                    DestroyShader(ShaderHandle handle);
      
-        virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
-        virtual TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
-        virtual TextureHandle           CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data);
+        TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
+        TextureHandle           CreateTextureArray(TextureFormat tex_format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
+        TextureHandle           CreateTextureCube(TextureFormat tex_format, uint32_t width, uint32_t height, void** data);
 
-        virtual void                    DestroyTexture(TextureHandle handle);
+        void                    DestroyTexture(TextureHandle handle);
 
-        virtual void                    SwapBuffers();
-        virtual void                    ResizeWindow(uint32_t width, uint32_t height);
-        virtual void                    PrintDisplayAdapterInfo();
+        void                    SwapBuffers();
+        void                    ResizeWindow(uint32_t width, uint32_t height);
+        void                    PrintDisplayAdapterInfo();
 
         // Commands
-        virtual void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
-        virtual void UpdateTexture(TextureHandle handle, void* data, size_t size);
-        virtual void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size);
+        void UpdateTextureArray(TextureHandle handle, uint32_t array_index, uint32_t width, uint32_t height, void* data);
+        void UpdateTexture(TextureHandle handle, void* data, size_t size);
+        void UpdateVertexBuffer(VertexBufferHandle vertexBufferHandle, void* data, size_t size);
 
-        virtual void SetRasterState(const RasterState& rasterState);
-        virtual void SetDepthState(const DepthState& depthState);
-        virtual void SetBlendState(const BlendState& blendState);
+        void SetRasterState(const RasterState& rasterState);
+        void SetDepthState(const DepthState& depthState);
+        void SetBlendState(const BlendState& blendState);
 
-        virtual void Clear(float r, float g, float b, float a);
-        virtual void SetVertexShader(ShaderHandle shaderHandle);
-        virtual void SetPixelShader(ShaderHandle shaderHandle);
-        virtual void SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *param_name, void *data);
-        virtual void SetShaderTexture(ShaderHandle shaderHandle, TextureHandle textureHandle, TextureSlot slot);
-        virtual void SetVertexBuffer(VertexBufferHandle handle);
+        void Clear(float r, float g, float b, float a);
+        void SetVertexShader(ShaderHandle shaderHandle);
+        void SetPixelShader(ShaderHandle shaderHandle);
+        void SetShaderParameter(ShaderHandle handle, ParamType paramType, const char *param_name, void *data);
+        void SetShaderTexture(ShaderHandle shaderHandle, TextureHandle textureHandle, TextureSlot slot);
+        void SetVertexBuffer(VertexBufferHandle handle);
 
-        virtual void DrawPrimitive(PrimitiveType primitiveType, uint32_t startVertex, uint32_t numVertices);
+        void DrawPrimitive(PrimitiveType primitiveType, uint32_t startVertex, uint32_t numVertices);
 
     private:
         //This goes here till renderDevice.h has it..too lazy

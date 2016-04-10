@@ -18,7 +18,7 @@ namespace graphics {
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        bufferDesc.ByteWidth = size;
+        bufferDesc.ByteWidth = static_cast<UINT>(size);
         bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
         bufferDesc.CPUAccessFlags = 0;
         bufferDesc.MiscFlags = 0;
@@ -43,7 +43,7 @@ namespace graphics {
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
         bufferDesc.Usage = SafeGet(BufferUsageDX11, (uint32_t)usage);
-        bufferDesc.ByteWidth = size;
+        bufferDesc.ByteWidth = static_cast<UINT>(size);
         bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         if (bufferDesc.Usage == D3D11_USAGE_DYNAMIC)
             bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -172,8 +172,8 @@ namespace graphics {
 		}
 
 		ComPtr<ID3D11InputLayout> inputLayout;
-        DX11_CHECK_RET0(m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), inputLayoutCache.GetInputLayoutSize(ilHandle), 
-                                                 shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout));
+        DX11_CHECK_RET0(m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle),
+            static_cast<UINT>(inputLayoutCache.GetInputLayoutSize(ilHandle)), shader->GetBufferPointer(), shader->GetBufferSize(), &inputLayout));
 
         inputLayout.Get()->AddRef();
         InputLayoutDX11 inputLayoutDx11;
@@ -192,7 +192,7 @@ namespace graphics {
 
             ID3D11Buffer* cBuffer;
             D3D11_BUFFER_DESC cbDesc;
-            cbDesc.ByteWidth = cBuffers[x].totalSize;
+            cbDesc.ByteWidth = static_cast<UINT>(cBuffers[x].totalSize);
             cbDesc.Usage = D3D11_USAGE_DYNAMIC;
             cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
             cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -306,7 +306,8 @@ namespace graphics {
                 for (int x = 0; x < 6; ++x) {
                     cubeData[x] = (uint32_t *)calloc(numPixels, 4);
                     void** dataCast = (void**)data;
-                    Convert24BitTo32Bit(dataCast[x], cubeData[x], numPixels);
+                    Convert24BitTo32Bit(
+                        reinterpret_cast<uintptr_t>(dataCast[x]), reinterpret_cast<uintptr_t>(cubeData[x]), numPixels);
                 }
                 newData = &cubeData[0];
             }
@@ -871,13 +872,15 @@ namespace graphics {
         if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle) {
             m_devcon->PSSetShader(m_pendingState.pixelShader->pixelShader, 0, 0);
             if (m_pendingState.psCBuffer)
-                m_devcon->PSSetConstantBuffers(0, m_pendingState.psCBuffer->constantBuffers.size(), m_pendingState.psCBuffer->constantBuffers.data());
+                m_devcon->PSSetConstantBuffers(
+                    0, static_cast<UINT>(m_pendingState.psCBuffer->constantBuffers.size()), m_pendingState.psCBuffer->constantBuffers.data());
         }
 
         if (m_pendingState.vertexShaderHandle != 0 && m_currentState.vertexShaderHandle != m_pendingState.vertexShaderHandle) {
             m_devcon->VSSetShader(m_pendingState.vertexShader->vertexShader, 0, 0);
             if (m_pendingState.vsCBuffer)
-                m_devcon->VSSetConstantBuffers(0, m_pendingState.vsCBuffer->constantBuffers.size(), m_pendingState.vsCBuffer->constantBuffers.data());
+                m_devcon->VSSetConstantBuffers(
+                    0, static_cast<UINT>(m_pendingState.vsCBuffer->constantBuffers.size()), m_pendingState.vsCBuffer->constantBuffers.data());
         }
 
         if (m_pendingState.vertexShaderHandle != 0 && m_pendingState.vsCBuffer)
@@ -891,7 +894,8 @@ namespace graphics {
 
         if (m_pendingState.vertexBufferHandle != 0 && m_currentState.vertexBufferHandle != m_pendingState.vertexBufferHandle) {
             uint32_t offset = 0;
-            m_devcon->IASetVertexBuffers(0, 1, &m_pendingState.vertexBuffer->vertexBuffer, &m_pendingState.vertexBuffer->layout.stride, &offset);
+            uint32_t stride = static_cast<UINT>(m_pendingState.vertexBuffer->layout.stride);
+            m_devcon->IASetVertexBuffers(0, 1, &m_pendingState.vertexBuffer->vertexBuffer, &stride, &offset);
         }
 
         if (m_pendingState.vsDirtyTextureSlots.size()) {
