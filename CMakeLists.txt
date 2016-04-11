@@ -34,6 +34,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 FILE(GLOB GRAPHICS_SOURCES ${SOURCE_DIR_ROOT}/rendering/*.cpp)
 FILE(GLOB GRAPHICS_HEADERS ${SOURCE_DIR_ROOT}/rendering/*.h)
 
+FILE(GLOB RENDERERS_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/*.cpp)
+FILE(GLOB RENDERERS_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/*.h)
+FILE(GLOB RENDERERS_CHUNKED_TERRAIN_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/*.cpp)
+FILE(GLOB RENDERERS_CHUNKED_TERRAIN_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/*.h)
+
 FILE(GLOB GRAPHICS_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/*.cpp)
 FILE(GLOB GRAPHICS_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/*.h)
 FILE(GLOB GRAPHICS_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/GL/*.cpp)
@@ -53,6 +58,9 @@ FILE(GLOB UTILITIES_OSX_HEADERS ${SOURCE_DIR_ROOT}/utilities/osx/*.h)
 
 FILE(GLOB APP_SOURCES ${SOURCE_DIR_ROOT}/*.cpp)
 FILE(GLOB APP_HEADERS ${SOURCE_DIR_ROOT}/*.h)
+
+FILE(GLOB COMPONENT_HEADERS ${SOURCE_DIR_ROOT}/components/*.h)
+FILE(GLOB COMPONENT_SOURCES ${SOURCE_DIR_ROOT}/components/*.cpp)
 
 FILE(GLOB EXT_HEADERS ${SOURCE_DIR_ROOT}/ext/*.h)
 
@@ -77,6 +85,8 @@ find_package(FreeType REQUIRED)
 include_directories(
     ${SOURCE_DIR_ROOT}/ 
     ${SOURCE_DIR_ROOT}/rendering/
+    ${SOURCE_DIR_ROOT}/rendering/renderers/
+    ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/
     ${SOURCE_DIR_ROOT}/rendering/backend/
     ${SOURCE_DIR_ROOT}/rendering/backend/GL
     ${SOURCE_DIR_ROOT}/rendering/
@@ -85,6 +95,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/utilities/osx
     ${SOURCE_DIR_ROOT}/platform/
     ${SOURCE_DIR_ROOT}/platform/SDL/
+    ${SOURCE_DIR_ROOT}/components
     ${SOURCE_DIR_ROOT}/input/
     ${SOURCE_DIR_ROOT}/ui/
     ${SOURCE_DIR_ROOT}/ext/
@@ -108,6 +119,10 @@ add_executable(dg
     ${GRAPHICS_SOURCES}
     ${GRAPHICS_BACKEND_SOURCES} 
     ${GRAPHICS_GL_BACKEND_SOURCES} 
+    ${RENDERERS_SOURCES}
+    ${COMPONENT_SOURCES}
+    ${RENDERERS_CHUNKED_TERRAIN_SOURCES}
+
     ${INPUT_SOURCES}
     ${UTILITIES_SOURCES}
     ${UTILITIES_OSX_SOURCES}
