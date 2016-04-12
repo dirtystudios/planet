@@ -5,6 +5,7 @@
 #include "RenderDevice.h"
 #include <map>
 #include <functional>
+#include <algorithm>
 #include "GPUTileBuffer.h"
 #include "LRUTileCache.h"
 #include "glm/glm.hpp"
@@ -15,9 +16,6 @@
 #include "Spatial.h"
 #include "ChunkedTerrain.h"
 #include "SimObj.h"
-
-
-
 
 struct ChunkedLoDTerrainDesc {
     // Note(eugene): hierarchical transforms

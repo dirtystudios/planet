@@ -164,12 +164,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     playerController->DoUpdate(dt);
 
-
-
     simulation.Update(dt);
-
-
-
 
     glm::mat4 proj = cam.BuildProjection();
     glm::mat4 view = cam.BuildView();

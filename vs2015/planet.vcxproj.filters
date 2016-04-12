@@ -32,18 +32,18 @@
     <ClCompile Include="..\src\ui\UIManager.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp">
-      <Filter>rendering</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Image_stb.cpp" />
-    <ClCompile Include="..\src\rendering\ChunkedLoDTerrainRenderer.cpp">
-      <Filter>rendering</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\input\KeyboardManager.cpp">
       <Filter>input</Filter>
     </ClCompile>
     <ClCompile Include="..\src\utilities\win32\Log_win32.cpp">
       <Filter>utilities\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp">
+      <Filter>rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.cpp">
+      <Filter>rendering\renderers\chunkedterrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -79,18 +79,6 @@
     </ClInclude>
     <ClInclude Include="..\src\platform\System.h">
       <Filter>platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\ChunkedLODTerrainRenderer.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\GPUTileBuffer.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\LRUTileCache.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\TextRenderer.h">
-      <Filter>rendering</Filter>
     </ClInclude>
     <ClInclude Include="..\src\rendering\backend\AttribLayout.h">
       <Filter>rendering\backend</Filter>
@@ -128,9 +116,6 @@
     <ClInclude Include="..\src\utilities\IniParser.h">
       <Filter>utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\rendering\UIRenderer.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\ui\ConsoleUI.h">
       <Filter>ui</Filter>
     </ClInclude>
@@ -142,9 +127,6 @@
     </ClInclude>
     <ClInclude Include="..\src\ui\UIManager.h">
       <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\SkyboxRenderer.h">
-      <Filter>rendering</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ext\stb_image.h">
       <Filter>ext</Filter>
@@ -159,6 +141,57 @@
     <ClInclude Include="..\src\utilities\Log.h">
       <Filter>utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\rendering\GPUTileBuffer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\LRUTileCache.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RenderEngine.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\Renderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RendererType.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RenderObj.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RenderView.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\SkyboxRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\TextRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\UIRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\Viewport.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\ChunkedTerrain.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\Component.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\ComponentType.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\Spatial.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\IdObj.h" />
+    <ClInclude Include="..\src\SimObj.h" />
+    <ClInclude Include="..\src\Simulation.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.h">
+      <Filter>rendering\renderers\chunkedterrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">
@@ -172,9 +205,6 @@
     </Filter>
     <Filter Include="utilities">
       <UniqueIdentifier>{b28f2dbc-e622-456f-a5ac-f7f812d83a04}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="utilities\osx">
-      <UniqueIdentifier>{07886d51-de58-4e2b-92a8-4d48a72b50d0}</UniqueIdentifier>
     </Filter>
     <Filter Include="utilities\win32">
       <UniqueIdentifier>{55d80882-680f-4643-9e91-04ac0d136bf2}</UniqueIdentifier>
@@ -206,8 +236,14 @@
     <Filter Include="ext">
       <UniqueIdentifier>{68a0873f-f450-419b-8945-7f38cb3126c6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="platform\glfw">
-      <UniqueIdentifier>{1473fdb8-e50e-42d1-8f42-11e83a6dc9b9}</UniqueIdentifier>
+    <Filter Include="components">
+      <UniqueIdentifier>{a666a856-e0ab-4c49-afc7-cb6f2b9d00bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\renderers">
+      <UniqueIdentifier>{4bbb0380-f1b3-4b4a-86c0-c4b482ebdfcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\renderers\chunkedterrain">
+      <UniqueIdentifier>{7fa8b9dc-f4b7-4a75-9359-b9129cfb4d07}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
