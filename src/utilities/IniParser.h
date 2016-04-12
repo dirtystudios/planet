@@ -60,7 +60,7 @@ inline void
 Parser::err(const char* s)
 {
   char buf[256];
-  snprintf(buf, sizeof(buf), "%s on line #%ld", s, ln_);
+  snprintf(buf, sizeof(buf), "%s on line #%zd", s, ln_);
   throw std::runtime_error(buf);
 }
 
@@ -68,7 +68,7 @@ inline std::string trim(const std::string& s)
 {
   char p[] = " \t\r\n";
   long sp = 0;
-  long ep = s.length() - 1;
+  long ep = static_cast<long>(s.length() - 1);
   for (; sp <= ep; ++sp)
     if (!strchr(p, s[sp])) break;
   for (; ep >= 0; --ep)

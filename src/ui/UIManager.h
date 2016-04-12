@@ -82,8 +82,8 @@ namespace ui {
         
         FrameScale GetScaledFrame(UIFrame::UIFrameDesc* frameDesc) {
             FrameScale scaledFrame;
-            scaledFrame.width = ((float)frameDesc->width / INTERNAL_UI_RESOLUTION_WIDTH) * m_windowWidth;
-            scaledFrame.height = ((float)frameDesc->height / INTERNAL_UI_RESOLUTION_HEIGHT) * m_windowHeight;
+            scaledFrame.width = static_cast<uint32_t>(((float)frameDesc->width / INTERNAL_UI_RESOLUTION_WIDTH) * m_windowWidth);
+            scaledFrame.height = static_cast<uint32_t>(((float)frameDesc->height / INTERNAL_UI_RESOLUTION_HEIGHT) * m_windowHeight);
 
             scaledFrame.x = (frameDesc->x / INTERNAL_UI_RESOLUTION_WIDTH) * m_windowWidth;
             scaledFrame.y = (frameDesc->y / INTERNAL_UI_RESOLUTION_HEIGHT) * m_windowHeight;

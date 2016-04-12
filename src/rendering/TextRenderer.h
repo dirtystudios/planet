@@ -189,9 +189,10 @@ public:
     }
 
     void RenderCursor(std::string text, uint32_t cursorPosition, float x, float y, float scale, glm::vec3 color) {
-        if (cursorPosition > text.length()) {
+        uint32_t textLength = static_cast<uint32_t>(text.length());
+        if (cursorPosition > textLength) {
             LOG_D("%s", "CursorRender: CursorPos larger than string, assuming end of text.");
-            cursorPosition = text.length();
+            cursorPosition = textLength;
         }
 
         graphics::BlendState blend_state;
