@@ -18,7 +18,7 @@
 #include "DX11ConstantBufferHelpers.h"
 
 // be sure to put * at the end.....
-const static std::string SHADER_PATH = "F:/gitrepos/planet/src/rendering/shaders/DX11/*";
+const static std::string SHADER_PATH = "C:/Users/irgryo/Documents/gitrepos/planet/src/rendering/shaders/DX11/*";
 const static std::string OUTPUT_PATH = "prebuiltOutput/";
 
 graphics::ShaderType g_shaderType;

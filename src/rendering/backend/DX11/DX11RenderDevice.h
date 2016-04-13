@@ -239,7 +239,7 @@ namespace graphics {
         VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage);
         void                    DestroyVertexBuffer(VertexBufferHandle handle);
         
-        ShaderHandle            CreateShader(ShaderType shaderType, const char **source);
+        ShaderHandle            CreateShader(ShaderType shaderType, const std::string& source);
         void                    DestroyShader(ShaderHandle handle);
      
         TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data);
@@ -280,7 +280,7 @@ namespace graphics {
         void ResetViewport();
         void ResetDepthStencilTexture();
 
-        ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const char** source);
+        ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const std::string& source);
 
         //hack for now 
         int defaultSamplerHandle;

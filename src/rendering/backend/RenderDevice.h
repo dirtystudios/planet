@@ -193,7 +193,7 @@ namespace graphics {
         virtual VertexBufferHandle      CreateVertexBuffer(const VertLayout &layout, void *data, size_t size, BufferUsage usage) = 0;
         virtual void                    DestroyVertexBuffer(VertexBufferHandle handle) = 0;
 
-        virtual ShaderHandle            CreateShader(ShaderType shader_type, const char **source) = 0;
+        virtual ShaderHandle            CreateShader(ShaderType shader_type, const std::string& source) = 0;
         virtual void                    DestroyShader(ShaderHandle handle) = 0;
 
         virtual TextureHandle           CreateTexture2D(TextureFormat tex_format, uint32_t width, uint32_t height, void* data) = 0;

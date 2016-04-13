@@ -68,25 +68,22 @@ graphics::VertLayout SkyboxVertex::layout = { { graphics::ParamType::Float3 } };
 SkyboxRenderer::SkyboxRenderer(graphics::RenderDevice *device) : _device(device) {
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     if (!fs::IsPathDirectory(shaderDirPath)) {
-        LOG_E("%s","Invalid Directory Path given for ShaderDirectory. Attempting default.");
+        LOG_D("%s","Invalid Directory Path given for ShaderDirectory. Attempting default.");
         shaderDirPath = fs::AppendPathProcessDir("/shaders");
     }
 
     std::string vs_contents = ReadFileContents(shaderDirPath +"/" + _device->DeviceConfig.DeviceAbbreviation + "/sky_vs" + _device->DeviceConfig.ShaderExtension);
-    const char* vs_src = vs_contents.c_str();
-
     std::string fs_contents = ReadFileContents(shaderDirPath + "/" + _device->DeviceConfig.DeviceAbbreviation + "/sky_ps" + _device->DeviceConfig.ShaderExtension);
-    const char* fs_src = fs_contents.c_str();
 
     // Note(eugene): cleanup shaders
-    _sky_shaders[0] = _device->CreateShader(graphics::ShaderType::VERTEX_SHADER, &vs_src);
-    _sky_shaders[1] = _device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
+    _sky_shaders[0] = _device->CreateShader(graphics::ShaderType::VERTEX_SHADER, vs_contents);
+    _sky_shaders[1] = _device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, fs_contents);
 
     assert(_sky_shaders[0] && _sky_shaders[1]);
 
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
-        LOG_E("%s", "Invalid Directory Path given for AssetDirectory. Attempting default.");
+        LOG_D("%s", "Invalid Directory Path given for AssetDirectory. Attempting default.");
         shaderDirPath = fs::AppendPathProcessDir("/assets");
     }
 

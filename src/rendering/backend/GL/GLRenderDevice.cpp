@@ -109,10 +109,10 @@ namespace graphics {
         _vertex_buffers.erase(it);
     }
 
-    ShaderHandle RenderDeviceGL::CreateShader(ShaderType shader_type, const char** source) {
+    ShaderHandle RenderDeviceGL::CreateShader(ShaderType shader_type, const std::string& source) {
         GLenum gl_shader_type = SafeGet(shader_type_mapping, (uint32_t)shader_type);
-
-        GLuint id = glCreateShaderProgramv(gl_shader_type, 1, (const GLchar**)source);
+        const char* shaderSource = source.c_str();
+        GLuint id = glCreateShaderProgramv(gl_shader_type, 1, (const GLchar**)&shaderSource);
         assert(id);
         GLint linked = 0;
         GL_CHECK(glGetProgramiv(id, GL_LINK_STATUS, &linked));

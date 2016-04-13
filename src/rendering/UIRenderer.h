@@ -16,17 +16,14 @@ namespace ui {
         UIRenderer(graphics::RenderDevice* renderDevice, float windowWidth, float windowHeight) : m_renderDevice(renderDevice), m_winWidth(windowWidth), m_winHeight(windowHeight) {
             std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
             if (!fs::IsPathDirectory(shaderDirPath)) {
-                LOG_E("%s", "Invalid Directory Path given for ShaderDirectory. Attempting default.");
+                LOG_D("%s", "Invalid Directory Path given for ShaderDirectory. Attempting default.");
                 shaderDirPath = fs::AppendPathProcessDir("/shaders");
             }
             std::string vs_contents = ReadFileContents(shaderDirPath + "/" + m_renderDevice->DeviceConfig.DeviceAbbreviation + "/ui_vs" + m_renderDevice->DeviceConfig.ShaderExtension);
-            const char* vs_src = vs_contents.c_str();
-
             std::string fs_contents = ReadFileContents(shaderDirPath + "/" + m_renderDevice->DeviceConfig.DeviceAbbreviation + "/ui_ps" + m_renderDevice->DeviceConfig.ShaderExtension);
-            const char* fs_src = fs_contents.c_str();
 
-            m_shaders[0] = m_renderDevice->CreateShader(graphics::ShaderType::VERTEX_SHADER, &vs_src);
-            m_shaders[1] = m_renderDevice->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
+            m_shaders[0] = m_renderDevice->CreateShader(graphics::ShaderType::VERTEX_SHADER, vs_contents);
+            m_shaders[1] = m_renderDevice->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, fs_contents);
 
             graphics::VertLayout layout;
             layout.Add(graphics::ParamType::Float4);

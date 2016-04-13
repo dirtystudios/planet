@@ -12,19 +12,16 @@
 ChunkedLoDTerrainRenderer::ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     if (!fs::IsPathDirectory(shaderDirPath)) {
-        LOG_E("%s","Invalid Directory Path given for ShaderDirectory. Attempting default.");
+        LOG_D("%s","Invalid Directory Path given for ShaderDirectory. Attempting default.");
         shaderDirPath = fs::AppendPathProcessDir("/shaders");
     }
 
     std::string vs_contents = ReadFileContents(shaderDirPath +"/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_vs" + render_device->DeviceConfig.ShaderExtension);
-    const char* vs_src = vs_contents.c_str();
-
     std::string fs_contents = ReadFileContents(shaderDirPath + "/" + render_device->DeviceConfig.DeviceAbbreviation + "/terrain_fs" + render_device->DeviceConfig.ShaderExtension);
-    const char* fs_src = fs_contents.c_str();
 
     // Note(eugene): cleanup shaders
-    _shaders[0] = _render_device->CreateShader(graphics::ShaderType::VERTEX_SHADER, &vs_src);
-    _shaders[1] = _render_device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, &fs_src);
+    _shaders[0] = _render_device->CreateShader(graphics::ShaderType::VERTEX_SHADER, vs_contents);
+    _shaders[1] = _render_device->CreateShader(graphics::ShaderType::FRAGMENT_SHADER, fs_contents);
 
     assert(_shaders[0] && _shaders[1]);
 

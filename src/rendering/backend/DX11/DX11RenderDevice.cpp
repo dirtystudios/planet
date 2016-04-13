@@ -72,7 +72,7 @@ namespace graphics {
         return handle;
     }
 
-    ComPtr<ID3DBlob> RenderDeviceDX11::CompileShader(ShaderType shaderType, const char** source) {
+    ComPtr<ID3DBlob> RenderDeviceDX11::CompileShader(ShaderType shaderType, const std::string& source) {
         ComPtr<ID3DBlob> blob;
         ComPtr<ID3DBlob> errorBlob;
         char *entryPoint;
@@ -101,7 +101,7 @@ namespace graphics {
         flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
 #endif 
 
-        hr = D3DCompile(source[0], strlen(source[0]), NULL, NULL, NULL, entryPoint, target, flags, 0, &blob, &errorBlob);
+        hr = D3DCompile(&source[0], source.length(), NULL, NULL, NULL, entryPoint, target, flags, 0, &blob, &errorBlob);
 
         if (FAILED(hr)) {
             if (errorBlob) {
@@ -115,7 +115,7 @@ namespace graphics {
         return blob;
     }
 
-    ShaderHandle RenderDeviceDX11::CreateShader(ShaderType shaderType, const char** source) {
+    ShaderHandle RenderDeviceDX11::CreateShader(ShaderType shaderType, const std::string& source) {
         ShaderDX11 shader = {};
         uint32_t shaderHandle = 0;
         shader.shaderType = shaderType;
