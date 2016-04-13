@@ -14,15 +14,18 @@ namespace input {
         const char *shiftedSymbolKeyString = "~_+{}|:\"<>?";
         const char *numbericSymbolsString = ")!@#$%^&*(";
 
-        bool isLShift, isRShift, isLCtrl, isRCtrl, isLAlt, isRAlt;
-        std::string m_contents;
-        bool m_isCapturing;
         // Note: these are in milleseconds.
         const float m_repeatDelay = 500;
         const float m_repeatInterval = 30;
+
         std::vector<float> keyHoldTimer;
-        uint32_t m_cursorPos;
-        bool m_hasChanged;
+
+        bool isRShift = false, isRCtrl = false, isRAlt = false;
+        bool isLShift = false, isLCtrl = false, isLAlt = false;
+        std::string m_contents = "";
+        bool m_isCapturing = false;
+        uint32_t m_cursorPos = 0;
+        bool m_hasChanged = true;
     public:
         KeyboardManager();
         void HandleKeyPress(InputCode inputCode, int pressed, float dt);
