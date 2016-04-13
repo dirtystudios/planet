@@ -169,6 +169,13 @@ namespace graphics {
         std::string ShaderExtension;
     };
 
+    struct DeviceInitialization {
+        void* windowHandle { 0 };
+        uint32_t windowHeight { 0 };
+        uint32_t windowWidth { 0 };
+        bool usePrebuiltShaders { false };
+    };
+
     typedef uint32_t VertexBufferHandle;
     typedef uint32_t ShaderHandle;
     typedef uint32_t ProgramHandle;
@@ -179,7 +186,7 @@ namespace graphics {
     public:
         DeviceConfiguration             DeviceConfig;
 
-        virtual int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) = 0;
+        virtual int                     InitializeDevice(DeviceInitialization deviceInitialization) = 0;
         virtual IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage) = 0;
         virtual void                    DestroyIndexBuffer(IndexBufferHandle handle) = 0;
 

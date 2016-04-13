@@ -63,7 +63,7 @@ static inline glm::vec3 GetColor(uint32_t index) {
 }
 
 static std::string ReadFileContents(const std::string& fpath) {
-   std::ifstream fin(fpath);
+   std::ifstream fin(fpath, std::ios::in | std::ios::binary);
 
     if(fin.fail()) {
         LOG_E("Failed to open file '%s'\n", fpath.c_str());

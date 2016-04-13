@@ -1,159 +1,156 @@
-
 #include "DX11InputLayoutCache.h"
+#include <d3dcompiler.h>
+#include <d3dcompiler.inl>
 #include <wrl.h>
+#include <DXGI.h>
 #include "xxhash.h"
 #include "Log.h"
 
 using namespace Microsoft::WRL;
 
 namespace graphics {
-    InputLayoutCacheHandle DX11InputLayoutCache::InsertInputLayout(ID3DBlob* shaderBlob) {
-        std::vector<D3D11_INPUT_ELEMENT_DESC> ieds = GenerateInputLayout(shaderBlob);
+    namespace dx11 {
+        // need this here to initilalize static 
+        std::vector<std::unique_ptr<const char[]>> DX11SemanticNameCache::m_semanticNameCache = {};
 
-        // either invalid, or there's really no input layout specified
-        if (ieds.size() == 0) 
-            return 0;
+        InputLayoutCacheHandle DX11InputLayoutCache::InsertInputLayout(ID3DBlob* shaderBlob) {
+            DX11InputLayoutDescriptor desc = GenerateInputLayout(shaderBlob);
 
-        uint32_t hash = XXH32(&ieds[0], sizeof(D3D11_INPUT_ELEMENT_DESC) * ieds.size(), 0);
+            return InsertInputLayout(desc);
+        }
 
-        auto it = m_inputLayouts.find(hash);
-        if (it != m_inputLayouts.end()) {
-            it->second.numRefs++;
+        InputLayoutCacheHandle DX11InputLayoutCache::InsertInputLayout(const DX11InputLayoutDescriptor& inputLayoutDesc) {
+            // either invalid, or there's really no input layout specified
+            if (inputLayoutDesc.elements.size() == 0)
+                return 0;
+
+            uint32_t hash = XXH32(&inputLayoutDesc.elements[0], sizeof(D3D11_INPUT_ELEMENT_DESC) * inputLayoutDesc.elements.size(), 0);
+
+            auto it = m_inputLayouts.find(hash);
+            if (it != m_inputLayouts.end()) {
+                it->second.numRefs++;
+                return hash;
+            }
+
+            DX11InputLayoutCacheEntry cacheEntry;
+            cacheEntry.layoutDesc.elements = inputLayoutDesc.elements;
+            cacheEntry.numRefs = 1;
+            m_inputLayouts.insert(std::make_pair(hash, cacheEntry));
+
             return hash;
         }
-        
-        DX11InputLayout inputLayout;
-        inputLayout.elements = ieds;
-        inputLayout.numRefs = 1;
-        m_inputLayouts.insert(std::make_pair(hash, inputLayout));
 
-        return hash;
-    }
+        const D3D11_INPUT_ELEMENT_DESC* DX11InputLayoutCache::GetInputLayoutData(InputLayoutCacheHandle handle) {
+            auto it = m_inputLayouts.find(handle);
+            if (it == m_inputLayouts.end()) {
+                LOG_E("DX11Render: Invalid InputLayout handle given: %d ", handle);
+                return 0;
+            }
 
-    const D3D11_INPUT_ELEMENT_DESC* DX11InputLayoutCache::GetInputLayoutData(InputLayoutCacheHandle handle) {
-        auto it = m_inputLayouts.find(handle);
-        if (it == m_inputLayouts.end()) {
-            LOG_E("DX11Render: Invalid InputLayout handle given: %d ", handle);
-            return 0;
+            return &it->second.layoutDesc.elements[0];
         }
 
-        return &it->second.elements[0];
-    }
+        size_t DX11InputLayoutCache::GetInputLayoutSize(InputLayoutCacheHandle handle) {
+            auto it = m_inputLayouts.find(handle);
+            if (it == m_inputLayouts.end()) {
+                LOG_E("DX11Render: Invalid InputLayout handle given: %d ", handle);
+                return 0;
+            }
 
-    size_t DX11InputLayoutCache::GetInputLayoutSize(InputLayoutCacheHandle handle) {
-        auto it = m_inputLayouts.find(handle);
-        if (it == m_inputLayouts.end()) {
-            LOG_E("DX11Render: Invalid InputLayout handle given: %d ", handle);
-            return 0;
+            return it->second.layoutDesc.elements.size();
         }
 
-        return it->second.elements.size();
-    }
-
-    void DX11InputLayoutCache::RemoveInputLayout(InputLayoutCacheHandle handle) {
-        // todo, keep track of references, we wont want to always remove if its being used multiple times
-        auto it = m_inputLayouts.find(handle);
-        if (it == m_inputLayouts.end()) {
-            return;
+        void DX11InputLayoutCache::RemoveInputLayout(InputLayoutCacheHandle handle) {
+            auto it = m_inputLayouts.find(handle);
+            if (it == m_inputLayouts.end()) {
+                return;
+            }
+            it->second.numRefs--;
+            if (it->second.numRefs == 0)
+                m_inputLayouts.erase(handle);
         }
-        it->second.numRefs--;
-        if (it->second.numRefs == 0)
-            m_inputLayouts.erase(handle);
-    }
 
-    std::vector<D3D11_INPUT_ELEMENT_DESC> DX11InputLayoutCache::GenerateInputLayout(ID3DBlob* pShaderBlob) {
-        ComPtr<ID3D11ShaderReflection> shaderReflection;
-        HRESULT hr;
-        std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
+        DX11InputLayoutDescriptor DX11InputLayoutCache::GenerateInputLayout(ID3DBlob* pShaderBlob) {
+            ComPtr<ID3D11ShaderReflection> shaderReflection;
+            HRESULT hr;
+            DX11InputLayoutDescriptor inputLayoutDesc;
 #ifdef D3D11Reflect
-        hr = D3D11Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
+            hr = D3D11Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
 #else
-        hr = D3D12Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
+            hr = D3D12Reflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &shaderReflection);
 #endif
-        if (FAILED(hr)) {
-            LOG_E("DX11Render: Failed to get shader reflection. HR: 0x%x", hr);
-            return inputLayoutDesc;
-        }
-
-        D3D11_SHADER_DESC shaderDesc;
-        hr = shaderReflection->GetDesc(&shaderDesc);
-        if (FAILED(hr)) {
-            LOG_E("DX11Render: Failed to get shaderDesc. HR: 0x%x", hr);
-            return inputLayoutDesc;
-        }
-
-        for (uint32_t x = 0; x < shaderDesc.InputParameters; ++x) {
-            D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
-            hr = shaderReflection->GetInputParameterDesc(x, &paramDesc);
             if (FAILED(hr)) {
-                LOG_E("DX11Render: Failed to get shader param desc. HR: 0x%x", hr);
+                LOG_E("DX11Render: Failed to get shader reflection. HR: 0x%x", hr);
                 return inputLayoutDesc;
             }
 
-			const char* semanticName = nullptr;
-
-			for (auto &name : m_semanticNameCache) {
-				if (!strcmp(name.get(), paramDesc.SemanticName)) {
-					semanticName = name.get();
-					break;
-				}
-			}
-
-			// didnt find it
-			if (!semanticName) {
-				m_semanticNameCache.emplace_back(_strdup(paramDesc.SemanticName));
-				semanticName = m_semanticNameCache.at(m_semanticNameCache.size() - 1).get();
-			}
-
-            D3D11_INPUT_ELEMENT_DESC ied;
-            ied.SemanticName = semanticName;
-            ied.SemanticIndex = paramDesc.SemanticIndex;
-            ied.InputSlot = 0;
-            ied.AlignedByteOffset = x == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
-            ied.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-            ied.InstanceDataStepRate = 0;
-
-            switch (paramDesc.Mask) {
-            case 1:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            case 3:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            case 7:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            case 15:
-                switch (paramDesc.ComponentType) {
-                case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_UINT; break;
-                case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_SINT; break;
-                case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
-                default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
-                }
-                break;
-            default:
-                LOG_E("DX11Render: Unexpected paramdesc mask encountered!: %d", paramDesc.Mask);
+            D3D11_SHADER_DESC shaderDesc;
+            hr = shaderReflection->GetDesc(&shaderDesc);
+            if (FAILED(hr)) {
+                LOG_E("DX11Render: Failed to get shaderDesc. HR: 0x%x", hr);
                 return inputLayoutDesc;
-                break;
             }
 
-            inputLayoutDesc.emplace_back(ied);
+            for (uint32_t x = 0; x < shaderDesc.InputParameters; ++x) {
+                D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+                hr = shaderReflection->GetInputParameterDesc(x, &paramDesc);
+                if (FAILED(hr)) {
+                    LOG_E("DX11Render: Failed to get shader param desc. HR: 0x%x", hr);
+                    return inputLayoutDesc;
+                }
+
+
+
+                D3D11_INPUT_ELEMENT_DESC ied;
+                ied.SemanticName = DX11SemanticNameCache::AddGetSemanticNameToCache(paramDesc.SemanticName);
+                ied.SemanticIndex = paramDesc.SemanticIndex;
+                ied.InputSlot = 0;
+                ied.AlignedByteOffset = x == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
+                ied.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                ied.InstanceDataStepRate = 0;
+
+                switch (paramDesc.Mask) {
+                case 1:
+                    switch (paramDesc.ComponentType) {
+                    case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32_UINT; break;
+                    case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32_SINT; break;
+                    case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32_FLOAT; break;
+                    default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                    }
+                    break;
+                case 3:
+                    switch (paramDesc.ComponentType) {
+                    case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32_UINT; break;
+                    case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32_SINT; break;
+                    case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32_FLOAT; break;
+                    default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                    }
+                    break;
+                case 7:
+                    switch (paramDesc.ComponentType) {
+                    case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32_UINT; break;
+                    case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32_SINT; break;
+                    case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32_FLOAT; break;
+                    default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                    }
+                    break;
+                case 15:
+                    switch (paramDesc.ComponentType) {
+                    case D3D_REGISTER_COMPONENT_UINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_UINT; break;
+                    case D3D_REGISTER_COMPONENT_SINT32: ied.Format = DXGI_FORMAT_R32G32B32A32_SINT; break;
+                    case D3D_REGISTER_COMPONENT_FLOAT32: ied.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
+                    default: LOG_E("DX11Render: Unknown ComponentType encounted!"); break;
+                    }
+                    break;
+                default:
+                    LOG_E("DX11Render: Unexpected paramdesc mask encountered!: %d", paramDesc.Mask);
+                    return inputLayoutDesc;
+                    break;
+                }
+
+                inputLayoutDesc.elements.emplace_back(ied);
+            }
+            return inputLayoutDesc;
         }
-        return inputLayoutDesc;
     }
 }

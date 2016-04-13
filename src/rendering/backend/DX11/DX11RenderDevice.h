@@ -147,6 +147,7 @@ namespace graphics {
     class RenderDeviceDX11 : public RenderDevice {
     private:
         uint32_t m_winWidth, m_winHeight;
+        bool m_usePrebuiltShaders;
         std::unordered_map<uint32_t, IndexBufferDX11> m_indexBuffers;
         std::unordered_map<uint32_t, VertexBufferDX11> m_vertexBuffers;
         std::unordered_map<uint32_t, ConstantBufferDX11> m_constantBuffers;
@@ -230,7 +231,7 @@ namespace graphics {
     public:
         RenderDeviceDX11() {};
         ~RenderDeviceDX11();
-        int                     InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth);
+        int                     InitializeDevice(DeviceInitialization deviceInitialization);
 
         IndexBufferHandle       CreateIndexBuffer(void* data, size_t size, BufferUsage usage);
         void                    DestroyIndexBuffer(IndexBufferHandle handle);
@@ -279,6 +280,8 @@ namespace graphics {
         void ResetViewport();
         void ResetDepthStencilTexture();
 
+        ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const char** source);
+
         //hack for now 
         int defaultSamplerHandle;
         SamplerHandle CreateSampler();
@@ -286,10 +289,12 @@ namespace graphics {
         void DestroySampler(SamplerHandle handle);
 
         uint32_t CreateInputLayout(ID3DBlob *Shader);
+        uint32_t CreateInputLayout(uint32_t shaderHash, const std::string& byteCode);
         void SetInputLayout(uint32_t inputLayoutHandle);
         void DestroyInputLayout(uint32_t handle);
 
         uint32_t CreateConstantBuffer(ID3DBlob *shaderBlob);
+        uint32_t CreateConstantBuffer(uint32_t shaderHash);
         void UpdateConstantBuffer(ConstantBufferDX11* cb, std::vector<uint32_t> dirtySlots);
         void DestroyConstantBuffer(ConstantBufferHandle handle);
 

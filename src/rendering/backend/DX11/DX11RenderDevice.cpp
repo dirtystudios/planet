@@ -5,7 +5,10 @@
 #include "DX11ConstantBufferHelpers.h"
 #include "xxhash.h"
 
+#include <fstream>
 #include "DX11Utils.h"
+
+#include "File.h"
 
 #define SafeGet(id, idx) id[idx];
 
@@ -69,15 +72,14 @@ namespace graphics {
         return handle;
     }
 
-    ShaderHandle RenderDeviceDX11::CreateShader(ShaderType shaderType, const char** source) {
+    ComPtr<ID3DBlob> RenderDeviceDX11::CompileShader(ShaderType shaderType, const char** source) {
         ComPtr<ID3DBlob> blob;
         ComPtr<ID3DBlob> errorBlob;
-        HRESULT hr;
-
         char *entryPoint;
         char *target;
 
-        // may want to break these up...meh
+        HRESULT hr;
+
 
         // ---- Compile Shader Source 
         switch (shaderType) {
@@ -91,7 +93,7 @@ namespace graphics {
             break;
         default:
             LOG_E("DX11RenderDev: Unsupported shader type supplied. Type: %d", shaderType);
-            return 0;
+            return blob;
         }
 
         uint32_t flags = 0;
@@ -108,38 +110,66 @@ namespace graphics {
             else {
                 LOG_E("DX11RenderDev: Failed to compile Shader. Hr: 0x%x", hr);
             }
-            return 0;
+            return blob;
         }
+        return blob;
+    }
 
-        // ---- Create Shader and do necessary reflection 
-        // todo: samplers?
+    ShaderHandle RenderDeviceDX11::CreateShader(ShaderType shaderType, const char** source) {
         ShaderDX11 shader = {};
         uint32_t shaderHandle = 0;
         shader.shaderType = shaderType;
 
-        uint32_t cBufferHandle = GenerateHandle();
-        cBufferHandle = CreateConstantBuffer(blob.Get());
+        uint32_t cBufferHandle = 0;
+        uint32_t inputLayoutHandle = 0;
+
+        ComPtr<ID3DBlob> blob;
+        void* bufPtr;
+        size_t bufSize;
+        uint32_t shaderHash = 0;
+
+        if (m_usePrebuiltShaders) {
+            bufPtr = (void*)&source[0];
+            bufSize = source.length();
+
+            shaderHash = XXH32(&source[0], bufSize, 0);
+            cBufferHandle = CreateConstantBuffer(shaderHash);
+            if (shaderType == ShaderType::VERTEX_SHADER)
+                inputLayoutHandle = CreateInputLayout(shaderHash, source);
+        }
+        else {
+            blob.Swap(CompileShader(shaderType, source));
+
+            cBufferHandle = CreateConstantBuffer(blob.Get());
+            if (shaderType == ShaderType::VERTEX_SHADER)
+                inputLayoutHandle = CreateInputLayout(blob.Get());
+
+            bufPtr = blob->GetBufferPointer();
+            bufSize = blob->GetBufferSize();
+        }
+        if (!bufPtr) {
+            LOG_E("DX11RenderDev: bufPtr is 0 in CreateShader");
+            return 0;
+        }
 
         switch (shaderType) {
         case ShaderType::VERTEX_SHADER:
         {
             ComPtr<ID3D11VertexShader> vertexShader;
-            DX11_CHECK_RET0(m_dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &vertexShader));
-
-            uint32_t ilHandle = CreateInputLayout(blob.Get());
+            DX11_CHECK_RET0(m_dev->CreateVertexShader(bufPtr, bufSize, NULL, &vertexShader));
 
             vertexShader.Get()->AddRef();
             shaderHandle = GenerateHandle();
             shader.vertexShader = vertexShader.Get();
             shader.cbHandle = cBufferHandle;
-            shader.inputLayoutHandle = ilHandle;
+            shader.inputLayoutHandle = inputLayoutHandle;
             break;
         }
         case ShaderType::FRAGMENT_SHADER:
         {
             // todo: anything else for fragment shader
             ComPtr<ID3D11PixelShader> pixelShader;
-            DX11_CHECK_RET0(m_dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &pixelShader));
+            DX11_CHECK_RET0(m_dev->CreatePixelShader(bufPtr, bufSize, NULL, &pixelShader));
 
             pixelShader.Get()->AddRef();
             shaderHandle = GenerateHandle();
@@ -182,11 +212,80 @@ namespace graphics {
         return ilHandle;
     }
 
+    uint32_t RenderDeviceDX11::CreateInputLayout(uint32_t shaderHash, const std::string& byteCode) {
+        std::ifstream ilContents(fs::AppendPathProcessDir("shaders/DX11Prebuilt/" + std::to_string(shaderHash) + ".il"));
+        if (ilContents.fail()) {
+            LOG_D("DX11Render-CreateInputLayout-Prebuilt Failed to open file");
+            return 0;
+        }
+
+        DX11InputLayoutDescriptor ild;
+        if (ilContents >> ild) {
+            InputLayoutCacheHandle ilHandle = inputLayoutCache.InsertInputLayout(ild);
+            if (!ilHandle) {
+                LOG_D("DX11Render: Invalid or empty input layout defined in shader.");
+                return 0;
+            }
+
+            //reuse previously created one if possible
+            InputLayoutDX11* cachedInputLayout = Get(m_inputLayouts, ilHandle);
+            if (cachedInputLayout) {
+                return ilHandle;
+            }
+
+            ComPtr<ID3D11InputLayout> inputLayout;
+            DX11_CHECK_RET0(m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), 
+                inputLayoutCache.GetInputLayoutSize(ilHandle), &byteCode[0], byteCode.length(), &inputLayout));
+
+            inputLayout.Get()->AddRef();
+            InputLayoutDX11 inputLayoutDx11;
+            inputLayoutDx11.inputLayout = inputLayout.Get();
+            m_inputLayouts.emplace(ilHandle, inputLayoutDx11);
+            return ilHandle;
+        }
+        LOG_E("DX11RenderDev-CreateInputLayout-Prebuilt Failed!");
+        return 0;
+    }
+
+    uint32_t RenderDeviceDX11::CreateConstantBuffer(uint32_t shaderHash) {
+        std::ifstream cbContents(fs::AppendPathProcessDir("shaders/DX11Prebuilt/" + std::to_string(shaderHash) + ".cb"));
+        if (cbContents.fail()) {
+            LOG_D("DX11Render-CreateConstantBuffer-Prebuilt Failed to open file");
+            return 0;
+        }
+        //todo, support multiple cbuffers
+        CBufferDescriptor *cbd = new CBufferDescriptor();
+        if (cbContents >> *cbd) {
+            std::vector<ID3D11Buffer*> constantBuffers;
+
+            ID3D11Buffer* cBuffer;
+            D3D11_BUFFER_DESC cbDesc;
+            cbDesc.ByteWidth = cbd->totalSize;
+            cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+            cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+            cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            cbDesc.MiscFlags = 0;
+            cbDesc.StructureByteStride = 0;
+            DX11_CHECK_RET0(m_dev->CreateBuffer(&cbDesc, NULL, &cBuffer));
+            constantBuffers.emplace_back(cBuffer);
+
+            uint32_t handle = GenerateHandle();
+            ConstantBufferDX11 cb = {};
+            cb.cBufferDescs.assign(&cbd, &cbd + 1);
+            cb.constantBuffers = constantBuffers;
+            m_constantBuffers.emplace(handle, cb);
+
+            return handle;
+        }
+        LOG_E("DX11RenderDev-CreateConstantBuffer-Prebuilt Failed!");
+        return 0;
+    }
+
     uint32_t RenderDeviceDX11::CreateConstantBuffer(ID3DBlob *shaderBlob) {
         std::vector<ID3D11Buffer*> constantBuffers;
 
         size_t numCBuffers = 0;
-        graphics::dx11::CBufferDescriptor* cBuffers = graphics::dx11::GenerateConstantBuffer(shaderBlob, &numCBuffers);
+        CBufferDescriptor* cBuffers = graphics::dx11::GenerateConstantBuffer(shaderBlob, &numCBuffers);
 
         for (uint32_t x = 0; x < numCBuffers; ++x) {
 
@@ -1050,13 +1149,20 @@ namespace graphics {
         m_devcon->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
     }
 
-    int RenderDeviceDX11::InitializeDevice(void *windowHandle, uint32_t windowHeight, uint32_t windowWidth) {
-        DeviceConfig.DeviceAbbreviation = "DX11";
-        DeviceConfig.ShaderExtension = ".hlsl";
+    int RenderDeviceDX11::InitializeDevice(DeviceInitialization deviceInitialization) {
+        m_hwnd = static_cast<HWND>(deviceInitialization.windowHandle);
+        m_winWidth = deviceInitialization.windowWidth;
+        m_winHeight = deviceInitialization.windowHeight;
+        m_usePrebuiltShaders = deviceInitialization.usePrebuiltShaders;
 
-        m_hwnd = static_cast<HWND>(windowHandle);
-        m_winWidth = windowWidth;
-        m_winHeight = windowHeight;
+        if (m_usePrebuiltShaders) {
+            DeviceConfig.DeviceAbbreviation = "DX11Prebuilt";
+            DeviceConfig.ShaderExtension = ".cso";
+        }
+        else {
+            DeviceConfig.DeviceAbbreviation = "DX11";
+            DeviceConfig.ShaderExtension = ".hlsl";
+        }
 
         D3D_FEATURE_LEVEL FeatureLevelsRequested[] = {
             D3D_FEATURE_LEVEL_11_1,

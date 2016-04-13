@@ -3,6 +3,8 @@
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 #include <wrl.h>
+#include <DXGI.h>
+#include <iostream>
 
 #include "ParamType.h"
 #include "Log.h"
@@ -19,6 +21,8 @@ namespace graphics {
         {
             size_t  offset;
             size_t  size;
+            CBufferVariable()
+                : offset(0), size(0) {}
             CBufferVariable(size_t m_offset, size_t m_size)
                 : offset(m_offset), size(m_size) {}
         };
@@ -26,12 +30,12 @@ namespace graphics {
         class CBufferDescriptor
         {
         public:
-            size_t totalSize;
-            std::string name;
+            size_t totalSize = 0;
+            std::string name = "";
             // string holds name of variable
             std::unordered_map<std::string, CBufferVariable> details;
-            size_t numVars;
-            void *bufferData;
+            size_t numVars = 0;
+            void *bufferData = 0;
 
             CBufferDescriptor() {};
 
@@ -56,6 +60,30 @@ namespace graphics {
             // Not dealing with this copy pointer bs
             CBufferDescriptor & operator=(const CBufferDescriptor&) = delete;
             CBufferDescriptor(const CBufferDescriptor &other) = delete;
+
+            // quick and dirty stream loading
+
+            friend std::ostream& operator << (std::ostream &os, const CBufferDescriptor &cb) {
+                os << cb.name << " ";
+                os << cb.totalSize << " ";
+                os << cb.numVars << "\n";
+                for (auto detail : cb.details) {
+                    os << detail.first << " " << detail.second.offset << " " << detail.second.size << "\n";
+                }
+                return os;
+            }
+
+            friend std::istream& operator >> (std::istream &is, CBufferDescriptor &cb) {
+                is >> cb.name >> cb.totalSize >> cb.numVars;
+                for (int x = 0; x < cb.numVars; ++x) {
+                    CBufferVariable cbVar;
+                    std::string cbName;
+                    is >> cbName >> cbVar.offset >> cbVar.size;
+                    cb.details.emplace(std::make_pair(cbName, cbVar));
+                }
+                cb.ResetDescriptor(cb.totalSize, cb.name, cb.numVars);
+                return is;
+            }
         };
 
         // Returns array, numCBuffers is out

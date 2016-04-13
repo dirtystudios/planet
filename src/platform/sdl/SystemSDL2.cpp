@@ -155,7 +155,14 @@ int sys::Run(app::Application* app){
             }
             else {
                 _app->renderDevice = new graphics::RenderDeviceDX11();
-                _app->renderDevice->InitializeDevice(info.info.win.window, _window_height, _window_width);
+                std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
+
+                graphics::DeviceInitialization devInit;
+                devInit.windowHandle = info.info.win.window;
+                devInit.windowHeight = _window_height;
+                devInit.windowWidth = _window_width;
+                devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
+                _app->renderDevice->InitializeDevice(devInit);
             }
 #endif
             break;
