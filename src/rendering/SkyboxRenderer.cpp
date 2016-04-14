@@ -84,7 +84,7 @@ SkyboxRenderer::SkyboxRenderer(graphics::RenderDevice *device) : _device(device)
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
         LOG_D("%s", "Invalid Directory Path given for AssetDirectory. Attempting default.");
-        shaderDirPath = fs::AppendPathProcessDir("/assets");
+        assetDirPath = fs::AppendPathProcessDir("/assets");
     }
 
     Image skybox_images[6] = { 0 };

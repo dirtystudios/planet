@@ -1,7 +1,6 @@
 #pragma once
 
 #include <wrl.h>
-#include <d3d11.h>
 #include <DXGI.h>
 
 #include "RenderDevice.h"
@@ -9,6 +8,24 @@
 #include "ParamType.h"
 
 #include "DX11InputLayoutCache.h"
+
+#ifdef _DEBUG
+#define DEBUG_DX11
+#endif
+
+// Check if compiling as uwp windows app and use newer api instead 
+#ifdef WINAPI_PARTITION_APP
+    #if WINAPI_FAMILY == WINAPI_FAMILY_PC_APP
+        #define DX11_3_API
+    #endif
+#endif
+
+#ifdef DX11_3_API
+#include <d3d11_3.h>
+#else
+#include <d3d11.h>
+#endif
+
 
 namespace graphics {
     // Cheating here with this
@@ -159,11 +176,18 @@ namespace graphics {
         std::unordered_map<uint32_t, RasterStateDX11> m_rasterStates;
         std::unordered_map<uint32_t, DepthStateDX11> m_depthStates;
 
-        HWND m_hwnd;
+#ifdef DX11_3_API
+        ComPtr<ID3D11Device3> m_dev;
+        ComPtr<ID3D11DeviceContext3> m_devcon;
+        ComPtr<IDXGISwapChain1> m_swapchain;
+        ComPtr<IDXGIFactory3> m_factory;
+#else
         ComPtr<ID3D11Device> m_dev;
         ComPtr<ID3D11DeviceContext> m_devcon;
         ComPtr<IDXGISwapChain> m_swapchain;
         ComPtr<IDXGIFactory> m_factory;
+#endif
+
         ComPtr<ID3D11RenderTargetView> m_renderTarget;
         ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 

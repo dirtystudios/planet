@@ -235,7 +235,7 @@ namespace graphics {
 
             ComPtr<ID3D11InputLayout> inputLayout;
             DX11_CHECK_RET0(m_dev->CreateInputLayout(inputLayoutCache.GetInputLayoutData(ilHandle), 
-                inputLayoutCache.GetInputLayoutSize(ilHandle), &byteCode[0], byteCode.length(), &inputLayout));
+                static_cast<UINT>(inputLayoutCache.GetInputLayoutSize(ilHandle)), &byteCode[0], byteCode.length(), &inputLayout));
 
             inputLayout.Get()->AddRef();
             InputLayoutDX11 inputLayoutDx11;
@@ -260,7 +260,7 @@ namespace graphics {
 
             ID3D11Buffer* cBuffer;
             D3D11_BUFFER_DESC cbDesc;
-            cbDesc.ByteWidth = cbd->totalSize;
+            cbDesc.ByteWidth = static_cast<UINT>(cbd->totalSize);
             cbDesc.Usage = D3D11_USAGE_DYNAMIC;
             cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
             cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -1032,6 +1032,11 @@ namespace graphics {
         if (m_pendingState.depthStateHash != 0 && m_currentState.depthStateHash != m_pendingState.depthStateHash)
             m_devcon->OMSetDepthStencilState(m_pendingState.depthState->depthState, 1);
 
+        // We use SWAP_FLIP_SEQUENTIAL with 11.3, which apparently needs this call everytime....ugh
+#ifdef DX11_3_API
+        m_devcon->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
+#endif
+
         m_devcon->Draw(numVertices, startVertex);
         
         //cleanup state before set
@@ -1140,9 +1145,9 @@ namespace graphics {
 
         m_renderTarget.Reset();
 
-        DX11_CHECK_RET(m_swapchain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
+        DX11_CHECK_RET(m_swapchain->ResizeBuffers(2, width, height, DXGI_FORMAT_UNKNOWN, 0));
         ComPtr<ID3D11Texture2D> backBufferPtr;
-        DX11_CHECK_RET(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBufferPtr));
+        DX11_CHECK_RET(m_swapchain->GetBuffer(0, IID_PPV_ARGS(&backBufferPtr)));
         DX11_CHECK_RET(m_dev->CreateRenderTargetView(backBufferPtr.Get(), 0, m_renderTarget.GetAddressOf()));
         ResetDepthStencilTexture();
         ResetViewport();
@@ -1150,7 +1155,6 @@ namespace graphics {
     }
 
     int RenderDeviceDX11::InitializeDevice(DeviceInitialization deviceInitialization) {
-        m_hwnd = static_cast<HWND>(deviceInitialization.windowHandle);
         m_winWidth = deviceInitialization.windowWidth;
         m_winHeight = deviceInitialization.windowHeight;
         m_usePrebuiltShaders = deviceInitialization.usePrebuiltShaders;
@@ -1174,7 +1178,51 @@ namespace graphics {
 #ifdef DEBUG_DX11
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
+        DX11_CHECK_RET0(CreateDXGIFactory1(IID_PPV_ARGS(&m_factory)));
 
+#ifdef DX11_3_API
+        // k for uwp, we have to make 11 dev and then upgrade them to the newer versions
+        ComPtr<ID3D11Device> device;
+        ComPtr<ID3D11DeviceContext> context;
+        DX11_CHECK_RET0(D3D11CreateDevice(
+            nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, FeatureLevelsRequested, numLevelsRequested, D3D11_SDK_VERSION,
+            &device, nullptr, &context));
+
+        DX11_CHECK_RET0(device.As(&m_dev));
+
+        DX11_CHECK_RET0(context.As(&m_devcon));
+
+        // unknown if this works with 11_3 api ?
+        //InitDX11DebugLayer(m_dev.Get());
+
+        DXGI_SWAP_CHAIN_DESC1 sd;
+        ZeroMemory(&sd, sizeof(sd));
+        sd.Width = m_winWidth;
+        sd.Height = m_winHeight;
+        sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        sd.SampleDesc.Count = 1; //cant use msaa
+        sd.SampleDesc.Quality = 0;
+        // flip sequential is needed for store apps
+        sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+        sd.BufferCount = 2;
+        sd.Scaling = DXGI_SCALING_NONE;
+        sd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+        sd.Flags = 0;
+
+        DX11_CHECK_RET0(m_factory->CreateSwapChainForCoreWindow(m_dev.Get(),
+            reinterpret_cast<IUnknown*>(deviceInitialization.windowHandle),
+            &sd,
+            nullptr,
+            &m_swapchain)
+        );
+
+        // Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
+        // ensures that the application will only render after each VSync, minimizing power consumption.
+        ComPtr<IDXGIDevice3> dxgiDevice;
+        DX11_CHECK_RET0(m_dev.As(&dxgiDevice));
+        DX11_CHECK_RET0(dxgiDevice->SetMaximumFrameLatency(1));
+#else
         DX11_CHECK_RET0(D3D11CreateDevice(
             nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, FeatureLevelsRequested, numLevelsRequested, D3D11_SDK_VERSION,
             &m_dev, nullptr, &m_devcon));
@@ -1191,8 +1239,6 @@ namespace graphics {
         // commenting this out seems to make diagnostic debugging work?, ugh
         //InitDX11DebugLayer(m_dev.Get());
 
-        DX11_CHECK_RET0(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&m_factory)));
-
         DXGI_SWAP_CHAIN_DESC sd;
         ZeroMemory(&sd, sizeof(sd));
         sd.BufferDesc.Width = m_winWidth;
@@ -1203,12 +1249,13 @@ namespace graphics {
         sd.SampleDesc.Quality = 0;
         sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
         sd.BufferCount = 2;
-        sd.OutputWindow = m_hwnd;
+        sd.OutputWindow = static_cast<HWND>(deviceInitialization.windowHandle);
         sd.Windowed = true;
         DX11_CHECK_RET0(m_factory->CreateSwapChain(m_dev.Get(), &sd, &m_swapchain));
+#endif
 
         ComPtr<ID3D11Texture2D> backbuffer;
-        DX11_CHECK_RET0(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer));
+        DX11_CHECK_RET0(m_swapchain->GetBuffer(0, IID_PPV_ARGS(&backbuffer)));
 
         DX11_CHECK_RET0(m_dev->CreateRenderTargetView(backbuffer.Get(), nullptr, m_renderTarget.GetAddressOf()));
 

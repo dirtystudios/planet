@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>369a73e1-4c33-4fe9-bc1d-c2a32e15f99a</UniqueIdentifier>
+      <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
+    </Filter>
+    <Filter Include="ext">
+      <UniqueIdentifier>{d46ec95a-6160-401b-911a-15c34a81b7e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{634a8d44-cf09-4175-b254-8ad7cde662b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{db21a81a-dbe9-48e7-9e4c-3bb929190414}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\uwp">
+      <UniqueIdentifier>{835a82e1-68fa-4d45-b6aa-7dc1a2141716}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering">
+      <UniqueIdentifier>{33dee420-71ad-48ca-bcda-48be422976e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\shaders">
+      <UniqueIdentifier>{dd0d220e-9e84-463a-bb73-26f7b391168f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\shaders\DX11">
+      <UniqueIdentifier>{a01971cc-f337-41b1-a4de-338f77f6f8dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\backend">
+      <UniqueIdentifier>{2a2fdcf6-a924-4df4-85d0-aac66b66f907}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\backend\DX11">
+      <UniqueIdentifier>{38c997ad-b32a-493a-81b1-3c52ba84b491}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{19bd6d1b-910f-4298-86d3-1eabbfac4c37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utilities">
+      <UniqueIdentifier>{6e76f212-825e-4d4e-8a0e-400fd6a13442}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utilities\uwp">
+      <UniqueIdentifier>{ead96b89-00ed-40ed-9f03-0ac20bd105ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\renderers">
+      <UniqueIdentifier>{29a46913-5ac6-4436-a908-e2d89801c380}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\renderers\chunkedterrain">
+      <UniqueIdentifier>{87674a55-7e12-47bc-9a9e-3f1e3fd57bfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="components">
+      <UniqueIdentifier>{34539ef6-76e0-4c04-a929-b8a90deedd99}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\input\InputManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\input\KeyboardManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\input\PlayerController.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\EditBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\UIManager.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\App.cpp" />
+    <ClCompile Include="..\src\Camera.cpp" />
+    <ClCompile Include="..\src\Frustum.cpp" />
+    <ClCompile Include="..\src\Image_stb.cpp" />
+    <ClCompile Include="..\src\utilities\uwp\Log_uwp.cpp">
+      <Filter>utilities\uwp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utilities\uwp\File_uwp.cpp">
+      <Filter>utilities\uwp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\platform\uwp\PlatformUWP.cpp">
+      <Filter>platform\uwp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.cpp">
+      <Filter>rendering\renderers\chunkedterrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp">
+      <Filter>rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\ext\stb_image.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\Controller.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\InputCodes.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\InputContext.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\InputManager.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\KeyboardManager.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\input\PlayerController.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\platform\Platform.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\platform\System.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\AttribLayout.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\MemLayout.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\ParamType.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\RenderDevice.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\VertLayout.h">
+      <Filter>rendering\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11ConstantBufferHelpers.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11RenderDevice.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\DX11\DX11Utils.h">
+      <Filter>rendering\backend\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\ConsoleUI.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\EditBox.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\UIFrame.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\UIManager.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\Callback.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\Config.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\File.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\IniParser.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\App.h" />
+    <ClInclude Include="..\src\Application.h" />
+    <ClInclude Include="..\src\BoundingBox.h" />
+    <ClInclude Include="..\src\Camera.h" />
+    <ClInclude Include="..\src\Frustum.h" />
+    <ClInclude Include="..\src\Helpers.h" />
+    <ClInclude Include="..\src\Image.h" />
+    <ClInclude Include="..\src\utilities\Log.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\IdObj.h" />
+    <ClInclude Include="..\src\SimObj.h" />
+    <ClInclude Include="..\src\Simulation.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.h">
+      <Filter>rendering\renderers\chunkedterrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\GPUTileBuffer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\LRUTileCache.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RenderEngine.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\Renderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RendererType.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RenderObj.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\RenderView.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\SkyboxRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\TextRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\UIRenderer.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\Viewport.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\ChunkedTerrain.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\Component.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\ComponentType.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\components\Spatial.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\platform\uwp\PlatformUWP.h">
+      <Filter>platform\uwp</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\SplashScreen.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="planet-uwp_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\src\rendering\shaders\DX11\cursor_ps.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\cursor_vs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\sky_ps.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\sky_vs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_fs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_vs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\text_ps.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\text_vs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\ui_ps.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\ui_vs.hlsl">
+      <Filter>rendering\shaders\DX11</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

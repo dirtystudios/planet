@@ -6,6 +6,7 @@
 class App : public app::Application {
 public:
     void OnStart() final;
+    // dt expects to be in seconds
     void OnFrame(const std::vector<float>& inputValues, float dt) final;
     void OnShutdown() final;
     

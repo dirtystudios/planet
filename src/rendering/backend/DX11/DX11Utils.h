@@ -1,3 +1,4 @@
+#pragma once
 #include <emmintrin.h>
 #include <tmmintrin.h>
 #include <Windows.h>

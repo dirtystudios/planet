@@ -49,6 +49,8 @@ ipch/
 /vs2015/*/x86/*
 /vs2015/*/x64/*
 /vs2015/prebuiltDX11Maker/*
+/vs2015/x86/*
+/vs2015/x64/*
 
 # Visual Studio Profiler Files
 *.vspx
