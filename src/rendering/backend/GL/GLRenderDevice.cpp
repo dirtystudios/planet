@@ -517,13 +517,13 @@ namespace graphics {
         //ResolveContextState(_current_state, _pending_state);
 
         // BIG TODO: Renderstate does not persist -- this is bad
-        if(_pending_state.raster_state.cull_mode == CullMode::NONE) {
-            GL_CHECK(glDisable(GL_CULL_FACE));
-        } else {
-            GL_CHECK(glEnable(GL_CULL_FACE));
-            GLenum cull_mode = SafeGet(cull_mode_mapping, (uint32_t)_pending_state.raster_state.cull_mode);
-            GL_CHECK(glCullFace(cull_mode));
-        }
+        // if(_pending_state.raster_state.cull_mode == CullMode::NONE) {
+        //     GL_CHECK(glDisable(GL_CULL_FACE));
+        // } else {
+        //     GL_CHECK(glEnable(GL_CULL_FACE));
+        //     GLenum cull_mode = SafeGet(cull_mode_mapping, (uint32_t)_pending_state.raster_state.cull_mode);
+        //     GL_CHECK(glCullFace(cull_mode));
+        // }
 
         GLenum winding_order = SafeGet(winding_order_mapping, (uint32_t)_pending_state.raster_state.winding_order);
         GL_CHECK(glFrontFace(winding_order)); 

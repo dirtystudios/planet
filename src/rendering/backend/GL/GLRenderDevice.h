@@ -211,7 +211,7 @@ namespace graphics {
             auto it = parameter_map_cache.find(param_name);
             if(it == parameter_map_cache.end()) {
                 GLint loc = glGetUniformLocation(id, param_name);
-                assert(loc >= 0);
+                //assert(loc >= 0);
                 parameter_map_cache[param_name] = loc;
             }
             return parameter_map_cache[param_name];

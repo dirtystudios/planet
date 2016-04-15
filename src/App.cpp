@@ -20,6 +20,7 @@
 #include "ChunkedTerrain.h"
 #include "Spatial.h"
 #include "Simulation.h"
+#include <glm/gtx/transform.hpp>
 
 uint32_t frame_count = 0;
 double accumulate = 0;
@@ -38,6 +39,29 @@ Simulation simulation;
 RenderView* playerView;
 Viewport* playerViewport;
 
+
+SimObj* CreateTerrain(float size, const glm::mat4& rotation, const glm::mat4& translation) {
+    SimObj* terrainChunk = simulation.AddSimObj();
+    ChunkedTerrain* terrain = terrainChunk->AddComponent<ChunkedTerrain>(ComponentType::ChunkedTerrain);
+    terrain->size = size;
+    terrain->translation = translation;
+    terrain->rotation = rotation;
+    terrain->heightmapGenerator = [&](double x, double y, double z) -> double 
+    {
+        noise::module::RidgedMulti mountain;
+        mountain.SetSeed(32);
+        mountain.SetFrequency(0.05);
+        mountain.SetOctaveCount(8);
+        return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
+    };
+
+    Spatial* spatial = terrainChunk->AddComponent<Spatial>(ComponentType::Spatial);
+    spatial->pos = glm::dvec3(0, 0, 0);
+    terrain->renderObj = renderEngine->Register(terrainChunk, RendererType::ChunkedTerrain);
+    assert(terrain->renderObj);
+
+    return terrainChunk;
+}
 
 void SetupInputBindings() {
 
@@ -111,46 +135,29 @@ void App::OnStart() {
     // terrain_renderer = new ChunkedLoDTerrainRenderer(renderDevice);
     text_renderer = new TextRenderer(renderDevice);
     uiManager->SetTextRenderer(text_renderer);
-    skybox_renderer = new SkyboxRenderer(renderDevice);
+    // skybox_renderer = new SkyboxRenderer(renderDevice);
 
     SetupInputBindings();
 
-    cam.MoveTo(0, 0, 1000);
+    cam.MoveTo(-2826, 1620, 1600);
     cam.LookAt(0, 0, 0);
 
-    SimObj* terrainChunk = simulation.AddSimObj();
 
-    ChunkedTerrain* terrain = terrainChunk->AddComponent<ChunkedTerrain>(ComponentType::ChunkedTerrain);
-    terrain->size = 5000;
-    terrain->heightmapGenerator = [&](double x, double y, double z) -> double 
-    {
-        noise::module::RidgedMulti mountain;
-        mountain.SetSeed(32);
-        mountain.SetFrequency(0.05);
-        mountain.SetOctaveCount(8);
-        return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
-    };
-
-    Spatial* spatial = terrainChunk->AddComponent<Spatial>(ComponentType::Spatial);
-    spatial->pos = glm::dvec3(0, 0, 0);
-
-    terrain->renderObj = renderEngine->Register(terrainChunk, RendererType::ChunkedTerrain);
-    assert(terrain->renderObj);
+    // gogoogog planet
+    float radius = 2500;
+    CreateTerrain(radius, glm::mat4(), glm::translate(glm::vec3(0, 0, radius/2.f))); // front
+    glm::mat4 rotate = glm::rotate(glm::mat4(), -3.1415f/2.f, glm::normalize(glm::vec3(1, 0, 0)));
+    CreateTerrain(radius, rotate, glm::mat4()); // top
+    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(1, 0, 0)));
+    CreateTerrain(radius, rotate, glm::mat4()); // bottom
+    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
+    CreateTerrain(radius, rotate, glm::mat4()); // right
+    rotate = glm::rotate(glm::mat4(), -3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
+    CreateTerrain(radius, rotate, glm::mat4()); // left
+    rotate = glm::rotate(glm::mat4(), -3.1415f, glm::normalize(glm::vec3(0, 1, 0)));
+    CreateTerrain(radius, rotate, glm::mat4()); // back
 
 
-    // ChunkedLoDTerrainDesc desc;
-    // desc.size = 5000;
-    // desc.x = 0;
-    // desc.y = 0;
-    // desc.heightmap_generator = [&](double x, double y, double z) -> double {
-    //                     noise::module::RidgedMulti mountain;
-    //                     mountain.SetSeed(32);
-    //                     mountain.SetFrequency(0.05);
-    //                     mountain.SetOctaveCount(8);
-    //                     return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
-                    // };
-
-    // terrain_renderer->RegisterTerrain(desc);
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
@@ -172,7 +179,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     Frustum frustum(proj, view);
 
     renderDevice->Clear(0.1f, 0.1f, 0.1f, 0.1f);
-    skybox_renderer->OnSubmit(&cam);
+    // skybox_renderer->OnSubmit(&cam);
     renderEngine->RenderFrame();
     // terrain_renderer->Render(cam, frustum);
 

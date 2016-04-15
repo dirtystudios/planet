@@ -21,7 +21,8 @@ struct ChunkedLoDTerrainDesc {
     // Note(eugene): hierarchical transforms
     // Transform transform;
     uint32_t size;
-
+    glm::mat4 rotation;
+    glm::mat4 translation;
     double x;
     double y;
 
@@ -59,6 +60,9 @@ private:
 
     struct ChunkedLoDTerrain {  
         ChunkedLoDTerrainNode* root;
+        float size;
+        glm::mat4 rotation;
+        glm::mat4 translation;
         graphics::VertexBufferHandle vb;
         std::function<double(double x, double y, double z)> heightmap_generator;
         uint32_t num_vertices;
@@ -110,6 +114,8 @@ public:
         desc.size = terrain->size;
         desc.x = spatial->pos.x;
         desc.y = spatial->pos.y;
+        desc.rotation = terrain->rotation;
+        desc.translation = terrain->translation;
         desc.heightmap_generator = terrain->heightmapGenerator;
 
         ChunkedTerrainRenderObj* renderObj = new ChunkedTerrainRenderObj();
@@ -134,7 +140,7 @@ private:
         float center_x, float center_y, float center_z,
         float size_x, float size_y,
         uint32_t resolution_x, uint32_t resolution_y,
-        std::function<T(float x, float y, float u, float v)> vertex_generator,
+        std::function<T(float, float, float, float)> vertex_generator,
         std::vector<T>* vertices)
     {
         float half_size_x = size_x / 2.f;
@@ -144,11 +150,11 @@ private:
         float dy = size_y / (float)(resolution_y - 1);
 
         auto generate_vertex = [&] (uint32_t i, uint32_t j) -> T {
+
             float x = center_x - half_size_x + (j * dx);
             float y = center_y + half_size_y - (i * dy);
             float u = j * dx / size_x;
             float v = i * dy / size_y;
-
             return vertex_generator(x, y, u, v);
         };
 

@@ -23,7 +23,16 @@ static std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
     return os << v.x << ", " << v.y << ", " << v.z;
 }
 
+static std::ostream& operator<<(std::ostream& os, const glm::vec4& v) {
+    return os << v.x << ", " << v.y << ", " << v.z << ", " << v.w;
+}
+
 static inline std::string ToString(const glm::vec3& v) {
+    std::stringstream ss;
+    ss << v;
+    return ss.str();
+}
+static inline std::string ToString(const glm::vec4& v) {
     std::stringstream ss;
     ss << v;
     return ss.str();

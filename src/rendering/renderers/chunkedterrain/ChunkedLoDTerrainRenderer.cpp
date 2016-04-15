@@ -61,6 +61,9 @@ ChunkedLoDTerrainHandle ChunkedLoDTerrainRenderer::RegisterTerrain(const Chunked
     root->x = desc.x;
     root->y = desc.y;
     root->size = desc.size;
+    terrain.size = desc.size;
+    terrain.translation = desc.translation;
+    terrain.rotation = desc.rotation;
     float half_size = root->size / 2.f;
     // z-coordinates will be filled in when heightmap data is generated
     root->bbox.max = glm::vec3(half_size, half_size, 0);
@@ -73,7 +76,7 @@ ChunkedLoDTerrainHandle ChunkedLoDTerrainRenderer::RegisterTerrain(const Chunked
 
     uint32_t t = TERRAIN_QUAD_RESOLUTION;
     std::vector<ChunkedLoDVertex> vertices;
-    BuildVertexGrid<ChunkedLoDVertex>(glm::vec3(root->x, root->y, 1), glm::vec2(root->size, root->size), glm::uvec2(TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION), vertex_generator, &vertices);
+    BuildVertexGrid<ChunkedLoDVertex>(glm::vec3(0, 0, 0), glm::vec2(root->size, root->size), glm::uvec2(TERRAIN_QUAD_RESOLUTION, TERRAIN_QUAD_RESOLUTION), vertex_generator, &vertices);
 
     terrain.num_vertices = vertices.size();
     graphics::VertLayout layout;
@@ -188,16 +191,22 @@ void ChunkedLoDTerrainRenderer::Render(Camera* cam, Frustum* frustum) {
                 //    continue;
                 //}
 
-                float scale_factor = node->size / (node->size * pow(2, (node->lod)));
+                float scale_factor1 = node->size;
+                float scale_factor2 = node->size / (node->size * pow(2, (node->lod)));
                 glm::mat4 translation = glm::translate(glm::mat4(), glm::vec3(node->x, node->y, 0));
-                glm::mat4 scale = glm::scale(glm::vec3(scale_factor, scale_factor, 1.f));
-                world = translation * scale;
+                glm::mat4 scale1 = glm::scale(glm::vec3(scale_factor1, scale_factor1, 1.f));
+                glm::mat4 scale2 = glm::scale(glm::vec3(scale_factor2, scale_factor2, 1.f));
+                world = terrain.rotation;
                 int elevations_tile_index = elevations_tile->data->index;
                 int normals_tile_index = normals_tile->data->index;
+            
 
+                _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float, "rradius", &(*(float*)&terrain.size));
                 _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Int32, "elevations_tile_index", &elevations_tile_index);
                 _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Int32, "normals_tile_index", &normals_tile_index);
                 _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "world", &world);
+                _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "trans", &translation);
+                _render_device->SetShaderParameter(_shaders[0], graphics::ParamType::Float4x4, "scale", &scale2);
                 _render_device->SetVertexBuffer(terrain.vb);
                 if (m_wireFrameMode)
                     _render_device->SetRasterState(wireFrameState);

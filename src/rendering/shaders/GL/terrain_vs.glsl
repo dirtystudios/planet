@@ -14,9 +14,12 @@ layout(std140) uniform PerTerrainBuffer {
 };
 */
 
+uniform float rradius;
 uniform mat4 view;
 uniform mat4 proj;
 uniform mat4 world;
+uniform mat4 trans;
+uniform mat4 scale;
 uniform int elevations_tile_index;
 uniform int normals_tile_index;
 uniform sampler2DArray base_texture;
@@ -32,15 +35,31 @@ out gl_PerVertex {
   vec4 gl_Position;
 };
 
+
 void main(void) {
-    float height = 250.f * texture(base_texture, vec3(tex, float(elevations_tile_index))).x;
+    float height = 0.f * texture(base_texture, vec3(tex, float(elevations_tile_index))).x;
     vec3 normal = texture(normal_texture, vec3(tex, float(normals_tile_index))).xyz;
-    vec4 pos = vec4(position.x, position.y, height, 1.f);
-    Normal = normal;    
+    
+
+
+    vec4 pos = trans * scale * vec4(position.x, position.y, rradius / 2.f, 1.f);    
+    vec3 mapped = normalize(vec3(pos.x, pos.y, pos.z)) * (height + (rradius / 2.f));
+
+    vec4 a = world*pos;
+    // vec3 mapped = vec3(position.x, position.y, 0);
+
+
+    // pos.x = height * (pos.x / rradius);
+    // pos.y = height * (pos.y / rradius);
+    // pos.z = height * (1.f / rradius);
+    // pos.w = sqrt(position.x * position.x + position.y * position.y + 1);
+
+    Normal = normal;  
+    float rr = rradius;  
 
     /*
     // in order to sphereicalize the cube, need to be -1 > x > 1, -1 > y > 1, -1 > z > 1
-    float radius = 500
+    float radius = rradius;
     vec4 mapping = pos;
 
     float x_squared = pos.x * pos.x;
@@ -51,5 +70,5 @@ void main(void) {
     mapping.z = (radius + height) * pos.z * sqrt(1.f - (x_squared / 2.f) - (y_squared / 2.f) + (x_squared * y_squared / 3.f));
     */
 
-    gl_Position = proj * view * world * pos;
+    gl_Position = proj * view  * world *  vec4(mapped.x, mapped.y, mapped.z, 1.f);
 }
