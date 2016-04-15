@@ -192,12 +192,6 @@
     <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.h">
       <Filter>rendering\renderers\chunkedterrain</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\rendering\GPUTileBuffer.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\LRUTileCache.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\rendering\RenderEngine.h">
       <Filter>rendering</Filter>
     </ClInclude>
@@ -242,6 +236,12 @@
     </ClInclude>
     <ClInclude Include="..\src\platform\uwp\InputUWP.h">
       <Filter>platform\uwp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTileBuffer.h">
+      <Filter>rendering\renderers\chunkedterrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\LRUTileCache.h">
+      <Filter>rendering\renderers\chunkedterrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

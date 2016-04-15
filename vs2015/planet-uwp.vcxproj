@@ -265,11 +265,11 @@
     <ClInclude Include="..\src\rendering\backend\ParamType.h" />
     <ClInclude Include="..\src\rendering\backend\RenderDevice.h" />
     <ClInclude Include="..\src\rendering\backend\VertLayout.h" />
-    <ClInclude Include="..\src\rendering\GPUTileBuffer.h" />
-    <ClInclude Include="..\src\rendering\LRUTileCache.h" />
     <ClInclude Include="..\src\rendering\RenderEngine.h" />
     <ClInclude Include="..\src\rendering\Renderer.h" />
     <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTileBuffer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\LRUTileCache.h" />
     <ClInclude Include="..\src\rendering\RendererType.h" />
     <ClInclude Include="..\src\rendering\RenderObj.h" />
     <ClInclude Include="..\src\rendering\RenderView.h" />
