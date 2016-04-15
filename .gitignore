@@ -67,4 +67,5 @@ CMakeCache.txt
 /dg.xcodeproj/
 Makefile
 cmake_install.cmake
+build/
 

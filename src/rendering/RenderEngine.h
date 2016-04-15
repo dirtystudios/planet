@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "Renderer.h"
 #include "RendererType.h"
@@ -6,54 +6,38 @@
 #include "RenderView.h"
 #include "RenderDevice.h"
 #include <unordered_map>
-#include <cassert>
+#include "ShaderCache.h"
+#include "PipelineStateCache.h"
+#include "RenderServiceLocator.h"
+#include "VertexLayoutCache.h"
+#include "MeshCache.h"
+#include "SimObj.h"
 
-#include "ChunkedLoDTerrainRenderer.h"
-
-using namespace graphics;
-
-class RenderEngine {
+class RenderEngine : public RenderServiceLocator {
 private:
-	RenderDevice* _device { nullptr };
-	RenderView* _view { nullptr };
-	std::unordered_map<RendererType, Renderer*> _renderers;
-	std::unordered_map<RenderObj*, Renderer*> _renderObjLookup;
+    graphics::RenderDevice* _device{nullptr};
+    RenderView* _view{nullptr};
+    std::unordered_map<RendererType, Renderer*> _renderers;
+    std::unordered_map<RenderObj*, Renderer*> _renderObjLookup;
+    ShaderCache* _shaderCache{nullptr};
+    PipelineStateCache* _pipelineStateCache{nullptr};
+    VertexLayoutCache* _vertexLayoutCache{nullptr};
+    MeshCache* _meshCache;
+
 public:
-	RenderEngine(RenderDevice* device, RenderView* view) 
-	: _device(device), _view(view)
-	{
-		_renderers.insert( { RendererType::ChunkedTerrain, new ChunkedLoDTerrainRenderer(_device) } );
-	};
+    RenderEngine(graphics::RenderDevice* device, RenderView* view);
+    ~RenderEngine();
 
-	RenderObj* Register(SimObj* simObj, RendererType rendererType) {
-		Renderer* renderer = GetRenderer(rendererType);
-		assert(renderer);
+    RenderObj* Register(SimObj* simObj, RendererType rendererType);
+    void Unregister(RenderObj* renderObj);
+    void RenderFrame();
 
-		RenderObj* renderObj = renderer->Register(simObj);
-		assert(renderObj);
-		return renderObj;
-	}
-
-	void Unregister(RenderObj* renderObj) {
-		Renderer* renderer = GetRenderer(renderObj->GetRendererType());
-		assert(renderer);
-
-		renderer->Unregister(renderObj);
-	}
-
-	void RenderFrame() {
-		assert(_view);
-		for(const std::pair<RendererType, Renderer*>& p : _renderers) {
-			p.second->Submit(_view);
-		}
-	}
+    ShaderCache* GetShaderCache() override;
+    PipelineStateCache* GetPipelineStateCache() override;
+    graphics::RenderDevice* GetRenderDevice() override;
+    VertexLayoutCache* GetVertexLayoutCache() override;
+    MeshCache* GetMeshCache() override;
 
 private:
-	Renderer* GetRenderer(RendererType type) {
-		auto it = _renderers.find(type);
-		return (it == _renderers.end() ? nullptr : it->second);
-	}
+    Renderer* GetRenderer(RendererType type);
 };
-
-
-

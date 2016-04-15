@@ -26,7 +26,7 @@ uniform sampler2DArray base_texture;
 uniform sampler2DArray normal_texture;
 
 
-layout(location = 0) in vec2 position;
+layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 tex;
 
 layout(location = 3) out vec3 Normal;
@@ -45,7 +45,6 @@ void main(void) {
     vec4 pos = trans * scale * vec4(position.x, position.y, rradius / 2.f, 1.f);    
     vec3 mapped = normalize(vec3(pos.x, pos.y, pos.z)) * (height + (rradius / 2.f));
 
-    vec4 a = world*pos;
     // vec3 mapped = vec3(position.x, position.y, 0);
 
 

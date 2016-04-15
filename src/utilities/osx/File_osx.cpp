@@ -6,15 +6,15 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <cassert>
+#include "Log.h"
 
 std::string fs::GetProcessDirectory() {
-    char current_path[FILENAME_MAX];    
-
+    char current_path[FILENAME_MAX];
 
     if (!getcwd(current_path, sizeof(current_path))) {
         assert(false);
     }
-    
+
     return std::string(current_path);
 }
 
@@ -22,8 +22,10 @@ std::string fs::GetProcessDirectory() {
 bool fs::IsPathDirectory(std::string path) {
     struct stat fileAtt;
 
-    if (stat(path.c_str(), &fileAtt) != 0)
-        throw errno;
+    if (stat(path.c_str(), &fileAtt) != 0) {
+        LOG_E("Couldnt stat file %s\n", path.c_str());
+        return false;
+    }
 
     return S_ISDIR(fileAtt.st_mode);
 }

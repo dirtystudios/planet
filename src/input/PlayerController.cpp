@@ -1,25 +1,32 @@
 
 #include "PlayerController.h"
 
-
 namespace controllers {
-    PlayerController::PlayerController(Camera* camera,  input::InputContext *inputContext) {
-        m_clickLookMode = false;
-        m_inputContext = inputContext;
-        cam = camera;
-        moveInput = { 0.0f, 0.0f, 0.0f };
-        m_mouseLookInput = { 0.f, 0.f };
-        walkSpeed = 300.0f;
-        lookSpeed = 1.f;
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveForward", BIND_MEM_CB(&PlayerController::MoveForward, this));
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveBackward", BIND_MEM_CB(&PlayerController::MoveBackward, this));
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveLeft", BIND_MEM_CB(&PlayerController::MoveLeft, this));
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveRight", BIND_MEM_CB(&PlayerController::MoveRight, this));
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("ShimmyUp", BIND_MEM_CB(&PlayerController::ShimmyUp, this));
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("ShimmyDown", BIND_MEM_CB(&PlayerController::ShimmyDown, this));
+PlayerController::PlayerController(Camera* camera, input::InputContext* inputContext) {
+    m_clickLookMode  = false;
+    m_inputContext   = inputContext;
+    cam              = camera;
+    moveInput        = {0.0f, 0.0f, 0.0f};
+    m_mouseLookInput = {0.f, 0.f};
+    walkSpeed        = 70.0f;
+    lookSpeed = 1.f;
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveForward",
+                                                                 BIND_MEM_CB(&PlayerController::MoveForward, this));
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveBackward",
+                                                                 BIND_MEM_CB(&PlayerController::MoveBackward, this));
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveLeft",
+                                                                 BIND_MEM_CB(&PlayerController::MoveLeft, this));
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveRight",
+                                                                 BIND_MEM_CB(&PlayerController::MoveRight, this));
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("ShimmyUp",
+                                                                 BIND_MEM_CB(&PlayerController::ShimmyUp, this));
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("ShimmyDown",
+                                                                 BIND_MEM_CB(&PlayerController::ShimmyDown, this));
 
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("LookUp", BIND_MEM_CB(&PlayerController::LookUp, this));
-        m_inputContext->BindContext<input::ContextBindingType::Axis>("LookDown", BIND_MEM_CB(&PlayerController::LookDown, this));
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("LookUp",
+                                                                 BIND_MEM_CB(&PlayerController::LookUp, this));
+    m_inputContext->BindContext<input::ContextBindingType::Axis>("LookDown",
+                                                                 BIND_MEM_CB(&PlayerController::LookDown, this));
         m_inputContext->BindContext<input::ContextBindingType::Axis>("LookRight", BIND_MEM_CB(&PlayerController::LookRight, this));
         m_inputContext->BindContext<input::ContextBindingType::Axis>("LookLeft", BIND_MEM_CB(&PlayerController::LookLeft, this));
 

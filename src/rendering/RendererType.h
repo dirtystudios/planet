@@ -8,6 +8,7 @@ enum class RendererType : uint8_t {
 	ChunkedTerrain,
 	Interface,
 	Text,
+    Mesh,
 };
 
 namespace std {

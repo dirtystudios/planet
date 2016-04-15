@@ -10,5 +10,5 @@ public:
 	std::function<double(double, double, double)> heightmapGenerator;
 	glm::mat4 translation;
 	glm::mat4 rotation;
-	RenderObj* renderObj;
+	RenderObj* renderObj { nullptr };
 };

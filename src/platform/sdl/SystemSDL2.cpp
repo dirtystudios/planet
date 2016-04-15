@@ -10,7 +10,7 @@
 #include "SDL2/SDL_syswm.h"
 #endif
 
-#include "GLRenderDevice.h"
+#include "GLDevice.h"
 
 #include "Log.h"
 #include "Config.h"
@@ -18,8 +18,8 @@
 
 SDL_Window* _window = NULL;
 SDL_Event _e;
-uint32_t _window_width = 800;
-uint32_t _window_height = 600;
+uint32_t _window_width    = 1200;
+uint32_t _window_height   = 800 ;
 const char* _window_title = "dirty";
 app::Application* _app = { nullptr };
 bool shouldQuit = false;
@@ -118,9 +118,11 @@ int sys::Run(app::Application* app){
         LOG_D("Invalid RenderDevice set in ini. Using Default for system. Given: %s", renderDeviceConfig.c_str());
     }
 
+    // TODO: context creation should probably be moved to render backend
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);    
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     _window = SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width, _window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
@@ -158,25 +160,25 @@ int sys::Run(app::Application* app){
                 std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
 
                 graphics::DeviceInitialization devInit;
-                devInit.windowHandle = info.info.win.window;
-                devInit.windowHeight = _window_height;
-                devInit.windowWidth = _window_width;
+                devInit.windowHandle       = info.info.win.window;
+                devInit.windowHeight       = _window_height;
+                devInit.windowWidth        = _window_width;
                 devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
                 _app->renderDevice->InitializeDevice(devInit);
             }
 #endif
             break;
-        case SDL_SYSWM_COCOA: 
-            subsystem = "Apple OS X"; 
-            _app->renderDevice = new graphics::RenderDeviceGL();
+        case SDL_SYSWM_COCOA:
+            subsystem = "Apple OS X";
+            //            _app->renderDevice = new graphics::RenderDeviceGL();
+            _app->renderDevice = new graphics::GLDevice();
             break;
-        //case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
+            // case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
         }
-    }
-    else {
+    } else {
         LOG_E("Couldn't get window information: %s\n", SDL_GetError());
     }
-	
+
     PopulateKeyMapping();
 
     LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch, subsystem);

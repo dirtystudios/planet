@@ -3,10 +3,30 @@
 #include "SimObj.h"
 #include "RenderObj.h"
 #include "RenderView.h"
+#include "RenderQueue.h"
+#include "RenderServiceLocator.h"
 
-class Renderer {
+class Renderer : public RenderServiceLocator {
+private:
+    RenderServiceLocator* _renderServiceLocator{nullptr};
+
 public:
-	virtual RenderObj* Register(SimObj* simObj) = 0;
-	virtual void Unregister(RenderObj* renderObj) = 0;
-	virtual void Submit(RenderView* renderView) = 0;
+    Renderer();
+    virtual ~Renderer();
+    virtual void OnInit();
+    virtual void OnDestroy();
+
+    void Init(RenderServiceLocator* serviceLocator);
+
+    // RenderServiceLocation impl
+    ShaderCache* GetShaderCache() override;
+    PipelineStateCache* GetPipelineStateCache() override;
+    graphics::RenderDevice* GetRenderDevice() override;
+    VertexLayoutCache* GetVertexLayoutCache() override;
+    MeshCache* GetMeshCache() override;
+
+    // Required
+    virtual RenderObj* Register(SimObj* simObj) = 0;
+    virtual void Unregister(RenderObj* renderObj) = 0;
+    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
 };

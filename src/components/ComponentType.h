@@ -6,6 +6,7 @@
 enum class ComponentType : uint8_t {
 	ChunkedTerrain = 0,
 	Spatial,
+	Skybox,
 };
 
 namespace std {

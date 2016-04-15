@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SimObj.h"
+#include <set>
 
 class Simulation {
 private:

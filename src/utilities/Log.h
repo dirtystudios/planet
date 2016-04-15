@@ -1,13 +1,35 @@
-#ifndef __log_h__
-#define __log_h__
+#ifndef _logger_h_
+#define _logger_h_
 
-#include <cassert>
+#include <cstdio>
+#include <pthread.h>
+#include <string>
+#include <iostream>
+using namespace std;
 
-void WriteLine(const char* severity, const char* msg, ...);
+inline std::string methodName(const std::string& prettyFunction) {
+    size_t colons = prettyFunction.find_last_of("::");
 
-#define LOG_E(msg, ...) { LOG("ERROR", msg, __VA_ARGS__); assert(false); }
-#define LOG_W(msg, ...) LOG("WARN", msg, __VA_ARGS__);
-#define LOG_D(msg, ...) LOG("DEBUG", msg, __VA_ARGS__)
-#define LOG(severity, msg, ...) WriteLine(severity, msg, __VA_ARGS__)
+    size_t begin = prettyFunction.substr(0, colons).rfind(" ") + 1;
+    size_t end   = prettyFunction.rfind("(") - begin;
+
+    return prettyFunction.substr(begin, end) + "()";
+}
+
+#define __METHOD_NAME__ methodName(__PRETTY_FUNCTION__)
+#define LOG_D(x, ...) Log::d(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
+#define LOG_W(x, ...) Log::w(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
+#define LOG_E(x, ...) Log::e(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
+
+class Log {
+public:
+    static void d(int line, string func, string log, ...);
+    static void w(int line, string func, string log, ...);
+    static void e(int line, string func, string log, ...);
+
+private:
+    static string get_timestamp();
+    static pthread_mutex_t _write_lock;
+};
 
 #endif
