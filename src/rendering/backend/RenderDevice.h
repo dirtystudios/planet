@@ -149,7 +149,7 @@ namespace graphics {
     
     struct RasterState {
         FillMode fill_mode          { FillMode::SOLID };
-        CullMode cull_mode          { CullMode::NONE };
+        CullMode cull_mode          { CullMode::BACK };
         WindingOrder winding_order  { WindingOrder::FRONT_CCW };        
     };
     
