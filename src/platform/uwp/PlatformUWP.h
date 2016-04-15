@@ -1,5 +1,7 @@
 #pragma once
 #include <Windows.h>
+#include <agile.h>
+#include "InputUWP.h"
 
 // This is just 'wrapper' class to handle the c++/cli needed boilerplate
 
@@ -14,11 +16,16 @@ public:
 ref class PlanetUWPApp sealed : public Windows::ApplicationModel::Core::IFrameworkView
 {
 private:
-    Windows::UI::Core::CoreWindow^ m_window;
+    // Cached reference to the Window.
+    Platform::Agile<Windows::UI::Core::CoreWindow>  m_window;
     float m_dpi;
+    std::vector<float> m_inputValues;
+
+    InputUWP^ m_input;
+
 public:
     // unused
-    PlanetUWPApp() {}
+    PlanetUWPApp() {};
 
     // IFrameworkView Methods
     virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
@@ -67,11 +74,11 @@ protected:
     );*/
 
     // DisplayInformation event handlers.
-    /** --ignoring for now
     void OnDpiChanged(
         Windows::Graphics::Display::DisplayInformation^ sender,
         Platform::Object^ args
     );
+    /** --ignoring for now
     void OnOrientationChanged(
         Windows::Graphics::Display::DisplayInformation^ sender,
         Platform::Object^ args
@@ -84,7 +91,4 @@ protected:
         Platform::Object^ args
     );
     **/
-
-    // input handling
-    void OnGamepadAdded(Platform::Object ^sender, Windows::Gaming::Input::Gamepad ^gamepad);
 };

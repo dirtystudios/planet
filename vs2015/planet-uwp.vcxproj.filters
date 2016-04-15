@@ -93,6 +93,9 @@
       <Filter>rendering</Filter>
     </ClCompile>
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\platform\uwp\InputUWP.cpp">
+      <Filter>platform\uwp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ext\stb_image.h">
@@ -235,6 +238,9 @@
       <Filter>components</Filter>
     </ClInclude>
     <ClInclude Include="..\src\platform\uwp\PlatformUWP.h">
+      <Filter>platform\uwp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\platform\uwp\InputUWP.h">
       <Filter>platform\uwp</Filter>
     </ClInclude>
   </ItemGroup>

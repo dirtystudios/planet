@@ -254,6 +254,7 @@
     <ClInclude Include="..\src\input\PlayerController.h" />
     <ClInclude Include="..\src\platform\Platform.h" />
     <ClInclude Include="..\src\platform\System.h" />
+    <ClInclude Include="..\src\platform\uwp\InputUWP.h" />
     <ClInclude Include="..\src\platform\uwp\PlatformUWP.h" />
     <ClInclude Include="..\src\rendering\backend\AttribLayout.h" />
     <ClInclude Include="..\src\rendering\backend\DX11\DX11ConstantBufferHelpers.h" />
@@ -297,6 +298,7 @@
     <ClCompile Include="..\src\input\KeyboardManager.cpp" />
     <ClCompile Include="..\src\input\PlayerController.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\platform\uwp\InputUWP.cpp" />
     <ClCompile Include="..\src\platform\uwp\PlatformUWP.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
     <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />

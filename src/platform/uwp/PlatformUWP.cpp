@@ -18,18 +18,14 @@ using namespace Windows::UI::Input;
 using namespace Windows::UI::ViewManagement;
 
 // 'global' shit, bleh
-PlanetUWPApp^ g_planetUwpApp = nullptr;
 app::Application* g_app = { nullptr };
 sys::SysWindowSize g_windowSize;
 double g_counterFreq = 0.0;
 LARGE_INTEGER g_counterStart;
-std::vector<float> g_inputValues((int)input::InputCode::COUNT);
 
 // 'Loader' wrapping
 IFrameworkView^ PlanetApplicationSource::CreateView() {
-    PlanetUWPApp^ appref = ref new PlanetUWPApp();
-    g_planetUwpApp = appref;
-    return g_planetUwpApp;
+    return ref new PlanetUWPApp();
 }
 
 // Converts a length in device-independent pixels (DIPs) to a length in physical pixels.
@@ -94,8 +90,13 @@ void PlanetUWPApp::Run() {
         float start = sys::GetTime();
         CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
         g_app->renderDevice->ResizeWindow(g_windowSize.width, g_windowSize.height);
-        g_app->OnFrame(g_inputValues, dt);
+
+        m_input->Update(m_inputValues);
+
+        g_app->OnFrame(m_inputValues, dt);
+
         g_app->renderDevice->SwapBuffers();
+
         dt = sys::GetTime() - start;
     }
 }
@@ -103,6 +104,9 @@ void PlanetUWPApp::Run() {
 void PlanetUWPApp::Load(Platform::String^ entryPoint) {
     // unclear all that we can do here,
     // theres a chance we can *create* d3device, but current initialize may do too much
+    m_inputValues.resize((int)input::InputCode::COUNT);
+
+    m_input = ref new InputUWP(m_window.Get());
 
     LARGE_INTEGER li;
     if (!QueryPerformanceFrequency(&li))
@@ -118,7 +122,7 @@ void PlanetUWPApp::Load(Platform::String^ entryPoint) {
     
     graphics::DeviceInitialization devInit;
     
-    devInit.windowHandle = reinterpret_cast<IUnknown*>(m_window);
+    devInit.windowHandle = reinterpret_cast<IUnknown*>(m_window.Get());
     devInit.windowHeight = g_windowSize.height;
     devInit.windowWidth = g_windowSize.width;
     // *has* to be prebuilt for uwp
@@ -131,12 +135,15 @@ void PlanetUWPApp::Load(Platform::String^ entryPoint) {
 // For what its worth, this seems to be called before 'load' so we will have a window by the time load hits
 void PlanetUWPApp::SetWindow(Windows::UI::Core::CoreWindow^ window) {
     m_window = window;
+
     DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
     m_dpi = currentDisplayInformation->LogicalDpi;
 
+    currentDisplayInformation->DpiChanged +=
+        ref new TypedEventHandler<DisplayInformation^, Platform::Object^>(this, &PlanetUWPApp::OnDpiChanged);
 
-    g_windowSize.height = static_cast<uint32_t>(ConvertDipsToPixels(window->Bounds.Height, m_dpi));
-    g_windowSize.width = static_cast<uint32_t>(ConvertDipsToPixels(window->Bounds.Width, m_dpi));
+    g_windowSize.height = static_cast<uint32_t>(ConvertDipsToPixels(m_window->Bounds.Height, m_dpi));
+    g_windowSize.width = static_cast<uint32_t>(ConvertDipsToPixels(m_window->Bounds.Width, m_dpi));
 
     window->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
 
@@ -144,12 +151,17 @@ void PlanetUWPApp::SetWindow(Windows::UI::Core::CoreWindow^ window) {
         ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &PlanetUWPApp::OnWindowSizeChanged);
 }
 
+void PlanetUWPApp::OnDpiChanged(DisplayInformation^ sender, Platform::Object^ /* args */)
+{
+    m_dpi = sender->LogicalDpi;
+    // when dpi changes we also need to adjust window size
+    g_windowSize.height = static_cast<uint32_t>(ConvertDipsToPixels(m_window->Bounds.Height, m_dpi));
+    g_windowSize.width = static_cast<uint32_t>(ConvertDipsToPixels(m_window->Bounds.Width, m_dpi));
+}
+
 void PlanetUWPApp::OnWindowSizeChanged(CoreWindow^ window, WindowSizeChangedEventArgs^  args) {
     g_windowSize.height = static_cast<uint32_t>(args->Size.Height);
     g_windowSize.width = static_cast<uint32_t>(args->Size.Width);
-}
-
-void PlanetUWPApp::OnGamepadAdded(Platform::Object ^sender, Windows::Gaming::Input::Gamepad ^gamepad) {
 }
 
 void PlanetUWPApp::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args) {
@@ -163,7 +175,4 @@ void PlanetUWPApp::Initialize(Windows::ApplicationModel::Core::CoreApplicationVi
         ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &PlanetUWPApp::OnActivated);
 
     // todo, suspending, exiting, and resuming
-
-    Windows::Gaming::Input::Gamepad::GamepadAdded +=
-        ref new EventHandler<Windows::Gaming::Input::Gamepad^>(this, &PlanetUWPApp::OnGamepadAdded);
 }
