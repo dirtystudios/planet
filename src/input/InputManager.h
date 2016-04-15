@@ -32,6 +32,7 @@ namespace input {
     private:
         struct MappingConfig {
             InputCode inputCode;
+            bool inputFromController;
             AxisConfig axisConfig;
             ActionConfig actionConfig;
         };
@@ -56,5 +57,8 @@ namespace input {
 
     private:
         bool ShouldSendActionEvent(float newValue, float prevValue, ActionConfig* actionConfig);
+        inline bool IsControllerInputCode(InputCode inputCode) {
+            return (inputCode >= InputCode::INPUT_GAMEPAD_Y && inputCode <= InputCode::INPUT_GAMEPAD_GUIDE);
+        }
     };
 }

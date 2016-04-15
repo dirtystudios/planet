@@ -5,8 +5,15 @@
 
 
 namespace input {
-    // float is value of key, return true if input was handled in function and should 'eat' the key
-    typedef Callback<bool(float)> InputContextCallback;
+    struct InputContextCallbackArgs {
+        float value; // Value of key press
+        bool fromController; // true if came from controller
+        InputContextCallbackArgs(float val, bool fromCont)
+            : value(val), fromController(fromCont) {};
+    };
+
+    // return true if input was handled in function and should 'eat' the key
+    typedef Callback<bool(const InputContextCallbackArgs&)> InputContextCallback;
 
     struct ContextBinding {
         std::string mappingName;

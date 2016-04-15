@@ -2,20 +2,20 @@
 
 namespace ui {
 
-    bool UIManager::HandleMouseX(float xPos) {
+    bool UIManager::HandleMouseX(const input::InputContextCallbackArgs& xArgs) {
         // x is fine
-        m_mouseX = xPos;
+        m_mouseX = xArgs.value;
         return m_mouseDown;
     }
 
-    bool UIManager::HandleMouseY(float yPos) {
+    bool UIManager::HandleMouseY(const input::InputContextCallbackArgs& yArgs) {
         // our y needs to be switched
-        m_mouseY = m_windowHeight - yPos;
+        m_mouseY = m_windowHeight - yArgs.value;
         return m_mouseDown;
     }
 
-    bool UIManager::HandleMouse1(float value) {
-        if (value > 0) {
+    bool UIManager::HandleMouse1(const input::InputContextCallbackArgs& args) {
+        if (args.value > 0) {
             // dont give up mouse once its held until its released 
             if (m_mouseDown) return true;
 

@@ -67,9 +67,9 @@ namespace ui {
 
         // Callbacks from inputmanager
 
-        bool HandleMouseX(float xPos);
-        bool HandleMouseY(float yPos);
-        bool HandleMouse1(float value);
+        bool HandleMouseX(const input::InputContextCallbackArgs& args);
+        bool HandleMouseY(const input::InputContextCallbackArgs& args);
+        bool HandleMouse1(const input::InputContextCallbackArgs& args);
 
     private:
         void RenderFrame(UIFrame* uiFrame);

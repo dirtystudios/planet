@@ -8,27 +8,30 @@ namespace controllers {
     private:
         input::InputContext* m_inputContext;
         glm::vec3 moveInput;
-        glm::vec2 lookInput;
+        glm::vec2 m_mouseLookInput;
+        glm::vec2 m_controllerLookInput;
         float walkSpeed;
         float lookSpeed;
         
-        bool lookMode;
+        bool m_clickLookMode;
     public:
         Camera* cam;
 
         PlayerController(Camera* camera, input::InputContext *inputContext);
 
-        bool LookMode(float value);
+        bool LookMode(const input::InputContextCallbackArgs& args);
 
-        bool MoveForward(float value);
-        bool MoveBackward(float value);
-        bool MoveLeft(float value);
-        bool MoveRight(float value);
+        bool MoveForward(const input::InputContextCallbackArgs& args);
+        bool MoveBackward(const input::InputContextCallbackArgs& args);
+        bool MoveLeft(const input::InputContextCallbackArgs& args);
+        bool MoveRight(const input::InputContextCallbackArgs& args);
+        bool ShimmyUp(const input::InputContextCallbackArgs& args);
+        bool ShimmyDown(const input::InputContextCallbackArgs& args);
 
-        bool LookUp(float value);
-        bool LookDown(float value);
-        bool LookRight(float value);
-        bool LookLeft(float value);
+        bool LookUp(const input::InputContextCallbackArgs& args);
+        bool LookDown(const input::InputContextCallbackArgs& args);
+        bool LookRight(const input::InputContextCallbackArgs& args);
+        bool LookLeft(const input::InputContextCallbackArgs& args);
 
         void DoUpdate(float dt);
     };

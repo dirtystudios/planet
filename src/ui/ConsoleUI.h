@@ -40,7 +40,7 @@ namespace ui {
             uiManager->AddFrame(editBox);
         }
 
-        bool HandleConsoleKey(float value) {
+        bool HandleConsoleKey(const input::InputContextCallbackArgs& args) {
             if (consoleFrame->IsShown()) {
                 consoleFrame->Hide();
                 editBox->ClearFocus();

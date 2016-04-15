@@ -28,7 +28,7 @@ std::map<int, input::InputCode> sdlkMapping;
 
 #define MAP_KEY_SDL(x, y) sdlkMapping.insert(std::make_pair(SDLK_##x, input::InputCode::INPUT_KEY_##y));
 void PopulateKeyMapping() {
-    for (int x = 0; x < (int)input::InputCode::INPUT_KEY_Z; ++x) {
+    for (int x = 0; x <= (int)input::InputCode::INPUT_KEY_Z; ++x) {
         sdlkMapping.insert(std::make_pair(SDLK_a + x, (input::InputCode)x));
     }
 

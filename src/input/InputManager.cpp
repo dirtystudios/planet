@@ -17,6 +17,7 @@ namespace input {
         MappingConfig mappingConfig;
         mappingConfig.inputCode= inputCode;
         mappingConfig.actionConfig = actionConfig;
+        mappingConfig.inputFromController = IsControllerInputCode(inputCode);
         actionMappings.insert(std::make_pair(actionName, mappingConfig));
     }
 
@@ -24,6 +25,7 @@ namespace input {
         MappingConfig mappingConfig;
         mappingConfig.inputCode = inputCode;
         mappingConfig.axisConfig = axisConfig;
+        mappingConfig.inputFromController = IsControllerInputCode(inputCode);
         axisMappings.insert(std::make_pair(axisName, mappingConfig));
     }
 
@@ -80,15 +82,16 @@ namespace input {
                 std::vector<uint32_t> tempAllowAxis;
                 for (int y = 0; y < numBindings; ++y) {
                     ContextBinding* contextBinding = it->second->GetContextBinding<ContextBindingType::Axis>(y);
-                    auto it2 = axisMappings.find(contextBinding->mappingName);
-                    if (it2 != axisMappings.end()) {
-                        float scale = it2->second.axisConfig.scale;
-                        uint32_t inputCode = (uint32_t)it2->second.inputCode;
+                    auto range = axisMappings.equal_range(contextBinding->mappingName);
+                    for (auto it2 = range.first; it2 != range.second; ++it2) {
+                        MappingConfig *mapConfig = &it2->second;
+                        float scale = mapConfig->axisConfig.scale;
+                        uint32_t inputCode = (uint32_t)mapConfig->inputCode;
                         if (std::find(inputHandled.begin(), inputHandled.end(), inputCode) == inputHandled.end() 
                             || std::find(tempAllowAxis.begin(), tempAllowAxis.end(), inputCode) != tempAllowAxis.end()) {
                             float newValue = inputValues[inputCode];
-                            newValue = fabs(newValue) < it2->second.axisConfig.deadZone ? 0 : newValue;
-                            if (contextBinding->boundDelegate(newValue * scale)) {
+                            newValue = fabs(newValue) < mapConfig->axisConfig.deadZone ? 0 : newValue;
+                            if (contextBinding->boundDelegate(InputContextCallbackArgs(newValue * scale, mapConfig->inputFromController))) {
                                 inputHandled.emplace_back(inputCode);
                             }
                             tempAllowAxis.emplace_back(inputCode);
@@ -101,22 +104,23 @@ namespace input {
                 for (int y = 0; y < numBindings; ++y) {
                     ContextBinding* contextBinding = it->second->GetContextBinding<ContextBindingType::Action>(y);
 
-                    // is someone registered for this binding?
-                    auto it2 = actionMappings.find(contextBinding->mappingName);
-                    if (it2 != actionMappings.end()) {
-                        uint32_t inputCode = (uint32_t)it2->second.inputCode;
+                    // is someone registered for this binding?, get all of them
+                    auto range = actionMappings.equal_range(contextBinding->mappingName);
+                    for (auto it2 = range.first; it2 != range.second; ++it2) {
+                        MappingConfig *mapConfig = &it2->second;
+                        uint32_t inputCode = (uint32_t)mapConfig->inputCode;
 
                         // find out what 'key/input' they are registered for and give it to them
                         // but only if it hasn't already been 'handled' by a higher priority context
                         if (std::find(inputHandled.begin(), inputHandled.end(), inputCode) == inputHandled.end()) {
                             float prevValue = actionCache[inputCode];
                             float newValue = inputValues[inputCode];
-                            ActionConfig* actionConfig = &it2->second.actionConfig;
+                            ActionConfig* actionConfig = &mapConfig->actionConfig;
 
                             // pass the key/input only if binding wants event and tag it as handled.
                             if (ShouldSendActionEvent(newValue, prevValue, actionConfig)) {
                                 // did delegate 'handle' the input?
-                                if (contextBinding->boundDelegate(newValue)) {
+                                if (contextBinding->boundDelegate(InputContextCallbackArgs(newValue, mapConfig->inputFromController))) {
                                     inputHandled.emplace_back(inputCode);
 
                                     if (actionConfig->hideCursor) m_showCursor = newValue > 0 ? false : true;
