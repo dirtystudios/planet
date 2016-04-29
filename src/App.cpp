@@ -69,8 +69,8 @@ void SetupInputBindings() {
 	inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS, input::InputManager::AxisConfig(1.0, 0));
 	inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false, false, false));
 
-	// Enter key
-	inputManager->AddActionMapping("EnterKey", input::InputCode::INPUT_KEY_ENTER, input::InputManager::ActionConfig(true, true, false));
+    // Enter key
+    inputManager->AddActionMapping("EnterKey", input::InputCode::INPUT_KEY_ENTER, input::InputManager::ActionConfig(true, true, false));
 
     // Console Trigger
     inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK, input::InputManager::ActionConfig(true, true, false));

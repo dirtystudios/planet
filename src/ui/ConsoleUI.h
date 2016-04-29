@@ -11,15 +11,15 @@
 namespace ui {
     class ConsoleUI {
     private:
-		class ConsoleScriptHandler : public ScriptHandler {
-			void OnEnterPressed(EditBox &frame) {
-				config::ConsoleCommands* cc = &config::ConsoleCommands::getInstance();
-				std::string retMessage = cc->ProcessConsoleString(frame.GetText());
-				frame.ClearText();
-			}
-		};
+        class ConsoleScriptHandler : public ScriptHandler {
+            void OnEnterPressed(EditBox &frame) {
+                config::ConsoleCommands* cc = &config::ConsoleCommands::getInstance();
+                std::string retMessage = cc->ProcessConsoleString(frame.GetText());
+                frame.ClearText();
+            }
+        };
 
-		std::unique_ptr<ConsoleScriptHandler> m_scriptHandler;
+        std::unique_ptr<ConsoleScriptHandler> m_scriptHandler;
         UIFrame *consoleFrame;
         EditBox *editBox;
     public:
@@ -37,7 +37,7 @@ namespace ui {
             consoleFrame = new UIFrame(consoleFrameDesc);
             uiManager->AddFrame(consoleFrame);
 
-			m_scriptHandler.reset(new ConsoleScriptHandler());
+            m_scriptHandler.reset(new ConsoleScriptHandler());
 
             EditBox::EditBoxDesc editBoxDesc;
             editBoxDesc.name = "ConsoleEditBox";

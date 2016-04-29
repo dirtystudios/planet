@@ -152,9 +152,9 @@ namespace input {
         m_hasChanged = true;
         m_isCapturing = true;
         m_contents = initial;
-		if (cursorPosition > initial.length()) {
-			cursorPosition = initial.length();
-		}
+        if (cursorPosition > initial.length()) {
+            cursorPosition = initial.length();
+        }
         m_cursorPos = cursorPosition;
         for (int x = 0; x < (uint32_t)InputCode::COUNT; ++x) {
             keyHoldTimer.emplace_back(0);

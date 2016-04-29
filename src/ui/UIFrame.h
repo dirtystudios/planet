@@ -37,15 +37,15 @@ namespace ui {
     protected:
         UIFrameDesc m_frameDesc;
         FrameType m_frameType;
-		ScriptHandler* m_scriptHandler;
+        ScriptHandler* m_scriptHandler;
     public:
         UIFrame(UIFrameDesc frameDesc) :
             m_frameDesc(frameDesc),
             m_frameType(FrameType::UIFRAME) {};
-		UIFrame(UIFrameDesc frameDesc, ScriptHandler* scriptHandler) :
-			m_frameDesc(frameDesc),
-			m_scriptHandler(scriptHandler),
-			m_frameType(FrameType::UIFRAME) {};
+        UIFrame(UIFrameDesc frameDesc, ScriptHandler* scriptHandler) :
+            m_frameDesc(frameDesc),
+            m_scriptHandler(scriptHandler),
+            m_frameType(FrameType::UIFRAME) {};
         UIFrameDesc* GetFrameDesc() { return &m_frameDesc; };
         FrameType GetFrameType() { return m_frameType; };
         void Show() { m_frameDesc.shown = true; };
@@ -59,7 +59,7 @@ namespace ui {
             else return m_frameDesc.shown; 
         };
         UIFrame* GetParent() { return m_frameDesc.parent; };
-		virtual void OnClick() {};
+        virtual void OnClick() {};
         virtual void DoUpdate(float ms) {};
     };
 }

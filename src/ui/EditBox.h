@@ -31,7 +31,7 @@ namespace ui {
         float m_color[3];
     public:
         EditBox(EditBoxDesc editBoxDesc);
-		EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler);
+        EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler);
         void SetFocus();
         void ClearFocus();
         bool HasFocus();
@@ -50,8 +50,8 @@ namespace ui {
         void SetCursor(uint32_t pos);
         uint32_t GetCursor();
 
-		void OnClick();
-		void EnterPressed();
+        void OnClick();
+        void EnterPressed();
         // Called by UIManager
         void DoUpdate(float ms);
         bool WantsFocus();

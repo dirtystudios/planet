@@ -11,8 +11,8 @@
 
 
 ChunkedLoDTerrainRenderer::ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
-	config::ConsoleCommands::getInstance().RegisterCommand(
-		"ToggleWireFrameMode", BIND_MEM_CB(&ChunkedLoDTerrainRenderer::ToggleWireFrameMode, this));
+    config::ConsoleCommands::getInstance().RegisterCommand(
+        "ToggleWireFrameMode", BIND_MEM_CB(&ChunkedLoDTerrainRenderer::ToggleWireFrameMode, this));
 
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     if (!fs::IsPathDirectory(shaderDirPath)) {

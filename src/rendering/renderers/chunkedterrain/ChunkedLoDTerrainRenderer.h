@@ -100,9 +100,9 @@ public:
 
     // need dummy arg for consoleCommand Definition
     std::string ToggleWireFrameMode(const std::vector<std::string> & notUsed) {
-		m_wireFrameMode = !m_wireFrameMode; 
-		return ""; 
-	}
+        m_wireFrameMode = !m_wireFrameMode; 
+        return ""; 
+    }
 
 
 
