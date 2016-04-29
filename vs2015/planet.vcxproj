@@ -79,9 +79,11 @@
     <ClInclude Include="..\src\Simulation.h" />
     <ClInclude Include="..\src\ui\ConsoleUI.h" />
     <ClInclude Include="..\src\ui\EditBox.h" />
+    <ClInclude Include="..\src\ui\ScriptHandler.h" />
     <ClInclude Include="..\src\ui\UIFrame.h" />
     <ClInclude Include="..\src\ui\UIManager.h" />
     <ClInclude Include="..\src\utilities\Callback.h" />
+    <ClInclude Include="..\src\utilities\ConsoleCommands.h" />
     <ClInclude Include="..\src\utilities\Config.h" />
     <ClInclude Include="..\src\utilities\File.h" />
     <ClInclude Include="..\src\utilities\IniParser.h" />

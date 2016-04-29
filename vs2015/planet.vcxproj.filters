@@ -192,6 +192,12 @@
     <ClInclude Include="..\src\rendering\renderers\chunkedterrain\LRUTileCache.h">
       <Filter>rendering\renderers\chunkedterrain</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ui\ScriptHandler.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\ConsoleCommands.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">

@@ -46,6 +46,11 @@ namespace ui {
         return false;
     }
 
+	bool UIManager::HandleEnterPress(const input::InputContextCallbackArgs& args) {
+		m_enterWasPressed = true;
+		return true;
+	}
+
     void UIManager::AddFrame(UIFrame* uiFrame) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame);
         m_uiFrames.emplace_back(uiFrame);
@@ -136,6 +141,14 @@ namespace ui {
     void UIManager::PreProcess() {
         // Before actual render, lets set text for edit box
         if (m_focusedEditBox) {
+			// if enter pressed, trigger editbox
+			// we do it here so that text can reset during the process event
+			if (m_enterWasPressed) {
+				m_focusedEditBox->EnterPressed();
+				// text may have changed, so reset capture
+				m_keyboardManager->RestartCapture(m_focusedEditBox->GetText(), m_focusedEditBox->GetText().length());
+			}
+
             // when text changes, reset cursor blink
             // idk, every other program does, so why not us?
             if (m_keyboardManager->TextHasChanged()) {
@@ -148,6 +161,7 @@ namespace ui {
     }
 
     void UIManager::PostProcess(float ms) {
+		m_enterWasPressed = false;
         // Double check focusbox
         if (m_focusedEditBox && !m_focusedEditBox->HasFocus()) {
             m_focusedEditBox = 0;

@@ -1,13 +1,25 @@
 #pragma once
+#include <memory>
 #include "UIFrame.h"
 #include "UIManager.h"
 #include "EditBox.h"
+
+#include "ConsoleCommands.h"
 
 // In a perfect world something like this would be described in lua/xml
 
 namespace ui {
     class ConsoleUI {
     private:
+		class ConsoleScriptHandler : public ScriptHandler {
+			void OnEnterPressed(EditBox &frame) {
+				config::ConsoleCommands* cc = &config::ConsoleCommands::getInstance();
+				std::string retMessage = cc->ProcessConsoleString(frame.GetText());
+				frame.ClearText();
+			}
+		};
+
+		std::unique_ptr<ConsoleScriptHandler> m_scriptHandler;
         UIFrame *consoleFrame;
         EditBox *editBox;
     public:
@@ -25,6 +37,8 @@ namespace ui {
             consoleFrame = new UIFrame(consoleFrameDesc);
             uiManager->AddFrame(consoleFrame);
 
+			m_scriptHandler.reset(new ConsoleScriptHandler());
+
             EditBox::EditBoxDesc editBoxDesc;
             editBoxDesc.name = "ConsoleEditBox";
             editBoxDesc.parent = consoleFrame;
@@ -36,7 +50,7 @@ namespace ui {
             editBoxDesc.blinkSpeed = 0.f;
             editBoxDesc.shown = true;
             editBoxDesc.acceptMouse = true;
-            editBox = new EditBox(editBoxDesc);
+            editBox = new EditBox(editBoxDesc, m_scriptHandler.get());
             uiManager->AddFrame(editBox);
         }
 

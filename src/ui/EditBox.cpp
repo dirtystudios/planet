@@ -16,6 +16,20 @@ namespace ui {
         }
     }
 
+	EditBox::EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler) 
+		: UIFrame(editBoxDesc, scriptHandler),
+			m_textBoxState(TextBoxState::UNFOCUSED),
+			m_cursorPos(0),
+			m_editBoxDesc(editBoxDesc) {
+		m_frameType = FrameType::EDITBOX;
+		if (editBoxDesc.blinkSpeed <= 0.0f) {
+			m_editBoxDesc.blinkSpeed = 530;
+		}
+		if (!editBoxDesc.color) {
+			m_color[0] = m_color[1] = m_color[2] = 1.f;
+		}
+	}
+
     void EditBox::SetFocus() {
         if (!m_editBoxDesc.shown)
             return;
@@ -42,7 +56,7 @@ namespace ui {
         }
     }
 
-    std::string EditBox::GetText() {
+    std::string EditBox::GetText() const {
         return m_contents;
     }
 
@@ -100,6 +114,13 @@ namespace ui {
 	}
 
     // Called by UIManager
+
+	void EditBox::EnterPressed() {
+		if (m_scriptHandler) {
+			m_scriptHandler->OnEnterPressed(*this);
+		}
+	}
+
     void EditBox::DoUpdate(float ms) {
         if (!m_editBoxDesc.shown)
             m_textBoxState = TextBoxState::UNFOCUSED;

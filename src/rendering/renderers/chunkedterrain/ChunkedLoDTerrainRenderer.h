@@ -98,8 +98,11 @@ public:
     bool UnregisterTerrain(const ChunkedLoDTerrainHandle& handle);
     void Render(Camera* cam, Frustum* frustum);
 
-    // need dummy arg for inputCallback Definition
-    bool ToggleWireFrameMode(float notUsed) { m_wireFrameMode = !m_wireFrameMode; return true; }
+    // need dummy arg for consoleCommand Definition
+    std::string ToggleWireFrameMode(const std::vector<std::string> & notUsed) {
+		m_wireFrameMode = !m_wireFrameMode; 
+		return ""; 
+	}
 
 
 

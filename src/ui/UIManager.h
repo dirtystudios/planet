@@ -40,6 +40,7 @@ namespace ui {
         input::InputContext* m_uiInputContext;
         bool m_mouseDown = false;
         float m_mouseX=0.f, m_mouseY=0.f;
+		bool m_enterWasPressed = false;
     public:
         UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, graphics::RenderDevice* renderDevice, uint32_t windowWidth, uint32_t windowHeight)
             : m_windowWidth(windowWidth), m_windowHeight(windowHeight), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext) {
@@ -48,6 +49,7 @@ namespace ui {
             m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", BIND_MEM_CB(&UIManager::HandleMouseX, this));
             m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", BIND_MEM_CB(&UIManager::HandleMouseY, this));
             m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1", BIND_MEM_CB(&UIManager::HandleMouse1, this));
+			m_uiInputContext->BindContext<input::ContextBindingType::Action>("EnterKey", BIND_MEM_CB(&UIManager::HandleEnterPress, this));
             
         };
         ~UIManager() {
@@ -70,6 +72,7 @@ namespace ui {
         bool HandleMouseX(const input::InputContextCallbackArgs& args);
         bool HandleMouseY(const input::InputContextCallbackArgs& args);
         bool HandleMouse1(const input::InputContextCallbackArgs& args);
+		bool HandleEnterPress(const input::InputContextCallbackArgs& args);
 
     private:
         void RenderFrame(UIFrame* uiFrame);

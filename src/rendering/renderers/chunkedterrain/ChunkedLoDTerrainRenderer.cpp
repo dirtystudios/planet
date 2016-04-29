@@ -3,6 +3,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 #include "Config.h"
+#include "ConsoleCommands.h"
 #include "File.h"
 #include "Log.h"
 #include <queue>
@@ -10,6 +11,9 @@
 
 
 ChunkedLoDTerrainRenderer::ChunkedLoDTerrainRenderer(graphics::RenderDevice* render_device) : _render_device(render_device) {
+	config::ConsoleCommands::getInstance().RegisterCommand(
+		"ToggleWireFrameMode", BIND_MEM_CB(&ChunkedLoDTerrainRenderer::ToggleWireFrameMode, this));
+
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     if (!fs::IsPathDirectory(shaderDirPath)) {
         LOG_D("%s","Invalid Directory Path given for ShaderDirectory. Attempting default.");

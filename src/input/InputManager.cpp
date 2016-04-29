@@ -43,7 +43,7 @@ namespace input {
         // this is hurting my head, so this is the logic broken down
         // we only send 'held' events if flagged, otherwise we only care about changes
         if (newValue != prevValue) {
-            if (newValue > 0) {
+            if (newValue > 0.f) {
                 return true;
             }
             else if (!actionConfig->ignoreRelease) {

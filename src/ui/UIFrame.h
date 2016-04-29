@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include "ScriptHandler.h"
 
 namespace ui {
 
@@ -36,10 +37,15 @@ namespace ui {
     protected:
         UIFrameDesc m_frameDesc;
         FrameType m_frameType;
+		ScriptHandler* m_scriptHandler;
     public:
         UIFrame(UIFrameDesc frameDesc) :
             m_frameDesc(frameDesc),
             m_frameType(FrameType::UIFRAME) {};
+		UIFrame(UIFrameDesc frameDesc, ScriptHandler* scriptHandler) :
+			m_frameDesc(frameDesc),
+			m_scriptHandler(scriptHandler),
+			m_frameType(FrameType::UIFRAME) {};
         UIFrameDesc* GetFrameDesc() { return &m_frameDesc; };
         FrameType GetFrameType() { return m_frameType; };
         void Show() { m_frameDesc.shown = true; };
