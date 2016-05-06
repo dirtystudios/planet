@@ -63,11 +63,11 @@ ComPtr<ID3DBlob> CompileShader(std::string source) {
     switch (g_shaderType) {
     case graphics::ShaderType::FRAGMENT_SHADER:
         entryPoint = "PSMain";
-        target = "ps_5_0";
+        target = "ps_4_0";
         break;
     case graphics::ShaderType::VERTEX_SHADER:
         entryPoint = "VSMain";
-        target = "vs_5_0";
+        target = "vs_4_0";
         break;
     default:
         std::cout << "DX11RenderDev: Unsupported shader type supplied. Type:" <<  (int)g_shaderType << std::endl;

@@ -1171,9 +1171,10 @@ namespace graphics {
         D3D_FEATURE_LEVEL FeatureLevelsRequested[] = {
             D3D_FEATURE_LEVEL_11_1,
             D3D_FEATURE_LEVEL_11_0,
+            D3D_FEATURE_LEVEL_10_0, // cool xbox
         };
 
-        uint32_t numLevelsRequested = 2;
+        uint32_t numLevelsRequested = ARRAYSIZE(FeatureLevelsRequested);
         uint32_t creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifdef DEBUG_DX11
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -1290,6 +1291,8 @@ namespace graphics {
         case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0:
             dxLevel = "11.0";
             break;
+        case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_10_0:
+            dxLevel = "10.0";
         }
 
         LOG_D("DirectX Version: v%s", dxLevel);

@@ -222,6 +222,105 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="planet-uwp_TemporaryKey.pfx" />
+    <None Include="planet.ini">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\1743925405.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\1743925405.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\2004034266.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\226185632.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\226185632.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\2596499403.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\265698168.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3118134344.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3118134344.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3388925993.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3388925993.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3558755721.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\361860357.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\361860357.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3911689279.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\4071351048.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\4071351048.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\414926913.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\414926913.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\4155486674.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\602573307.cb" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\602573307.il" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\cursor_ps.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\cursor_vs.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\sky_ps.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\sky_vs.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\terrain_fs.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\terrain_vs.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\text_ps.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\text_vs.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\ui_ps.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shaders\DX11Prebuilt\ui_vs.cso" >
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\LockScreenLogo.scale-200.png" />

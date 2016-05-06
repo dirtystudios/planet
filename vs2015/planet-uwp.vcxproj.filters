@@ -50,6 +50,9 @@
     <Filter Include="components">
       <UniqueIdentifier>{34539ef6-76e0-4c04-a929-b8a90deedd99}</UniqueIdentifier>
     </Filter>
+    <Filter Include="prebuiltShaders">
+      <UniqueIdentifier>{dcdd2052-05d9-4251-95fc-a54ec2e6bd81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\input\InputManager.cpp">
@@ -272,6 +275,103 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="planet-uwp_TemporaryKey.pfx" />
+    <None Include="planet.ini" />
+    <None Include="shaders\DX11Prebuilt\361860357.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\361860357.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\414926913.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\414926913.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\602573307.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\602573307.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\1743925405.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\1743925405.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\2004034266.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\2596499403.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3118134344.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3118134344.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3388925993.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3388925993.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3558755721.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\3911689279.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\4071351048.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\4071351048.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\4155486674.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\cursor_ps.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\cursor_vs.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\sky_ps.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\sky_vs.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\terrain_fs.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\terrain_vs.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\text_ps.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\text_vs.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\ui_ps.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\ui_vs.cso">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\226185632.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\226185632.il">
+      <Filter>prebuiltShaders</Filter>
+    </None>
+    <None Include="shaders\DX11Prebuilt\265698168.cb">
+      <Filter>prebuiltShaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\src\rendering\shaders\DX11\cursor_ps.hlsl">
