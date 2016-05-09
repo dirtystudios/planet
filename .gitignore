@@ -22,7 +22,7 @@
 *.tlog
 *.idb
 *.pdb
-*.obj
+vs2015/*/*.obj
 *.ilk
 *.pch
 
