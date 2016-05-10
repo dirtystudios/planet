@@ -14,7 +14,8 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
 
     std::string shaderDirPath =
         config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
-    std::string assetDirPath = "";
+    std::string assetDirPath = 
+        config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
 
     _shaderCache        = new ShaderCache(_device, shaderDirPath);
     _pipelineStateCache = new PipelineStateCache(_device);

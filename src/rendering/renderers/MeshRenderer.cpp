@@ -22,8 +22,7 @@ void MeshRenderer::OnInit() {
     assert(_transform);
 
     
-    mesh = GetMeshCache()->Get("/Users/sturm/sturm_projects/planet/assets/roxas/roxas.obj");
-    // mesh = GetMeshCache()->Get("/Users/sturm/sturm_projects/planet/build/nanosuit2.obj");
+    mesh = GetMeshCache()->Get("roxas/roxas.obj");
 }
 
 RenderObj* MeshRenderer::Register(SimObj* simObj) {

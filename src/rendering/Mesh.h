@@ -7,9 +7,6 @@
 #include <queue>
 #include "ResourceTypes.h"
 
-
-
-
 struct Mesh {
 	graphics::BufferId vertexBuffer {0};
 	graphics::BufferId indexBuffer {0};

@@ -65,8 +65,6 @@ private:
         task->shaderParamUpdates.clear();
         task->textureBinds.clear();
         task->bufferUpdates.clear();
-
-        memset(task, 0, sizeof(DrawTask));
     }
 };
 }

@@ -72,7 +72,7 @@ void GLContext::BindTextureAsShaderResource(ShaderStage stage, TextureSlot slot,
         default: assert(false);
     }
     
-    GL_CHECK();
+    GL_CHECK("");
     assert(location >= 0);
 
     GL_CHECK(glProgramUniform1i(activeShader->id, location, slotIdx));
@@ -122,7 +122,7 @@ void GLContext::WriteShaderParamater(GLShaderParameter* shaderParam, void* data,
 
     assert(size == GetByteCount(paramType));
     assert(IsBound(program));
-    GL_CHECK();
+    GL_CHECK("");
     switch (paramType) {
     case ParamType::Float: {
         GL_CHECK(glProgramUniform1f(program->id, location, (float)*((float*)data)));

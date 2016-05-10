@@ -149,7 +149,6 @@ add_executable(dg
     ${PLATFORM_SOURCES}
     ${PLATFORM_SDL_SOURCES}
     ${UI_SOURCES}
-        src/utilities/Logger.h src/utilities/Logger.cpp
         src/rendering/backend3/impl/gl/GLDevice.cpp
         src/rendering/backend3/impl/gl/GLResourceManager.h.h src/rendering/backend3/impl/gl/GLContext.cpp)
 

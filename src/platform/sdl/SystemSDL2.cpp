@@ -4,7 +4,7 @@
 #include "SDL.h"
 #include "SDL_syswm.h"
 #include <GL/glew.h>
-#include "DX11RenderDevice.h"
+//#include "DX11RenderDevice.h"
 #else
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
@@ -94,7 +94,7 @@ sys::SysWindowSize sys::GetWindowSize() {
 }
 
 float sys::GetTime() {
-    //return seconds?
+    //return seconds
     return (float)(SDL_GetTicks()) / 1000.0;
 }
 
@@ -153,10 +153,11 @@ int sys::Run(app::Application* app){
                 glewExperimental = GL_TRUE;
                 glewInit();
                 glGetError();
-                _app->renderDevice = new graphics::RenderDeviceGL();
+                _app->renderDevice = new graphics::GLDevice();
             }
             else {
-                _app->renderDevice = new graphics::RenderDeviceDX11();
+                LOG_E("fix directx");
+                /*_app->renderDevice = new graphics::RenderDeviceDX11();
                 std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
 
                 graphics::DeviceInitialization devInit;
@@ -164,7 +165,7 @@ int sys::Run(app::Application* app){
                 devInit.windowHeight       = _window_height;
                 devInit.windowWidth        = _window_width;
                 devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
-                _app->renderDevice->InitializeDevice(devInit);
+                _app->renderDevice->InitializeDevice(devInit);*/
             }
 #endif
             break;

@@ -12,21 +12,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\App.cpp" />
-    <ClCompile Include="..\src\Camera.cpp" />
-    <ClCompile Include="..\src\Frustum.cpp" />
     <ClCompile Include="..\src\Image_stb.cpp" />
     <ClCompile Include="..\src\input\InputManager.cpp" />
     <ClCompile Include="..\src\input\KeyboardManager.cpp" />
     <ClCompile Include="..\src\input\PlayerController.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
-    <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
-    <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />
-    <ClCompile Include="..\src\rendering\backend\GL\GLRenderDevice.cpp" />
-    <ClCompile Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.cpp" />
-    <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp" />
-    <ClCompile Include="..\src\ui\EditBox.cpp" />
-    <ClCompile Include="..\src\ui\UIManager.cpp" />
+    <ClCompile Include="..\src\rendering\backend\impl\gl\GLContext.cpp" />
+    <ClCompile Include="..\src\rendering\backend\impl\gl\GLDevice.cpp" />
+    <ClCompile Include="..\src\rendering\Camera.cpp" />
+    <ClCompile Include="..\src\rendering\Frustum.cpp" />
+    <ClCompile Include="..\src\rendering\Mesh.cpp" />
+    <ClCompile Include="..\src\rendering\MeshCache.cpp" />
+    <ClCompile Include="..\src\rendering\RenderEngine.cpp" />
+    <ClCompile Include="..\src\rendering\Renderer.cpp" />
+    <ClCompile Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderer.cpp" />
+    <ClCompile Include="..\src\rendering\renderers\MeshRenderer.cpp" />
+    <ClCompile Include="..\src\rendering\renderers\skybox\SkyRenderer.cpp" />
     <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
     <ClCompile Include="..\src\utilities\win32\Log_win32.cpp" />
   </ItemGroup>
@@ -34,13 +36,12 @@
     <ClInclude Include="..\src\App.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\BoundingBox.h" />
-    <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\components\ChunkedTerrain.h" />
     <ClInclude Include="..\src\components\Component.h" />
     <ClInclude Include="..\src\components\ComponentType.h" />
+    <ClInclude Include="..\src\components\Skybox.h" />
     <ClInclude Include="..\src\components\Spatial.h" />
     <ClInclude Include="..\src\ext\stb_image.h" />
-    <ClInclude Include="..\src\Frustum.h" />
     <ClInclude Include="..\src\Helpers.h" />
     <ClInclude Include="..\src\IdObj.h" />
     <ClInclude Include="..\src\Image.h" />
@@ -52,54 +53,79 @@
     <ClInclude Include="..\src\input\PlayerController.h" />
     <ClInclude Include="..\src\platform\Platform.h" />
     <ClInclude Include="..\src\platform\System.h" />
-    <ClInclude Include="..\src\rendering\backend\AttribLayout.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11ConstantBufferHelpers.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11RenderDevice.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11Utils.h" />
-    <ClInclude Include="..\src\rendering\backend\GL\GLRenderDevice.h" />
-    <ClInclude Include="..\src\rendering\backend\GL\GLUtils.h" />
-    <ClInclude Include="..\src\rendering\backend\MemLayout.h" />
-    <ClInclude Include="..\src\rendering\backend\ParamType.h" />
-    <ClInclude Include="..\src\rendering\backend\RenderDevice.h" />
-    <ClInclude Include="..\src\rendering\backend\VertLayout.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\gl\GLContext.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\gl\GLDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\gl\GLEnumAdapter.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\gl\GLResourceManager.h.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\gl\GLStructs.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\gl\GLTextureFormatDesc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\BlendState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\DepthState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BlendFunc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BlendMode.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BufferType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BufferUsage.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\CullMode.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\DepthFunc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\DepthWriteMask.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\FillMode.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\ParamType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\PrimitiveType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\ShaderStage.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\ShaderType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\TextureFormat.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\TextureSlot.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\WindingOrder.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\Frame.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\PipelineStateDesc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\RasterState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\RenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\ResourceTypes.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\BufferUpdate.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\DrawTask.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\ShaderParamUpdate.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureBind.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureUpdate.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\VertexLayoutDesc.h" />
+    <ClInclude Include="..\src\rendering\Camera.h" />
+    <ClInclude Include="..\src\rendering\Frustum.h" />
+    <ClInclude Include="..\src\rendering\Mesh.h" />
+    <ClInclude Include="..\src\rendering\MeshCache.h" />
+    <ClInclude Include="..\src\rendering\MeshGeneration.h" />
+    <ClInclude Include="..\src\rendering\PipelineStateCache.h" />
     <ClInclude Include="..\src\rendering\RenderEngine.h" />
     <ClInclude Include="..\src\rendering\Renderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTileBuffer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainNode.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderObj.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainVertex.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTextureArrayBuffer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTile.h" />
     <ClInclude Include="..\src\rendering\renderers\chunkedterrain\LRUTileCache.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\Tile.h" />
+    <ClInclude Include="..\src\rendering\renderers\MeshRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\skybox\SkyboxRenderObj.h" />
+    <ClInclude Include="..\src\rendering\renderers\skybox\SkyboxVertex.h" />
+    <ClInclude Include="..\src\rendering\renderers\skybox\SkyRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\text\TextRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\ui\UIRenderer.h" />
     <ClInclude Include="..\src\rendering\RendererType.h" />
     <ClInclude Include="..\src\rendering\RenderObj.h" />
+    <ClInclude Include="..\src\rendering\RenderQueue.h" />
+    <ClInclude Include="..\src\rendering\RenderServiceLocator.h" />
     <ClInclude Include="..\src\rendering\RenderView.h" />
-    <ClInclude Include="..\src\rendering\SkyboxRenderer.h" />
-    <ClInclude Include="..\src\rendering\TextRenderer.h" />
-    <ClInclude Include="..\src\rendering\UIRenderer.h" />
+    <ClInclude Include="..\src\rendering\ShaderCache.h" />
+    <ClInclude Include="..\src\rendering\VertexLayoutCache.h" />
     <ClInclude Include="..\src\rendering\Viewport.h" />
     <ClInclude Include="..\src\SimObj.h" />
     <ClInclude Include="..\src\Simulation.h" />
-    <ClInclude Include="..\src\ui\ConsoleUI.h" />
-    <ClInclude Include="..\src\ui\EditBox.h" />
     <ClInclude Include="..\src\ui\ScriptHandler.h" />
-    <ClInclude Include="..\src\ui\UIFrame.h" />
-    <ClInclude Include="..\src\ui\UIManager.h" />
     <ClInclude Include="..\src\utilities\Callback.h" />
-    <ClInclude Include="..\src\utilities\ConsoleCommands.h" />
     <ClInclude Include="..\src\utilities\Config.h" />
+    <ClInclude Include="..\src\utilities\ConsoleCommands.h" />
     <ClInclude Include="..\src\utilities\File.h" />
     <ClInclude Include="..\src\utilities\IniParser.h" />
     <ClInclude Include="..\src\utilities\Log.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\src\rendering\shaders\GL\debug_fs.glsl" />
-    <None Include="..\src\rendering\shaders\GL\debug_vs.glsl" />
-    <None Include="..\src\rendering\shaders\GL\planet_fs.glsl" />
-    <None Include="..\src\rendering\shaders\GL\planet_tcs.glsl" />
-    <None Include="..\src\rendering\shaders\GL\planet_tes.glsl" />
-    <None Include="..\src\rendering\shaders\GL\planet_vs.glsl" />
-    <None Include="..\src\rendering\shaders\GL\terrain_fs.glsl" />
-    <None Include="..\src\rendering\shaders\GL\terrain_vs.glsl" />
-    <None Include="..\src\rendering\shaders\GL\text_ps.glsl" />
-    <None Include="..\src\rendering\shaders\GL\text_vs.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32A60293-4AF5-43BB-A314-BC8382DFA22B}</ProjectGuid>
@@ -131,14 +157,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\SDL-mirror\include;..\external\xxhash;$(IncludePath)</IncludePath>
-    <LibraryPath>..\external\winlibs;libnoise-build\x86\src\Debug;freetype-build\x86\Debug;xxhash-build\x86\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\gl;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\win32;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\SDL-mirror\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <LibraryPath>..\external\winlibs;assimp-build\x86\contrib\zlib\Release;libnoise-build\x86\src\Debug;freetype-build\x86\Debug;xxhash-build\x86\Debug;assimp-build\x86\code\Debug;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>$(ProjectName)-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\GL;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\SDL-mirror\include;..\external\xxhash;$(IncludePath)</IncludePath>
-    <LibraryPath>..\external\winlibs;libnoise-build\x86\src\Release;freetype-build\x86\Release;xxhash-build\x86\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\gl;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\win32;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\SDL-mirror\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <LibraryPath>..\external\winlibs;assimp-build\x86\contrib\zlib\Release;libnoise-build\x86\src\Release;freetype-build\x86\Release;xxhash-build\x86\Release;assimp-build\x86\code\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -146,13 +172,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;NOISE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NOISE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>noise.lib;freetyped.lib;xxhash.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;zlibstatic.lib;noise.lib;xxhash.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;freetyped.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y /D "$(SolutionDir)..\external\winlibs\libnoise.dll" "$(TargetDir)libnoise.dll"
@@ -166,13 +192,13 @@ copy /Y /D "$(SolutionDir)..\external\winlibs\SDL2.dll" "$(TargetDir)SDL2.dll"</
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;NOISE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NOISE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>noise.lib;freetype.lib;xxhash.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;zlibstatic.lib;noise.lib;xxhash.lib;glfw3.lib;glew32s.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;SDL2.lib;DXGI.lib;dxguid.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>

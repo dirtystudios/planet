@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 namespace graphics {
 enum class DepthFunc : uint8_t {

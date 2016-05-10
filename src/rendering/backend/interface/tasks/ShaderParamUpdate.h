@@ -18,6 +18,8 @@ struct ShaderParamUpdate {
     ShaderParamId paramId{0};
     void* data{nullptr};
     size_t len{0};
+    ShaderParamUpdate& operator=(const ShaderParamUpdate&) = delete;
+    ShaderParamUpdate(const ShaderParamUpdate&) = delete;
 
     std::string ToString() {
         return "ShaderParamUpdate [paramId:" + std::to_string(paramId) + ", data:" +

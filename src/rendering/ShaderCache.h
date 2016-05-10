@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <cassert>
 #include <iostream>
-#include "ChunkedLoDTerrainRenderer.h"
 #include "File.h"
 #include "ShaderType.h"
 #include "Helpers.h"

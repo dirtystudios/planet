@@ -2,7 +2,6 @@
 #define _logger_h_
 
 #include <cstdio>
-#include <pthread.h>
 #include <string>
 #include <iostream>
 using namespace std;
@@ -16,7 +15,7 @@ inline std::string methodName(const std::string& prettyFunction) {
     return prettyFunction.substr(begin, end) + "()";
 }
 
-#define __METHOD_NAME__ methodName(__PRETTY_FUNCTION__)
+#define __METHOD_NAME__ methodName(__func__)
 #define LOG_D(x, ...) Log::d(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
 #define LOG_W(x, ...) Log::w(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
 #define LOG_E(x, ...) Log::e(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
@@ -29,7 +28,6 @@ public:
 
 private:
     static string get_timestamp();
-    static pthread_mutex_t _write_lock;
 };
 
 #endif

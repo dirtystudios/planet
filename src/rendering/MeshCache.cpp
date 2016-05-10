@@ -17,7 +17,9 @@ Mesh* MeshCache::Get(const std::string& name) {
         return it->second;
     }
 
-    std::vector<IndexedMeshData> meshDatas = LoadMeshDataFromFile(name);
+    string fpath = _baseDir + "/" + name;
+
+    std::vector<IndexedMeshData> meshDatas = LoadMeshDataFromFile(fpath);
     assert(meshDatas.size() > 0);
 	
    	

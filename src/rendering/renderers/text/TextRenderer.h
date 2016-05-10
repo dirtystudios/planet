@@ -38,6 +38,7 @@ public:
     ~TextRenderer() {}
 
     void OnInit() override {
+        /*
         graphics::PipelineStateDesc psd;
         psd.vertexShader = GetShaderCache()->Get(graphics::ShaderType::VertexShader, "diffuse");
         psd.pixelShader  = GetShaderCache()->Get(graphics::ShaderType::PixelShader, "diffuse");
@@ -46,7 +47,7 @@ public:
         _defaultPS       = GetPipelineStateCache()->Get(psd);
         _transform = GetRenderDevice()->CreateShaderParam(psd.vertexShader, "wvp", graphics::ParamType::Float4x4);
         assert(_defaultPS);
-        assert(_transform);
+        assert(_transform);*/
     }
     RenderObj* Register(SimObj* simObj) final;
     void Unregister(RenderObj* renderObj) final;
@@ -251,5 +252,3 @@ public:
         // _render_device->DrawPrimitive(graphics::PrimitiveType::LineStrip, 0, 2);
     }
 };
-
-#endif
