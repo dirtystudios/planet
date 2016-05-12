@@ -35,7 +35,7 @@ public:
     void ResizeWindow(uint32_t width, uint32_t height);
     void PrintDisplayAdapterInfo();
 
-    BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage, VertexLayoutId layoutId = 0);
+    BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage);
     ShaderId CreateShader(ShaderType type, const std::string& source);
     ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);

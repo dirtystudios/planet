@@ -6,7 +6,6 @@
 #include "noise/noise.h"
 #include "Frustum.h"
 #include "Log.h"
-#include "TextRenderer.h"
 #pragma
 #include "glm/glm.hpp"
 
@@ -35,6 +34,77 @@ RenderEngine* renderEngine;
 Simulation simulation;
 RenderView* playerView;
 Viewport* playerViewport;
+
+
+
+// struct Material {
+//     ShaderId vertexShader;
+//     ShaderId pixelShader;
+
+//     ConstantData constants;
+//     std::vector<ShaderResource> shaderResources;
+// };
+
+
+
+// struct Mesh {
+//     BufferId vertexBuffer;
+//     BufferId indexBuffer;
+//     uint32_t indexOffset;
+//     uint32_t indexCount;
+
+//     MaterialId material;
+// };
+
+
+// struct Transform {
+//     glm::vec3 position;
+//     glm::mat4 orientiation;
+//     glm::vec3 scale;
+// };
+
+
+// struct Model {
+//     std::vector<Mesh> meshes;
+// };
+
+// // DirectionalLight {
+// //     vec3 direction;
+// //     vec3 ambient;
+// //     vec3 specular;
+// // }
+
+// Entity {
+//     ModelInstance* model;
+//     Transform* transform;
+
+// }
+
+
+
+// DiffuseMaterial {
+//     PipelinestateId pipelinestate;
+//     vec3 color;
+// }
+
+// StaticMesh {
+//     BufferId vertexBuffer;
+//     uint32_t vertexCount;
+//     uint32_t vertexOffset;
+// }
+
+// Transform {
+//     mat4 rotation;
+//     mat4 scale;
+//     mat4 translation;
+// }
+
+// MeshComponent {
+//     MeshId mesh;
+//     Material material;
+//     Transform* transform;
+
+// }
 
 SimObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");

@@ -1,5 +1,14 @@
-#include "Mesh.h"
 #include <iostream>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <glm/glm.hpp>
+#include <vector>
+#include <queue>
+#include "IndexedMeshData.h"
+
+
+namespace meshImport {
 // struct Texture {
 //     uint32_t id;
 //     std::string type;
@@ -118,4 +127,5 @@ std::vector<IndexedMeshData> LoadMeshDataFromFile(const std::string& fpath) {
 	}	
 
 	return meshes;
+}
 }

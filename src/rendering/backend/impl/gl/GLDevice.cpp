@@ -29,8 +29,7 @@ void GLDevice::PrintDisplayAdapterInfo() {
     printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
 }
 
-BufferId GLDevice::CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage,
-                                VertexLayoutId vertexLayoutId) {
+BufferId GLDevice::CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage) {
     GLBuffer* buffer = new GLBuffer();
     GL_CHECK(glGenBuffers(1, &buffer->id));
     assert(buffer->id);

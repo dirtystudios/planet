@@ -1,5 +1,6 @@
 #include "MeshCache.h"
 #include "File.h"
+#include "MeshImporter.h"
 
 MeshCache::MeshCache(graphics::RenderDevice* device, const std::string& baseDir) : _device(device), _baseDir(baseDir) {
     if (!fs::IsPathDirectory(baseDir)) {
@@ -16,10 +17,9 @@ Mesh* MeshCache::Get(const std::string& name) {
     if (it != _cache.end()) {
         return it->second;
     }
-
+    
     string fpath = _baseDir + "/" + name;
-
-    std::vector<IndexedMeshData> meshDatas = LoadMeshDataFromFile(fpath);
+    std::vector<IndexedMeshData> meshDatas = meshImport::LoadMeshDataFromFile(fpath);
     assert(meshDatas.size() > 0);
 	
    	

@@ -34,8 +34,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 FILE(GLOB GRAPHICS_SOURCES ${SOURCE_DIR_ROOT}/rendering/*.cpp)
 FILE(GLOB GRAPHICS_HEADERS ${SOURCE_DIR_ROOT}/rendering/*.h)
 
-FILE(GLOB_RECURSE GRAPHICS_SOURCES2 ${SOURCE_DIR_ROOT}/rendering/backend3/interface/*.cpp)
-FILE(GLOB_RECURSE GRAPHICS_HEADERS2 ${SOURCE_DIR_ROOT}/rendering/backend3/interface/*.h)
+FILE(GLOB_RECURSE GRAPHICS_SOURCES2 ${SOURCE_DIR_ROOT}/rendering/backend/interface/*.cpp)
+FILE(GLOB_RECURSE GRAPHICS_HEADERS2 ${SOURCE_DIR_ROOT}/rendering/backend/interface/*.h)
 
 FILE(GLOB RENDERERS_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/*.cpp)
 FILE(GLOB RENDERERS_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/*.h)
@@ -96,10 +96,10 @@ include_directories(
     ${SOURCE_DIR_ROOT}/rendering/renderers/ui/
     ${SOURCE_DIR_ROOT}/rendering/renderers/skybox/
     ${SOURCE_DIR_ROOT}/rendering/backend/
-    ${SOURCE_DIR_ROOT}/rendering/backend3/interface
-    ${SOURCE_DIR_ROOT}/rendering/backend3/interface/tasks
-    ${SOURCE_DIR_ROOT}/rendering/backend3/interface/enums
-    ${SOURCE_DIR_ROOT}/rendering/backend3/impl/gl
+    ${SOURCE_DIR_ROOT}/rendering/backend/interface
+    ${SOURCE_DIR_ROOT}/rendering/backend/interface/tasks
+    ${SOURCE_DIR_ROOT}/rendering/backend/interface/enums
+    ${SOURCE_DIR_ROOT}/rendering/backend/impl/gl
     ${SOURCE_DIR_ROOT}/rendering/backend/GL
     ${SOURCE_DIR_ROOT}/rendering/
     ${SOURCE_DIR_ROOT}/utilities/
@@ -149,8 +149,8 @@ add_executable(dg
     ${PLATFORM_SOURCES}
     ${PLATFORM_SDL_SOURCES}
     ${UI_SOURCES}
-        src/rendering/backend3/impl/gl/GLDevice.cpp
-        src/rendering/backend3/impl/gl/GLResourceManager.h.h src/rendering/backend3/impl/gl/GLContext.cpp)
+        src/rendering/backend/impl/gl/GLDevice.cpp
+        src/rendering/backend/impl/gl/GLResourceManager.h.h src/rendering/backend/impl/gl/GLContext.cpp)
 
 target_link_libraries(dg ${LIBS})
 

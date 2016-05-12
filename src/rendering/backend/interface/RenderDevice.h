@@ -36,8 +36,7 @@ public:
     virtual void ResizeWindow(uint32_t width, uint32_t height) = 0;
     virtual void PrintDisplayAdapterInfo() = 0;
 
-    virtual BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage,
-                                  VertexLayoutId layoutId = 0) = 0;
+    virtual BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage) = 0;
     virtual ShaderId CreateShader(ShaderType type, const std::string& source) = 0;
     virtual ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;
     virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
