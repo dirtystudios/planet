@@ -16,17 +16,19 @@ Scratchpad for future tasks. Flesh them out if and when necessary
 ## Reload modified shaders
 - Watch shader directory for file changes. Attempt to recompile shaders when they get saved?
 
-# Game Object Model
+## Game Object Model
 - ECS?
 - Something else?
 
-# Material System
+## Material System
 - Define a material in data and use with mesh
 - Update material definition at runtime
 
-# Animated models (http://www.ogldev.org/www/tutorial38/tutorial38.html)
+## Animated models (http://www.ogldev.org/www/tutorial38/tutorial38.html)
 - Make a skinned mesh renderer
 
-- Finish porting renderers to new 'Renderer Format'
+## Finish porting renderers to new 'Renderer Format'
 
-- Precomputed Atmospheric Scattering (https://hal.archives-ouvertes.fr/inria-00288758)
+## Precomputed Atmospheric Scattering (https://hal.archives-ouvertes.fr/inria-00288758)
+
+## Constant Buffer Support
