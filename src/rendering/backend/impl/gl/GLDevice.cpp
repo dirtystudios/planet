@@ -18,8 +18,6 @@ GLDevice::GLDevice() {
     this->_currentFrame                   = new Frame();
 }
 
-void GLDevice::SwapBuffers() {}
-
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
 
 void GLDevice::PrintDisplayAdapterInfo() {

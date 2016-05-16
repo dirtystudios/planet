@@ -31,8 +31,7 @@ class RenderDevice {
 public:
     DeviceConfiguration DeviceConfig;
 
-    virtual int32_t InitializeDevice(void* windowHandle, uint32_t windowHeight, uint32_t windowWidth) = 0;
-    virtual void SwapBuffers(){LOG_D("%s", "remove me")};
+    virtual int32_t InitializeDevice(const DeviceInitialization& deviceInit) = 0;
     virtual void ResizeWindow(uint32_t width, uint32_t height) = 0;
     virtual void PrintDisplayAdapterInfo() = 0;
 

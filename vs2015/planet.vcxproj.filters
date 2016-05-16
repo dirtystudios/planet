@@ -43,10 +43,13 @@
     <ClCompile Include="..\src\rendering\Frustum.cpp">
       <Filter>rendering</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rendering\Mesh.cpp">
+    <ClCompile Include="..\src\rendering\MeshCache.cpp">
       <Filter>rendering</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rendering\MeshCache.cpp">
+    <ClCompile Include="..\src\rendering\MeshGeneration.cpp">
+      <Filter>rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\MeshImporter.cpp">
       <Filter>rendering</Filter>
     </ClCompile>
     <ClCompile Include="..\src\rendering\RenderEngine.cpp">
@@ -54,6 +57,15 @@
     </ClCompile>
     <ClCompile Include="..\src\rendering\Renderer.cpp">
       <Filter>rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Device.cpp">
+      <Filter>rendering\backend\impl\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Context.cpp">
+      <Filter>rendering\backend\impl\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Utils.cpp">
+      <Filter>rendering\backend\impl\dx11</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +290,9 @@
     <ClInclude Include="..\src\rendering\Frustum.h">
       <Filter>rendering</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\rendering\IndexedMeshData.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\rendering\Mesh.h">
       <Filter>rendering</Filter>
     </ClInclude>
@@ -285,6 +300,9 @@
       <Filter>rendering</Filter>
     </ClInclude>
     <ClInclude Include="..\src\rendering\MeshGeneration.h">
+      <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\MeshImporter.h">
       <Filter>rendering</Filter>
     </ClInclude>
     <ClInclude Include="..\src\rendering\PipelineStateCache.h">
@@ -319,6 +337,24 @@
     </ClInclude>
     <ClInclude Include="..\src\rendering\Viewport.h">
       <Filter>rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Device.h">
+      <Filter>rendering\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Utils.h">
+      <Filter>rendering\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Structs.h">
+      <Filter>rendering\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Context.h">
+      <Filter>rendering\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11ContextState.h">
+      <Filter>rendering\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11CBufferHelper.h">
+      <Filter>rendering\backend\impl\dx11</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -381,6 +417,9 @@
     </Filter>
     <Filter Include="rendering\backend\interface\tasks">
       <UniqueIdentifier>{5f51d723-1ff3-47ef-b849-5db5ca7c514b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rendering\backend\impl\dx11">
+      <UniqueIdentifier>{ef58647d-e591-415d-9412-7058c39dc98f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

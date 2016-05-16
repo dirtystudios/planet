@@ -2,8 +2,10 @@
 
 #include "ParamType.h"
 #include "Helpers.h"
-#include <vector>
 #include <functional>
+#include <vector>
+#include <cstring>
+#include <map>
 
 namespace graphics {
 enum class VertexAttributeType : uint8_t { Float = 0, Float2, Float3, Float4, Count };
@@ -15,6 +17,19 @@ enum class VertexAttributeUsage : uint8_t {
     Texcoord0,
     Count,
 };
+
+static string VertexAttributeUsageToString(VertexAttributeUsage usage) {
+    switch (usage) {
+    case VertexAttributeUsage::Position:
+        return "POSITION";
+    case VertexAttributeUsage::Normal:
+        return "NORMAL";
+    case VertexAttributeUsage::Color0:
+        return "COLOR";
+    case VertexAttributeUsage::Texcoord0:
+        return "TEXCOORD";
+    }
+}
 
 struct VertexLayoutElement {
     VertexAttributeType type;

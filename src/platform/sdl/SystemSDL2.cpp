@@ -4,7 +4,7 @@
 #include "SDL.h"
 #include "SDL_syswm.h"
 #include <GL/glew.h>
-//#include "DX11RenderDevice.h"
+#include "DX11Device.h"
 #else
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
@@ -156,8 +156,7 @@ int sys::Run(app::Application* app){
                 _app->renderDevice = new graphics::GLDevice();
             }
             else {
-                LOG_E("fix directx");
-                /*_app->renderDevice = new graphics::RenderDeviceDX11();
+                _app->renderDevice = new graphics::DX11Device();
                 std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
 
                 graphics::DeviceInitialization devInit;
@@ -165,13 +164,12 @@ int sys::Run(app::Application* app){
                 devInit.windowHeight       = _window_height;
                 devInit.windowWidth        = _window_width;
                 devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
-                _app->renderDevice->InitializeDevice(devInit);*/
+                _app->renderDevice->InitializeDevice(devInit);
             }
 #endif
             break;
         case SDL_SYSWM_COCOA:
             subsystem = "Apple OS X";
-            //            _app->renderDevice = new graphics::RenderDeviceGL();
             _app->renderDevice = new graphics::GLDevice();
             break;
             // case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
@@ -299,7 +297,6 @@ int sys::Run(app::Application* app){
         if (renderDeviceConfig == "opengl") {
             SDL_GL_SwapWindow(_window);
         }
-        _app->renderDevice->SwapBuffers();
         dt = GetTime() - start;
     }
 

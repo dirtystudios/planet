@@ -30,8 +30,7 @@ public:
     GLDevice();
     virtual ~GLDevice(){};
 
-    int32_t InitializeDevice(void* windowHandle, uint32_t windowHeight, uint32_t windowWidth) { return 0; }
-    void SwapBuffers();
+    int32_t InitializeDevice(const DeviceInitialization& deviceInit) { return 0; }
     void ResizeWindow(uint32_t width, uint32_t height);
     void PrintDisplayAdapterInfo();
 
