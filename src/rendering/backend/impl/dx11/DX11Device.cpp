@@ -10,7 +10,7 @@
 namespace graphics {
     std::vector<std::unique_ptr<const char[]>> DX11SemanticNameCache::m_semanticNameCache = {};
 
-    BufferId DX11Device::CreateBuffer(BufferType type, void * data, size_t size, BufferUsage usage, VertexLayoutId layoutId) {
+    BufferId DX11Device::CreateBuffer(BufferType type, void * data, size_t size, BufferUsage usage) {
 
         ComPtr<ID3D11Buffer> buffer = NULL;
 
@@ -50,6 +50,9 @@ namespace graphics {
         if (m_usePrebuiltShaders) {
             bufPtr = (void*)&source[0];
             bufSize = source.length();
+
+            D3DCreateBlob(bufSize, blob.ReleaseAndGetAddressOf());
+            memcpy(blob->GetBufferPointer(), bufPtr, bufSize);
         }
         else {
             blob.Swap(CompileShader(type, source));
@@ -169,7 +172,7 @@ namespace graphics {
 
         stateDx11.topology = SafeGet(PrimitiveTypeDX11, desc.topology);
 
-        auto layout = GetResource(m_inputLayouts, desc.vertexLayout);
+        auto layout = GetResourceFromSizeMap(m_inputLayouts, desc.vertexLayout);
         stateDx11.vertexLayout = layout->inputLayout.Get();
         stateDx11.vertexLayoutHandle = desc.vertexLayout;
         stateDx11.vertexLayoutStride = layout->stride;
@@ -295,7 +298,7 @@ namespace graphics {
         // not internal, check hash first
         size_t hash = 0;
         HashCombine(hash, layoutDesc);
-        auto layoutCheck = GetResource(m_inputLayouts, hash);
+        auto layoutCheck = GetResourceFromSizeMap(m_inputLayouts, hash);
         if (layoutCheck != nullptr)
             return hash;
 
@@ -581,7 +584,7 @@ namespace graphics {
             ProcessTextureBinds(drawTask->textureBinds);
             ProcessShaderParams(drawTask->shaderParamUpdates);
 
-            PipelineStateDX11* pipelineState = GetResource(m_pipelineStates, drawTask->pipelineState);
+            PipelineStateDX11* pipelineState = GetResource(m_pipelineStates, static_cast<uint32_t>(drawTask->pipelineState));
 
             m_context->SetDepthState(pipelineState->depthStateHandle, pipelineState->depthState);
             m_context->SetRasterState(pipelineState->rasterStateHandle, pipelineState->rasterState);
@@ -669,7 +672,7 @@ namespace graphics {
         m_usePrebuiltShaders = deviceInit.usePrebuiltShaders;
 
         if (m_usePrebuiltShaders) {
-            DeviceConfig.DeviceAbbreviation = "DX11Prebuilt";
+            DeviceConfig.DeviceAbbreviation = "DX11";
             DeviceConfig.ShaderExtension = ".cso";
         }
         else {

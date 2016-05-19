@@ -100,30 +100,30 @@
     <PackageCertificateKeyFile>planet-uwp_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>libnoise-build\x86\src\Debug;freetype-build\x86\Debug;xxhash-build\x86\Debug;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>libnoise-build\x86\src\Release;freetype-build\x86\Release;xxhash-build\x86\Release;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>libnoise-build\x64\src\Debug;freetype-build\x64\Debug;xxhash-build\x64\Debug;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <LibraryPath>assimp-build\x64\code\Debug;assimp-build\x64\contrib\zlib\Debug;libnoise-build\x64\src\Debug;freetype-build\x64\Debug;xxhash-build\x64\Debug;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend;..\src\rendering\backend\DX11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\utilities\win32;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>libnoise-build\x64\src\Release;freetype-build\x64\Release;xxhash-build\x64\Release;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
@@ -141,6 +141,14 @@
     <Link>
       <AdditionalDependencies>noise.lib;xxhash.lib;freetyped.lib;xxhash.lib;d3d11.lib;d3dcompiler.lib;DXGI.lib;dxguid.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
@@ -156,6 +164,14 @@
     <Link>
       <AdditionalDependencies>noise.lib;xxhash.lib;freetype.lib;xxhash.lib;d3d11.lib;d3dcompiler.lib;DXGI.lib;dxguid.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -171,6 +187,14 @@
     <Link>
       <AdditionalDependencies>noise.lib;xxhash.lib;freetyped.lib;xxhash.lib;d3d11.lib;d3dcompiler.lib;DXGI.lib;dxguid.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -186,6 +210,14 @@
     <Link>
       <AdditionalDependencies>noise.lib;xxhash.lib;freetype.lib;xxhash.lib;d3d11.lib;d3dcompiler.lib;DXGI.lib;dxguid.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -195,12 +227,20 @@
       <PreprocessorDefinitions>GLEW_STATIC;NOISE_STATIC;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <FxCompile>
-      <ShaderModel>5.0</ShaderModel>
+      <ShaderModel>4.0</ShaderModel>
       <ObjectFileOutput>$(OutDir)shaders\DX11\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <Link>
-      <AdditionalDependencies>noise.lib;xxhash.lib;freetyped.lib;xxhash.lib;d3d11.lib;d3dcompiler.lib;DXGI.lib;dxguid.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;zlibstaticd.lib;noise.lib;xxhash.lib;freetyped.lib;d3d11.lib;d3dcompiler.lib;DXGI.lib;dxguid.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -216,114 +256,29 @@
     <Link>
       <AdditionalDependencies>noise.lib;xxhash.lib;freetype.lib;xxhash.lib;d3d11.lib;d3dcompiler.lib;DXGI.lib;dxguid.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="Assets\roxas\Roxas High Poly.mtl" />
+    <None Include="Assets\roxas\Roxas High Poly.smd" />
     <None Include="planet-uwp_TemporaryKey.pfx" />
     <None Include="planet.ini">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\1743925405.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\1743925405.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\2004034266.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\226185632.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\226185632.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\2596499403.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\265698168.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\3118134344.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\3118134344.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\3388925993.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\3388925993.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\3558755721.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\361860357.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\361860357.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\3911689279.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\4071351048.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\4071351048.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\414926913.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\414926913.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\4155486674.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\602573307.cb" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\602573307.il" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\cursor_ps.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\cursor_vs.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\sky_ps.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\sky_vs.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\terrain_fs.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\terrain_vs.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\text_ps.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\text_vs.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\ui_ps.cso" >
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="shaders\DX11Prebuilt\ui_vs.cso" >
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\LockScreenLogo.scale-200.png" />
+    <Image Include="Assets\roxas\RoxasHP.png" />
     <Image Include="Assets\SplashScreen.scale-200.png" />
     <Image Include="Assets\Square150x150Logo.scale-200.png" />
     <Image Include="Assets\Square44x44Logo.scale-200.png" />
@@ -335,13 +290,12 @@
     <ClInclude Include="..\src\App.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\BoundingBox.h" />
-    <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\components\ChunkedTerrain.h" />
     <ClInclude Include="..\src\components\Component.h" />
     <ClInclude Include="..\src\components\ComponentType.h" />
+    <ClInclude Include="..\src\components\Skybox.h" />
     <ClInclude Include="..\src\components\Spatial.h" />
     <ClInclude Include="..\src\ext\stb_image.h" />
-    <ClInclude Include="..\src\Frustum.h" />
     <ClInclude Include="..\src\Helpers.h" />
     <ClInclude Include="..\src\IdObj.h" />
     <ClInclude Include="..\src\Image.h" />
@@ -355,43 +309,84 @@
     <ClInclude Include="..\src\platform\System.h" />
     <ClInclude Include="..\src\platform\uwp\InputUWP.h" />
     <ClInclude Include="..\src\platform\uwp\PlatformUWP.h" />
-    <ClInclude Include="..\src\rendering\backend\AttribLayout.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11ConstantBufferHelpers.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11RenderDevice.h" />
-    <ClInclude Include="..\src\rendering\backend\DX11\DX11Utils.h" />
-    <ClInclude Include="..\src\rendering\backend\MemLayout.h" />
-    <ClInclude Include="..\src\rendering\backend\ParamType.h" />
-    <ClInclude Include="..\src\rendering\backend\RenderDevice.h" />
-    <ClInclude Include="..\src\rendering\backend\VertLayout.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11CBufferHelper.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Context.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11ContextState.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Device.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Structs.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Utils.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\BlendState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\DepthState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BlendFunc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BlendMode.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BufferType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\BufferUsage.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\CullMode.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\DepthFunc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\DepthWriteMask.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\FillMode.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\ParamType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\PrimitiveType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\ShaderStage.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\ShaderType.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\TextureFormat.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\TextureSlot.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\enums\WindingOrder.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\Frame.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\PipelineStateDesc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\RasterState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\RenderDevice.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\ResourceTypes.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\BufferUpdate.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\DrawTask.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\ShaderParamUpdate.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureBind.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureUpdate.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\VertexLayoutDesc.h" />
+    <ClInclude Include="..\src\rendering\Camera.h" />
+    <ClInclude Include="..\src\rendering\Frustum.h" />
+    <ClInclude Include="..\src\rendering\IndexedMeshData.h" />
+    <ClInclude Include="..\src\rendering\Mesh.h" />
+    <ClInclude Include="..\src\rendering\MeshCache.h" />
+    <ClInclude Include="..\src\rendering\MeshGeneration.h" />
+    <ClInclude Include="..\src\rendering\MeshImporter.h" />
+    <ClInclude Include="..\src\rendering\PipelineStateCache.h" />
     <ClInclude Include="..\src\rendering\RenderEngine.h" />
     <ClInclude Include="..\src\rendering\Renderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTileBuffer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainNode.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderObj.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainVertex.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTextureArrayBuffer.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTile.h" />
     <ClInclude Include="..\src\rendering\renderers\chunkedterrain\LRUTileCache.h" />
+    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\Tile.h" />
+    <ClInclude Include="..\src\rendering\renderers\MeshRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\skybox\SkyboxRenderObj.h" />
+    <ClInclude Include="..\src\rendering\renderers\skybox\SkyboxVertex.h" />
+    <ClInclude Include="..\src\rendering\renderers\skybox\SkyRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\text\TextRenderer.h" />
+    <ClInclude Include="..\src\rendering\renderers\ui\UIRenderer.h" />
     <ClInclude Include="..\src\rendering\RendererType.h" />
     <ClInclude Include="..\src\rendering\RenderObj.h" />
+    <ClInclude Include="..\src\rendering\RenderQueue.h" />
+    <ClInclude Include="..\src\rendering\RenderServiceLocator.h" />
     <ClInclude Include="..\src\rendering\RenderView.h" />
-    <ClInclude Include="..\src\rendering\SkyboxRenderer.h" />
-    <ClInclude Include="..\src\rendering\TextRenderer.h" />
-    <ClInclude Include="..\src\rendering\UIRenderer.h" />
+    <ClInclude Include="..\src\rendering\ShaderCache.h" />
+    <ClInclude Include="..\src\rendering\VertexLayoutCache.h" />
     <ClInclude Include="..\src\rendering\Viewport.h" />
     <ClInclude Include="..\src\SimObj.h" />
     <ClInclude Include="..\src\Simulation.h" />
-    <ClInclude Include="..\src\ui\ConsoleUI.h" />
-    <ClInclude Include="..\src\ui\EditBox.h" />
-    <ClInclude Include="..\src\ui\UIFrame.h" />
-    <ClInclude Include="..\src\ui\UIManager.h" />
+    <ClInclude Include="..\src\ui\ScriptHandler.h" />
     <ClInclude Include="..\src\utilities\Callback.h" />
     <ClInclude Include="..\src\utilities\Config.h" />
+    <ClInclude Include="..\src\utilities\ConsoleCommands.h" />
     <ClInclude Include="..\src\utilities\File.h" />
     <ClInclude Include="..\src\utilities\IniParser.h" />
     <ClInclude Include="..\src\utilities\Log.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\App.cpp" />
-    <ClCompile Include="..\src\Camera.cpp" />
-    <ClCompile Include="..\src\Frustum.cpp" />
     <ClCompile Include="..\src\Image_stb.cpp" />
     <ClCompile Include="..\src\input\InputManager.cpp" />
     <ClCompile Include="..\src\input\KeyboardManager.cpp" />
@@ -399,12 +394,19 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\platform\uwp\InputUWP.cpp" />
     <ClCompile Include="..\src\platform\uwp\PlatformUWP.cpp" />
-    <ClCompile Include="..\src\rendering\backend\DX11\DX11InputLayoutCache.cpp" />
-    <ClCompile Include="..\src\rendering\backend\DX11\DX11RenderDevice.cpp" />
-    <ClCompile Include="..\src\rendering\renderers\chunkedterrain\ChunkedLoDTerrainRenderer.cpp" />
-    <ClCompile Include="..\src\rendering\SkyboxRenderer.cpp" />
-    <ClCompile Include="..\src\ui\EditBox.cpp" />
-    <ClCompile Include="..\src\ui\UIManager.cpp" />
+    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Context.cpp" />
+    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Device.cpp" />
+    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Utils.cpp" />
+    <ClCompile Include="..\src\rendering\Camera.cpp" />
+    <ClCompile Include="..\src\rendering\Frustum.cpp" />
+    <ClCompile Include="..\src\rendering\MeshCache.cpp" />
+    <ClCompile Include="..\src\rendering\MeshGeneration.cpp" />
+    <ClCompile Include="..\src\rendering\MeshImporter.cpp" />
+    <ClCompile Include="..\src\rendering\RenderEngine.cpp" />
+    <ClCompile Include="..\src\rendering\Renderer.cpp" />
+    <ClCompile Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderer.cpp" />
+    <ClCompile Include="..\src\rendering\renderers\MeshRenderer.cpp" />
+    <ClCompile Include="..\src\rendering\renderers\skybox\SkyRenderer.cpp" />
     <ClCompile Include="..\src\utilities\uwp\File_uwp.cpp" />
     <ClCompile Include="..\src\utilities\uwp\Log_uwp.cpp" />
   </ItemGroup>
@@ -425,130 +427,206 @@
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\cursor_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse2_ps.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse2_vs.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse_ps.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse_vs.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\sky_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\sky_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\terrain_fs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\terrain_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\text_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\text_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\ui_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="..\src\rendering\shaders\DX11\ui_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\roxas\roxas.obj">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </Image>
+    <Image Include="Assets\sphere.obj">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </Image>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

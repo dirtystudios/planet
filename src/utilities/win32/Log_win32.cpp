@@ -36,15 +36,17 @@ void Log::e(int line, string func, string msg, ...) {
 string Log::get_timestamp() {
     std::time_t rawTime;
     std::time(&rawTime);
-    struct tm * timeinfo;
-    timeinfo = localtime(&rawTime);
+    struct tm timeinfo;
+    if (localtime_s(&timeinfo, &rawTime)) {
+        return 0;
+    }
 
     int milli = std::clock() / CLOCKS_PER_SEC;
 
     char buffer[80];
-    strftime(buffer, 80, "%H:%M:%S", timeinfo);
+    strftime(buffer, 80, "%H:%M:%S", &timeinfo);
 
     char currentTime[84] = "";
-    sprintf(currentTime, "%s:%d", buffer, milli);
+    sprintf_s(currentTime, "%s:%d", buffer, milli);
     return (string)currentTime;
 }

@@ -19,6 +19,7 @@ public:
     ShaderCache(graphics::RenderDevice* device, const std::string& baseDir) : _device(device), _baseDir(baseDir) {
         if (!fs::IsPathDirectory(baseDir)) {
             LOG_E("%s", "Invalid Directory Path given for ShaderDirectory");
+            _baseDir = fs::AppendPathProcessDir("/shaders");
         }
 
         _baseDir += "/" + _device->DeviceConfig.DeviceAbbreviation;

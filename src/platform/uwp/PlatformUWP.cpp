@@ -4,7 +4,7 @@
 #include "Config.h"
 
 #include "PlatformUWP.h"
-#include "DX11RenderDevice.h"
+#include "DX11Device.h"
 
 using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
@@ -95,8 +95,6 @@ void PlanetUWPApp::Run() {
 
         g_app->OnFrame(m_inputValues, dt);
 
-        g_app->renderDevice->SwapBuffers();
-
         dt = sys::GetTime() - start;
     }
 }
@@ -118,7 +116,7 @@ void PlanetUWPApp::Load(Platform::String^ entryPoint) {
     if (!QueryPerformanceCounter(&g_counterStart))
         LOG_E("QueryPerformanceCounterError! -- %d", GetLastError());
 
-    g_app->renderDevice = new graphics::RenderDeviceDX11();
+    g_app->renderDevice = new graphics::DX11Device();
     
     graphics::DeviceInitialization devInit;
     

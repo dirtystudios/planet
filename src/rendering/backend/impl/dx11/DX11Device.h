@@ -104,14 +104,14 @@ namespace graphics {
             uint32_t stride;
         };
 
-        std::unordered_map<uint32_t, BufferDX11> m_buffers;
+        std::unordered_map<size_t, BufferDX11> m_buffers;
         //std::unordered_map<uint32_t, ComPtr<ID3D11VertexShader>> m_vertexShaders;
         //std::unordered_map<uint32_t, ComPtr<ID3D11PixelShader>> m_pixelShaders;
-        std::unordered_map<uint32_t, ShaderDX11> m_shaders;
-        std::unordered_map<uint32_t, CBufDescEntry> m_cBufferParams;
-        std::unordered_map<uint32_t, ConstantBufferDX11> m_shaderCBufferMapping;
-        std::unordered_map<uint32_t, PipelineStateDX11> m_pipelineStates;
-        std::unordered_map<uint32_t, TextureDX11> m_textures;
+        std::unordered_map<size_t, ShaderDX11> m_shaders;
+        std::unordered_map<size_t, CBufDescEntry> m_cBufferParams;
+        std::unordered_map<size_t, ConstantBufferDX11> m_shaderCBufferMapping;
+        std::unordered_map<size_t, PipelineStateDX11> m_pipelineStates;
+        std::unordered_map<size_t, TextureDX11> m_textures;
 
         std::unordered_map<size_t, InputLayoutDX11> m_inputLayouts;
         std::unordered_map<size_t, ComPtr<ID3D11BlendState>> m_blendStates;
@@ -129,8 +129,7 @@ namespace graphics {
         void ResizeWindow(uint32_t width, uint32_t height);
         void PrintDisplayAdapterInfo();
 
-        BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage,
-            VertexLayoutId layoutId = 0);
+        BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage);
         ShaderId CreateShader(ShaderType type, const std::string& source);
         ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
@@ -183,26 +182,36 @@ namespace graphics {
             }
         }
 
-        inline uint32_t GenerateHandle() {
-            static uint32_t key = 0;
+        inline size_t GenerateHandle() {
+            static size_t key = 0;
             return ++key;
         }
 
         template<class T>
-        uint32_t GenerateHandleEmplaceConstRef(std::unordered_map<uint32_t, T>& map, const T& item) {
-            uint32_t handle = GenerateHandle();
+        size_t GenerateHandleEmplaceConstRef(std::unordered_map<size_t, T>& map, const T& item) {
+            size_t handle = GenerateHandle();
             map.emplace(handle, item);
             return handle;
         }
 
         template<class T>
-        uint32_t UseHandleEmplaceConstRef(std::unordered_map<size_t, T>& map, size_t handle, const T& item) {
+        size_t UseHandleEmplaceConstRef(std::unordered_map<size_t, T>& map, size_t handle, const T& item) {
             map.emplace(handle, item);
             return handle;
         }
 
         template <class T>
-        T GetResourceFromSizeMap(std::unordered_map<size_t, T>& map, size_t handle) {
+        T* GetResourceFromSizeMap(std::unordered_map<size_t, T>& map, size_t handle) {
+            auto it = map.find(handle);
+            if (it == map.end()) {
+                return nullptr;
+            }
+
+            return &(*it).second;
+        }
+
+        template <class T>
+        T GetResourceNonPtr(std::unordered_map<size_t, T>& map, size_t handle) {
             auto it = map.find(handle);
             if (it == map.end()) {
                 return nullptr;
@@ -212,17 +221,7 @@ namespace graphics {
         }
 
         template <class T>
-        T GetResourceNonPtr(std::unordered_map<uint32_t, T>& map, uint32_t handle) {
-            auto it = map.find(handle);
-            if (it == map.end()) {
-                return nullptr;
-            }
-
-            return (*it).second;
-        }
-
-        template <class T>
-        T* GetResource(std::unordered_map<uint32_t, T>& map, uint32_t handle) {
+        T* GetResource(std::unordered_map<size_t, T>& map, size_t handle) {
             auto it = map.find(handle);
             if (it == map.end()) {
                 return nullptr;

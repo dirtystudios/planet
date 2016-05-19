@@ -6,6 +6,7 @@
 #include <vector>
 #include <queue>
 #include "IndexedMeshData.h"
+#include "Log.h"
 
 
 namespace meshImport {
@@ -102,7 +103,7 @@ std::vector<IndexedMeshData> LoadMeshDataFromFile(const std::string& fpath) {
 	Assimp::Importer import;
 	const aiScene* scene = import.ReadFile(fpath, aiProcess_Triangulate | aiProcess_FlipUVs |  aiProcess_GenNormals);
 	if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-	   std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+        LOG_E("ASSIMP %s", import.GetErrorString());
 	   return meshes;
 	}
 	
@@ -111,13 +112,13 @@ std::vector<IndexedMeshData> LoadMeshDataFromFile(const std::string& fpath) {
 
 	while(!dfsQueue.empty()) {
 		aiNode* node = dfsQueue.front();
-		printf("Processing node:%s\n", node->mName.C_Str());
+		LOG_D("Processing node:%s", node->mName.C_Str());
 		dfsQueue.pop();	
 
 		for(uint32_t i = 0; i < node->mNumMeshes; i++) {
      	   	aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
      	   	IndexedMeshData data = ProcessMesh(mesh, scene);
-     	   	printf("meshdata:%d\n", data.positions.size());
+     	   	LOG_D("meshdata:%d", data.positions.size());
 			meshes.push_back(data);
     	}
 

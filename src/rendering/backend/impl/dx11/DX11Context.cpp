@@ -242,7 +242,7 @@ namespace graphics {
 
         // We use SWAP_FLIP_SEQUENTIAL with 11.3, which apparently needs this call everytime....ugh
 #ifdef DX11_3_API
-        m_devcon->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
+        m_devcon->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 #endif
         if (indexed)
             m_devcon->DrawIndexed(numVertices, startVertex, 0);
