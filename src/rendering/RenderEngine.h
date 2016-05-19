@@ -12,6 +12,9 @@
 #include "VertexLayoutCache.h"
 #include "MeshCache.h"
 #include "SimObj.h"
+#include "ConstantBufferManager.h"
+
+
 
 class RenderEngine : public RenderServiceLocator {
 private:
@@ -23,6 +26,8 @@ private:
     PipelineStateCache* _pipelineStateCache{nullptr};
     VertexLayoutCache* _vertexLayoutCache{nullptr};
     MeshCache* _meshCache;
+    ConstantBufferManager* _constantBufferManager{nullptr};
+    MaterialCache* _materialCache;
 
 public:
     RenderEngine(graphics::RenderDevice* device, RenderView* view);
@@ -37,6 +42,8 @@ public:
     graphics::RenderDevice* GetRenderDevice() override;
     VertexLayoutCache* GetVertexLayoutCache() override;
     MeshCache* GetMeshCache() override;
+    ConstantBufferManager* GetConstantBufferManager() override;
+    MaterialCache* GetMaterialCache() override;
 
 private:
     Renderer* GetRenderer(RendererType type);

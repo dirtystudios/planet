@@ -43,6 +43,7 @@ namespace graphics {
         DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBA32F
         DXGI_FORMAT_R8_UNORM,           // R_U8
         DXGI_FORMAT_R8G8B8A8_UNORM,     // RGB_U8, Converted before load
+        DXGI_FORMAT_R8G8B8A8_UNORM,     // RGBA_U8
     };
 
     static D3D11_PRIMITIVE_TOPOLOGY PrimitiveTypeDX11[(uint32_t)PrimitiveType::Count] = {

@@ -18,8 +18,23 @@ public:
         return vlId;
     }
 
+    graphics::VertexLayoutId Pos3fNormal3fTex2f() {
+        static graphics::VertexLayoutDesc layout{
+        { {
+                    graphics::VertexAttributeType::Float3, graphics::VertexAttributeUsage::Position,
+                },
+                {
+                    graphics::VertexAttributeType::Float3, graphics::VertexAttributeUsage::Normal,
+                },
+                {
+                    graphics::VertexAttributeType::Float2, graphics::VertexAttributeUsage::Texcoord0,
+        } } };
+
+        return Get(layout);
+    }
+
     graphics::VertexLayoutId Pos3fNormal3f() {
-	    static graphics::VertexLayoutDesc layout{
+        static graphics::VertexLayoutDesc layout{
         {{
                  graphics::VertexAttributeType::Float3, graphics::VertexAttributeUsage::Position,
              },
@@ -31,7 +46,7 @@ public:
     }
 
     graphics::VertexLayoutId Pos3f() {
-	    static graphics::VertexLayoutDesc layout{
+        static graphics::VertexLayoutDesc layout{
         {{
                  graphics::VertexAttributeType::Float3, graphics::VertexAttributeUsage::Position,
              },

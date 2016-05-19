@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 #include <cassert>
-#include <iostream>
 #include "Mesh.h"
 #include "RenderDevice.h"
 

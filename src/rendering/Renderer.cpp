@@ -19,5 +19,8 @@ VertexLayoutCache* Renderer::GetVertexLayoutCache() { return _renderServiceLocat
 
 MeshCache* Renderer::GetMeshCache() { return _renderServiceLocator->GetMeshCache(); }
 
+ConstantBufferManager* Renderer::GetConstantBufferManager() { return _renderServiceLocator->GetConstantBufferManager(); }
+MaterialCache* Renderer::GetMaterialCache() { return _renderServiceLocator->GetMaterialCache(); }
+
 void Renderer::OnInit() {}
 void Renderer::OnDestroy() {}

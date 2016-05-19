@@ -24,6 +24,8 @@ public:
     graphics::RenderDevice* GetRenderDevice() override;
     VertexLayoutCache* GetVertexLayoutCache() override;
     MeshCache* GetMeshCache() override;
+    ConstantBufferManager* GetConstantBufferManager() override;
+    MaterialCache* GetMaterialCache() override;
 
     // Required
     virtual RenderObj* Register(SimObj* simObj) = 0;

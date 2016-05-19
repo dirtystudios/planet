@@ -9,6 +9,7 @@ enum class TextureFormat : uint8_t {
     RGBA32F,
     R_U8,
     RGB_U8,
+    RGBA_U8,
     Count,
 };
 }

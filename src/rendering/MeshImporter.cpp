@@ -50,7 +50,7 @@ IndexedMeshData ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 
 	std::vector<glm::vec3>* positions 	= &meshData.positions;	
 	std::vector<glm::vec3>* normals 	= &meshData.normals;
-	// std::vector<glm::vec2>* texcoords 	= &meshData.texcoords;
+	std::vector<glm::vec2>* texcoords 	= &meshData.texcoords;
 	std::vector<uint32_t>* indices 		= &meshData.indices;
 
 	if(mesh->HasPositions()) {		
@@ -66,13 +66,13 @@ IndexedMeshData ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 	}
 	
 	
-	// if(mesh->mTextureCoords[0]) {
-	// 	texcoords->reserve(mesh->mNumVertices);
-	// 	for(uint32_t i = 0; i < mesh->mNumVertices; i++) { 		
-	// 		glm::vec2 tex(mesh->mTextureCoords[i]->x, mesh->mTextureCoords[i]->y);		
-	// 		texcoords->push_back(tex);		    
-	// 	}
-	// }
+    if (mesh->mTextureCoords[0]) {
+        texcoords->reserve(mesh->mNumVertices);
+        for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
+            glm::vec2 tex(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+            texcoords->push_back(tex);
+        }
+    }
 		
 
 	// Process indices

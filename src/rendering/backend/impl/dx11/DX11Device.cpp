@@ -489,6 +489,11 @@ namespace graphics {
 
         ID3D11Buffer* cBuffer;
         D3D11_BUFFER_DESC cbDesc;
+        // align to 16 bytes
+        size_t sizeAlignment = totalSize % 16;
+        if (sizeAlignment != 0) {
+            totalSize += (16 - sizeAlignment);
+        }
         cbDesc.ByteWidth = static_cast<UINT>(totalSize);
         cbDesc.Usage = D3D11_USAGE_DYNAMIC;
         cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;

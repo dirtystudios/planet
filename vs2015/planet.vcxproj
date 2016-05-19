@@ -25,6 +25,7 @@
     <ClCompile Include="..\src\rendering\backend\impl\gl\GLDevice.cpp" />
     <ClCompile Include="..\src\rendering\Camera.cpp" />
     <ClCompile Include="..\src\rendering\Frustum.cpp" />
+    <ClCompile Include="..\src\rendering\MaterialCache.cpp" />
     <ClCompile Include="..\src\rendering\MeshCache.cpp" />
     <ClCompile Include="..\src\rendering\MeshGeneration.cpp" />
     <ClCompile Include="..\src\rendering\MeshImporter.cpp" />
@@ -100,6 +101,10 @@
     <ClInclude Include="..\src\rendering\Camera.h" />
     <ClInclude Include="..\src\rendering\Frustum.h" />
     <ClInclude Include="..\src\rendering\IndexedMeshData.h" />
+    <ClInclude Include="..\src\rendering\Material.h" />
+    <ClInclude Include="..\src\rendering\MaterialCache.h" />
+    <ClInclude Include="..\src\rendering\MaterialData.h" />
+    <ClInclude Include="..\src\rendering\MaterialImporter.h" />
     <ClInclude Include="..\src\rendering\Mesh.h" />
     <ClInclude Include="..\src\rendering\MeshCache.h" />
     <ClInclude Include="..\src\rendering\MeshGeneration.h" />
