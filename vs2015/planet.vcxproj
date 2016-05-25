@@ -23,6 +23,7 @@
     <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Utils.cpp" />
     <ClCompile Include="..\src\rendering\backend\impl\gl\GLContext.cpp" />
     <ClCompile Include="..\src\rendering\backend\impl\gl\GLDevice.cpp" />
+    <ClCompile Include="..\src\rendering\backend\interface\DrawItemEncoder.cpp" />
     <ClCompile Include="..\src\rendering\Camera.cpp" />
     <ClCompile Include="..\src\rendering\Frustum.cpp" />
     <ClCompile Include="..\src\rendering\MaterialCache.cpp" />
@@ -56,6 +57,7 @@
     <ClInclude Include="..\src\input\InputManager.h" />
     <ClInclude Include="..\src\input\KeyboardManager.h" />
     <ClInclude Include="..\src\input\PlayerController.h" />
+    <ClInclude Include="..\src\Memory.h" />
     <ClInclude Include="..\src\platform\Platform.h" />
     <ClInclude Include="..\src\platform\System.h" />
     <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11CBufferHelper.h" />
@@ -70,8 +72,15 @@
     <ClInclude Include="..\src\rendering\backend\impl\gl\GLResourceManager.h.h" />
     <ClInclude Include="..\src\rendering\backend\impl\gl\GLStructs.h" />
     <ClInclude Include="..\src\rendering\backend\impl\gl\GLTextureFormatDesc.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\Pool.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\Binding.h" />
     <ClInclude Include="..\src\rendering\backend\interface\BlendState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\CommandBuffer.h" />
     <ClInclude Include="..\src\rendering\backend\interface\DepthState.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItem.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItemDecoder.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItemDesc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItemEncoder.h" />
     <ClInclude Include="..\src\rendering\backend\interface\enums\BlendFunc.h" />
     <ClInclude Include="..\src\rendering\backend\interface\enums\BlendMode.h" />
     <ClInclude Include="..\src\rendering\backend\interface\enums\BufferType.h" />
@@ -88,6 +97,8 @@
     <ClInclude Include="..\src\rendering\backend\interface\enums\TextureSlot.h" />
     <ClInclude Include="..\src\rendering\backend\interface\enums\WindingOrder.h" />
     <ClInclude Include="..\src\rendering\backend\interface\Frame.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\DrawCall.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\GLCommandBuffer.h" />
     <ClInclude Include="..\src\rendering\backend\interface\PipelineStateDesc.h" />
     <ClInclude Include="..\src\rendering\backend\interface\RasterState.h" />
     <ClInclude Include="..\src\rendering\backend\interface\RenderDevice.h" />
@@ -98,6 +109,7 @@
     <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureBind.h" />
     <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureUpdate.h" />
     <ClInclude Include="..\src\rendering\backend\interface\VertexLayoutDesc.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\VertexStream.h" />
     <ClInclude Include="..\src\rendering\Camera.h" />
     <ClInclude Include="..\src\rendering\Frustum.h" />
     <ClInclude Include="..\src\rendering\IndexedMeshData.h" />

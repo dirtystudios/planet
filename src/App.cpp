@@ -22,6 +22,7 @@
 #include "Skybox.h"
 #include <glm/gtx/transform.hpp>
 #include "Mesh.h"
+#include "Bytebuffer.h"
 
 uint32_t frame_count     = 0;
 double accumulate        = 0;
@@ -220,8 +221,11 @@ void SetupUI(graphics::RenderDevice* renderDevice, uint32_t width, uint32_t heig
     // consoleUI = new ui::ConsoleUI(uiManager, uiContext);
 }
 
-void App::OnStart() {    
+#include "DrawItemDesc.h"
+#include "DrawItemEncoder.h"
+#include "DrawItemDecoder.h"
 
+void App::OnStart() {    
     sys::SysWindowSize windowSize = sys::GetWindowSize();
     windowWidth                   = windowSize.width;
     windowHeight                  = windowSize.height;

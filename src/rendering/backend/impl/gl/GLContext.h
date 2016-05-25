@@ -3,6 +3,7 @@
 #include "TextureSlot.h"
 #include "ShaderType.h"
 #include "TextureSlot.h"
+#include "BufferAccess.h"
 #include "GLEnumAdapter.h"
 #include "GLStructs.h"
 #ifdef _WIN32
@@ -49,12 +50,12 @@ public:
     void WriteTextureData(GLTexture* texture, void* data, size_t size);
     void ForceBindBuffer(GLBuffer* buffer);
     void BindBuffer(GLBuffer* buffer, bool force = false);
-    void BindTexture(TextureSlot slot, GLTexture* texture);
-    void BindTextureAsShaderResource(ShaderStage stage, TextureSlot slot, GLTexture* texture);
+    void BindTexture(uint32_t slot, GLTexture* texture);
+    void BindTextureAsShaderResource(ShaderStage stage, uint32_t slot, GLTexture* texture);
     void BindPipelineState(GLPipelineState* pipelineState);
     void BindShader(GLShaderProgram* shader);
     void BindVertexArrayObject(GLVertexArrayObject* vao);
-
+    void BindUniformBufferToSlot(GLBuffer* cbuffer, uint32_t slot);
     void SetClearColor(float r, float g, float b, float a);
     void SetClearDepth(float d);
     void SetDepthState(const DepthState& depthState);
@@ -63,6 +64,8 @@ public:
 
     void WriteShaderParamater(GLShaderParameter* shaderParam, void* data, size_t size);
     bool IsBound(GLShaderProgram* shader);
+    uint8_t* Map(GLBuffer* buffer, BufferAccess access);
+    void Unmap(GLBuffer* buffer);
 
 private:
     void BindDepthState(const GLDepthState& to);

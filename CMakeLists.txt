@@ -48,10 +48,8 @@ FILE(GLOB RENDERERS_UI_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/ui/*.h)
 
 FILE(GLOB GRAPHICS_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/*.cpp)
 FILE(GLOB GRAPHICS_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/*.h)
-FILE(GLOB GRAPHICS_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/GL/*.cpp)
-FILE(GLOB GRAPHICS_GL_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/GL/*.h)
-FILE(GLOB GRAPHICS_DX11_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/DX11/*.cpp)
-FILE(GLOB GRAPHICS_DX11_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/DX11/*.h)
+FILE(GLOB GRAPHICS_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/impl/gl/*.cpp)
+FILE(GLOB GRAPHICS_GL_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/impl/*.h)
 
 FILE(GLOB INPUT_SOURCES ${SOURCE_DIR_ROOT}/input/*.cpp)
 FILE(GLOB INPUT_HEADERS ${SOURCE_DIR_ROOT}/input/*.h)
@@ -111,7 +109,6 @@ include_directories(
     ${SOURCE_DIR_ROOT}/input/
     ${SOURCE_DIR_ROOT}/ui/
     ${SOURCE_DIR_ROOT}/ext/
-
     /usr/local/include
     ${LIBNOISE_INCLUDE_DIRS} 
     ${SDL2_INCLUDE_DIR}
@@ -131,6 +128,8 @@ set(LIBS
 link_directories(/usr/local/lib)
 
 # create application
+FILE(GLOB_RECURSE ALL_H RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/*.h)
+
 add_executable(dg 
     ${SOURCE_DIR_ROOT}/main.cpp
     ${GRAPHICS_SOURCES} ${GRAPHICS_SOURCES2}
@@ -141,7 +140,6 @@ add_executable(dg
     ${RENDERERS_CHUNKED_TERRAIN_SOURCES}
     ${RENDERERS_SKYBOX_SOURCES}
     ${RENDERERS_UI_SOURCES}
-
     ${INPUT_SOURCES}
     ${UTILITIES_SOURCES}
     ${UTILITIES_OSX_SOURCES}
@@ -149,28 +147,23 @@ add_executable(dg
     ${PLATFORM_SOURCES}
     ${PLATFORM_SDL_SOURCES}
     ${UI_SOURCES}
-        src/rendering/backend/impl/gl/GLDevice.cpp
-        src/rendering/backend/impl/gl/GLResourceManager.h.h src/rendering/backend/impl/gl/GLContext.cpp)
+    ${ALL_H}) #need to have ALL_H files in this otherwise they wont be added to sourcegroups
 
 target_link_libraries(dg ${LIBS})
 
-# Source groups for correct organization in Xcode
-source_group(\\ FILES ${SOURCE_DIR_ROOT}/main.cpp ${APP_SOURCES} ${APP_HEADERS})
-source_group(input FILES ${INPUT_SOURCES} ${INPUT_HEADERS})
-source_group(platform FILES ${PLATFORM_SOURCES} ${PLATFORM_HEADERS})
-source_group(platform\\SDL FILES ${PLATFORM_SDL_SOURCES} ${PLATFORM_SDL_HEADERS})
-source_group(platform\\GLFW3 FILES ${PLATFORM_GLFW3_SOURCES} ${PLATFORM_GLFW3_HEADERS})
-source_group(utilities FILES ${UTILITIES_SOURCES} ${UTILITIES_HEADERS})
-source_group(utilities\\win32 FILES ${UTILITIES_WIN32_SOURCES} ${UTILITIES_WIN32_HEADERS})
-source_group(utilities\\osx FILES ${UTILITIES_OSX_SOURCES} ${UTILITIES_OSX_HEADERS})
-source_group(ui FILES ${UI_SOURCES} ${UI_HEADERS})
-source_group(ext FILES ${EXT_HEADERS})
-source_group(rendering FILES ${GRAPHICS_SOURCES} ${GRAPHICS_HEADERS})
-source_group(rendering\\backend FILES ${GRAPHICS_BACKEND_SOURCES} ${GRAPHICS_BACKEND_HEADERS})
-source_group(rendering\\backend\\gl FILES ${GRAPHICS_GL_BACKEND_SOURCES} ${GRAPHICS_GL_BACKEND_HEADERS})
-source_group(rendering\\backend\\dx11 FILES ${GRAPHICS_DX11_BACKEND_SOURCES} ${GRAPHICS_DX11_BACKEND_HEADERS})
+# create source groups
 
+FILE(GLOB_RECURSE ALL_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/*.cpp)
+set(ALL_FILES ${ALL_H} ${ALL_CPP})
 
+foreach(FILE ${ALL_FILES}) 
+  get_filename_component(PARENT_DIR "${FILE}" PATH)
 
+  # skip src or include and changes /'s to \\'s
+  string(REGEX REPLACE "(\\./)?(src|include)/?" "" GROUP "${PARENT_DIR}")
+  string(REPLACE "/" "\\" GROUP "${GROUP}")
 
-
+  set(GROUP "src\\${GROUP}")
+  message("${GROUP} ${FILE}")
+  source_group("${GROUP}" FILES "${FILE}")
+endforeach()

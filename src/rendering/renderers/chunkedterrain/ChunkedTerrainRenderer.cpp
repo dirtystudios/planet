@@ -61,9 +61,10 @@ RenderObj* ChunkedTerrainRenderer::Register(SimObj* simObj) {
     meshGen::GenerateGrid(glm::vec3(0, 0, 0), glm::vec2(root->size, root->size),
                           glm::uvec2(kQuadResolution, kQuadResolution), vertexGen);
     assert(vertices.size() == renderObj->vertexCount);
-    renderObj->vertexBuffer =
-        GetRenderDevice()->CreateBuffer(graphics::BufferType::VertexBuffer, vertices.data(),
-                                        sizeof(ChunkedTerrainVertex) * vertices.size(), graphics::BufferUsage::Static);
+//    renderObj->vertexBuffer =
+//        GetRenderDevice()->CreateBuffer(graphics::BufferType::VertexBuffer, vertices.data(),
+//                                        sizeof(ChunkedTerrainVertex) * vertices.size(), graphics::BufferUsage::Static);
+    assert(false); // fix^
     assert(renderObj->vertexBuffer);
 
     _objs.push_back(renderObj);
@@ -82,13 +83,13 @@ void ChunkedTerrainRenderer::Submit(RenderQueue* renderQueue, RenderView* render
     glm::mat4 vp   = proj * view;
 
     for (ChunkedTerrainRenderObj* terrain : _objs) {
-        graphics::DrawTask* task = renderQueue->AppendTask(0);
-
-        task->UpdateShaderParam(_transform, &vp);
-
-        task->pipelineState = _defaultPS;
-        task->vertexBuffer  = terrain->vertexBuffer;
-        task->vertexCount   = terrain->vertexCount;
-        task->vertexOffset  = 0;
+//        graphics::DrawTask* task = renderQueue->AppendTask(0);
+//
+//        task->UpdateShaderParam(_transform, &vp);
+//
+//        task->pipelineState = _defaultPS;
+//        task->vertexBuffer  = terrain->vertexBuffer;
+//        task->vertexCount   = terrain->vertexCount;
+//        task->vertexOffset  = 0;
     }
 }

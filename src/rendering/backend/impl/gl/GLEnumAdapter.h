@@ -28,6 +28,7 @@
 #include "DepthFunc.h"
 #include "DepthState.h"
 #include "VertexLayoutDesc.h"
+#include "BufferAccess.h"
 
 namespace graphics {
 class GLEnumAdapter {
@@ -38,8 +39,23 @@ public:
             return BufferType::VertexBuffer;
         case GL_ELEMENT_ARRAY_BUFFER:
             return BufferType::IndexBuffer;
+        case GL_UNIFORM_BUFFER:
+                return BufferType::ConstantBuffer;
         default:
             assert(false);
+        }
+    }
+    
+    static GLenum Convert(BufferAccess enumIn) {
+        switch (enumIn) {
+            case BufferAccess::Read:
+                return GL_READ_ONLY;
+            case BufferAccess::Write:
+                return GL_WRITE_ONLY;
+            case BufferAccess::ReadWrite:
+                return GL_READ_WRITE;
+            default:
+                assert(false);
         }
     }
 
@@ -49,6 +65,8 @@ public:
             return GL_ARRAY_BUFFER;
         case BufferType::IndexBuffer:
             return GL_ELEMENT_ARRAY_BUFFER;
+        case BufferType::ConstantBuffer:
+            return GL_UNIFORM_BUFFER;
         default:
             assert(false);
         }

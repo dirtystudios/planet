@@ -18,6 +18,11 @@ struct GLUniformMetadata {
     GLint size;
     GLenum type;
 };
+    
+struct GLSamplerMetadata {
+    GLUniformMetadata* uniform;
+    int32_t slot{-1};
+};
 
 struct GLBlockUniformMetadata {
     string name;
@@ -32,6 +37,8 @@ struct GLBlockUniformMetadata {
 struct GLUniformBlockMetadata {
     string name;
     GLint size;
+    GLint index;
+    uint32_t slot;
     vector<GLBlockUniformMetadata> uniforms;
 };
 
@@ -40,17 +47,13 @@ struct GLAttributeMetadata {
     GLenum type;
     GLint location;
     GLint size;
-
-    std::string ToString() const {
-        return "GLAttributeMetadata [name:'" + name + "', type:" + std::to_string(type) + ", location:" +
-               std::to_string(location) + " size:" + std::to_string(size) + "]";
-    }
 };
 
 struct GLShaderMetadata {
-    vector<GLUniformBlockMetadata> blocks;
+    vector<GLUniformBlockMetadata> blocks; // sorted by slot
     vector<GLAttributeMetadata> attributes;
-    vector<GLUniformMetadata> uniforms;
+    vector<GLUniformMetadata> uniforms;  
+    vector<GLSamplerMetadata> samplers;
 };
 
 struct GLTexture {
@@ -70,6 +73,11 @@ struct GLShaderProgram {
     GLenum type;
     GLShaderMetadata metadata;
     vector<GLPipelineState*> members;
+    
+    GLint GetLocationForSamplerSlot(uint32_t slotIdx) {
+        auto it = std::find_if(begin(metadata.samplers), end(metadata.samplers), [&slotIdx](const GLSamplerMetadata& sampler) { return sampler.slot == slotIdx; });
+        return it != metadata.samplers.end() ? it->uniform->location : - 1;
+    }
 };
 
 struct GLShaderParameter {

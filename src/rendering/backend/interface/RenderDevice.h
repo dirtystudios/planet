@@ -8,9 +8,10 @@
 #include "BufferUsage.h"
 #include "TextureFormat.h"
 #include "ShaderType.h"
-#include "DrawTask.h"
+#include "BufferAccess.h"
 #include "Log.h"
-#include "Frame.h"
+#include "CommandBuffer.h"
+#include "DrawItemEncoder.h"
 
 namespace graphics {
 
@@ -35,8 +36,9 @@ public:
     virtual void ResizeWindow(uint32_t width, uint32_t height) = 0;
     virtual void PrintDisplayAdapterInfo() = 0;
 
-    virtual BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage) = 0;
+    virtual BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage) = 0;
     virtual ShaderId CreateShader(ShaderType type, const std::string& source) = 0;
+    
     virtual ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;
     virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
     virtual TextureId CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data) = 0;
@@ -53,7 +55,13 @@ public:
     virtual void DestroyTexture(TextureId texture) = 0;
     virtual void DestroyVertexLayout(VertexLayoutId vertexLayout) = 0;
 
-    virtual Frame* BeginFrame() = 0;
-    virtual void SubmitFrame() = 0;
+    virtual CommandBuffer* CreateCommandBuffer() = 0;
+    virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) = 0;
+        
+    virtual uint8_t* MapMemory(BufferId buffer, BufferAccess) = 0;
+    virtual void UnmapMemory(BufferId buffer) = 0;
+    virtual DrawItemEncoder* GetDrawItemEncoder() = 0;
+
+    virtual void RenderFrame() = 0;
 };
 }

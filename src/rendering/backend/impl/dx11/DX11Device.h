@@ -149,6 +149,15 @@ namespace graphics {
 
         Frame* BeginFrame();
         void SubmitFrame();
+
+        CommandBuffer* CreateCommandBuffer() { return nullptr; }
+        void Submit(const std::vector<CommandBuffer*>& cmdBuffers) {}
+        void UpdateBuffer(BufferId bufferId, void* data, size_t len) {}
+        void UpdateTexture(TextureId textureId, void* data, size_t len) {}
+
+        DrawItemEncoder* GetDrawItemEncoder() { return nullptr;  }
+
+        void RenderFrame() {}
     private:
         ID3D11DepthStencilState* CreateDepthState(const DepthState& state);
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);

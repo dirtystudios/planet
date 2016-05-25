@@ -59,10 +59,11 @@ RenderObj* SkyRenderer::Register(SimObj* simObj) {
 
     meshGen::GenerateCube(delegate, 0.f, 0.f, 0.f);
     assert(renderObj->vertexCount == vertices.size());
-    renderObj->vertexBuffer =
-        GetRenderDevice()->CreateBuffer(graphics::BufferType::VertexBuffer, vertices.data(),
-                                        sizeof(SkyboxVertex) * vertices.size(), graphics::BufferUsage::Static);
-
+    
+//    renderObj->vertexBuffer =
+//        GetRenderDevice()->CreateBuffer(graphics::BufferType::VertexBuffer, vertices.data(),
+//                                        sizeof(SkyboxVertex) * vertices.size(), graphics::BufferUsage::Static);
+    assert(false); // fix ^
     _objs.push_back(renderObj);
 
     return renderObj;
@@ -81,13 +82,13 @@ void SkyRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     glm::mat4 world     = perspView * model;
 
     for (SkyboxRenderObj* skybox : _objs) {
-        graphics::DrawTask* task = renderQueue->AppendTask(0);
-        task->BindTexture(graphics::ShaderStage::Pixel, skybox->textureCubeId, graphics::TextureSlot::Base);
-        task->UpdateShaderParam(_transform, &world);
-
-        task->pipelineState = _defaultPS;
-        task->vertexBuffer  = skybox->vertexBuffer;
-        task->vertexCount   = skybox->vertexCount;
-        task->vertexOffset  = skybox->vertexOffset;
+//        graphics::DrawTask* task = renderQueue->AppendTask(0);
+//        task->BindTexture(graphics::ShaderStage::Pixel, skybox->textureCubeId, graphics::TextureSlot::Base);
+//        task->UpdateShaderParam(_transform, &world);
+//
+//        task->pipelineState = _defaultPS;
+//        task->vertexBuffer  = skybox->vertexBuffer;
+//        task->vertexCount   = skybox->vertexCount;
+//        task->vertexOffset  = skybox->vertexOffset;
     }
 }

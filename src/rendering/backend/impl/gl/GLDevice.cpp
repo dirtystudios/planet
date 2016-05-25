@@ -9,13 +9,35 @@
 #endif
 #include "Log.h"
 #include "ShaderStage.h"
+#include "Memory.h"
+#include "DrawItemDecoder.h"
+
+
+int32_t GetSlotFromString(const std::string& source) {
+    static constexpr uint32_t kMaxSlot = 10;
+    
+    for(uint32_t slotIdx = 0; slotIdx < kMaxSlot; ++slotIdx) {
+        std::string searchString = "_slot" + std::to_string(slotIdx) + "_";
+        if (source.find(searchString) == 0) {
+            return slotIdx;
+        }
+    }
+    return -1;
+};
+
+
 
 namespace graphics {
 
 GLDevice::GLDevice() {
     this->DeviceConfig.ShaderExtension    = ".glsl";
     this->DeviceConfig.DeviceAbbreviation = "GL";
-    this->_currentFrame                   = new Frame();
+    _drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
+    _drawItemEncoder                = new DrawItemEncoder(&_drawItemByteBuffer);
+}
+
+GLDevice::~GLDevice() {
+    delete _drawItemEncoder;
 }
 
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
@@ -27,20 +49,19 @@ void GLDevice::PrintDisplayAdapterInfo() {
     printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
 }
 
-BufferId GLDevice::CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage) {
+BufferId GLDevice::AllocateBuffer(BufferType type, size_t size, BufferUsage usage) {
     GLBuffer* buffer = new GLBuffer();
     GL_CHECK(glGenBuffers(1, &buffer->id));
     assert(buffer->id);
     buffer->usage = GLEnumAdapter::Convert(usage);
-    buffer->type  = GLEnumAdapter::Convert(type);
+    buffer->type = GLEnumAdapter::Convert(type);
 
-    if (data) {
-        _context.WriteBufferData(buffer, data, size);
+    if (size != 0) {
+        _context.WriteBufferData(buffer, nullptr, size);
     }
 
     uint32_t handle = GenerateId();
     _buffers.insert(std::make_pair(handle, buffer));
-
     return handle;
 }
 
@@ -100,11 +121,35 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
         for (int32_t idx = 0; idx < count; ++idx) {
             GLUniformMetadata* uniform = &metadata->uniforms[idx];
             GL_CHECK(glGetActiveUniform(shader->id, idx, maxLen, nullptr, &uniform->size, &uniform->type, name));
-
+            
             uniform->name     = std::string(name);
             uniform->location = glGetUniformLocation(shader->id, uniform->name.c_str());
             GL_CHECK("");
             assert(uniform->location >= 0);
+
+            switch (uniform->type) {
+                case GL_SAMPLER_1D_ARRAY:
+                case GL_SAMPLER_2D_ARRAY:
+                case GL_INT_SAMPLER_1D:
+                case GL_INT_SAMPLER_2D:
+                case GL_INT_SAMPLER_3D:
+                case GL_INT_SAMPLER_CUBE:
+                case GL_INT_SAMPLER_1D_ARRAY:
+                case GL_INT_SAMPLER_2D_ARRAY:
+                case GL_UNSIGNED_INT_SAMPLER_1D:
+                case GL_UNSIGNED_INT_SAMPLER_2D:
+                case GL_UNSIGNED_INT_SAMPLER_3D:
+                case GL_UNSIGNED_INT_SAMPLER_CUBE:
+                case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+                case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY: {
+                    assert(uniform->name.find("_slot") == 0); // samplers need to define their slot in their name..yay opengl 4.1
+                    GLSamplerMetadata samplerMetadata;
+                    samplerMetadata.uniform = uniform;
+                    samplerMetadata.slot = GetSlotFromString(uniform->name);
+                    metadata->samplers.push_back(samplerMetadata);
+                    break;
+                }
+            }
         }
         delete[] name;
     }
@@ -125,16 +170,17 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
             glGetActiveUniformBlockName(shader->id, idx, maxLen, &len, name);
             glGetActiveUniformBlockiv(shader->id, idx, GL_UNIFORM_BLOCK_DATA_SIZE, &block->size);
             glGetActiveUniformBlockiv(shader->id, idx, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &uniformCount);
-
+            
             block->name = std::string(name);
             block->uniforms.resize(uniformCount);
+            assert(block->name.find("_slot") == 0); // buffers need to define their slot in their name..yay opengl 4.1
 
             GLint* uniformIndices = new GLint[uniformCount];
             glGetActiveUniformBlockiv(shader->id, idx, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, uniformIndices);
 
             // get parameters of all uniform variables in uniform block
             for (uint32_t jdx = 0; jdx < uniformCount; ++jdx) {
-                assert(uniformIndices[jdx] > 0);
+                assert(uniformIndices[jdx] >= 0);
 
                 GLint uniformName_len           = 0;
                 GLBlockUniformMetadata* uniform = &block->uniforms[jdx];
@@ -145,7 +191,10 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
 
                 // get name of uniform variable
                 char* uniformName = new char[uniformName_len];
-                glGetActiveUniform(shader->id, uniform->index, uniformName_len, nullptr, nullptr, nullptr, uniformName);
+                GLsizei length;
+                GLint size;
+                GLenum type;                
+                glGetActiveUniform(shader->id, uniform->index, uniformName_len, &length, &size, &type, uniformName);
                 uniform->name = std::string(uniformName);
                 delete[] uniformName;
 
@@ -160,50 +209,19 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
                 glGetActiveUniformsiv(shader->id, 1, &uniform->index, GL_UNIFORM_ARRAY_STRIDE, &uniform->arrayStride);
                 // offset between two vectors in matrix
                 glGetActiveUniformsiv(shader->id, 1, &uniform->index, GL_UNIFORM_MATRIX_STRIDE, &uniform->matrixStride);
-            }
+            }            
             delete[] uniformIndices;
+
+            block->index = glGetUniformBlockIndex(shader->id, name);
+            block->slot = GetSlotFromString(block->name);
+            GL_CHECK(glUniformBlockBinding(shader->id, block->index, block->slot));
         }
         delete[] name;
     }
 
     uint32_t handle = GenerateId();
     _shaders.insert(std::make_pair(handle, shader));
-
-    printf("Shader:\n");
-    printf("\tBlocks(%d):\n", shader->metadata.blocks.size());
-    for (const GLUniformBlockMetadata& block : shader->metadata.blocks) {
-        printf("\t\tName:%s\n", block.name.c_str());
-        printf("\t\tSize:%d\n", block.size);
-        printf("\t\tBlockUniforms(%d):\n", block.uniforms.size());
-        for (const GLBlockUniformMetadata& uniform : block.uniforms) {
-            printf("\t\t\tName:%s\n", uniform.name.c_str());
-            printf("\t\t\tIdx:%d\n", uniform.index);
-            printf("\t\t\tSize:%d\n", uniform.size);
-            printf("\t\t\tType:%s\n", GLEnumAdapter::Convert(static_cast<GLenum>(uniform.type)).c_str());
-            printf("\t\t\tOffset:%d\n", uniform.offset);
-            printf("\t\t\tArrayStride:%d\n", uniform.arrayStride);
-            printf("\t\t\tMatrixStride:%d\n", uniform.matrixStride);
-            printf("\t\t\t------ \n");
-        }
-    }
-    printf("\tAttribs(%d):\n", shader->metadata.attributes.size());
-    for (const GLAttributeMetadata& attrib : shader->metadata.attributes) {
-        printf("\t\tName:%s\n", attrib.name.c_str());
-        printf("\t\tType:%s (%d)\n", GLEnumAdapter::Convert(static_cast<GLenum>(attrib.type)).c_str(), attrib.type);
-        printf("\t\tLoc:%d\n", attrib.location);
-        printf("\t\tSize:%d\n", attrib.size);
-        printf("\t\t------ \n");
-    }
-    printf("\tUniforms(%d):\n", shader->metadata.uniforms.size());
-    for (const GLUniformMetadata& uniform : shader->metadata.uniforms) {
-        printf("\t\tName:%s\n", uniform.name.c_str());
-        printf("\t\tType:%s (%d)\n", GLEnumAdapter::Convert(static_cast<GLenum>(uniform.type)).c_str(),
-        uniform.type);
-        printf("\t\tLoc:%d\n", uniform.location);
-        printf("\t\tSize:%d\n", uniform.size);
-        printf("\t\t------ \n");
-    }
-
+   
     return handle;
 }
 
@@ -304,7 +322,7 @@ TextureId GLDevice::CreateTexture2D(TextureFormat texFormat, uint32_t width, uin
     texture->type      = GL_TEXTURE_2D;
 
     GL_CHECK(glGenTextures(1, &texture->id));
-    _context.BindTexture(TextureSlot::Base, texture);
+    _context.BindTexture(0, texture);
     if (texFormat == TextureFormat::R_U8) {
         GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
     }
@@ -332,7 +350,7 @@ TextureId GLDevice::CreateTextureArray(TextureFormat texFormat, uint32_t levels,
     texture->type      = GL_TEXTURE_2D_ARRAY;
 
     GL_CHECK(glGenTextures(1, &texture->id));
-    _context.BindTexture(TextureSlot::Base, texture);
+    _context.BindTexture(0, texture);
     // TODO: Move to GLContext
     GL_CHECK(glTexStorage3D(texture->type, levels, texture->format.internalFormat, width, height, depth));
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
@@ -354,7 +372,7 @@ TextureId GLDevice::CreateTextureCube(TextureFormat texFormat, uint32_t width, u
     assert(width == height);
 
     GL_CHECK(glGenTextures(1, &texture->id));
-    _context.BindTexture(TextureSlot::Base, texture);
+    _context.BindTexture(0, texture);
 
     // TODO: Move to GLContext
     for (uint32_t side = 0; side < 6; ++side) {
@@ -390,97 +408,6 @@ VertexLayoutId GLDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
     uint32_t handle = GenerateId();
     _vertexLayouts.insert(std::make_pair(handle, vertexLayout));
     return handle;
-}
-
-void GLDevice::Execute(const std::vector<BufferUpdate*>& tasks) {
-    for (BufferUpdate* task : tasks) {
-        assert(task);
-
-        GLBuffer* buffer = GetResource(_buffers, task->bufferId);
-        assert(buffer);
-        _context.WriteBufferData(buffer, task->data, task->len);
-    }
-}
-
-void GLDevice::Execute(const std::vector<TextureUpdate*>& tasks) {
-    for (TextureUpdate* task : tasks) {
-        assert(task);
-
-        GLTexture* texture = GetResource(_textures, task->textureId);
-        assert(texture);
-        //        _context.WriteTextureData(texture, task->data, task->len);
-    }
-}
-
-void GLDevice::Execute(const std::vector<ShaderParamUpdate*>& tasks) {
-    for (ShaderParamUpdate* task : tasks) {
-        assert(task);
-
-        LOG_D("%s", task->ToString().c_str());
-
-        GLShaderParameter* param = GetResource(_shaderParams, task->paramId);
-        assert(param);
-        _context.WriteShaderParamater(param, task->data, task->len);
-    }
-}
-
-void GLDevice::Execute(const std::vector<TextureBind*>& tasks) {
-    for (TextureBind* task : tasks) {
-        assert(task);
-
-        GLTexture* texture = GetResource(_textures, task->textureId);
-        assert(texture);        
-        _context.BindTextureAsShaderResource(task->stage, task->slot, texture);
-    }
-}
-
-void GLDevice::Execute(const std::vector<DrawTask*>& tasks) {
-    for (DrawTask* task : tasks) {
-        assert(task);
-
-        LOG_D("%s", task->ToString().c_str());
-
-        Execute(task->bufferUpdates);
-        Execute(task->textureUpdates);
-
-        GLPipelineState* pipelineState = GetResource(_pipelineStates, task->pipelineState);
-        assert(pipelineState);
-        _context.BindPipelineState(pipelineState);
-
-        GLShaderProgram* vertexShader = pipelineState->vertexShader;
-        GLVertexLayout* vertexLayout  = pipelineState->vertexLayout;
-        GLBuffer* vertexBuffer = GetResource(_buffers, task->vertexBuffer);
-        GLBuffer* indexBuffer = task->indexBuffer ? GetResource(_buffers, task->indexBuffer) : nullptr;
-        assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
-        assert(vertexLayout);
-
-        GLVertexArrayObject* vao = GetOrCreateVertexArrayObject(vertexShader, vertexBuffer, indexBuffer, vertexLayout);
-        assert(vao);
-
-        _context.BindVertexArrayObject(vao);
-
-        Execute(task->shaderParamUpdates);
-        Execute(task->textureBinds);
-
-        if(indexBuffer) {
-            GL_CHECK(glDrawElements(pipelineState->topology, task->indexCount, GL_UNSIGNED_INT, ((char *)NULL + (task->indexOffset))));
-        } else {
-            GL_CHECK(glDrawArrays(pipelineState->topology, task->vertexOffset, task->vertexCount));
-        }
-    }
-}
-
-Frame* GLDevice::BeginFrame() {     
-    return _currentFrame; 
-}
-
-void GLDevice::SubmitFrame() {
-    GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-    LOG_D("SUBMITFRAME:%s", _currentFrame->ToString().c_str());
-    Execute(_currentFrame->GetBufferUpdates());
-    Execute(_currentFrame->GetTextureUpdates());
-    Execute(_currentFrame->GetDrawTasks());
-    _currentFrame->Clear();    
 }
 
 void GLDevice::DestroyVertexLayout(VertexLayoutId layout) { assert(false && "TODO"); }
@@ -598,5 +525,143 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
     _vaoCache.insert(std::make_pair(key, vao));
 
     return vao;
+}
+
+CommandBuffer* GLDevice::CreateCommandBuffer() {
+    GLCommandBuffer* cmdBuffer = _commandBufferPool.Get();
+    assert(cmdBuffer);
+    cmdBuffer->Reset();
+    return cmdBuffer;
+        
+}
+void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
+    _submittedBuffers.insert(end(_submittedBuffers), begin(cmdBuffers), end(cmdBuffers));
+}
+
+DrawItemEncoder* GLDevice::GetDrawItemEncoder() {
+    return _drawItemEncoder;
+}
+
+void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
+    
+    ByteBuffer _byteBuffer = cmdBuffer->GetByteBuffer();
+    GLCommandBuffer::CommandType cmd;
+    while(_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
+        _byteBuffer >> cmd;
+        switch(cmd) {
+            case GLCommandBuffer::CommandType::DrawItem: {
+                LOG_D("%s", "DrawItem");
+                const DrawItem* item;
+                _byteBuffer >> item;
+                
+                DrawItemDecoder decoder(item);
+                
+                GLPipelineState* pipelineState = GetResource(_pipelineStates, decoder.pipelineState());
+                assert(pipelineState);
+                _context.BindPipelineState(pipelineState);
+                
+                assert(decoder.vertexStreamCount() == 1); // > 1 not supported
+                const VertexStream& stream = decoder.streams()[0];
+                GLShaderProgram* vertexShader = pipelineState->vertexShader;
+                GLVertexLayout* vertexLayout = pipelineState->vertexLayout;
+                GLBuffer* vertexBuffer = GetResource(_buffers, stream.vertexBuffer);
+                GLBuffer* indexBuffer = decoder.indexBuffer() ? GetResource(_buffers, decoder.indexBuffer()) : nullptr;
+                assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
+                assert(vertexLayout);
+                
+                GLVertexArrayObject* vao = GetOrCreateVertexArrayObject(vertexShader, vertexBuffer, indexBuffer, vertexLayout);
+                assert(vao);
+                
+                _context.BindVertexArrayObject(vao);
+                
+                // bindings
+                for (uint32_t idx = 0; idx < decoder.bindingCount(); ++idx) {
+                    const Binding& binding = decoder.bindings()[idx];
+                    switch (binding.type) {
+                        case Binding::Type::ConstantBuffer: {
+                            _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
+                            break;
+                        }
+                        case Binding::Type::Texture: {
+                            GLTexture* texture = GetResource(_textures, binding.resource);
+                            assert(texture);
+                            _context.BindTextureAsShaderResource(ShaderStage::Vertex, binding.slot, texture);
+                            _context.BindTextureAsShaderResource(ShaderStage::Pixel, binding.slot, texture);
+                            break;
+                        }
+                    }
+                }
+                
+                
+                const DrawCall* drawCall = decoder.drawCall();
+                switch (drawCall->type) {
+                    case DrawCall::Type::Arrays: {
+                        GL_CHECK(glDrawArrays(pipelineState->topology, (GLint) drawCall->offset, (GLsizei) drawCall->primitiveCount));
+                        break;
+                    }
+                    case DrawCall::Type::Indexed: {
+                        assert(indexBuffer);
+                        GL_CHECK(glDrawElements(pipelineState->topology, drawCall->primitiveCount, GL_UNSIGNED_INT, ((char *) 0 + (drawCall->offset))));
+                        break;
+                    }
+                }
+                
+                
+                break;
+            }
+            case GLCommandBuffer::CommandType::Clear: {
+                LOG_D("%s", "Clear");                
+                GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+                break;
+            }
+            case GLCommandBuffer::CommandType::BindResource: {
+                LOG_D("%s", "BindResource");
+                Binding binding;
+                _byteBuffer >> binding;
+                
+                // TODO:: this is copy pasted from above, dont do that.
+                switch (binding.type) {
+                    case Binding::Type::ConstantBuffer: {
+                        _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
+                        break;
+                    }
+                    case Binding::Type::Texture: {
+                        GLTexture* texture = GetResource(_textures, binding.resource);
+                        assert(texture);
+                        _context.BindTextureAsShaderResource(ShaderStage::Vertex, binding.slot, texture);
+                        _context.BindTextureAsShaderResource(ShaderStage::Pixel, binding.slot, texture);
+                        break;
+                    }
+                }
+                
+
+                break;
+            }
+        }
+    }
+}
+    
+uint8_t* GLDevice::MapMemory(BufferId bufferId, BufferAccess access) {
+    GLBuffer* buffer = GetResource(_buffers, bufferId);
+    return _context.Map(buffer, access);
+}
+
+void GLDevice::UnmapMemory(BufferId bufferId) {
+    GLBuffer* buffer = GetResource(_buffers, bufferId);
+    _context.Unmap(buffer);
+}
+    
+
+void GLDevice::RenderFrame() {
+    LOG_D("%s", "RenderFrame");
+    for (uint32_t idx = 0; idx < _submittedBuffers.size(); ++idx) {
+        GLCommandBuffer* glBuffer = reinterpret_cast<GLCommandBuffer*>(_submittedBuffers[idx]);
+        Execute(glBuffer);
+        glBuffer->Reset();
+    }
+    _submittedBuffers.clear();
+    _drawItemByteBuffer.Reset();
+    
+    
 }
 }

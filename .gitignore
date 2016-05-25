@@ -29,6 +29,7 @@ vs2015/*/*.obj
 # Xcode Stuff
 *.xcodeproj
 *.build
+DerivedData/
 
 # Visual Studio Stuff
 *.opensdf

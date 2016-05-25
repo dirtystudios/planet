@@ -1,6 +1,5 @@
 #version 410 core                                                  
 
-
 in vec3 iNormal;
 
 out vec4 outColor;  

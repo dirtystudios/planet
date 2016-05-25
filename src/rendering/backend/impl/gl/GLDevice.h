@@ -3,20 +3,45 @@
 #include "RenderDevice.h"
 #include "GLStructs.h"
 #include "GLContext.h"
-
+#include "GLCommandBuffer.h"
 #include <unordered_map>
-#include "Frame.h"
+#include <array>
+#include <list>
+
+template <class T, size_t N>
+class Pool {
+private:
+    std::array<T, N> _items;
+    size_t _poolIdx{ 0 };
+    std::list<T*> _freeList;
+public:
+    T* Get() {
+        T* ret = nullptr;
+        if (!_freeList.empty()) {
+            ret = _freeList.front();
+            _freeList.pop_front();
+        }
+        else if (_poolIdx < N) {
+            ret = &_items[_poolIdx++];
+        }
+        return ret;
+    }
+
+    void Release(T* v) {
+        _freeList.push_front(v);
+    }
+};
 
 namespace graphics {
 class GLDevice : public RenderDevice {
 private:
     using GLVaoCacheKey = size_t;
     using GLVaoCache    = std::unordered_map<GLVaoCacheKey, GLVertexArrayObject*>;
-
+    constexpr static size_t kCommandBufferPoolSize = 32;
 private:
     GLContext _context;
 
-    Frame* _currentFrame;    
+    std::vector<CommandBuffer*> _submittedBuffers;
 
     std::unordered_map<uint32_t, GLBuffer*> _buffers;
     std::unordered_map<uint32_t, GLShaderProgram*> _shaders;
@@ -25,16 +50,22 @@ private:
     std::unordered_map<uint32_t, GLPipelineState*> _pipelineStates;
     std::unordered_map<uint32_t, GLVertexLayout*> _vertexLayouts;
 
+    
+    Pool<GLCommandBuffer, 1> _commandBufferPool;
+    
+    DrawItemEncoder* _drawItemEncoder;    
+    ByteBuffer _drawItemByteBuffer;
+
     GLVaoCache _vaoCache;
 public:
     GLDevice();
-    virtual ~GLDevice(){};
+    ~GLDevice();
 
     int32_t InitializeDevice(const DeviceInitialization& deviceInit) { return 0; }
     void ResizeWindow(uint32_t width, uint32_t height);
     void PrintDisplayAdapterInfo();
-
-    BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage);
+    
+    BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage);
     ShaderId CreateShader(ShaderType type, const std::string& source);
     ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
@@ -44,15 +75,19 @@ public:
     TextureId CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data);
     VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& desc);
 
-    Frame* BeginFrame();
-    void SubmitFrame();
-
     void DestroyBuffer(BufferId buffer);
     void DestroyShader(ShaderId shader);
     void DestroyShaderParam(ShaderParamId shaderParam);
     void DestroyPipelineState(PipelineStateId pipelineState);
     void DestroyTexture(TextureId texture);
     void DestroyVertexLayout(VertexLayoutId layout);
+
+    CommandBuffer* CreateCommandBuffer();
+    void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
+    uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
+    void UnmapMemory(BufferId bufferId);
+    DrawItemEncoder* GetDrawItemEncoder();
+    void RenderFrame();
 
 private:
     uint32_t GenerateId();
@@ -61,11 +96,7 @@ private:
     GLVertexArrayObject* GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLBuffer* indexBuffer,
                                                             GLVertexLayout* vertexLayout);
 
-    void Execute(const std::vector<DrawTask*>& drawTask);
-    void Execute(const std::vector<BufferUpdate*>& bufferUpdate);
-    void Execute(const std::vector<TextureUpdate*>& textureUpdate);
-    void Execute(const std::vector<TextureBind*>& textureUpdate);
-    void Execute(const std::vector<ShaderParamUpdate*>& shaderParamUpdate);
+    void Execute(GLCommandBuffer* cmdBuffer);
 
     template <class T>
     bool DestroyResource(uint32_t handle, std::unordered_map<uint32_t, T*>& map, std::function<void(T*)> destroy) {

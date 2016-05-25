@@ -22,6 +22,17 @@ GLContext::~GLContext() {
 
 void GLContext::WriteBufferData(GLBuffer* buffer, void* data, size_t size) {
     BindBuffer(buffer);
+    if(data == nullptr) {
+        struct {
+            float a[3];
+            float b[16];
+            float c[16];
+        } a;
+        a.a[0] = 1;
+        a.a[1] = 0;
+        a.a[2] = 0;
+        GL_CHECK(glBufferData(buffer->type, size, &a, buffer->usage));
+    } else
     GL_CHECK(glBufferData(buffer->type, size, data, buffer->usage));
 }
 
@@ -47,32 +58,22 @@ void GLContext::BindBuffer(GLBuffer* buffer, bool force) {
     }
 }
 
-void GLContext::BindTexture(TextureSlot slot, GLTexture* texture) {
+void GLContext::BindTexture(uint32_t slot, GLTexture* texture) {
     // do we care if same texture is bound to multiple slots?
-    GLTexture* activeTexture = _activeTextures[static_cast<uint8_t>(slot)];
+    GLTexture* activeTexture = _activeTextures[slot];
     if (!activeTexture || activeTexture != texture) {
         GL_CHECK(glBindTexture(texture->type, texture->id));
     }
 }
 
-void GLContext::BindTextureAsShaderResource(ShaderStage stage, TextureSlot slot, GLTexture* texture) {
-    uint32_t slotIdx = static_cast<uint32_t>(slot);
+void GLContext::BindTextureAsShaderResource(ShaderStage stage, uint32_t slotIdx, GLTexture* texture) {    
     GL_CHECK(glActiveTexture(GL_TEXTURE0 + slotIdx));
-    BindTexture(slot, texture); 
+    BindTexture(slotIdx, texture); 
 
     GLShaderProgram* activeShader = _activeShaders[static_cast<size_t>(stage)];    
     assert(activeShader);
 
     GLint location = -1;
-    switch(slot) {
-        case TextureSlot::Base: {            
-            location = glGetUniformLocation(activeShader->id, "baseTexture");
-            break;
-        }
-        default: assert(false);
-    }
-    
-    GL_CHECK("");
     assert(location >= 0);
 
     GL_CHECK(glProgramUniform1i(activeShader->id, location, slotIdx));
@@ -287,4 +288,30 @@ void GLContext::ResolveBlendState(const GLBlendState* from, const GLBlendState& 
     if (fromBlendFuncHash != toBlendFuncHash) {
         GL_CHECK(glBlendFuncSeparate(to.srcRgbFunc, to.dstRgbFunc, to.srcAlphaFunc, to.dstAlphaFunc));
     }
+}
+
+uint8_t* GLContext::Map(GLBuffer* buffer, BufferAccess access) {
+    // todo should maybe have some protection against binding a different buffer when mapping?x
+    BindBuffer(buffer);
+    void* ptr = glMapBuffer(buffer->type, GLEnumAdapter::Convert(access));
+    GL_CHECK();
+    assert(ptr);
+    return reinterpret_cast<uint8_t*>(ptr);
+}
+
+void GLContext::Unmap(GLBuffer* buffer) {
+    GL_CHECK(glUnmapBuffer(buffer->type));
+    
+}
+
+
+void GLContext::BindUniformBufferToSlot(GLBuffer* buffer, uint32_t slot) {
+    assert(buffer->type == GL_UNIFORM_BUFFER);
+//    for(uint32_t idx = 0; idx < (uint32_t)ShaderType::Count; ++idx) {
+//        if(_activeShaders[idx] != nullptr) {
+//            _activeShaders[idx]->GetBlockIndexForUniformBufferSlot(slot)
+//            glUniformBlockBinding(_activeShaders[idx]->id, , <#GLuint uniformBlockBinding#>)
+//        }
+//    }
+    GL_CHECK(glBindBufferBase(GL_UNIFORM_BUFFER, slot, buffer->id));
 }
