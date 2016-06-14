@@ -67,6 +67,10 @@
     <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Utils.cpp">
       <Filter>rendering\backend\impl\dx11</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\rendering\MaterialCache.cpp" />
+    <ClCompile Include="..\src\rendering\backend\interface\DrawItemEncoder.cpp">
+      <Filter>rendering\backend\interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -206,21 +210,6 @@
     <ClInclude Include="..\src\rendering\backend\interface\VertexLayoutDesc.h">
       <Filter>rendering\backend\interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\BufferUpdate.h">
-      <Filter>rendering\backend\interface\tasks</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\DrawTask.h">
-      <Filter>rendering\backend\interface\tasks</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\ShaderParamUpdate.h">
-      <Filter>rendering\backend\interface\tasks</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureBind.h">
-      <Filter>rendering\backend\interface\tasks</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureUpdate.h">
-      <Filter>rendering\backend\interface\tasks</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\rendering\backend\interface\enums\BlendFunc.h">
       <Filter>rendering\backend\interface\enums</Filter>
     </ClInclude>
@@ -356,6 +345,37 @@
     <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11CBufferHelper.h">
       <Filter>rendering\backend\impl\dx11</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Memory.h" />
+    <ClInclude Include="..\src\rendering\backend\impl\Pool.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\Binding.h" />
+    <ClInclude Include="..\src\rendering\Material.h" />
+    <ClInclude Include="..\src\rendering\MaterialCache.h" />
+    <ClInclude Include="..\src\rendering\MaterialData.h" />
+    <ClInclude Include="..\src\rendering\MaterialImporter.h" />
+    <ClInclude Include="..\src\rendering\backend\interface\CommandBuffer.h">
+      <Filter>rendering\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\interface\GLCommandBuffer.h">
+      <Filter>rendering\backend\impl\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\interface\VertexStream.h">
+      <Filter>rendering\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItemEncoder.h">
+      <Filter>rendering\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItemDesc.h">
+      <Filter>rendering\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItemDecoder.h">
+      <Filter>rendering\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\interface\DrawItem.h">
+      <Filter>rendering\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\backend\interface\DrawCall.h">
+      <Filter>rendering\backend\interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">
@@ -414,9 +434,6 @@
     </Filter>
     <Filter Include="rendering\backend\interface\enums">
       <UniqueIdentifier>{15fe9067-af9c-457a-9f2e-63d525e64596}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="rendering\backend\interface\tasks">
-      <UniqueIdentifier>{5f51d723-1ff3-47ef-b849-5db5ca7c514b}</UniqueIdentifier>
     </Filter>
     <Filter Include="rendering\backend\impl\dx11">
       <UniqueIdentifier>{ef58647d-e591-415d-9412-7058c39dc98f}</UniqueIdentifier>

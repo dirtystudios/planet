@@ -103,11 +103,6 @@
     <ClInclude Include="..\src\rendering\backend\interface\RasterState.h" />
     <ClInclude Include="..\src\rendering\backend\interface\RenderDevice.h" />
     <ClInclude Include="..\src\rendering\backend\interface\ResourceTypes.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\BufferUpdate.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\DrawTask.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\ShaderParamUpdate.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureBind.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureUpdate.h" />
     <ClInclude Include="..\src\rendering\backend\interface\VertexLayoutDesc.h" />
     <ClInclude Include="..\src\rendering\backend\interface\VertexStream.h" />
     <ClInclude Include="..\src\rendering\Camera.h" />
