@@ -10,10 +10,10 @@
 #include "glm/glm.hpp"
 
 #include "InputManager.h"
-// #include "UIManager.h"
+#include "UIManager.h"
 #include "PlayerController.h"
 #include <set>
-// #include "ConsoleUI.h"
+#include "ConsoleUI.h"
 #include "KeyboardManager.h"
 #include "ChunkedTerrain.h"
 #include "Spatial.h"
@@ -23,6 +23,7 @@
 #include <glm/gtx/transform.hpp>
 #include "Mesh.h"
 #include "Bytebuffer.h"
+#include "TextRenderer.h"
 
 uint32_t frame_count     = 0;
 double accumulate        = 0;
@@ -35,86 +36,17 @@ RenderEngine* renderEngine;
 Simulation simulation;
 RenderView* playerView;
 Viewport* playerViewport;
-
-
-
-// struct Material {
-//     ShaderId vertexShader;
-//     ShaderId pixelShader;
-
-//     ConstantData constants;
-//     std::vector<ShaderResource> shaderResources;
-// };
-
-
-
-// struct Mesh {
-//     BufferId vertexBuffer;
-//     BufferId indexBuffer;
-//     uint32_t indexOffset;
-//     uint32_t indexCount;
-
-//     MaterialId material;
-// };
-
-
-// struct Transform {
-//     glm::vec3 position;
-//     glm::mat4 orientiation;
-//     glm::vec3 scale;
-// };
-
-
-// struct Model {
-//     std::vector<Mesh> meshes;
-// };
-
-// // DirectionalLight {
-// //     vec3 direction;
-// //     vec3 ambient;
-// //     vec3 specular;
-// // }
-
-// Entity {
-//     ModelInstance* model;
-//     Transform* transform;
-
-// }
-
-
-
-// DiffuseMaterial {
-//     PipelinestateId pipelinestate;
-//     vec3 color;
-// }
-
-// StaticMesh {
-//     BufferId vertexBuffer;
-//     uint32_t vertexCount;
-//     uint32_t vertexOffset;
-// }
-
-// Transform {
-//     mat4 rotation;
-//     mat4 scale;
-//     mat4 translation;
-// }
-
-// MeshComponent {
-//     MeshId mesh;
-//     Material material;
-//     Transform* transform;
-
-// }
+ui::UIManager* uiManager;
+ui::ConsoleUI* consoleUI;
 
 SimObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
-        LOG_E("%s", "Invalid Directory Path given for AssetDirectory.");        
+        LOG_E("%s", "Invalid Directory Path given for AssetDirectory.");
     }
-    
-    SimObj* skyObj = simulation.AddSimObj();   
-    Skybox* sky = skyObj->AddComponent<Skybox>(ComponentType::Skybox);
+
+    SimObj* skyObj = simulation.AddSimObj();
+    Skybox* sky    = skyObj->AddComponent<Skybox>(ComponentType::Skybox);
 
     sky->imagePaths[0] = assetDirPath + "/skybox/TropicalSunnyDayLeft2048.png";
     sky->imagePaths[1] = assetDirPath + "/skybox/TropicalSunnyDayRight2048.png";
@@ -214,30 +146,29 @@ void SetupInputBindings() {
     //   "ToggleWireFrameMode", BIND_MEM_CB(&ChunkedLoDTerrainRenderer::ToggleWireFrameMode, terrain_renderer));
 }
 
-void SetupUI(graphics::RenderDevice* renderDevice, uint32_t width, uint32_t height) {
+void SetupUI(graphics::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
-    // uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, renderDevice, width, height);
+    uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
+
+    // TODO: Should use renderEngine interface instead of directly accessing renderer but we need to figure out object
+    // model first
+    uiManager->SetUIRenderer(static_cast<UIRenderer*>(renderEngine->GetRenderer(RendererType::Ui)));
+
     // Hard code consoleFrame for now, meh...stuff like this could be lua/xml, eventually
-    // consoleUI = new ui::ConsoleUI(uiManager, uiContext);
+    consoleUI = new ui::ConsoleUI(uiManager, uiContext);
 }
 
-#include "DrawItemDesc.h"
-#include "DrawItemEncoder.h"
-#include "DrawItemDecoder.h"
-
-void App::OnStart() {    
+void App::OnStart() {
     sys::SysWindowSize windowSize = sys::GetWindowSize();
     windowWidth                   = windowSize.width;
     windowHeight                  = windowSize.height;
-
+    playerViewport                = new Viewport();
+    playerViewport->height        = windowWidth;
+    playerViewport->height        = windowHeight;
+    playerView                    = new RenderView(&cam, playerViewport);
+    renderEngine                  = new RenderEngine(renderDevice, playerView);
     inputManager = new input::InputManager();
-
-    SetupUI(renderDevice, windowWidth, windowHeight);
-
-    playerViewport = new Viewport(); // dont care about this right now
-
-    playerView = new RenderView(&cam, playerViewport);
-    renderEngine = new RenderEngine(renderDevice, playerView);    
+    SetupUI(renderDevice, playerViewport);
 
     SetupInputBindings();
 
@@ -259,7 +190,7 @@ void App::OnStart() {
     // rotate = glm::rotate(glm::mat4(), -3.1415f / 2.f, glm::normalize(glm::vec3(1, 0, 0)));
     // CreateTerrain(diamater, rotate, translate); // top
 
-    // CreateSkybox();
+    CreateSkybox();
 
     // rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(1, 0, 0)));
     // CreateTerrain(diamater, rotate, glm::mat4()); // bottom
@@ -275,31 +206,28 @@ void App::OnStart() {
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
+    // TODO:: Maybe have system pump events instead of polling?
     sys::SysWindowSize windowSize = sys::GetWindowSize();
-    // text_renderer->SetRenderWindowSize(windowSize.width, windowSize.height);
-    // uiManager->SetRenderWindowSize(windowSize.width, windowSize.height);
+    if (windowSize.width != playerViewport->width || windowSize.height != playerViewport->height) {
+        playerViewport->width  = windowSize.width;
+        playerViewport->height = windowSize.height;
 
+        uiManager->UpdateViewport(*playerViewport);
+    }
+
+    // input
     inputManager->ProcessInputs(inputValues, dt * 1000);
-
     sys::ShowCursor(inputManager->ShouldShowCursor());
 
+    // update
     playerController->DoUpdate(dt);
-
+    uiManager->DoUpdate(dt * 1000);
     simulation.Update(dt);
 
-    glm::mat4 proj  = cam.BuildProjection();
-    glm::mat4 view  = cam.BuildView();
-    glm::mat4 world = glm::mat4();
-    Frustum frustum(proj, view);
-
+    // render
     renderEngine->RenderFrame();
-    // terrain_renderer->Render(cam, frustum);
 
-    // TODO:: On Opengl ui frames flicker -- fix state management
-    //    uiManager->DoUpdate(dt * 1000);
-    //    text_renderer->RenderText("asdfasdfasdsaasdf",0,0, 1.f, glm::vec3(1,0,0));
-    //    text_renderer->RenderCursor("asdfasdfasdsaasdf", 4, 0, 0, 1.f, glm::vec3(1, 1, 1));
-
+    // timers
     accumulate += dt;
     ++frame_count;
     ++total_frame_count;

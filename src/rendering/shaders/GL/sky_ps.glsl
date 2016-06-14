@@ -1,7 +1,7 @@
  #version 410                               
 in vec3 tex_coord0;
-uniform samplerCube baseTexture;
+uniform samplerCube _s0_baseTexture;
 out vec4 color;
 void main() {
-   color = texture(baseTexture, tex_coord0);
+   color = texture(_s0_baseTexture, tex_coord0);
 }

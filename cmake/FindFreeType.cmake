@@ -43,6 +43,7 @@ FIND_PATH(FREETYPE_INCLUDE_DIR_ft2build ft2build.h
         /sw/include
         /opt/local/include
         /usr/freeware/include
+        /usr/local/include/freetype2        
         )
 
 FIND_PATH(FREETYPE_INCLUDE_DIR_freetype2 freetype/config/ftheader.h
@@ -73,16 +74,17 @@ FIND_LIBRARY(FREETYPE_LIBRARY
         PATHS
         /usr/local/X11R6
         /usr/local/X11
+        /usr/local/bin
         /usr/X11
         /sw
         /usr/freeware
         PATH_SUFFIXES lib64 lib
         )
-
 # set the user variables
-IF(FREETYPE_INCLUDE_DIR_ft2build AND FREETYPE_INCLUDE_DIR_freetype2)
-  SET(FREETYPE_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIR_ft2build};${FREETYPE_INCLUDE_DIR_freetype2}")
+IF(FREETYPE_INCLUDE_DIR_ft2build AND FREETYPE_INCLUDE_DIR_freetype2)    
+    SET(FREETYPE_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIR_ft2build};${FREETYPE_INCLUDE_DIR_freetype2}")
 ENDIF(FREETYPE_INCLUDE_DIR_ft2build AND FREETYPE_INCLUDE_DIR_freetype2)
+
 SET(FREETYPE_LIBRARIES "${FREETYPE_LIBRARY}")
 
 # handle the QUIETLY and REQUIRED arguments and set FREETYPE_FOUND to TRUE if

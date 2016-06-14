@@ -45,6 +45,8 @@ public:
     ConstantBufferManager* GetConstantBufferManager() override;
     MaterialCache* GetMaterialCache() override;
 
-private:
+    // TODO:: Making this temporarily visible for UIManager until we figure out object model
     Renderer* GetRenderer(RendererType type);
+
+private:
 };

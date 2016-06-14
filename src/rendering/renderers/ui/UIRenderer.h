@@ -5,15 +5,46 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Renderer.h"
+#include "UIFrame.h"
+
+struct UIViewConstants {
+    glm::mat4 projection;
+};
+
+struct UIFrameConstants {
+    glm::vec4 bgColor;
+    glm::vec4 borderColor;
+    glm::vec2 borderSize;
+};
+
+struct FrameVertex {
+    glm::vec4 position;
+};
+
+struct UIFrameRenderObj : public RenderObj {
+    UIFrameRenderObj() : RenderObj(RendererType::Ui) {}
+    graphics::DrawCall drawCall;
+    graphics::VertexStream stream;
+    glm::vec4 bgColor;
+    glm::vec4 borderColor;
+    glm::vec2 borderSize;
+
+    ConstantBuffer* frameData{nullptr};
+
+    ui::UIFrame* frame;
+};
 
 class UIRenderer : public Renderer {
 private:
-    graphics::ShaderParamId _projectionParam;
-    graphics::ShaderParamId _bgColorParam;
-    graphics::ShaderParamId _borderColorParam;
-    graphics::ShaderParamId _borderSizeParam;
+    static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 1024;
+
     graphics::PipelineStateId _defaultPS;
     graphics::BufferId _vertexBuffer;
+    size_t _bufferOffset;
+    size_t _bufferSize;
+    ConstantBuffer* _viewData{nullptr};
+
+    std::vector<UIFrameRenderObj*> _objs;
 
 public:
     void OnInit() {
@@ -23,7 +54,6 @@ public:
         graphics::VertexLayoutDesc vld = {{{
             graphics::VertexAttributeType::Float4, graphics::VertexAttributeUsage::Position,
         }}};
-
         psd.vertexLayout            = GetVertexLayoutCache()->Get(vld);
         psd.topology                = graphics::PrimitiveType::Triangles;
         psd.blendState.enable       = true;
@@ -33,70 +63,110 @@ public:
         psd.blendState.dstAlphaFunc = psd.blendState.dstRgbFunc;
 
         _defaultPS = GetPipelineStateCache()->Get(psd);
-        _projectionParam =
-            GetRenderDevice()->CreateShaderParam(psd.vertexShader, "projection", graphics::ParamType::Float4x4);
-        _bgColorParam = GetRenderDevice()->CreateShaderParam(psd.pixelShader, "bgColor", graphics::ParamType::Float4);
-        _borderColorParam =
-            GetRenderDevice()->CreateShaderParam(psd.pixelShader, "borderColor", graphics::ParamType::Float4);
-        _borderSizeParam =
-            GetRenderDevice()->CreateShaderParam(psd.pixelShader, "borderSize", graphics::ParamType::Float2);
+        _viewData  = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
 
-        _vertexBuffer =
-            GetRenderDevice()->CreateBuffer(graphics::BufferType::VertexBuffer, 0, 0, graphics::BufferUsage::Static);
+        _vertexBuffer = GetRenderDevice()->AllocateBuffer(graphics::BufferType::VertexBuffer, kDefaultVertexBufferSize,
+                                                          graphics::BufferUsage::Static);
+        _bufferOffset = 0;
+        _bufferSize   = kDefaultVertexBufferSize;
 
         assert(_vertexBuffer);
         assert(_defaultPS);
-        assert(_projectionParam);
-        assert(_bgColorParam);
-        assert(_borderColorParam);
-        assert(_borderSizeParam);
+        assert(_viewData);
     }
 
     ~UIRenderer() {
         // TODO
     }
 
-    RenderObj* Register(SimObj* simObj) final { return nullptr; }
+    RenderObj* Register(SimObj* simObj) final {
+        assert(false);
+        return nullptr;
+    }
 
-    void Unregister(RenderObj* renderObj) final {}
+    // hopefully temporary work around until we figure out object model
+    RenderObj* RegisterFrame(ui::UIFrame* frame) {
+        UIFrameRenderObj* uiRenderObj = new UIFrameRenderObj();
+        uiRenderObj->frame            = frame;
 
-    void Submit(RenderQueue* renderQueue, RenderView* renderView) final {}
+        // currently frame location is immutable after registration
+        float w    = frame->GetFrameDesc()->width;
+        float h    = frame->GetFrameDesc()->height;
+        float xpos = frame->GetFrameDesc()->x;
+        float ypos = frame->GetFrameDesc()->y;
 
-    // void RenderFrame(float x, float y, uint32_t width, uint32_t height) {
+        FrameVertex vertices[6] = {{{xpos, ypos + h, 0.0, 0.0}}, {{xpos, ypos, 0.0, 1.0}},
+                                   {{xpos + w, ypos, 1.0, 1.0}}, {{xpos, ypos + h, 0.0, 0.0}},
+                                   {{xpos + w, ypos, 1.0, 1.0}}, {{xpos + w, ypos + h, 1.0, 0.0}}};
 
-    //     float w = (float)width;
-    //     float h = (float)height;
+        size_t verticesSize = sizeof(vertices);
+        assert(_bufferOffset + verticesSize < _bufferSize);
+        assert(w != 0 && h != 0);
+        glm::vec2 borderWidth = {2.f, 2.f};
+        glm::vec2 pixelSize   = {1.f / w, 1.f / h};
 
-    //     glm::mat4 projection = glm::ortho(0.0f, m_winWidth, 0.0f, m_winHeight);
+        uiRenderObj->stream.vertexBuffer     = _vertexBuffer;
+        uiRenderObj->stream.offset           = 0;
+        uiRenderObj->stream.stride           = sizeof(FrameVertex);
+        uiRenderObj->bgColor                 = {0.f, 0.f, 0.f, 0.5f};
+        uiRenderObj->borderColor             = {0.2f, 0.2f, 0.2f, 0.8f};
+        uiRenderObj->borderSize              = pixelSize * borderWidth;
+        uiRenderObj->drawCall.type           = graphics::DrawCall::Type::Arrays;
+        uiRenderObj->drawCall.primitiveCount = 6;
+        uiRenderObj->drawCall.offset         = _bufferOffset / sizeof(FrameVertex);
 
-    //     m_renderDevice->SetVertexShader(m_shaders[0]);
-    //     m_renderDevice->SetPixelShader(m_shaders[1]);
+        // pack all frames into a single buffer
+        uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, graphics::BufferAccess::Write);
+        assert(mapped);
+        memcpy(&mapped[_bufferOffset], &vertices, verticesSize);
+        GetRenderDevice()->UnmapMemory(_vertexBuffer);
+        _bufferOffset += verticesSize;
 
-    //     m_renderDevice->SetShaderParameter(m_shaders[0], graphics::ParamType::Float4x4, "projection", &projection);
+        uiRenderObj->frameData = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIFrameConstants));
 
-    //     float bgColor[4] = { 0.f, 0.f, 0.f, 0.5f };
-    //     float borderColor[4] = { 0.2f, 0.2f, 0.2f, 0.8f};
+        _objs.push_back(uiRenderObj);
+        return uiRenderObj;
+    }
 
-    //     glm::vec2 borderWidth = { 2.f, 2.f };
-    //     glm::vec2 pixelSize = { 1.f / w, 1.f / h };
-    //     glm::vec2 borderSize = pixelSize * borderWidth;
+    void Unregister(RenderObj* renderObj) final {
+        auto it =
+            std::find_if(begin(_objs), end(_objs), [&renderObj](UIFrameRenderObj* obj) { return obj == renderObj; });
+        if (it != _objs.end()) {
+            _objs.erase(it);
+        }
+    }
 
-    //     m_renderDevice->SetShaderParameter(m_shaders[1], graphics::ParamType::Float4, "bgColor", &bgColor);
-    //     m_renderDevice->SetShaderParameter(m_shaders[1], graphics::ParamType::Float4, "borderColor", &borderColor);
-    //     m_renderDevice->SetShaderParameter(m_shaders[1], graphics::ParamType::Float2, "borderSize", &borderSize);
+    void Submit(RenderQueue* renderQueue, RenderView* renderView) final {
 
-    //     m_renderDevice->SetVertexBuffer(m_vertexBuffer);
+        glm::mat4 projection = glm::ortho(0.0f, renderView->viewport->width, 0.0f, renderView->viewport->height);
 
-    //     float xpos = x;
-    //     float ypos = y;
+        _viewData->Map<UIViewConstants>()->projection = projection;
+        _viewData->Unmap();
 
-    //     float vertices[6][4] = {
-    //         {xpos, ypos + h, 0.0, 0.0}, {xpos, ypos, 0.0, 1.0},     {xpos + w, ypos, 1.0, 1.0},
+        for (UIFrameRenderObj* uiFrameRenderObj : _objs) {
+            ui::UIFrame* frame = uiFrameRenderObj->frame;
+            assert(frame);
+            if (!frame->IsShown()) {
+                continue;
+            }
 
-    //         {xpos, ypos + h, 0.0, 0.0}, {xpos + w, ypos, 1.0, 1.0}, {xpos + w, ypos + h, 1.0, 0.0}};
+            UIFrameConstants* frameConstants = uiFrameRenderObj->frameData->Map<UIFrameConstants>();
+            frameConstants->borderSize       = uiFrameRenderObj->borderSize;
+            frameConstants->borderColor      = uiFrameRenderObj->borderColor;
+            frameConstants->bgColor = uiFrameRenderObj->borderColor;
+            uiFrameRenderObj->frameData->Unmap();
 
-    //     m_renderDevice->UpdateVertexBuffer(m_vertexBuffer, vertices, sizeof(vertices));
+            graphics::DrawItemDesc did;
+            did.drawCall      = uiFrameRenderObj->drawCall;
+            did.pipelineState = _defaultPS;
+            did.streamCount   = 1;
+            did.streams[0]    = uiFrameRenderObj->stream;
+            did.bindingCount  = 2;
+            did.bindings[0]   = _viewData->GetBinding(1);
+            did.bindings[1]   = uiFrameRenderObj->frameData->GetBinding(2);
 
-    //     m_renderDevice->DrawPrimitive(graphics::PrimitiveType::Triangles, 0, 6);
-    // }
+            const graphics::DrawItem* item = GetRenderDevice()->GetDrawItemEncoder()->Encode(did);
+            renderQueue->AddDrawItem(1, item);
+        }
+    }
 };

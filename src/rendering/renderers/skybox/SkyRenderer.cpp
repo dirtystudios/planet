@@ -5,6 +5,10 @@
 #include "SkyboxVertex.h"
 #include <glm/gtx/transform.hpp>
 
+struct SkyboxConstants {
+    glm::mat4 world;
+};
+
 SkyRenderer::~SkyRenderer() {
     // TODO: Cleanup renderobjs
 }
@@ -18,10 +22,8 @@ void SkyRenderer::OnInit() {
     psd.rasterState.cullMode = graphics::CullMode::None;
     psd.depthState.depthFunc = graphics::DepthFunc::LessEqual;
     psd.depthState.enable    = true;
-    _defaultPS               = GetPipelineStateCache()->Get(psd);
-    _transform = GetRenderDevice()->CreateShaderParam(psd.vertexShader, "world", graphics::ParamType::Float4x4);
+    _defaultPS = GetPipelineStateCache()->Get(psd);
     assert(_defaultPS);
-    assert(_transform);
 }
 
 RenderObj* SkyRenderer::Register(SimObj* simObj) {
@@ -48,22 +50,30 @@ RenderObj* SkyRenderer::Register(SimObj* simObj) {
 
     SkyboxRenderObj* renderObj = new SkyboxRenderObj();
     renderObj->textureCubeId   = skyboxTextureId;
+    renderObj->vertexCount     = 36;
 
-    renderObj->vertexCount = 36;
-    std::vector<SkyboxVertex> vertices;
-    vertices.reserve(renderObj->vertexCount);
+    size_t bufferSize       = sizeof(SkyboxVertex) * renderObj->vertexCount;
+    renderObj->vertexBuffer = GetRenderDevice()->AllocateBuffer(graphics::BufferType::VertexBuffer, bufferSize,
+                                                                graphics::BufferUsage::Static);
 
-    meshGen::VertexDelegate delegate = [&vertices](float x, float y, float z, float u, float v) {
-        vertices.push_back({glm::vec3(x, y, z)});
-    };
+    glm::vec3* mapped = reinterpret_cast<glm::vec3*>(
+        GetRenderDevice()->MapMemory(renderObj->vertexBuffer, graphics::BufferAccess::Write));
+    assert(mapped);
 
-    meshGen::GenerateCube(delegate, 0.f, 0.f, 0.f);
-    assert(renderObj->vertexCount == vertices.size());
-    
-//    renderObj->vertexBuffer =
-//        GetRenderDevice()->CreateBuffer(graphics::BufferType::VertexBuffer, vertices.data(),
-//                                        sizeof(SkyboxVertex) * vertices.size(), graphics::BufferUsage::Static);
-    assert(false); // fix ^
+    uint32_t mappedVertices = 0;
+    meshGen::GenerateCube([&](float x, float y, float z, float u, float v) {
+        mapped->x = x;
+        mapped->y = y;
+        mapped->z = z;
+        mapped++;
+        mappedVertices++;
+    }, 0.f, 0.f, 0.f);
+    GetRenderDevice()->UnmapMemory(renderObj->vertexBuffer);
+
+    renderObj->constantBuffer = GetConstantBufferManager()->GetConstantBuffer(sizeof(SkyboxConstants));
+
+    assert(renderObj->vertexCount == mappedVertices);
+
     _objs.push_back(renderObj);
 
     return renderObj;
@@ -75,20 +85,30 @@ void SkyRenderer::Unregister(RenderObj* renderObj) {
 
 void SkyRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     Camera* camera      = renderView->camera;
-    glm::mat4 perspView = camera->BuildProjection() * camera->BuildView();
     glm::mat4 translate = glm::translate(glm::mat4(), camera->pos);
     glm::mat4 scale     = glm::scale(glm::mat4(), glm::vec3(500.f, 500.f, 500.f));
     glm::mat4 model     = translate * scale;
-    glm::mat4 world     = perspView * model;
+    glm::mat4 world     = model;
 
     for (SkyboxRenderObj* skybox : _objs) {
-//        graphics::DrawTask* task = renderQueue->AppendTask(0);
-//        task->BindTexture(graphics::ShaderStage::Pixel, skybox->textureCubeId, graphics::TextureSlot::Base);
-//        task->UpdateShaderParam(_transform, &world);
-//
-//        task->pipelineState = _defaultPS;
-//        task->vertexBuffer  = skybox->vertexBuffer;
-//        task->vertexCount   = skybox->vertexCount;
-//        task->vertexOffset  = skybox->vertexOffset;
+        skybox->constantBuffer->Map<SkyboxConstants>()->world = world;
+        skybox->constantBuffer->Unmap();
+        graphics::DrawItemDesc did;
+        did.drawCall.type           = graphics::DrawCall::Type::Arrays;
+        did.drawCall.offset         = 0;
+        did.drawCall.primitiveCount = 36;
+        did.pipelineState           = _defaultPS;
+        did.streamCount             = 1;
+        did.streams[0].vertexBuffer = skybox->vertexBuffer;
+        did.streams[0].offset       = 0;
+        did.streams[0].stride       = sizeof(glm::vec3);
+        did.bindingCount            = 2;
+        did.bindings[0].type        = graphics::Binding::Type::Texture;
+        did.bindings[0].slot        = 0;
+        did.bindings[0].resource    = skybox->textureCubeId;
+        did.bindings[1]             = skybox->constantBuffer->GetBinding(1);
+
+        const graphics::DrawItem* item = GetRenderDevice()->GetDrawItemEncoder()->Encode(did);
+        renderQueue->AddDrawItem(0, item);
     }
 }

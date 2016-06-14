@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(dg)
 
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
+
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+  message(SEND_ERROR "In-source builds are not allowed.")
+endif ()
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_COLOR_MAKEFILE   ON)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
@@ -41,6 +50,8 @@ FILE(GLOB RENDERERS_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/*.cpp)
 FILE(GLOB RENDERERS_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/*.h)
 FILE(GLOB RENDERERS_CHUNKED_TERRAIN_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/*.cpp)
 FILE(GLOB RENDERERS_CHUNKED_TERRAIN_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/*.h)
+FILE(GLOB RENDERERS_TEXT_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/text/*.cpp)
+FILE(GLOB RENDERERS_TEXT_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/text/*.h)
 FILE(GLOB RENDERERS_SKYBOX_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/skybox/*.cpp)
 FILE(GLOB RENDERERS_SKYBOX_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/skybox/*.h)
 FILE(GLOB RENDERERS_UI_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/ui/*.cpp)
@@ -93,6 +104,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/
     ${SOURCE_DIR_ROOT}/rendering/renderers/ui/
     ${SOURCE_DIR_ROOT}/rendering/renderers/skybox/
+    ${SOURCE_DIR_ROOT}/rendering/renderers/text/
     ${SOURCE_DIR_ROOT}/rendering/backend/
     ${SOURCE_DIR_ROOT}/rendering/backend/interface
     ${SOURCE_DIR_ROOT}/rendering/backend/interface/tasks
@@ -140,6 +152,7 @@ add_executable(dg
     ${RENDERERS_CHUNKED_TERRAIN_SOURCES}
     ${RENDERERS_SKYBOX_SOURCES}
     ${RENDERERS_UI_SOURCES}
+    ${RENDERERS_TEXT_SOURCES}
     ${INPUT_SOURCES}
     ${UTILITIES_SOURCES}
     ${UTILITIES_OSX_SOURCES}
@@ -152,7 +165,6 @@ add_executable(dg
 target_link_libraries(dg ${LIBS})
 
 # create source groups
-
 FILE(GLOB_RECURSE ALL_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/*.cpp)
 set(ALL_FILES ${ALL_H} ${ALL_CPP})
 
@@ -163,7 +175,6 @@ foreach(FILE ${ALL_FILES})
   string(REGEX REPLACE "(\\./)?(src|include)/?" "" GROUP "${PARENT_DIR}")
   string(REPLACE "/" "\\" GROUP "${GROUP}")
 
-  set(GROUP "src\\${GROUP}")
-  message("${GROUP} ${FILE}")
+  set(GROUP "src\\${GROUP}")  
   source_group("${GROUP}" FILES "${FILE}")
 endforeach()

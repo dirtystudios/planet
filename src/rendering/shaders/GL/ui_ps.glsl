@@ -1,8 +1,12 @@
 #version 410 core
 
-uniform vec4 bgColor;
-uniform vec4 borderColor;
-uniform vec2 borderSize;
+
+// constant buffers
+layout(std140) uniform _b2_frameConstants {  	
+    vec4 b2_bgColor;  
+    vec4 b2_borderColor;
+    vec2 b2_borderSize;
+};
 
 in vec2 vTexCoords;
 in vec4 vPosition;
@@ -11,6 +15,6 @@ out vec4 color;
 
 void main() {
     //becomes positive when inside the border and 0 when outside
-    vec2 within_border = clamp((vTexCoords * vTexCoords - vTexCoords) - (borderSize * borderSize - borderSize), 0, 1); 
-    color = (-within_border.x == within_border.y) ?  bgColor : borderColor;
+    vec2 within_border = clamp((vTexCoords * vTexCoords - vTexCoords) - (b2_borderSize * b2_borderSize - b2_borderSize), 0, 1); 
+    color = (-within_border.x == within_border.y) ?  b2_bgColor : b2_borderColor;
 }

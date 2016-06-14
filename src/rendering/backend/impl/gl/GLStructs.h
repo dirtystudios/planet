@@ -104,7 +104,7 @@ struct GLRasterState {
 };
 
 struct GLDepthState {
-    bool enable{false};
+    bool enable{true};
     GLenum depthWriteMask{GL_TRUE};
     GLenum depthFunc{GL_LESS};
 };

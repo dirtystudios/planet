@@ -4,8 +4,9 @@
 #include "ChunkedTerrainRenderer.h"
 #include "SkyRenderer.h"
 #include "MeshRenderer.h"
+#include "TextRenderer.h"
 #include "ConstantBuffer.h"
-
+#include "UIRenderer.h"
 
 using namespace graphics;
 
@@ -16,24 +17,27 @@ struct ViewConstants {
     glm::mat4 proj;
 };
 
+// Todo::Where should view constantbuffer be...renderview?
 using ViewConstantsBuffer = TypedConstantBuffer<ViewConstants>;
 ConstantBuffer* viewConstantsBuffer;
+
 CommandBuffer* cmdbuf;
 
 RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
     // _renderers.insert({RendererType::ChunkedTerrain, new ChunkedTerrainRenderer()});
-    // _renderers.insert({RendererType::Skybox, new SkyRenderer()});    
-    _renderers.insert({RendererType::Mesh, new MeshRenderer()});
+    _renderers.insert({RendererType::Skybox, new SkyRenderer()});
+    //    _renderers.insert({RendererType::Mesh, new MeshRenderer()});
+    _renderers.insert({RendererType::Ui, new UIRenderer()});
+    _renderers.insert({RendererType::Text, new TextRenderer()});
 
     std::string shaderDirPath =
         config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
-    std::string assetDirPath = 
-        config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
+    std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
 
-    _shaderCache        = new ShaderCache(_device, shaderDirPath);
-    _pipelineStateCache = new PipelineStateCache(_device);
-    _vertexLayoutCache  = new VertexLayoutCache(_device);
-    _meshCache          = new MeshCache(_device, assetDirPath);
+    _shaderCache           = new ShaderCache(_device, shaderDirPath);
+    _pipelineStateCache    = new PipelineStateCache(_device);
+    _vertexLayoutCache     = new VertexLayoutCache(_device);
+    _meshCache             = new MeshCache(_device, assetDirPath);
     _constantBufferManager = new ConstantBufferManager(_device);
     _materialCache      = new MaterialCache(_device, assetDirPath);
 

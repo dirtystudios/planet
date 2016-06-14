@@ -46,12 +46,26 @@ public:
     }
 
     graphics::VertexLayoutId Pos3f() {
-        static graphics::VertexLayoutDesc layout{
-        {{
-                 graphics::VertexAttributeType::Float3, graphics::VertexAttributeUsage::Position,
-             },
-            
+        static graphics::VertexLayoutDesc layout{{
+            {
+                graphics::VertexAttributeType::Float3, graphics::VertexAttributeUsage::Position,
+            },
+
         }};
+
+        return Get(layout);
+    }
+
+    graphics::VertexLayoutId GetPos2fTex2f() {
+        static graphics::VertexLayoutDesc layout{
+            {{
+                 graphics::VertexAttributeType::Float2, graphics::VertexAttributeUsage::Position,
+             },
+             {
+                 graphics::VertexAttributeType::Float2, graphics::VertexAttributeUsage::Texcoord0,
+             }
+
+            }};
 
         return Get(layout);
     }

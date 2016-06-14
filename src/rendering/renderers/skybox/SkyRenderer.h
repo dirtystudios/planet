@@ -6,7 +6,6 @@
 class SkyRenderer : public Renderer {
 private:
     graphics::PipelineStateId _defaultPS;
-    graphics::ShaderParamId _transform;
     std::vector<SkyboxRenderObj*> _objs;
 
 public:

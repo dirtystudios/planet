@@ -19,28 +19,25 @@ public:
     T* Map(graphics::BufferAccess access = graphics::BufferAccess::Write) {
         return reinterpret_cast<T*>(Map(access));
     }
-    
+
     uint8_t* Map(graphics::BufferAccess access = graphics::BufferAccess::Write) {
         assert(_mappedPtr == nullptr);
         _mappedPtr = _device->MapMemory(_constantBuffer, access);
         assert(_mappedPtr);
         return _mappedPtr;
     }
-    
+
     void Unmap() {
-        assert(_mappedPtr);
+        assert(_mappedPtr || "Someone forgot to unmap");
         _device->UnmapMemory(_constantBuffer);
         _mappedPtr = nullptr;
     }
-    
+
     const graphics::Binding& GetBinding(uint32_t slot) {
         _binding.slot = slot;
         return _binding;
     }
 };
-
-
-
 
 template <class T>
 class TypedConstantBuffer {

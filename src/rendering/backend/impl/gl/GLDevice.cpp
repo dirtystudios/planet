@@ -121,25 +121,27 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
         for (int32_t idx = 0; idx < count; ++idx) {
             GLUniformMetadata* uniform = &metadata->uniforms[idx];
             GL_CHECK(glGetActiveUniform(shader->id, idx, maxLen, nullptr, &uniform->size, &uniform->type, name));
-            
+
             uniform->name     = std::string(name);
             uniform->location = glGetUniformLocation(shader->id, uniform->name.c_str());
             GL_CHECK("");
             assert(uniform->location >= 0);
 
             switch (uniform->type) {
-                case GL_SAMPLER_1D_ARRAY:
-                case GL_SAMPLER_2D_ARRAY:
-                case GL_SAMPLER_2D: {
-                    assert(uniform->name.find("_s") == 0); // samplers need to define their slot in their name..yay opengl 4.1
-                    GLSamplerMetadata samplerMetadata;
-                    samplerMetadata.uniform = uniform;
-                    samplerMetadata.slot = GetSlotFromString(uniform->name, graphics::Binding::Type::Texture);
-                    metadata->samplers.push_back(samplerMetadata);
-                    break;
-                }
-                default: {
-                    assert(uniform->name.find("_s") != 0); // right now just to catch my mistakes
+            case GL_SAMPLER_1D_ARRAY:
+            case GL_SAMPLER_2D_ARRAY:
+            case GL_SAMPLER_CUBE:
+            case GL_SAMPLER_2D: {
+                assert(uniform->name.find("_s") ==
+                       0); // samplers need to define their slot in their name..yay opengl 4.1
+                GLSamplerMetadata samplerMetadata;
+                samplerMetadata.uniform = uniform;
+                samplerMetadata.slot = GetSlotFromString(uniform->name, graphics::Binding::Type::Texture);
+                metadata->samplers.push_back(samplerMetadata);
+                break;
+            }
+            default: {
+                assert(uniform->name.find("_s") != 0); // right now just to catch my mistakes
                 }
             }
         }
@@ -468,8 +470,8 @@ size_t GLDevice::BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer,
     return key;
 }
 
-
-GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLBuffer* indexBuffer,
+GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer,
+                                                            const VertexStream& stream, GLBuffer* indexBuffer,
                                                             GLVertexLayout* vertexLayout) {
     assert(vertexShader && vertexShader->type == GL_VERTEX_SHADER);
     assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
@@ -477,7 +479,7 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
     assert(vertexLayout);
 
     size_t key = BuildKey(vertexShader, vertexBuffer, vertexLayout);
- 
+
     auto it = _vaoCache.find(key);
     if (it != _vaoCache.end()) {
         return (*it).second;
@@ -487,17 +489,17 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
     GL_CHECK(glGenVertexArrays(1, &vao->id));
     _context.BindVertexArrayObject(vao);
     _context.ForceBindBuffer(vertexBuffer);
-    if(indexBuffer) {
+    if (indexBuffer) {
         _context.ForceBindBuffer(indexBuffer);
     }
 
-    size_t offset                                      = 0;
+    size_t offset                                      = 0; // not sure if this is correct
     const std::vector<GLAttributeMetadata>& attributes = vertexShader->metadata.attributes; // should be sorted
     for (uint32_t idx = 0; idx < vertexLayout->elements.size(); ++idx) {
         const GLVertexElement& element       = vertexLayout->elements[idx];
         const GLAttributeMetadata& attribute = attributes[idx];
 
-        // Attributes of a vertex shader are limited compared to attribute of other shaders         
+        // Attributes of a vertex shader are limited compared to attribute of other shaders
         const GLVertexElement& attributeAsElement = GLEnumAdapter::Convert(attribute);
 
         assert(attribute.location == idx);
@@ -551,27 +553,28 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                 GLPipelineState* pipelineState = GetResource(_pipelineStates, decoder.pipelineState());
                 assert(pipelineState);
                 _context.BindPipelineState(pipelineState);
-                
+
                 assert(decoder.vertexStreamCount() == 1); // > 1 not supported
-                const VertexStream& stream = decoder.streams()[0];
+                const VertexStream& stream    = decoder.streams()[0];
                 GLShaderProgram* vertexShader = pipelineState->vertexShader;
-                GLVertexLayout* vertexLayout = pipelineState->vertexLayout;
-                GLBuffer* vertexBuffer = GetResource(_buffers, stream.vertexBuffer);
+                GLVertexLayout* vertexLayout  = pipelineState->vertexLayout;
+                GLBuffer* vertexBuffer        = GetResource(_buffers, stream.vertexBuffer);
                 GLBuffer* indexBuffer = decoder.indexBuffer() ? GetResource(_buffers, decoder.indexBuffer()) : nullptr;
                 assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
                 assert(vertexLayout);
-                
-                GLVertexArrayObject* vao = GetOrCreateVertexArrayObject(vertexShader, vertexBuffer, indexBuffer, vertexLayout);
+
+                GLVertexArrayObject* vao =
+                    GetOrCreateVertexArrayObject(vertexShader, vertexBuffer, stream, indexBuffer, vertexLayout);
                 assert(vao);
-                
+
                 _context.BindVertexArrayObject(vao);
-                
+
                 // bindings
                 for (uint32_t idx = 0; idx < decoder.bindingCount(); ++idx) {
                     const Binding& binding = decoder.bindings()[idx];
                     switch (binding.type) {
-                        case Binding::Type::ConstantBuffer: {
-                            _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
+                    case Binding::Type::ConstantBuffer: {
+                        _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
                             break;
                         }
                         case Binding::Type::Texture: {

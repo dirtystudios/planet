@@ -93,8 +93,9 @@ private:
     uint32_t GenerateId();
 
     size_t BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout);
-    GLVertexArrayObject* GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLBuffer* indexBuffer,
-                                                            GLVertexLayout* vertexLayout);
+    GLVertexArrayObject* GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer,
+                                                      const VertexStream& stream, GLBuffer* indexBuffer,
+                                                      GLVertexLayout* vertexLayout);
 
     void Execute(GLCommandBuffer* cmdBuffer);
 

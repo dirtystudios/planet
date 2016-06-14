@@ -1,8 +1,12 @@
 #version 410 core
-layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
+layout (location = 0) in vec2 pos; // <vec2 pos, vec2 tex>
+layout (location = 1) in vec2 tex;
 out vec2 TexCoords;
 
-uniform mat4 projection;
+// constant buffers
+layout(std140) uniform _b1_viewConstants {  	
+    mat4 b1_projection;  
+};
 
 out gl_PerVertex {
   vec4 gl_Position;
@@ -10,6 +14,6 @@ out gl_PerVertex {
 
 void main()
 {
-    gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
-    TexCoords = vertex.zw;
+    gl_Position = b1_projection * vec4(pos, 0.0, 1.0);
+    TexCoords = tex;
 }

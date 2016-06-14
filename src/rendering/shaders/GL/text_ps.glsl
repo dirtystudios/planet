@@ -2,11 +2,17 @@
 in vec2 TexCoords;
 out vec4 color;
 
-uniform sampler2D base_texture;
-uniform vec3 textColor;
+uniform sampler2D _s0_base_texture;
+
+// constant buffers
+layout(std140) uniform _b2_textConstants {  	
+    vec3 b2_textColor;
+};
+
 
 void main()
 {    
-    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(base_texture, TexCoords).r);
-    color = vec4(textColor, 1.0) * sampled;
+    
+    float alpha = texture(_s0_base_texture, TexCoords).r;
+    color = vec4(b2_textColor, alpha);
 }  

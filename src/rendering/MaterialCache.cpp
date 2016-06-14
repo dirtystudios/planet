@@ -25,17 +25,9 @@ Material* MaterialCache::Get(const std::string& name, graphics::ShaderId ps) {
 
     graphics::TextureId texId = _device->CreateTexture2D(
         img->pixel_format == PixelFormat::RGB ? graphics::TextureFormat::RGB_U8 : graphics::TextureFormat::RGBA_U8,
-        img->width,
-        img->height,
-        img->data);
+        img->width, img->height, img->data);
 
     mat->diffuseTextures.push_back(texId);
-    mat->Ka = _device->CreateShaderParam(ps, "Ka", graphics::ParamType::Float3);
-    mat->Kd = _device->CreateShaderParam(ps, "Kd", graphics::ParamType::Float3);
-    mat->Ks = _device->CreateShaderParam(ps, "Ks", graphics::ParamType::Float3);
-    mat->Ke = _device->CreateShaderParam(ps, "Ke", graphics::ParamType::Float3);
-    mat->Ns = _device->CreateShaderParam(ps, "Ns", graphics::ParamType::Float);
-
     mat->KaData = matData.Ka;
     mat->KdData = matData.Kd;
     mat->KeData = matData.Ke;

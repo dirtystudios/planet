@@ -11,9 +11,9 @@ GLContext::GLContext() {
 
     // glDepthFunc(GL_LESS);
     //    glEnable(GL_DEPTH_TEST);
-       glEnable(GL_CULL_FACE);
-       glFrontFace(GL_CCW);
-       glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
 }
 
 GLContext::~GLContext() {
@@ -22,17 +22,6 @@ GLContext::~GLContext() {
 
 void GLContext::WriteBufferData(GLBuffer* buffer, void* data, size_t size) {
     BindBuffer(buffer);
-    if(data == nullptr) {
-        struct {
-            float a[3];
-            float b[16];
-            float c[16];
-        } a;
-        a.a[0] = 1;
-        a.a[1] = 0;
-        a.a[2] = 0;
-        GL_CHECK(glBufferData(buffer->type, size, &a, buffer->usage));
-    } else
     GL_CHECK(glBufferData(buffer->type, size, data, buffer->usage));
 }
 
@@ -308,13 +297,11 @@ void GLContext::Unmap(GLBuffer* buffer) {
     
 }
 
-
 void GLContext::BindUniformBufferToSlot(GLBuffer* buffer, uint32_t slot) {
     assert(slot < kMaxSupportedSlots);
     assert(buffer->type == GL_UNIFORM_BUFFER);
     GLBuffer** active = &_constantBufferSlots[slot];
-    if(*active == nullptr || *active != buffer) {
+    if (*active == nullptr || *active != buffer) {
         GL_CHECK(glBindBufferBase(GL_UNIFORM_BUFFER, slot, buffer->id));
     }
-    
 }
