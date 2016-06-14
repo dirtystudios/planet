@@ -13,11 +13,11 @@
 #include "DrawItemDecoder.h"
 
 
-int32_t GetSlotFromString(const std::string& source) {
+int32_t GetSlotFromString(const std::string& source, graphics::Binding::Type type) {
     static constexpr uint32_t kMaxSlot = 10;
-    
+    std::string prefix = type == graphics::Binding::Type::ConstantBuffer ? "_b" : "_s";
     for(uint32_t slotIdx = 0; slotIdx < kMaxSlot; ++slotIdx) {
-        std::string searchString = "_slot" + std::to_string(slotIdx) + "_";
+        std::string searchString =  prefix + std::to_string(slotIdx) + "_";
         if (source.find(searchString) == 0) {
             return slotIdx;
         }
@@ -100,7 +100,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
 
             attribute->name     = std::string(name);
             attribute->location = glGetAttribLocation(shader->id, attribute->name.c_str());
-            GL_CHECK("");
+            GL_CHECK();
             assert(attribute->location >= 0);
         }
 
@@ -124,30 +124,22 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
             
             uniform->name     = std::string(name);
             uniform->location = glGetUniformLocation(shader->id, uniform->name.c_str());
-            GL_CHECK("");
+            GL_CHECK();
             assert(uniform->location >= 0);
 
             switch (uniform->type) {
                 case GL_SAMPLER_1D_ARRAY:
                 case GL_SAMPLER_2D_ARRAY:
-                case GL_INT_SAMPLER_1D:
-                case GL_INT_SAMPLER_2D:
-                case GL_INT_SAMPLER_3D:
-                case GL_INT_SAMPLER_CUBE:
-                case GL_INT_SAMPLER_1D_ARRAY:
-                case GL_INT_SAMPLER_2D_ARRAY:
-                case GL_UNSIGNED_INT_SAMPLER_1D:
-                case GL_UNSIGNED_INT_SAMPLER_2D:
-                case GL_UNSIGNED_INT_SAMPLER_3D:
-                case GL_UNSIGNED_INT_SAMPLER_CUBE:
-                case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
-                case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY: {
-                    assert(uniform->name.find("_slot") == 0); // samplers need to define their slot in their name..yay opengl 4.1
+                case GL_SAMPLER_2D: {
+                    assert(uniform->name.find("_s") == 0); // samplers need to define their slot in their name..yay opengl 4.1
                     GLSamplerMetadata samplerMetadata;
                     samplerMetadata.uniform = uniform;
-                    samplerMetadata.slot = GetSlotFromString(uniform->name);
+                    samplerMetadata.slot = GetSlotFromString(uniform->name, graphics::Binding::Type::Texture);
                     metadata->samplers.push_back(samplerMetadata);
                     break;
+                }
+                default: {
+                    assert(uniform->name.find("_s") != 0); // right now just to catch my mistakes
                 }
             }
         }
@@ -173,7 +165,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
             
             block->name = std::string(name);
             block->uniforms.resize(uniformCount);
-            assert(block->name.find("_slot") == 0); // buffers need to define their slot in their name..yay opengl 4.1
+            assert(block->name.find("_b") == 0); // buffers need to define their slot in their name..yay opengl 4.1
 
             GLint* uniformIndices = new GLint[uniformCount];
             glGetActiveUniformBlockiv(shader->id, idx, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, uniformIndices);
@@ -213,7 +205,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
             delete[] uniformIndices;
 
             block->index = glGetUniformBlockIndex(shader->id, name);
-            block->slot = GetSlotFromString(block->name);
+            block->slot = GetSlotFromString(block->name, graphics::Binding::Type::ConstantBuffer);
             GL_CHECK(glUniformBlockBinding(shader->id, block->index, block->slot));
         }
         delete[] name;
@@ -585,8 +577,7 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                         case Binding::Type::Texture: {
                             GLTexture* texture = GetResource(_textures, binding.resource);
                             assert(texture);
-                            _context.BindTextureAsShaderResource(ShaderStage::Vertex, binding.slot, texture);
-                            _context.BindTextureAsShaderResource(ShaderStage::Pixel, binding.slot, texture);
+                            _context.BindTextureAsShaderResource(texture, binding.slot);
                             break;
                         }
                     }
@@ -628,8 +619,7 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                     case Binding::Type::Texture: {
                         GLTexture* texture = GetResource(_textures, binding.resource);
                         assert(texture);
-                        _context.BindTextureAsShaderResource(ShaderStage::Vertex, binding.slot, texture);
-                        _context.BindTextureAsShaderResource(ShaderStage::Pixel, binding.slot, texture);
+                        _context.BindTextureAsShaderResource(texture, binding.slot);                        
                         break;
                     }
                 }

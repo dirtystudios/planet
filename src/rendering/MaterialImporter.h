@@ -37,7 +37,11 @@ namespace materialImport {
         aiString name;
         material->Get(AI_MATKEY_NAME, name);
         LOG_D("material:%s", name.C_Str());
-
+        
+        int illumination = 0;
+        material->Get(AI_MATKEY_SHADING_MODEL, illumination);
+        matData.illumination = illumination;
+        
         aiColor3D color(0.f, 0.f, 0.f);
         material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
         matData.Kd = glm::vec3(color.r, color.g, color.b);

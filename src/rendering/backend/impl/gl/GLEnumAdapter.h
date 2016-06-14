@@ -158,16 +158,15 @@ public:
     }
 
     static GLTextureFormatDesc Convert(TextureFormat enumIn) {
-        assert(enumIn != TextureFormat::Count);
-        static std::map<TextureFormat, GLTextureFormatDesc> textureFormatMapping = {
-            {TextureFormat::R32F, {GL_R32F, GL_FLOAT, GL_RED}},
-            {TextureFormat::RGB32F, {GL_RGB32F, GL_FLOAT, GL_RGB}},
-            {TextureFormat::RGBA32F, {GL_RGBA32F, GL_FLOAT, GL_RGBA}},
-            {TextureFormat::R_U8, {GL_RED, GL_UNSIGNED_BYTE, GL_RED}},
-            {TextureFormat::RGB_U8, {GL_RGB, GL_UNSIGNED_BYTE, GL_RGB}},
-        };
-
-        return textureFormatMapping[enumIn];
+        switch (enumIn) {
+            case TextureFormat::R32F: return {GL_R32F, GL_FLOAT, GL_RED};
+            case TextureFormat::RGB32F: return {GL_RGB32F, GL_FLOAT, GL_RGB};
+            case TextureFormat::RGBA32F: return {GL_RGBA32F, GL_FLOAT, GL_RGBA};
+            case TextureFormat::R_U8: return {GL_RED, GL_UNSIGNED_BYTE, GL_RED};
+            case TextureFormat::RGB_U8: return {GL_RGB, GL_UNSIGNED_BYTE, GL_RGB};
+            case TextureFormat::RGBA_U8: return {GL_RGBA, GL_UNSIGNED_BYTE, GL_RGBA};
+            default: assert(false);
+        }
     }
 
     static GLenum Convert(BlendMode enumIn) {

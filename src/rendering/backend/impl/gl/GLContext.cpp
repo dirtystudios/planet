@@ -66,17 +66,22 @@ void GLContext::BindTexture(uint32_t slot, GLTexture* texture) {
     }
 }
 
-void GLContext::BindTextureAsShaderResource(ShaderStage stage, uint32_t slotIdx, GLTexture* texture) {    
-    GL_CHECK(glActiveTexture(GL_TEXTURE0 + slotIdx));
-    BindTexture(slotIdx, texture); 
+void GLContext::BindTextureAsShaderResource(GLTexture* texture, uint32_t slot) {
+    assert(slot < kMaxSupportedSlots);
+    GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+    BindTexture(slot, texture);
 
-    GLShaderProgram* activeShader = _activeShaders[static_cast<size_t>(stage)];    
-    assert(activeShader);
-
-    GLint location = -1;
-    assert(location >= 0);
-
-    GL_CHECK(glProgramUniform1i(activeShader->id, location, slotIdx));
+    bool matched = false;
+    for(GLShaderProgram* shader : _activeShaders) {
+        if(!shader) continue;
+        GLint location = shader->GetLocationForSamplerSlot(slot);
+        if (location < 0) continue;
+        matched = true;
+        GL_CHECK(glProgramUniform1i(shader->id, location, slot));
+    }
+    
+    // failed to bind texture to any shaders
+    assert(matched);
 }
 
 void GLContext::BindPipelineState(GLPipelineState* pipelineState) {
@@ -123,7 +128,7 @@ void GLContext::WriteShaderParamater(GLShaderParameter* shaderParam, void* data,
 
     assert(size == GetByteCount(paramType));
     assert(IsBound(program));
-    GL_CHECK("");
+    GL_CHECK();
     switch (paramType) {
     case ParamType::Float: {
         GL_CHECK(glProgramUniform1f(program->id, location, (float)*((float*)data)));
@@ -306,12 +311,11 @@ void GLContext::Unmap(GLBuffer* buffer) {
 
 
 void GLContext::BindUniformBufferToSlot(GLBuffer* buffer, uint32_t slot) {
+    assert(slot < kMaxSupportedSlots);
     assert(buffer->type == GL_UNIFORM_BUFFER);
-//    for(uint32_t idx = 0; idx < (uint32_t)ShaderType::Count; ++idx) {
-//        if(_activeShaders[idx] != nullptr) {
-//            _activeShaders[idx]->GetBlockIndexForUniformBufferSlot(slot)
-//            glUniformBlockBinding(_activeShaders[idx]->id, , <#GLuint uniformBlockBinding#>)
-//        }
-//    }
-    GL_CHECK(glBindBufferBase(GL_UNIFORM_BUFFER, slot, buffer->id));
+    GLBuffer** active = &_constantBufferSlots[slot];
+    if(*active == nullptr || *active != buffer) {
+        GL_CHECK(glBindBufferBase(GL_UNIFORM_BUFFER, slot, buffer->id));
+    }
+    
 }

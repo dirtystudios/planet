@@ -6,6 +6,7 @@
 #include "BufferAccess.h"
 #include "GLEnumAdapter.h"
 #include "GLStructs.h"
+#include <array>
 #ifdef _WIN32
 #include <GL/glew.h>
 #else
@@ -31,12 +32,17 @@ namespace graphics {
 
 class GLContext {
 private:
-    GLTexture* _activeTextures[static_cast<uint8_t>(TextureSlot::Count)];
-    GLBuffer* _activeBuffers[static_cast<uint8_t>(BufferType::Count)];
-    GLShaderProgram* _activeShaders[static_cast<uint8_t>(ShaderType::Count)];
+    static constexpr size_t kMaxSupportedSlots = 8;
+    
+    // Todo: might be faster to use ids
+    std::array<GLTexture*, static_cast<uint8_t>(TextureSlot::Count)>        _activeTextures {};
+    std::array<GLBuffer*, static_cast<uint8_t>(BufferType::Count)>          _activeBuffers {};
+    std::array<GLShaderProgram*, static_cast<uint8_t>(ShaderType::Count)>   _activeShaders {};
+    std::array<GLBuffer*, kMaxSupportedSlots>                               _constantBufferSlots {};
+    
     GLPipelineState* _activePipelineState{nullptr};
     GLVertexArrayObject* _activeVao{nullptr};
-
+    
     float _activeClearColor[4];
     float _activeClearDepth;
 
@@ -51,7 +57,7 @@ public:
     void ForceBindBuffer(GLBuffer* buffer);
     void BindBuffer(GLBuffer* buffer, bool force = false);
     void BindTexture(uint32_t slot, GLTexture* texture);
-    void BindTextureAsShaderResource(ShaderStage stage, uint32_t slot, GLTexture* texture);
+    void BindTextureAsShaderResource(GLTexture* texture, uint32_t slot);
     void BindPipelineState(GLPipelineState* pipelineState);
     void BindShader(GLShaderProgram* shader);
     void BindVertexArrayObject(GLVertexArrayObject* vao);
@@ -61,7 +67,6 @@ public:
     void SetDepthState(const DepthState& depthState);
     void SetRasterState(const RasterState& rasterState);
     void SetBlendState(const BlendState& blendState);
-
     void WriteShaderParamater(GLShaderParameter* shaderParam, void* data, size_t size);
     bool IsBound(GLShaderProgram* shader);
     uint8_t* Map(GLBuffer* buffer, BufferAccess access);

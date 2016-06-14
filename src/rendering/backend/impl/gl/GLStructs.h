@@ -50,7 +50,7 @@ struct GLAttributeMetadata {
 };
 
 struct GLShaderMetadata {
-    vector<GLUniformBlockMetadata> blocks; // sorted by slot
+    vector<GLUniformBlockMetadata> blocks;
     vector<GLAttributeMetadata> attributes;
     vector<GLUniformMetadata> uniforms;  
     vector<GLSamplerMetadata> samplers;
@@ -75,6 +75,7 @@ struct GLShaderProgram {
     vector<GLPipelineState*> members;
     
     GLint GetLocationForSamplerSlot(uint32_t slotIdx) {
+        if(metadata.samplers.size() == 0) return -1;
         auto it = std::find_if(begin(metadata.samplers), end(metadata.samplers), [&slotIdx](const GLSamplerMetadata& sampler) { return sampler.slot == slotIdx; });
         return it != metadata.samplers.end() ? it->uniform->location : - 1;
     }
