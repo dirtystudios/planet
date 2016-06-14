@@ -22,6 +22,9 @@
     <ClCompile Include="..\src\utilities\win32\Log_win32.cpp">
       <Filter>utilities\win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\rendering\renderers\MeshRenderer.cpp">
+      <Filter>rendering\renderers</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\rendering\renderers\skybox\SkyRenderer.cpp">
       <Filter>rendering\renderers\skybox</Filter>
     </ClCompile>
@@ -64,21 +67,6 @@
     <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Utils.cpp">
       <Filter>rendering\backend\impl\dx11</Filter>
     </ClCompile>
-<<<<<<< 965368d0099048c989d1d3c9a349a41f3fbb92af
-    <ClCompile Include="..\src\rendering\renderers\MeshRenderer.cpp">
-      <Filter>rendering\renderers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rendering\backend\interface\DrawItemEncoder.cpp">
-      <Filter>rendering\backend\interface</Filter>
-    </ClCompile>
-=======
-    <ClCompile Include="..\src\rendering\MaterialCache.cpp">
-      <Filter>rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rendering\renderers\MeshRenderer.cpp">
-      <Filter>rendering\renderers</Filter>
-    </ClCompile>
->>>>>>> [Rendering] Add quick n dirty material loading
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -151,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="..\src\utilities\Log.h">
       <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\rendering\renderers\MeshRenderer.h">
+      <Filter>rendering\renderers</Filter>
     </ClInclude>
     <ClInclude Include="..\src\rendering\renderers\ui\UIRenderer.h">
       <Filter>rendering\renderers\ui</Filter>
@@ -365,58 +356,6 @@
     <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11CBufferHelper.h">
       <Filter>rendering\backend\impl\dx11</Filter>
     </ClInclude>
-<<<<<<< 965368d0099048c989d1d3c9a349a41f3fbb92af
-    <ClInclude Include="..\src\rendering\renderers\MeshRenderer.h">
-      <Filter>rendering\renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\VertexStream.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\Binding.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\DrawItemEncoder.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\DrawCall.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\DrawItemDesc.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\DrawItemDecoder.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\DrawItem.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\CommandBuffer.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\interface\GLCommandBuffer.h">
-      <Filter>rendering\backend\impl\gl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\backend\impl\Pool.h">
-      <Filter>rendering\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Memory.h" />
-=======
-    <ClInclude Include="..\src\rendering\Material.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\MaterialImporter.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\MaterialCache.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\MaterialData.h">
-      <Filter>rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\rendering\renderers\MeshRenderer.h">
-      <Filter>rendering\renderers</Filter>
-    </ClInclude>
->>>>>>> [Rendering] Add quick n dirty material loading
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">
