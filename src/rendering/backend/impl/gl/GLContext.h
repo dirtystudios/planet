@@ -24,7 +24,7 @@
             LOG_E("GL error: %d (%s) %s\n", err, GLEnumAdapter::Convert(err).c_str(), #func);                          \
             assert(false);                                                                                             \
         }                                                                                                              \
-    } while (false)
+    } while (false)                                                                                               
 #else
 #define GL_CHECK(func) func
 #endif

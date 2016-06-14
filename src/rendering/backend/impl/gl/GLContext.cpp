@@ -127,8 +127,7 @@ void GLContext::WriteShaderParamater(GLShaderParameter* shaderParam, void* data,
     ParamType paramType      = GLEnumAdapter::ConvertParamType(shaderParam->metadata.type);
 
     assert(size == GetByteCount(paramType));
-    assert(IsBound(program));
-    GL_CHECK();
+    assert(IsBound(program));    
     switch (paramType) {
     case ParamType::Float: {
         GL_CHECK(glProgramUniform1f(program->id, location, (float)*((float*)data)));
@@ -299,7 +298,7 @@ uint8_t* GLContext::Map(GLBuffer* buffer, BufferAccess access) {
     // todo should maybe have some protection against binding a different buffer when mapping?x
     BindBuffer(buffer);
     void* ptr = glMapBuffer(buffer->type, GLEnumAdapter::Convert(access));
-    GL_CHECK();
+    GL_CHECK("");
     assert(ptr);
     return reinterpret_cast<uint8_t*>(ptr);
 }

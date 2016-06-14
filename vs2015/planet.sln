@@ -45,6 +45,7 @@ Global
 		{32A60293-4AF5-43BB-A314-BC8382DFA22B}.Debug Singlethreaded|x64.ActiveCfg = Release|Win32
 		{32A60293-4AF5-43BB-A314-BC8382DFA22B}.Debug Singlethreaded|x64.Build.0 = Release|Win32
 		{32A60293-4AF5-43BB-A314-BC8382DFA22B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{32A60293-4AF5-43BB-A314-BC8382DFA22B}.Debug|Win32.Build.0 = Debug|Win32
 		{32A60293-4AF5-43BB-A314-BC8382DFA22B}.Debug|x64.ActiveCfg = Debug|Win32
 		{32A60293-4AF5-43BB-A314-BC8382DFA22B}.Debug|x64.Build.0 = Debug|Win32
 		{32A60293-4AF5-43BB-A314-BC8382DFA22B}.Release Multithreaded|Win32.ActiveCfg = Release|Win32

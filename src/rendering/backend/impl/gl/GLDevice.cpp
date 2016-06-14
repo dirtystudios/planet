@@ -100,7 +100,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
 
             attribute->name     = std::string(name);
             attribute->location = glGetAttribLocation(shader->id, attribute->name.c_str());
-            GL_CHECK();
+            GL_CHECK("");
             assert(attribute->location >= 0);
         }
 
@@ -124,7 +124,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
             
             uniform->name     = std::string(name);
             uniform->location = glGetUniformLocation(shader->id, uniform->name.c_str());
-            GL_CHECK();
+            GL_CHECK("");
             assert(uniform->location >= 0);
 
             switch (uniform->type) {

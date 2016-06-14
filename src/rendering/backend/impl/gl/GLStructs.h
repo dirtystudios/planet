@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include "GLTextureFormatDesc.h"
+#include <algorithm>
 
 using namespace std;
 namespace graphics {
