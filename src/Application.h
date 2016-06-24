@@ -7,7 +7,7 @@
 namespace app {
 class Application {
 public:
-    graphics::RenderDevice* renderDevice;
+    gfx::RenderDevice* renderDevice;
     virtual void OnStart() = 0;
     virtual void OnFrame(const std::vector<float>& inputValues, float dt) = 0;
     virtual void OnShutdown() = 0;

@@ -39,6 +39,7 @@ Viewport* playerViewport;
 ui::UIManager* uiManager;
 ui::ConsoleUI* consoleUI;
 
+
 SimObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
@@ -146,7 +147,7 @@ void SetupInputBindings() {
     //   "ToggleWireFrameMode", BIND_MEM_CB(&ChunkedLoDTerrainRenderer::ToggleWireFrameMode, terrain_renderer));
 }
 
-void SetupUI(graphics::RenderDevice* renderDevice, Viewport* viewport) {
+void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
     uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
 

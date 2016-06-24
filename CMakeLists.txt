@@ -40,27 +40,27 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-FILE(GLOB GRAPHICS_SOURCES ${SOURCE_DIR_ROOT}/rendering/*.cpp)
-FILE(GLOB GRAPHICS_HEADERS ${SOURCE_DIR_ROOT}/rendering/*.h)
+FILE(GLOB gfx_SOURCES ${SOURCE_DIR_ROOT}/render/*.cpp)
+FILE(GLOB gfx_HEADERS ${SOURCE_DIR_ROOT}/render/*.h)
 
-FILE(GLOB_RECURSE GRAPHICS_SOURCES2 ${SOURCE_DIR_ROOT}/rendering/backend/interface/*.cpp)
-FILE(GLOB_RECURSE GRAPHICS_HEADERS2 ${SOURCE_DIR_ROOT}/rendering/backend/interface/*.h)
+FILE(GLOB_RECURSE gfx_SOURCES2 ${SOURCE_DIR_ROOT}/render/backend/interface/*.cpp)
+FILE(GLOB_RECURSE gfx_HEADERS2 ${SOURCE_DIR_ROOT}/render/backend/interface/*.h)
 
-FILE(GLOB RENDERERS_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/*.cpp)
-FILE(GLOB RENDERERS_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/*.h)
-FILE(GLOB RENDERERS_CHUNKED_TERRAIN_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/*.cpp)
-FILE(GLOB RENDERERS_CHUNKED_TERRAIN_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/*.h)
-FILE(GLOB RENDERERS_TEXT_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/text/*.cpp)
-FILE(GLOB RENDERERS_TEXT_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/text/*.h)
-FILE(GLOB RENDERERS_SKYBOX_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/skybox/*.cpp)
-FILE(GLOB RENDERERS_SKYBOX_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/skybox/*.h)
-FILE(GLOB RENDERERS_UI_SOURCES ${SOURCE_DIR_ROOT}/rendering/renderers/ui/*.cpp)
-FILE(GLOB RENDERERS_UI_HEADERS ${SOURCE_DIR_ROOT}/rendering/renderers/ui/*.h)
+FILE(GLOB RENDERERS_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/*.cpp)
+FILE(GLOB RENDERERS_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/*.h)
+FILE(GLOB RENDERERS_CHUNKED_TERRAIN_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/*.cpp)
+FILE(GLOB RENDERERS_CHUNKED_TERRAIN_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/*.h)
+FILE(GLOB RENDERERS_TEXT_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/text/*.cpp)
+FILE(GLOB RENDERERS_TEXT_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/text/*.h)
+FILE(GLOB RENDERERS_SKYBOX_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/skybox/*.cpp)
+FILE(GLOB RENDERERS_SKYBOX_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/skybox/*.h)
+FILE(GLOB RENDERERS_UI_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/ui/*.cpp)
+FILE(GLOB RENDERERS_UI_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/ui/*.h)
 
-FILE(GLOB GRAPHICS_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/*.cpp)
-FILE(GLOB GRAPHICS_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/*.h)
-FILE(GLOB GRAPHICS_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/rendering/backend/impl/gl/*.cpp)
-FILE(GLOB GRAPHICS_GL_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/rendering/backend/impl/*.h)
+FILE(GLOB gfx_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/render/backend/*.cpp)
+FILE(GLOB gfx_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/render/backend/*.h)
+FILE(GLOB gfx_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/gl/*.cpp)
+FILE(GLOB gfx_GL_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/*.h)
 
 FILE(GLOB INPUT_SOURCES ${SOURCE_DIR_ROOT}/input/*.cpp)
 FILE(GLOB INPUT_HEADERS ${SOURCE_DIR_ROOT}/input/*.h)
@@ -99,19 +99,19 @@ find_package(Assimp REQUIRED)
 
 include_directories(
     ${SOURCE_DIR_ROOT}/ 
-    ${SOURCE_DIR_ROOT}/rendering/
-    ${SOURCE_DIR_ROOT}/rendering/renderers/
-    ${SOURCE_DIR_ROOT}/rendering/renderers/chunkedterrain/
-    ${SOURCE_DIR_ROOT}/rendering/renderers/ui/
-    ${SOURCE_DIR_ROOT}/rendering/renderers/skybox/
-    ${SOURCE_DIR_ROOT}/rendering/renderers/text/
-    ${SOURCE_DIR_ROOT}/rendering/backend/
-    ${SOURCE_DIR_ROOT}/rendering/backend/interface
-    ${SOURCE_DIR_ROOT}/rendering/backend/interface/tasks
-    ${SOURCE_DIR_ROOT}/rendering/backend/interface/enums
-    ${SOURCE_DIR_ROOT}/rendering/backend/impl/gl
-    ${SOURCE_DIR_ROOT}/rendering/backend/GL
-    ${SOURCE_DIR_ROOT}/rendering/
+    ${SOURCE_DIR_ROOT}/render/
+    ${SOURCE_DIR_ROOT}/render/renderers/
+    ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/
+    ${SOURCE_DIR_ROOT}/render/renderers/ui/
+    ${SOURCE_DIR_ROOT}/render/renderers/skybox/
+    ${SOURCE_DIR_ROOT}/render/renderers/text/
+    ${SOURCE_DIR_ROOT}/render/backend/
+    ${SOURCE_DIR_ROOT}/render/backend/interface
+    ${SOURCE_DIR_ROOT}/render/backend/interface/tasks
+    ${SOURCE_DIR_ROOT}/render/backend/interface/enums
+    ${SOURCE_DIR_ROOT}/render/backend/impl/gl
+    ${SOURCE_DIR_ROOT}/render/backend/GL
+    ${SOURCE_DIR_ROOT}/render/
     ${SOURCE_DIR_ROOT}/utilities/
     ${SOURCE_DIR_ROOT}/utilities/win32
     ${SOURCE_DIR_ROOT}/utilities/osx
@@ -144,9 +144,9 @@ FILE(GLOB_RECURSE ALL_H RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/
 
 add_executable(dg 
     ${SOURCE_DIR_ROOT}/main.cpp
-    ${GRAPHICS_SOURCES} ${GRAPHICS_SOURCES2}
-    ${GRAPHICS_BACKEND_SOURCES} 
-    ${GRAPHICS_GL_BACKEND_SOURCES} 
+    ${gfx_SOURCES} ${gfx_SOURCES2}
+    ${gfx_BACKEND_SOURCES} 
+    ${gfx_GL_BACKEND_SOURCES} 
     ${RENDERERS_SOURCES}
     ${COMPONENT_SOURCES}
     ${RENDERERS_CHUNKED_TERRAIN_SOURCES}

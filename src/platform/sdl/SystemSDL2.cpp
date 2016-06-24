@@ -153,13 +153,13 @@ int sys::Run(app::Application* app){
                 glewExperimental = GL_TRUE;
                 glewInit();
                 glGetError();
-                _app->renderDevice = new graphics::GLDevice();
+                _app->renderDevice = new gfx::GLDevice();
             }
             else {
-                _app->renderDevice = new graphics::DX11Device();
+                _app->renderDevice = new gfx::DX11Device();
                 std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
 
-                graphics::DeviceInitialization devInit;
+                gfx::DeviceInitialization devInit;
                 devInit.windowHandle       = info.info.win.window;
                 devInit.windowHeight       = _window_height;
                 devInit.windowWidth        = _window_width;
@@ -170,7 +170,7 @@ int sys::Run(app::Application* app){
             break;
         case SDL_SYSWM_COCOA:
             subsystem = "Apple OS X";
-            _app->renderDevice = new graphics::GLDevice();
+            _app->renderDevice = new gfx::GLDevice();
             break;
             // case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
         }

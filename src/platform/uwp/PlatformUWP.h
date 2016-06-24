@@ -75,19 +75,19 @@ protected:
 
     // DisplayInformation event handlers.
     void OnDpiChanged(
-        Windows::Graphics::Display::DisplayInformation^ sender,
+        Windows::gfx::Display::DisplayInformation^ sender,
         Platform::Object^ args
     );
     /** --ignoring for now
     void OnOrientationChanged(
-        Windows::Graphics::Display::DisplayInformation^ sender,
+        Windows::gfx::Display::DisplayInformation^ sender,
         Platform::Object^ args
     );
-    void OnDisplayContentsInvalidated(Windows::Graphics::Display::DisplayInformation^ sender,
+    void OnDisplayContentsInvalidated(Windows::gfx::Display::DisplayInformation^ sender,
         Platform::Object^ args
     );
     void OnStereoEnabledChanged(
-        Windows::Graphics::Display::DisplayInformation^ sender,
+        Windows::gfx::Display::DisplayInformation^ sender,
         Platform::Object^ args
     );
     **/
