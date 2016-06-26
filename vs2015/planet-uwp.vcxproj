@@ -100,30 +100,30 @@
     <PackageCertificateKeyFile>planet-uwp_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>libnoise-build\x86\src\Debug;freetype-build\x86\Debug;xxhash-build\x86\Debug;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>libnoise-build\x86\src\Release;freetype-build\x86\Release;xxhash-build\x86\Release;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>assimp-build\x64\code\Debug;assimp-build\x64\contrib\zlib\Debug;libnoise-build\x64\src\Debug;freetype-build\x64\Debug;xxhash-build\x64\Debug;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\rendering;..\src\rendering\backend\interface;..\src\rendering\backend\interface\enums;..\src\rendering\backend\interface\tasks;..\src\rendering\backend\impl\dx11;..\src\rendering\renderers;..\src\rendering\renderers\chunkedterrain;..\src\rendering\renderers\skybox;..\src\rendering\renderers\text;..\src\rendering\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform\uwp;..\src\platform;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\src\utilities\uwp;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;$(IncludePath)</IncludePath>
     <LibraryPath>libnoise-build\x64\src\Release;freetype-build\x64\Release;xxhash-build\x64\Release;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
@@ -309,72 +309,72 @@
     <ClInclude Include="..\src\platform\System.h" />
     <ClInclude Include="..\src\platform\uwp\InputUWP.h" />
     <ClInclude Include="..\src\platform\uwp\PlatformUWP.h" />
-    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11CBufferHelper.h" />
-    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Context.h" />
-    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11ContextState.h" />
-    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Device.h" />
-    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Structs.h" />
-    <ClInclude Include="..\src\rendering\backend\impl\dx11\DX11Utils.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\BlendState.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\DepthState.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\BlendFunc.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\BlendMode.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\BufferType.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\BufferUsage.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\CullMode.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\DepthFunc.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\DepthWriteMask.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\FillMode.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\ParamType.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\PrimitiveType.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\ShaderStage.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\ShaderType.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\TextureFormat.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\TextureSlot.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\enums\WindingOrder.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\Frame.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\PipelineStateDesc.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\RasterState.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\RenderDevice.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\ResourceTypes.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\BufferUpdate.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\DrawTask.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\ShaderParamUpdate.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureBind.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\tasks\TextureUpdate.h" />
-    <ClInclude Include="..\src\rendering\backend\interface\VertexLayoutDesc.h" />
-    <ClInclude Include="..\src\rendering\Camera.h" />
-    <ClInclude Include="..\src\rendering\Frustum.h" />
-    <ClInclude Include="..\src\rendering\IndexedMeshData.h" />
-    <ClInclude Include="..\src\rendering\Mesh.h" />
-    <ClInclude Include="..\src\rendering\MeshCache.h" />
-    <ClInclude Include="..\src\rendering\MeshGeneration.h" />
-    <ClInclude Include="..\src\rendering\MeshImporter.h" />
-    <ClInclude Include="..\src\rendering\PipelineStateCache.h" />
-    <ClInclude Include="..\src\rendering\RenderEngine.h" />
-    <ClInclude Include="..\src\rendering\Renderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainNode.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderObj.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainVertex.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTextureArrayBuffer.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\GPUTile.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\LRUTileCache.h" />
-    <ClInclude Include="..\src\rendering\renderers\chunkedterrain\Tile.h" />
-    <ClInclude Include="..\src\rendering\renderers\MeshRenderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\skybox\SkyboxRenderObj.h" />
-    <ClInclude Include="..\src\rendering\renderers\skybox\SkyboxVertex.h" />
-    <ClInclude Include="..\src\rendering\renderers\skybox\SkyRenderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\text\TextRenderer.h" />
-    <ClInclude Include="..\src\rendering\renderers\ui\UIRenderer.h" />
-    <ClInclude Include="..\src\rendering\RendererType.h" />
-    <ClInclude Include="..\src\rendering\RenderObj.h" />
-    <ClInclude Include="..\src\rendering\RenderQueue.h" />
-    <ClInclude Include="..\src\rendering\RenderServiceLocator.h" />
-    <ClInclude Include="..\src\rendering\RenderView.h" />
-    <ClInclude Include="..\src\rendering\ShaderCache.h" />
-    <ClInclude Include="..\src\rendering\VertexLayoutCache.h" />
-    <ClInclude Include="..\src\rendering\Viewport.h" />
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11CBufferHelper.h" />
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h" />
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11ContextState.h" />
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Device.h" />
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Structs.h" />
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Utils.h" />
+    <ClInclude Include="..\src\render\backend\interface\BlendState.h" />
+    <ClInclude Include="..\src\render\backend\interface\DepthState.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\BlendFunc.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\BlendMode.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\BufferType.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\BufferUsage.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\CullMode.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\DepthFunc.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\DepthWriteMask.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\FillMode.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\ParamType.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\PrimitiveType.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\ShaderStage.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\ShaderType.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\TextureSlot.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\WindingOrder.h" />
+    <ClInclude Include="..\src\render\backend\interface\Frame.h" />
+    <ClInclude Include="..\src\render\backend\interface\PipelineStateDesc.h" />
+    <ClInclude Include="..\src\render\backend\interface\RasterState.h" />
+    <ClInclude Include="..\src\render\backend\interface\RenderDevice.h" />
+    <ClInclude Include="..\src\render\backend\interface\ResourceTypes.h" />
+    <ClInclude Include="..\src\render\backend\interface\tasks\BufferUpdate.h" />
+    <ClInclude Include="..\src\render\backend\interface\tasks\DrawTask.h" />
+    <ClInclude Include="..\src\render\backend\interface\tasks\ShaderParamUpdate.h" />
+    <ClInclude Include="..\src\render\backend\interface\tasks\TextureBind.h" />
+    <ClInclude Include="..\src\render\backend\interface\tasks\TextureUpdate.h" />
+    <ClInclude Include="..\src\render\backend\interface\VertexLayoutDesc.h" />
+    <ClInclude Include="..\src\render\Camera.h" />
+    <ClInclude Include="..\src\render\Frustum.h" />
+    <ClInclude Include="..\src\render\IndexedMeshData.h" />
+    <ClInclude Include="..\src\render\Mesh.h" />
+    <ClInclude Include="..\src\render\MeshCache.h" />
+    <ClInclude Include="..\src\render\MeshGeneration.h" />
+    <ClInclude Include="..\src\render\MeshImporter.h" />
+    <ClInclude Include="..\src\render\PipelineStateCache.h" />
+    <ClInclude Include="..\src\render\RenderEngine.h" />
+    <ClInclude Include="..\src\render\Renderer.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\ChunkedTerrainNode.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\ChunkedTerrainRenderer.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\ChunkedTerrainRenderObj.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\ChunkedTerrainVertex.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\GPUTextureArrayBuffer.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\GPUTile.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\LRUTileCache.h" />
+    <ClInclude Include="..\src\render\renderers\chunkedterrain\Tile.h" />
+    <ClInclude Include="..\src\render\renderers\MeshRenderer.h" />
+    <ClInclude Include="..\src\render\renderers\skybox\SkyboxRenderObj.h" />
+    <ClInclude Include="..\src\render\renderers\skybox\SkyboxVertex.h" />
+    <ClInclude Include="..\src\render\renderers\skybox\SkyRenderer.h" />
+    <ClInclude Include="..\src\render\renderers\text\TextRenderer.h" />
+    <ClInclude Include="..\src\render\renderers\ui\UIRenderer.h" />
+    <ClInclude Include="..\src\render\RendererType.h" />
+    <ClInclude Include="..\src\render\RenderObj.h" />
+    <ClInclude Include="..\src\render\RenderQueue.h" />
+    <ClInclude Include="..\src\render\RenderServiceLocator.h" />
+    <ClInclude Include="..\src\render\RenderView.h" />
+    <ClInclude Include="..\src\render\ShaderCache.h" />
+    <ClInclude Include="..\src\render\VertexLayoutCache.h" />
+    <ClInclude Include="..\src\render\Viewport.h" />
     <ClInclude Include="..\src\SimObj.h" />
     <ClInclude Include="..\src\Simulation.h" />
     <ClInclude Include="..\src\ui\ScriptHandler.h" />
@@ -394,24 +394,24 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\platform\uwp\InputUWP.cpp" />
     <ClCompile Include="..\src\platform\uwp\PlatformUWP.cpp" />
-    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Context.cpp" />
-    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Device.cpp" />
-    <ClCompile Include="..\src\rendering\backend\impl\dx11\DX11Utils.cpp" />
-    <ClCompile Include="..\src\rendering\Camera.cpp" />
-    <ClCompile Include="..\src\rendering\Frustum.cpp" />
-    <ClCompile Include="..\src\rendering\MeshCache.cpp" />
-    <ClCompile Include="..\src\rendering\MeshGeneration.cpp" />
-    <ClCompile Include="..\src\rendering\MeshImporter.cpp" />
-    <ClCompile Include="..\src\rendering\RenderEngine.cpp" />
-    <ClCompile Include="..\src\rendering\Renderer.cpp" />
-    <ClCompile Include="..\src\rendering\renderers\chunkedterrain\ChunkedTerrainRenderer.cpp" />
-    <ClCompile Include="..\src\rendering\renderers\MeshRenderer.cpp" />
-    <ClCompile Include="..\src\rendering\renderers\skybox\SkyRenderer.cpp" />
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Context.cpp" />
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Device.cpp" />
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Utils.cpp" />
+    <ClCompile Include="..\src\render\Camera.cpp" />
+    <ClCompile Include="..\src\render\Frustum.cpp" />
+    <ClCompile Include="..\src\render\MeshCache.cpp" />
+    <ClCompile Include="..\src\render\MeshGeneration.cpp" />
+    <ClCompile Include="..\src\render\MeshImporter.cpp" />
+    <ClCompile Include="..\src\render\RenderEngine.cpp" />
+    <ClCompile Include="..\src\render\Renderer.cpp" />
+    <ClCompile Include="..\src\render\renderers\chunkedterrain\ChunkedTerrainRenderer.cpp" />
+    <ClCompile Include="..\src\render\renderers\MeshRenderer.cpp" />
+    <ClCompile Include="..\src\render\renderers\skybox\SkyRenderer.cpp" />
     <ClCompile Include="..\src\utilities\uwp\File_uwp.cpp" />
     <ClCompile Include="..\src\utilities\uwp\Log_uwp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\src\rendering\shaders\DX11\cursor_ps.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\cursor_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
@@ -425,7 +425,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\cursor_vs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\cursor_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
@@ -439,7 +439,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse2_ps.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\diffuse2_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
@@ -453,7 +453,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse2_vs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\diffuse2_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
@@ -467,7 +467,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse_ps.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\diffuse_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
@@ -481,7 +481,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\diffuse_vs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\diffuse_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
@@ -495,7 +495,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\sky_ps.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\sky_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
@@ -509,7 +509,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\sky_vs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\sky_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
@@ -523,7 +523,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_fs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\terrain_fs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
@@ -537,7 +537,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\terrain_vs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\terrain_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
@@ -551,7 +551,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\text_ps.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\text_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
@@ -565,7 +565,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\text_vs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\text_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
@@ -579,7 +579,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\ui_ps.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\ui_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">PSMain</EntryPointName>
@@ -593,7 +593,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\src\rendering\shaders\DX11\ui_vs.hlsl">
+    <FxCompile Include="..\src\render\shaders\DX11\ui_vs.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">VSMain</EntryPointName>
