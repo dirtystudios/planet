@@ -12,7 +12,6 @@
 #include "Memory.h"
 #include "DrawItemDecoder.h"
 
-
 int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
     static constexpr uint32_t kMaxSlot = 10;
     std::string prefix = type == gfx::Binding::Type::ConstantBuffer ? "_b" : "_s";
@@ -43,10 +42,10 @@ GLDevice::~GLDevice() {
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
 
 void GLDevice::PrintDisplayAdapterInfo() {
-    printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
-    printf("GL_SHADING_LANGUAGE_VERSION: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
-    printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
+    LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
+    LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
+    LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
 }
 
 BufferId GLDevice::AllocateBuffer(BufferType type, size_t size, BufferUsage usage) {

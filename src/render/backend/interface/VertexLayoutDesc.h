@@ -18,7 +18,7 @@ enum class VertexAttributeUsage : uint8_t {
     Count,
 };
 
-static string VertexAttributeUsageToString(VertexAttributeUsage usage) {
+    static std::string VertexAttributeUsageToString(VertexAttributeUsage usage) {
     switch (usage) {
     case VertexAttributeUsage::Position:
         return "POSITION";

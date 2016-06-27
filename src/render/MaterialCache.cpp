@@ -17,7 +17,7 @@ Material* MaterialCache::Get(const std::string& name, gfx::ShaderId ps) {
         return it->second.get();
     }
 
-    string fpath = _baseDir + "/" + name;
+    std::string fpath = _baseDir + "/" + name;
     MaterialData matData = materialImport::LoadMaterialDataFromFile(fpath);
     Image* img = matData.diffuseTexture.get();
 

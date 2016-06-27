@@ -43,7 +43,7 @@ public:
         gfx::ShaderId shader = _device->CreateShader(shaderType, fileContents);
         assert(shader);
 
-        _shaderCache.insert(make_pair(key, shader));
+        _shaderCache.insert(std::make_pair(key, shader));
         return shader;
     }
 

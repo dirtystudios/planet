@@ -43,9 +43,8 @@ ui::ConsoleUI* consoleUI;
 SimObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
-        LOG_E("%s", "Invalid Directory Path given for AssetDirectory.");
+        LOG_E("Invalid Directory Path given for AssetDirectory.");
     }
-
     SimObj* skyObj = simulation.AddSimObj();
     Skybox* sky    = skyObj->AddComponent<Skybox>(ComponentType::Skybox);
 

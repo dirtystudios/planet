@@ -1,33 +1,26 @@
-#ifndef _logger_h_
-#define _logger_h_
+#pragma once
 
 #include <cstdio>
 #include <string>
-#include <iostream>
-using namespace std;
-
-inline std::string methodName(const std::string& prettyFunction) {
-    size_t colons = prettyFunction.find_last_of("::");
-
-    size_t begin = prettyFunction.substr(0, colons).rfind(" ") + 1;
-    size_t end   = prettyFunction.rfind("(") - begin;
-
-    return prettyFunction.substr(begin, end) + "()";
-}
-
-#define __METHOD_NAME__ methodName(__func__)
-#define LOG_D(x, ...) Log::d(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
-#define LOG_W(x, ...) Log::w(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
-#define LOG_E(x, ...) Log::e(__LINE__, __METHOD_NAME__, x, ##__VA_ARGS__);
 
 class Log {
 public:
-    static void d(int line, string func, string log, ...);
-    static void w(int line, string func, string log, ...);
-    static void e(int line, string func, string log, ...);
-
-private:
-    static string get_timestamp();
+    enum class Level : uint8_t {
+        Debug = 0,
+        Warn,
+        Error,
+    
+    };
+    
+    static void msg(Log::Level level,
+                    const std::string& channel,
+                    std::string fmt, ...);
 };
 
-#endif
+
+static const std::string kDefaultChannel = "main";
+
+#define LOG_D(fmt, ...) Log::msg(Log::Level::Debug, kDefaultChannel, fmt, ##__VA_ARGS__);
+#define LOG_W(fmt, ...) Log::msg(Log::Level::Warn, kDefaultChannel, fmt, ##__VA_ARGS__);
+#define LOG_E(fmt, ...) Log::msg(Log::Level::Error, kDefaultChannel, fmt, ##__VA_ARGS__);
+#define LOG(level, channel, category, fmt, ...) Log::msg(level, channel, fmt, ##__VA_ARGS__);
