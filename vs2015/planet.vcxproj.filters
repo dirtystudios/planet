@@ -37,10 +37,22 @@
     <ClCompile Include="..\src\render\backend\impl\gl\GLDevice.cpp">
       <Filter>render\backend\impl\gl</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Device.cpp">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Context.cpp">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Utils.cpp">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\render\Camera.cpp">
       <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="..\src\render\Frustum.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\MaterialCache.cpp">
       <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="..\src\render\MeshCache.cpp">
@@ -58,16 +70,15 @@
     <ClCompile Include="..\src\render\Renderer.cpp">
       <Filter>render</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Device.cpp">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClCompile Include="..\src\render\renderers\text\TextRenderer.cpp">
+      <Filter>render\renderers\text</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Context.cpp">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClCompile Include="..\src\ui\UIManager.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Utils.cpp">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClCompile Include="..\src\ui\EditBox.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\MaterialCache.cpp" />
     <ClCompile Include="..\src\render\backend\interface\DrawItemEncoder.cpp">
       <Filter>render\backend\interface</Filter>
     </ClCompile>
@@ -186,75 +197,6 @@
     <ClInclude Include="..\src\render\renderers\chunkedterrain\Tile.h">
       <Filter>render\renderers\chunkedterrain</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\BlendState.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\DepthState.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\Frame.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\PipelineStateDesc.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\RasterState.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\RenderDevice.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\ResourceTypes.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\VertexLayoutDesc.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\BlendFunc.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\BlendMode.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\BufferType.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\BufferUsage.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\CullMode.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\DepthFunc.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\DepthWriteMask.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\FillMode.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\ParamType.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\PrimitiveType.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\ShaderStage.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\ShaderType.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\TextureSlot.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\WindingOrder.h">
-      <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\gl\GLContext.h">
       <Filter>render\backend\impl\gl</Filter>
     </ClInclude>
@@ -273,13 +215,53 @@
     <ClInclude Include="..\src\render\backend\impl\gl\GLTextureFormatDesc.h">
       <Filter>render\backend\impl\gl</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Device.h">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Utils.h">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Structs.h">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11ContextState.h">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11CBufferHelper.h">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Memory.h" />
+    <ClInclude Include="..\src\render\backend\interface\GLCommandBuffer.h">
+      <Filter>render\backend\impl\gl</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\render\Camera.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\ConstantBuffer.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\ConstantBufferManager.h">
       <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\Frustum.h">
       <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\IndexedMeshData.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\Material.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\MaterialCache.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\MaterialData.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\MaterialImporter.h">
       <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\Mesh.h">
@@ -327,54 +309,113 @@
     <ClInclude Include="..\src\render\Viewport.h">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Device.h">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClInclude Include="..\src\ui\EditBox.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Utils.h">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClInclude Include="..\src\ui\UIFrame.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Structs.h">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClInclude Include="..\src\ui\UIManager.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClInclude Include="..\src\ui\ConsoleUI.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11ContextState.h">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClInclude Include="..\src\utilities\Bytebuffer.h">
+      <Filter>utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11CBufferHelper.h">
-      <Filter>render\backend\impl\dx11</Filter>
+    <ClInclude Include="..\src\render\backend\interface\Binding.h">
+      <Filter>render\backend\interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Memory.h" />
-    <ClInclude Include="..\src\render\backend\impl\Pool.h" />
-    <ClInclude Include="..\src\render\backend\interface\Binding.h" />
-    <ClInclude Include="..\src\render\Material.h" />
-    <ClInclude Include="..\src\render\MaterialCache.h" />
-    <ClInclude Include="..\src\render\MaterialData.h" />
-    <ClInclude Include="..\src\render\MaterialImporter.h" />
+    <ClInclude Include="..\src\render\backend\interface\BlendState.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\render\backend\interface\CommandBuffer.h">
       <Filter>render\backend\interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\GLCommandBuffer.h">
-      <Filter>render\backend\impl\gl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\VertexStream.h">
+    <ClInclude Include="..\src\render\backend\interface\DepthState.h">
       <Filter>render\backend\interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\DrawItemEncoder.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\DrawItemDesc.h">
-      <Filter>render\backend\interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\DrawItemDecoder.h">
+    <ClInclude Include="..\src\render\backend\interface\DrawCall.h">
       <Filter>render\backend\interface</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\backend\interface\DrawItem.h">
       <Filter>render\backend\interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\DrawCall.h">
+    <ClInclude Include="..\src\render\backend\interface\DrawItemDecoder.h">
       <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\DrawItemDesc.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\DrawItemEncoder.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\PipelineStateDesc.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\RasterState.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\RenderDevice.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\ResourceTypes.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\VertexLayoutDesc.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\VertexStream.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\BlendFunc.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\BlendMode.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\BufferAccess.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\BufferType.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\BufferUsage.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\CullMode.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\DepthFunc.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\DepthWriteMask.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\FillMode.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\ParamType.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\PrimitiveType.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\ShaderStage.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\ShaderType.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\TextureSlot.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\WindingOrder.h">
+      <Filter>render\backend\interface\enums</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

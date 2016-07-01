@@ -98,7 +98,7 @@ IndexedMeshData CreateIcoSphere(uint32_t recursionLevel) {
     faces.push_back(glm::ivec3(9, 8, 1));
 
     // refine triangles
-    for (int i = 0; i < recursionLevel; i++)
+    for (uint32_t i = 0; i < recursionLevel; i++)
     {
         std::vector<glm::ivec3> faces2;
         for (const glm::ivec3& tri : faces) {

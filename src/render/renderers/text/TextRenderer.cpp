@@ -30,7 +30,7 @@ static const std::string kDefaultGlyphSet =
     " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 // font parameters
 static constexpr double kFontSize           = 12;
-static constexpr double kDpi                = 96;
+static constexpr FT_UInt kDpi               = 96;
 static constexpr uint32_t kAtlasWidth       = 128;
 static constexpr uint32_t kAtlasHeight      = 128;
 static constexpr size_t kVerticesPerQuad    = 6;
@@ -110,12 +110,12 @@ void TextRenderer::OnInit() {
         }
 
         // set glyph parameters
-        glyph.xOffset     = g->bitmap_left;
-        glyph.yOffset     = g->bitmap_top;
-        glyph.xAdvance    = g->advance.x >> 6; // 26.6 fractional pixels (1/64th pixels)
-        glyph.yAdvance    = g->advance.y >> 6; // 26.6 fractional pixels (1/64th pixels)
-        glyph.width       = g->bitmap.width;
-        glyph.height      = g->bitmap.rows;
+        glyph.xOffset     = static_cast<float>(g->bitmap_left);
+        glyph.yOffset     = static_cast<float>(g->bitmap_top);
+        glyph.xAdvance    = static_cast<float>(g->advance.x >> 6); // 26.6 fractional pixels (1/64th pixels)
+        glyph.yAdvance    = static_cast<float>(g->advance.y >> 6); // 26.6 fractional pixels (1/64th pixels)
+        glyph.width       = static_cast<float>(g->bitmap.width);
+        glyph.height      = static_cast<float>(g->bitmap.rows);
         _currentRowHeight = std::max(_currentRowHeight, regionHeight);
         _xOffset += regionWidth;
         _loadedGlyphs.insert(std::make_pair(c, glyph));

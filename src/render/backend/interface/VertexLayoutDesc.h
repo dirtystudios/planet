@@ -18,7 +18,7 @@ enum class VertexAttributeUsage : uint8_t {
     Count,
 };
 
-    static std::string VertexAttributeUsageToString(VertexAttributeUsage usage) {
+static std::string VertexAttributeUsageToString(VertexAttributeUsage usage) {
     switch (usage) {
     case VertexAttributeUsage::Position:
         return "POSITION";
@@ -28,6 +28,9 @@ enum class VertexAttributeUsage : uint8_t {
         return "COLOR";
     case VertexAttributeUsage::Texcoord0:
         return "TEXCOORD";
+    default:
+        assert(false);
+        return "";
     }
 }
 
@@ -52,6 +55,7 @@ static size_t GetByteCount(VertexAttributeType paramType) {
         return sizeof(float) * 4;
     default:
         assert(false);
+        return 0;
     }
 }
 }

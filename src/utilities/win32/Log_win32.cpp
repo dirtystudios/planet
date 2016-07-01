@@ -1,52 +1,62 @@
 #include "Log.h"
-#include <stdarg.h>
 #include <string.h>
-#include <ctime>
+#include <cstdarg>
+#include <chrono>
 
-void Log::d(int line, string func, string msg, ...) {
-    char format[1024];
-    snprintf(format, sizeof(format), "[%s](%s:%d)[DEBUG] : %s\n", get_timestamp().c_str(), func.c_str(), line,
-        msg.c_str());
-    va_list args;
-    va_start(args, msg);
-    vprintf(format, args);
-    va_end(args);
-}
-
-void Log::w(int line, string func, string msg, ...) {
-    char format[1024];
-    snprintf(format, sizeof(format), "[%s](%s:%d)[WARN] : %s\n", get_timestamp().c_str(), func.c_str(), line,
-        msg.c_str());
-    va_list args;
-    va_start(args, msg);
-    vfprintf(stdout, format, args);
-    va_end(args);
-}
-
-void Log::e(int line, string func, string msg, ...) {
-    char format[1024];
-    snprintf(format, sizeof(format), "[%s](%s:%d)[ERROR] : %s\n", get_timestamp().c_str(), func.c_str(), line,
-        msg.c_str());
-    va_list args;
-    va_start(args, msg);
-    vfprintf(stderr, format, args);
-    va_end(args);
-}
-
-string Log::get_timestamp() {
-    std::time_t rawTime;
-    std::time(&rawTime);
-    struct tm timeinfo;
-    if (localtime_s(&timeinfo, &rawTime)) {
-        return 0;
+std::string GetLevelString(Log::Level level) {
+    switch (level) {
+    case Log::Level::Debug: return "debug";
+    case Log::Level::Warn: return "warn";
+    case Log::Level::Error:
+    default:
+        return "error";
     }
+}
 
-    int milli = std::clock() / CLOCKS_PER_SEC;
+FILE* GetLevelStream(Log::Level level) {
+    switch (level) {
+    case Log::Level::Debug: return stdout;
+    case Log::Level::Warn: return stdout;
+    case Log::Level::Error: 
+    default:
+        return stderr;
+    }
+}
+
+std::string GetTimestamp() {
+    using namespace std::chrono;
+
+    auto now = system_clock::now();
+    
+    milliseconds ms = duration_cast<milliseconds>(now.time_since_epoch());
+    int milli = ms.count() % 1000;
+    
+    time_t curTime = system_clock::to_time_t(now);
 
     char buffer[80];
-    strftime(buffer, 80, "%H:%M:%S", &timeinfo);
+    struct tm buf;
+    localtime_s(&buf, &curTime);
+    strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", &buf);
 
     char currentTime[84] = "";
     sprintf_s(currentTime, "%s:%d", buffer, milli);
-    return (string)currentTime;
+    return std::string(currentTime);
+}
+
+void Log::msg(Log::Level level,
+    const std::string& channel,
+    std::string fmt, ...) {
+
+    char format[1024];
+    snprintf(format, sizeof(format), "%-25s %-7s (%s) %s\n",
+        GetTimestamp().c_str(),
+        GetLevelString(level).c_str(),
+        channel.c_str(),
+        fmt.c_str());
+
+    va_list args;
+    va_start(args, fmt);
+    FILE* stream = GetLevelStream(level);
+    vfprintf(stream, format, args);
+    va_end(args);
 }

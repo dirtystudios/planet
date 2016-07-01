@@ -1,6 +1,5 @@
 #pragma once
 #include "RenderDevice.h"
-#include "Frame.h"
 #include "DX11Context.h"
 #include "DX11CBufferHelper.h"
 
@@ -105,8 +104,6 @@ namespace gfx {
         };
 
         std::unordered_map<size_t, BufferDX11> m_buffers;
-        //std::unordered_map<uint32_t, ComPtr<ID3D11VertexShader>> m_vertexShaders;
-        //std::unordered_map<uint32_t, ComPtr<ID3D11PixelShader>> m_pixelShaders;
         std::unordered_map<size_t, ShaderDX11> m_shaders;
         std::unordered_map<size_t, CBufDescEntry> m_cBufferParams;
         std::unordered_map<size_t, ConstantBufferDX11> m_shaderCBufferMapping;
@@ -119,7 +116,6 @@ namespace gfx {
         std::unordered_map<size_t, ComPtr<ID3D11DepthStencilState>> m_depthStates;
 
         std::unique_ptr<DX11Context> m_context;
-        std::unique_ptr<Frame> m_currentFrame;
 
     public:
         DX11Device() {};
@@ -129,8 +125,9 @@ namespace gfx {
         void ResizeWindow(uint32_t width, uint32_t height);
         void PrintDisplayAdapterInfo();
 
-        BufferId CreateBuffer(BufferType type, void* data, size_t size, BufferUsage usage);
+		BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage);
         ShaderId CreateShader(ShaderType type, const std::string& source);
+
         ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
         TextureId CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data);
@@ -147,27 +144,22 @@ namespace gfx {
         void DestroyTexture(TextureId texture) {}
         void DestroyVertexLayout(VertexLayoutId vertexLayout) {}
 
-        Frame* BeginFrame();
-        void SubmitFrame();
-
         CommandBuffer* CreateCommandBuffer() { return nullptr; }
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers) {}
         void UpdateBuffer(BufferId bufferId, void* data, size_t len) {}
         void UpdateTexture(TextureId textureId, void* data, size_t len) {}
 
+		uint8_t* MapMemory(BufferId buffer, BufferAccess) { return 0; };
+		void UnmapMemory(BufferId buffer) {};
         DrawItemEncoder* GetDrawItemEncoder() { return nullptr;  }
 
-        void RenderFrame() {}
+		void RenderFrame();
     private:
         ID3D11DepthStencilState* CreateDepthState(const DepthState& state);
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
         ID3D11BlendState* CreateBlendState(const BlendState& state);
 
         ID3D11Buffer* CreateConstantBuffer(CBufferDescriptor& desc, const std::vector<CBufDescEntry*>& cBufferDescs);
-
-        void ProcessBufferUpdates(const std::vector<BufferUpdate*>& updates);
-        void ProcessTextureBinds(const std::vector<TextureBind*>& tasks);
-        void ProcessShaderParams(const std::vector<ShaderParamUpdate*>& tasks);
 
         // Texture Converter.
         // Returns pointer to use for data, may point to data or unique_ptr, 

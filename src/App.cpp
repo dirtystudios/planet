@@ -4,26 +4,19 @@
 #include "System.h"
 #include "Helpers.h"
 #include "noise/noise.h"
-#include "Frustum.h"
 #include "Log.h"
-#pragma
 #include "glm/glm.hpp"
 
 #include "InputManager.h"
 #include "UIManager.h"
 #include "PlayerController.h"
-#include <set>
 #include "ConsoleUI.h"
-#include "KeyboardManager.h"
 #include "ChunkedTerrain.h"
 #include "Spatial.h"
 #include "Config.h"
 #include "Simulation.h"
 #include "Skybox.h"
 #include <glm/gtx/transform.hpp>
-#include "Mesh.h"
-#include "Bytebuffer.h"
-#include "TextRenderer.h"
 
 uint32_t frame_count     = 0;
 double accumulate        = 0;
@@ -31,7 +24,6 @@ double total_frame_count = 0;
 Camera cam;
 input::InputManager* inputManager;
 controllers::PlayerController* playerController;
-uint32_t windowWidth = 0, windowHeight = 0;
 RenderEngine* renderEngine;
 Simulation simulation;
 RenderView* playerView;
@@ -84,10 +76,10 @@ SimObj* CreateTerrain(float size, const glm::mat4& rotation, const glm::mat4& tr
 
 void SetupInputBindings() {
 
-	// 'hardcoded' mouse x, y and click
-	inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS, input::InputManager::AxisConfig(1.0, 0));
-	inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS, input::InputManager::AxisConfig(1.0, 0));
-	inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false, false, false));
+    // 'hardcoded' mouse x, y and click
+    inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false, false, false));
 
     // Console Trigger
     inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK, input::InputManager::ActionConfig(true, true, false));
@@ -160,11 +152,9 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 
 void App::OnStart() {
     sys::SysWindowSize windowSize = sys::GetWindowSize();
-    windowWidth                   = windowSize.width;
-    windowHeight                  = windowSize.height;
     playerViewport                = new Viewport();
-    playerViewport->height        = windowWidth;
-    playerViewport->height        = windowHeight;
+    playerViewport->width         = static_cast<float>(windowSize.width);
+    playerViewport->height        = static_cast<float>(windowSize.height);
     playerView                    = new RenderView(&cam, playerViewport);
     renderEngine                  = new RenderEngine(renderDevice, playerView);
     inputManager = new input::InputManager();
@@ -208,9 +198,11 @@ void App::OnStart() {
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // TODO:: Maybe have system pump events instead of polling?
     sys::SysWindowSize windowSize = sys::GetWindowSize();
-    if (windowSize.width != playerViewport->width || windowSize.height != playerViewport->height) {
-        playerViewport->width  = windowSize.width;
-        playerViewport->height = windowSize.height;
+    if (   windowSize.width != static_cast<uint32_t>(playerViewport->width)
+        || windowSize.height != static_cast<uint32_t>(playerViewport->height)) {
+
+        playerViewport->width  = static_cast<float>(windowSize.width);
+        playerViewport->height = static_cast<float>(windowSize.height);
 
         uiManager->UpdateViewport(*playerViewport);
     }
@@ -242,6 +234,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
         accumulate = 0.0;
     }
 }
+
 void App::OnShutdown() {
 
 }

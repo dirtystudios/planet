@@ -95,7 +95,7 @@ sys::SysWindowSize sys::GetWindowSize() {
 
 float sys::GetTime() {
     //return seconds
-    return (float)(SDL_GetTicks()) / 1000.0;
+    return static_cast<float>(SDL_GetTicks()) / 1000.f;
 }
 
 void sys::ShowCursor(bool showCursor) {
@@ -238,11 +238,11 @@ int sys::Run(app::Application* app){
                 }
             }
             else if (_e.type == SDL_MOUSEMOTION){
-                inputValues[(int)input::InputCode::INPUT_MOUSE_XAXISRELATIVE] = _e.motion.xrel;
-                inputValues[(int)input::InputCode::INPUT_MOUSE_YAXISRELATIVE] = _e.motion.yrel;
+                inputValues[(int)input::InputCode::INPUT_MOUSE_XAXISRELATIVE] = static_cast<float>(_e.motion.xrel);
+                inputValues[(int)input::InputCode::INPUT_MOUSE_YAXISRELATIVE] = static_cast<float>(_e.motion.yrel);
 
-                inputValues[(int)input::InputCode::INPUT_MOUSE_XAXIS] = _e.motion.x;
-                inputValues[(int)input::InputCode::INPUT_MOUSE_YAXIS] = _e.motion.y;
+                inputValues[(int)input::InputCode::INPUT_MOUSE_XAXIS] = static_cast<float>(_e.motion.x);
+                inputValues[(int)input::InputCode::INPUT_MOUSE_YAXIS] = static_cast<float>(_e.motion.y);
             }
             else if (_e.type == SDL_MOUSEBUTTONDOWN || _e.type == SDL_MOUSEBUTTONUP) {
                 switch (_e.button.button) {
@@ -281,17 +281,17 @@ int sys::Run(app::Application* app){
             else if (_e.type == SDL_CONTROLLERAXISMOTION) {
                 switch (_e.caxis.axis) {
                 case SDL_CONTROLLER_AXIS_RIGHTX:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKX] = (float)_e.caxis.value / 32767.0;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKX] = (float)_e.caxis.value / 32767.f;
                     break;
                 case SDL_CONTROLLER_AXIS_RIGHTY:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKY] = (float)_e.caxis.value / 32767.0;
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKY] = (float)_e.caxis.value / 32767.f;
                     break;
                 default: break;
                 }
             }
         }
 
-        _app->OnFrame(inputValues, dt);
+        _app->OnFrame(inputValues, static_cast<float>(dt));
 
         // is there a different way we can swapbuffer?
         if (renderDeviceConfig == "opengl") {

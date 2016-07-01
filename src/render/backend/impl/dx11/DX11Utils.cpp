@@ -1,7 +1,7 @@
 #include "DX11Utils.h"
 
 
-namespace graphics {
+namespace gfx {
     // Debug Helper Functions
 
 #pragma region Debug Helper Functions

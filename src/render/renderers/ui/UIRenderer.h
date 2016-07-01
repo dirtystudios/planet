@@ -21,7 +21,7 @@ struct FrameVertex {
     glm::vec4 position;
 };
 
-struct UIFrameRenderObj : public RenderObj {
+struct alignas(16) UIFrameRenderObj : public RenderObj {
     UIFrameRenderObj() : RenderObj(RendererType::Ui) {}
     gfx::DrawCall drawCall;
     gfx::VertexStream stream;
@@ -30,8 +30,15 @@ struct UIFrameRenderObj : public RenderObj {
     glm::vec2 borderSize;
 
     ConstantBuffer* frameData{nullptr};
-
     ui::UIFrame* frame;
+
+    void* operator new (size_t i) {
+        return _mm_malloc(i, 16);
+    }
+
+    void operator delete (void* p) {
+        _mm_free(p);
+    }
 };
 
 class UIRenderer : public Renderer {
@@ -90,8 +97,8 @@ public:
         uiRenderObj->frame            = frame;
 
         // currently frame location is immutable after registration
-        float w    = frame->GetFrameDesc()->width;
-        float h    = frame->GetFrameDesc()->height;
+        float w    = static_cast<float>(frame->GetFrameDesc()->width);
+        float h    = static_cast<float>(frame->GetFrameDesc()->height);
         float xpos = frame->GetFrameDesc()->x;
         float ypos = frame->GetFrameDesc()->y;
 

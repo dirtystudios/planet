@@ -35,6 +35,7 @@ static size_t GetByteCount(ParamType paramType) {
         return sizeof(float) * 16;
     default:
         assert(false);
+        return 0;
     }
 }
 }

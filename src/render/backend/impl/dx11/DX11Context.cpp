@@ -1,6 +1,6 @@
 #include "DX11Context.h"
 
-namespace graphics {
+namespace gfx {
 
     void DX11Context::Clear(float r, float g, float b, float a) {
         float RGBA[4] = { r, g, b, a };

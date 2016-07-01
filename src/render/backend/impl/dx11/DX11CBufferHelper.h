@@ -69,7 +69,7 @@ namespace gfx {
 
         friend std::istream& operator >> (std::istream &is, CBufferDescriptor &cb) {
             is >> cb.totalSize >> cb.numVars;
-            for (int x = 0; x < cb.numVars; ++x) {
+            for (uint32_t x = 0; x < cb.numVars; ++x) {
                 CBufferVariable cbVar;
                 std::string cbName;
                 is >> cbName >> cbVar.offset >> cbVar.size;

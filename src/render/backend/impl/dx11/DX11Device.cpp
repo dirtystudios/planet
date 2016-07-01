@@ -7,11 +7,10 @@
 
 #define SafeGet(id, idx) id[(uint32_t)idx];
 
-namespace graphics {
+namespace gfx {
     std::vector<std::unique_ptr<const char[]>> DX11SemanticNameCache::m_semanticNameCache = {};
 
-    BufferId DX11Device::CreateBuffer(BufferType type, void * data, size_t size, BufferUsage usage) {
-
+    BufferId DX11Device::AllocateBuffer(BufferType type, size_t size, BufferUsage usage) {
         ComPtr<ID3D11Buffer> buffer = NULL;
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
@@ -28,14 +27,7 @@ namespace graphics {
             bufferDesc.CPUAccessFlags = 0;
         bufferDesc.MiscFlags = 0;
 
-        D3D11_SUBRESOURCE_DATA initData;
-        if (data) {
-            initData.pSysMem = data;
-            initData.SysMemPitch = 0;
-            initData.SysMemSlicePitch = 0;
-        }
-
-        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, data ? &initData : NULL, &buffer));
+        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, NULL, &buffer));
         BufferDX11 bufferdx11;
         bufferdx11.buffer.Swap(buffer);
         bufferdx11.type = type;
@@ -509,7 +501,7 @@ namespace graphics {
         // currently we only care about converting 24 bit textures
         if (reqFormat == TextureFormat::RGB_U8) {
             size_t numPixels = tDesc.Width * tDesc.Height;
-            dataRef.reset(new byte(numPixels * 4));
+            dataRef.reset(new byte[numPixels * 4]);
             Convert24BitTo32Bit(reinterpret_cast<uintptr_t>(data), 
                 reinterpret_cast<uintptr_t>(dataRef.get()), numPixels);
             return reinterpret_cast<intptr_t>(dataRef.get());
@@ -517,7 +509,7 @@ namespace graphics {
         return reinterpret_cast<intptr_t>(data);
     }
 
-    void DX11Device::ProcessBufferUpdates(const std::vector<BufferUpdate*>& updates) {
+    /*void DX11Device::ProcessBufferUpdates(const std::vector<BufferUpdate*>& updates) {
         for (BufferUpdate* bufferUpdateTask : updates) {
             BufferDX11* bufferdx11 = GetResource(m_buffers, bufferUpdateTask->bufferId);
             m_context->UpdateBufferData(bufferdx11->buffer.Get(), bufferUpdateTask->data, bufferUpdateTask->len);
@@ -533,10 +525,10 @@ namespace graphics {
         for (TextureBind* texBind : tasks) {
             TextureDX11* texturedx11 = GetResource(m_textures, texBind->textureId);
             switch (texBind->stage) {
-            case ShaderStage::Vertex:
+            case ShaderType::VertexShader:
                 m_context->SetVertexShaderTexture((uint32_t)texBind->slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
                 break;
-            case ShaderStage::Pixel:
+            case ShaderType::PixelShader:
                 m_context->SetPixelShaderTexture((uint32_t)texBind->slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
                 break;
             }
@@ -570,20 +562,16 @@ namespace graphics {
             }
         }
     }
-
-    Frame* DX11Device::BeginFrame() {
-        return m_currentFrame.get();
-    }
-
-    void DX11Device::SubmitFrame() {
+    */
+    void DX11Device::RenderFrame() {
         m_context->Clear(0.f, 0.f, 0.f, 0.f);
-        ProcessBufferUpdates(m_currentFrame->GetBufferUpdates());
+        //ProcessBufferUpdates(m_currentFrame->GetBufferUpdates());
 
         /*for (TextureUpdate* textureUpdateTask : m_currentFrame->GetTextureUpdates()) {
             TextureDX11* textureDx11 = GetResource(m_textures, textureUpdateTask->textureId);
             m_context
         }*/
-
+        /*
         for (DrawTask* drawTask : m_currentFrame->GetDrawTasks()) {
             ProcessBufferUpdates(drawTask->bufferUpdates);
             ProcessTextureBinds(drawTask->textureBinds);
@@ -612,8 +600,7 @@ namespace graphics {
             }
         }
 
-        DX11_CHECK(m_swapchain->Present(1, 0));
-        m_currentFrame->Clear();
+        DX11_CHECK(m_swapchain->Present(1, 0));*/
     }
 
     void DX11Device::ResetDepthStencilTexture() {
@@ -670,8 +657,6 @@ namespace graphics {
     }
 
     int32_t DX11Device::InitializeDevice(const DeviceInitialization & deviceInit) {
-        m_currentFrame.reset(new Frame());
-
         m_winWidth = deviceInit.windowWidth;
         m_winHeight = deviceInit.windowHeight;
         m_usePrebuiltShaders = deviceInit.usePrebuiltShaders;
