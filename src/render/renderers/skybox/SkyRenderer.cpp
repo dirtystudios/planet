@@ -4,6 +4,8 @@
 #include "Skybox.h"
 #include "SkyboxVertex.h"
 #include <glm/gtx/transform.hpp>
+#include "StateGroupEncoder.h"
+#include "DrawItemEncoder.h"
 
 struct SkyboxConstants {
     glm::mat4 world;
@@ -14,16 +16,21 @@ SkyRenderer::~SkyRenderer() {
 }
 
 void SkyRenderer::OnInit() {
-    gfx::PipelineStateDesc psd;
-    psd.vertexShader         = GetShaderCache()->Get(gfx::ShaderType::VertexShader, "sky");
-    psd.pixelShader          = GetShaderCache()->Get(gfx::ShaderType::PixelShader, "sky");
-    psd.vertexLayout         = GetVertexLayoutCache()->Get(SkyboxVertex::GetVertexLayoutDesc());
-    psd.topology             = gfx::PrimitiveType::Triangles;
-    psd.rasterState.cullMode = gfx::CullMode::None;
-    psd.depthState.depthFunc = gfx::DepthFunc::LessEqual;
-    psd.depthState.enable    = true;
-    _defaultPS = GetPipelineStateCache()->Get(psd);
-    assert(_defaultPS);
+    gfx::RasterState rs;
+    rs.cullMode = gfx::CullMode::None;
+
+    gfx::DepthState ds;
+    ds.depthFunc = gfx::DepthFunc::LessEqual;
+    ds.enable    = true;
+
+    gfx::StateGroupEncoder encoder;
+    encoder.Begin();
+    encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "sky"));
+    encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "sky"));
+    encoder.SetVertexLayout(GetVertexLayoutCache()->Get(SkyboxVertex::GetVertexLayoutDesc()));
+    encoder.SetRasterState(rs);
+    encoder.SetDepthState(ds);
+    _base = encoder.End();
 }
 
 RenderObj* SkyRenderer::Register(SimObj* simObj) {
@@ -32,7 +39,7 @@ RenderObj* SkyRenderer::Register(SimObj* simObj) {
     assert(simObj->HasComponents({ComponentType::Skybox}));
     Skybox* skyBox = simObj->GetComponent<Skybox>(ComponentType::Skybox);
 
-    Image skyboxImages[6] = {0};
+    Image skyboxImages[6];
     for (uint32_t idx = 0; idx < 6; ++idx) {
         if (!LoadImageFromFile(skyBox->imagePaths[idx].c_str(), &skyboxImages[idx])) {
             LOG_E("Failed to load image: %s", skyBox->imagePaths[idx].c_str());
@@ -50,14 +57,14 @@ RenderObj* SkyRenderer::Register(SimObj* simObj) {
 
     SkyboxRenderObj* renderObj = new SkyboxRenderObj();
     renderObj->textureCubeId   = skyboxTextureId;
-    renderObj->vertexCount     = 36;
 
-    size_t bufferSize       = sizeof(SkyboxVertex) * renderObj->vertexCount;
-    renderObj->vertexBuffer = GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, bufferSize,
-                                                                gfx::BufferUsage::Static);
+    uint32_t vertexCount = 36;
+    size_t bufferSize = sizeof(SkyboxVertex) * vertexCount;
+    renderObj->vertexBuffer =
+        GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, bufferSize, gfx::BufferUsage::Static);
 
-    glm::vec3* mapped = reinterpret_cast<glm::vec3*>(
-        GetRenderDevice()->MapMemory(renderObj->vertexBuffer, gfx::BufferAccess::Write));
+    glm::vec3* mapped =
+        reinterpret_cast<glm::vec3*>(GetRenderDevice()->MapMemory(renderObj->vertexBuffer, gfx::BufferAccess::Write));
     assert(mapped);
 
     uint32_t mappedVertices = 0;
@@ -72,9 +79,23 @@ RenderObj* SkyRenderer::Register(SimObj* simObj) {
 
     renderObj->constantBuffer = GetConstantBufferManager()->GetConstantBuffer(sizeof(SkyboxConstants));
 
-    assert(renderObj->vertexCount == mappedVertices);
+    assert(vertexCount == mappedVertices);
 
     _objs.push_back(renderObj);
+
+    gfx::StateGroupEncoder encoder;
+    encoder.Begin(_base);
+    encoder.SetVertexBuffer(renderObj->vertexBuffer);
+    encoder.BindResource(renderObj->constantBuffer->GetBinding(1));
+    encoder.BindTexture(0, renderObj->textureCubeId);
+    renderObj->group = encoder.End();
+
+    gfx::DrawCall drawCall;
+    drawCall.type           = gfx::DrawCall::Type::Arrays;
+    drawCall.offset         = 0;
+    drawCall.primitiveCount = vertexCount;
+
+    renderObj->item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &renderObj->group, 1);
 
     return renderObj;
 }
@@ -93,22 +114,7 @@ void SkyRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     for (SkyboxRenderObj* skybox : _objs) {
         skybox->constantBuffer->Map<SkyboxConstants>()->world = world;
         skybox->constantBuffer->Unmap();
-        gfx::DrawItemDesc did;
-        did.drawCall.type           = gfx::DrawCall::Type::Arrays;
-        did.drawCall.offset         = 0;
-        did.drawCall.primitiveCount = 36;
-        did.pipelineState           = _defaultPS;
-        did.streamCount             = 1;
-        did.streams[0].vertexBuffer = skybox->vertexBuffer;
-        did.streams[0].offset       = 0;
-        did.streams[0].stride       = sizeof(glm::vec3);
-        did.bindingCount            = 2;
-        did.bindings[0].type        = gfx::Binding::Type::Texture;
-        did.bindings[0].slot        = 0;
-        did.bindings[0].resource    = skybox->textureCubeId;
-        did.bindings[1]             = skybox->constantBuffer->GetBinding(1);
 
-        const gfx::DrawItem* item = GetRenderDevice()->GetDrawItemEncoder()->Encode(did);
-        renderQueue->AddDrawItem(0, item);
+        renderQueue->AddDrawItem(0, skybox->item);
     }
 }

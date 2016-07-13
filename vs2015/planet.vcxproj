@@ -24,6 +24,7 @@
     <ClCompile Include="..\src\render\backend\impl\gl\GLContext.cpp" />
     <ClCompile Include="..\src\render\backend\impl\gl\GLDevice.cpp" />
     <ClCompile Include="..\src\render\backend\interface\DrawItemEncoder.cpp" />
+    <ClCompile Include="..\src\render\backend\interface\StateGroupEncoder.cpp" />
     <ClCompile Include="..\src\render\Camera.cpp" />
     <ClCompile Include="..\src\render\Frustum.cpp" />
     <ClCompile Include="..\src\render\MaterialCache.cpp" />
@@ -106,6 +107,9 @@
     <ClInclude Include="..\src\render\backend\interface\RasterState.h" />
     <ClInclude Include="..\src\render\backend\interface\RenderDevice.h" />
     <ClInclude Include="..\src\render\backend\interface\ResourceTypes.h" />
+    <ClInclude Include="..\src\render\backend\interface\StateGroup.h" />
+    <ClInclude Include="..\src\render\backend\interface\StateGroupDecoder.h" />
+    <ClInclude Include="..\src\render\backend\interface\StateGroupEncoder.h" />
     <ClInclude Include="..\src\render\backend\interface\VertexLayoutDesc.h" />
     <ClInclude Include="..\src\render\backend\interface\VertexStream.h" />
     <ClInclude Include="..\src\render\Camera.h" />

@@ -4,6 +4,7 @@
 #include "GLStructs.h"
 #include "GLContext.h"
 #include "GLCommandBuffer.h"
+#include "VertexStream.h"
 #include <unordered_map>
 #include <array>
 #include <list>
@@ -52,9 +53,6 @@ private:
 
     
     Pool<GLCommandBuffer, 1> _commandBufferPool;
-    
-    DrawItemEncoder* _drawItemEncoder;    
-    ByteBuffer _drawItemByteBuffer;
 
     GLVaoCache _vaoCache;
 public:
@@ -86,7 +84,6 @@ public:
     void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
     uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
     void UnmapMemory(BufferId bufferId);
-    DrawItemEncoder* GetDrawItemEncoder();
     void RenderFrame();
 
 private:

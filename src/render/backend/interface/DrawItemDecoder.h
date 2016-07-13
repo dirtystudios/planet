@@ -10,91 +10,69 @@
 #include <cassert>
 
 namespace gfx {
+    
 class DrawItemDecoder {
 private:
-    enum class DrawItemOffset : uint8_t {
-        Length = 0,
-        DrawCall,
-        PipelineState,
-        BindingCount,
-        Bindings,
-        VertexStreamCount,
-        VertexStreams,
-        IndexBuffer,
-        IndexBufferOffset,
-        Name
-
-    };
-
-    std::uintptr_t GetOffset(const DrawItemOffset& offset) const {
-        std::uintptr_t ptrOffset = 0;
-        switch (offset) {
-        case DrawItemOffset::Length:
-            ptrOffset = 0;
-            break;
-        case DrawItemOffset::DrawCall:
-            ptrOffset = sizeof(size_t);
-            break;
-        case DrawItemOffset::PipelineState:
-            ptrOffset = sizeof(size_t) + sizeof(DrawCall);
-            break;
-        case DrawItemOffset::BindingCount:
-            ptrOffset = sizeof(size_t) + sizeof(DrawCall) + sizeof(PipelineStateId);
-            break;
-        case DrawItemOffset::Bindings:
-            ptrOffset = sizeof(size_t) + sizeof(DrawCall) + sizeof(PipelineStateId) + sizeof(size_t);
-            break;
-        case DrawItemOffset::VertexStreamCount:
-            ptrOffset = sizeof(size_t) + sizeof(DrawCall) + sizeof(PipelineStateId) + sizeof(size_t) +
-                        (bindingCount() * sizeof(Binding));
-            break;
-        case DrawItemOffset::VertexStreams:
-            ptrOffset = sizeof(size_t) + sizeof(DrawCall) + sizeof(PipelineStateId) + sizeof(size_t) +
-                        (bindingCount() * sizeof(Binding)) + sizeof(size_t);
-            break;
-        case DrawItemOffset::IndexBuffer:
-            ptrOffset = sizeof(size_t) + sizeof(DrawCall) + sizeof(PipelineStateId) + sizeof(size_t) +
-                        (bindingCount() * sizeof(Binding)) + sizeof(size_t) +
-                        (vertexStreamCount() * sizeof(VertexStream));
-            break;
-        case DrawItemOffset::IndexBufferOffset:
-            ptrOffset = sizeof(size_t) + sizeof(DrawCall) + sizeof(PipelineStateId) + sizeof(size_t) +
-                        (bindingCount() * sizeof(Binding)) + sizeof(size_t) +
-                        (vertexStreamCount() * sizeof(VertexStream)) + sizeof(size_t);
-            break;
-        }
-        return reinterpret_cast<std::uintptr_t>(_item) + ptrOffset;
-    }
-
-    const DrawItem* _item{nullptr};
-
+    const DrawItem* _drawItem{nullptr};
+    uint8_t _streamCount{0};
+    uint8_t _bindingCount{0};
 public:
-    DrawItemDecoder(const DrawItem* item) : _item(item) {}
+    DrawItemDecoder(const DrawItem* item) : _drawItem(item) {
+        ReadState(DrawItemField::StreamCount, &_streamCount);
+        ReadState(DrawItemField::BindingCount, &_bindingCount);
+    }
+    
+    size_t GetStreamCount() {
+        return _streamCount;
+    }
+    
+    size_t GetBindingCount() {
+        return _bindingCount;
+    }
+    
+    bool ReadDrawCall(DrawCall* drawCall) {
+        return ReadState(DrawItemField::DrawCall, drawCall);
+    }
+    
+    bool ReadPipelineState(PipelineStateId* pipelineState) {
+        return ReadState(DrawItemField::PipelineState, pipelineState);
+    }
+    
+    bool ReadIndexBuffer(BufferId* indexBuffer) {
+        return ReadState(DrawItemField::IndexBuffer, indexBuffer);
+    }
 
-    size_t len() const { return static_cast<size_t>(*((size_t*)(this))); }
-    const DrawCall* drawCall() const {
-        return reinterpret_cast<const DrawCall*>(GetOffset(DrawItemOffset::DrawCall));
+    bool ReadVertexStreams(VertexStream** streams) {
+        return ReadState(DrawItemField::VertexStreams, *streams, _streamCount);
     }
-    size_t bindingCount() const {
-        return static_cast<size_t>(*((size_t*) (GetOffset(DrawItemOffset::BindingCount))));
+
+    bool ReadBindings(Binding** bindings) { return ReadState(DrawItemField::Bindings, *bindings, _bindingCount); }
+
+private:
+    template <class T> bool ReadState(DrawItemField field, T* stateOut, uint32_t count = 1) {
+        assert(stateOut);
+        size_t bytesToRead = sizeof(T) * count;
+        size_t offset = GetOffset(field);
+        assert(offset != -1 && _drawItem->size() >= offset + bytesToRead);
+        memcpy(stateOut, _drawItem->data() + offset, bytesToRead);
+        return true;
     }
-    const Binding* bindings() const {
-        return bindingCount() ? reinterpret_cast<const Binding*>(GetOffset(DrawItemOffset::Bindings)) : nullptr;
+
+    size_t GetOffset(DrawItemField field) {
+        switch (field) {
+        case DrawItemField::StreamCount:
+            return 0;
+            case DrawItemField::BindingCount: return sizeof(uint8_t);
+            case DrawItemField::DrawCall: return GetOffset(DrawItemField::BindingCount) + sizeof(uint8_t);
+            case DrawItemField::IndexBuffer:  return GetOffset(DrawItemField::DrawCall) + sizeof(DrawCall);
+            case DrawItemField::PipelineState: return GetOffset(DrawItemField::IndexBuffer) + sizeof(BufferId);
+            case DrawItemField::VertexStreams: return GetOffset(DrawItemField::PipelineState) + sizeof(PipelineStateId);
+            case DrawItemField::Bindings: return GetOffset(DrawItemField::VertexStreams) + sizeof(VertexStream) * _streamCount;
+            default: assert(false);
+        }
+        return -1;
     }
-    PipelineStateId pipelineState() const {
-        return static_cast<PipelineStateId>(*(PipelineStateId*) (GetOffset(DrawItemOffset::PipelineState)));
-    }
-    size_t vertexStreamCount() const {
-        return static_cast<size_t>(*(size_t*) (GetOffset(DrawItemOffset::VertexStreamCount)));
-    }
-    const VertexStream* streams() const {
-        return vertexStreamCount() ? reinterpret_cast<const VertexStream*>(GetOffset(DrawItemOffset::VertexStreams)) : nullptr;
-    }
-    BufferId indexBuffer() const {
-        return static_cast<BufferId>(*(BufferId*) GetOffset(DrawItemOffset::IndexBuffer));
-    }
-    uint32_t indexOffset() const {
-        return static_cast<uint32_t>(*(uint32_t*) GetOffset(DrawItemOffset::IndexBufferOffset));
-    }
+
 };
+
 }

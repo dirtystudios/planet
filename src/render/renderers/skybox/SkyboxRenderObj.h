@@ -4,6 +4,8 @@
 #include "RendererType.h"
 #include "ResourceTypes.h"
 #include "ConstantBuffer.h"
+#include "StateGroup.h"
+#include "DrawItem.h"
 
 struct SkyboxRenderObj : public RenderObj {
     SkyboxRenderObj() : RenderObj(RendererType::Skybox) {}
@@ -11,6 +13,7 @@ struct SkyboxRenderObj : public RenderObj {
     gfx::TextureId textureCubeId{0};
     gfx::BufferId vertexBuffer{0};
     ConstantBuffer* constantBuffer{0};
-    uint32_t vertexCount{0};
-    uint32_t vertexOffset{0};
+
+    const gfx::StateGroup* group{nullptr};
+    const gfx::DrawItem* item{nullptr};
 };

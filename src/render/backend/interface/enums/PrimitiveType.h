@@ -9,3 +9,11 @@ enum class PrimitiveType : uint8_t {
     Count,
 };
 }
+namespace std {
+template <> struct hash<gfx::PrimitiveType> {
+    size_t operator()(const gfx::PrimitiveType& x) const {
+        return std::hash<std::underlying_type<gfx::PrimitiveType>::type>()(
+            static_cast<std::underlying_type<gfx::PrimitiveType>::type>(x));
+    }
+};
+}

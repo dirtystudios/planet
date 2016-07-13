@@ -82,6 +82,9 @@
     <ClCompile Include="..\src\render\backend\interface\DrawItemEncoder.cpp">
       <Filter>render\backend\interface</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\render\backend\interface\StateGroupEncoder.cpp">
+      <Filter>render\backend\interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -419,6 +422,15 @@
     </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\gl\GLCommandBuffer.h">
       <Filter>render\backend\impl\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\StateGroup.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\StateGroupDecoder.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\StateGroupEncoder.h">
+      <Filter>render\backend\interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

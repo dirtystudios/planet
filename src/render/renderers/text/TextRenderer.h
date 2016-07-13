@@ -3,6 +3,8 @@
 #include "Renderer.h"
 #include <glm/glm.hpp>
 #include <map>
+#include "StateGroup.h"
+#include "DrawItem.h"
 
 struct TextRenderObj : public RenderObj {
     TextRenderObj() : RenderObj(RendererType::Text) {}
@@ -10,6 +12,9 @@ struct TextRenderObj : public RenderObj {
     Mesh mesh;
     ConstantBuffer* constantBuffer;
     glm::vec3 textColor;
+
+    const gfx::StateGroup* _group{nullptr};
+    const gfx::DrawItem* _item{nullptr};
 };
 
 class TextRenderer : public Renderer {
@@ -33,6 +38,8 @@ private:
         float height{0};
     };
 
+    const gfx::StateGroup* _base;
+
 private:
     // parameters for converting pixel to NDC coordinates
     float _scaleX;
@@ -48,7 +55,6 @@ private:
 
     // gfx resources
     gfx::TextureId _glyphAtlas{0};
-    gfx::PipelineStateId _textPS{0};
     gfx::BufferId _vertexBuffer{0};
     size_t _vertexBufferOffset{0};
     size_t _vertexBufferSize{0};

@@ -32,7 +32,9 @@ ui::UIManager* uiManager;
 ui::ConsoleUI* consoleUI;
 
 
+
 SimObj* CreateSkybox() {
+
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
         LOG_E("Invalid Directory Path given for AssetDirectory.");
@@ -57,8 +59,7 @@ SimObj* CreateTerrain(float size, const glm::mat4& rotation, const glm::mat4& tr
     terrain->size = size;
     terrain->translation = translation;
     terrain->rotation = rotation;
-    terrain->heightmapGenerator = [&](double x, double y, double z) -> double 
-    {
+    terrain->heightmapGenerator = [&](double x, double y, double z) -> double {
         noise::module::RidgedMulti mountain;
         mountain.SetSeed(32);
         mountain.SetFrequency(0.05);
@@ -66,8 +67,8 @@ SimObj* CreateTerrain(float size, const glm::mat4& rotation, const glm::mat4& tr
         return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
     };
 
-    Spatial* spatial = terrainChunk->AddComponent<Spatial>(ComponentType::Spatial);
-    spatial->pos = glm::dvec3(0, 0, 0);
+    Spatial* spatial   = terrainChunk->AddComponent<Spatial>(ComponentType::Spatial);
+    spatial->pos       = glm::dvec3(0, 0, 0);
     terrain->renderObj = renderEngine->Register(terrainChunk, RendererType::ChunkedTerrain);
     assert(terrain->renderObj);
 
@@ -77,12 +78,16 @@ SimObj* CreateTerrain(float size, const glm::mat4& rotation, const glm::mat4& tr
 void SetupInputBindings() {
 
     // 'hardcoded' mouse x, y and click
-    inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS, input::InputManager::AxisConfig(1.0, 0));
-    inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS, input::InputManager::AxisConfig(1.0, 0));
-    inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false, false, false));
+    inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS,
+                                 input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS,
+                                 input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1,
+                                   input::InputManager::ActionConfig(false, false, false));
 
     // Console Trigger
-    inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK, input::InputManager::ActionConfig(true, true, false));
+    inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK,
+                                   input::InputManager::ActionConfig(true, true, false));
 
     // Handle Key Mappings
     // Keyboard n mouse for player
@@ -167,32 +172,33 @@ void App::OnStart() {
     cam.LookAt(0, 0, 0);
 
     // gogoogog planet
-    glm::dvec3 origin(0, 0, 0);
-    glm::mat4 rotate;
-    glm::mat4 translate;
-    float diamater = 2500;
-    float radius   = diamater / 2.f;
-
-    // translate = glm::translate(glm::vec3(origin.x, origin.y, origin.z + radius));
-    // CreateTerrain(diamater, glm::mat4(), translate); // front
-
-    // translate = glm::translate(glm::vec3(origin.x, origin.y + radius, origin.z));
-    // rotate = glm::rotate(glm::mat4(), -3.1415f / 2.f, glm::normalize(glm::vec3(1, 0, 0)));
-    // CreateTerrain(diamater, rotate, translate); // top
-
+    
     CreateSkybox();
 
-    // rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(1, 0, 0)));
-    // CreateTerrain(diamater, rotate, glm::mat4()); // bottom
-
-    // rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
-    // CreateTerrain(diamater, rotate, glm::mat4()); // right
-
-    // rotate = glm::rotate(glm::mat4(), -3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
-    // CreateTerrain(diamater, rotate, glm::mat4()); // left
-
-    // rotate = glm::rotate(glm::mat4(), -3.1415f, glm::normalize(glm::vec3(0, 1, 0)));
-    // CreateTerrain(diamater, rotate, glm::mat4()); // back
+//    glm::dvec3 origin(0, 0, 0);
+//    glm::mat4 rotate;
+//    glm::mat4 translate;
+//    float diamater = 2500;
+//    float radius   = diamater / 2.f;
+//
+//    translate = glm::translate(glm::vec3(origin.x, origin.y, origin.z + radius));
+//    CreateTerrain(diamater, glm::mat4(), translate); // front
+//
+//    translate = glm::translate(glm::vec3(origin.x, origin.y + radius, origin.z));
+//    rotate = glm::rotate(glm::mat4(), -3.1415f / 2.f, glm::normalize(glm::vec3(1, 0, 0)));
+//    CreateTerrain(diamater, rotate, translate); // top
+//
+//    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(1, 0, 0)));
+//    CreateTerrain(diamater, rotate, glm::mat4()); // bottom
+//
+//    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
+//    CreateTerrain(diamater, rotate, glm::mat4()); // right
+//
+//    rotate = glm::rotate(glm::mat4(), -3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
+//    CreateTerrain(diamater, rotate, glm::mat4()); // left
+//
+//    rotate = glm::rotate(glm::mat4(), -3.1415f, glm::normalize(glm::vec3(0, 1, 0)));
+//    CreateTerrain(diamater, rotate, glm::mat4()); // back
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {

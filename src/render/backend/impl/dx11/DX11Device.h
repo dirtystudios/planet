@@ -148,7 +148,6 @@ namespace gfx {
 
         Pool<DX11CommandBuffer, 1> m_commandBufferPool;
 
-		std::unique_ptr<DrawItemEncoder> m_drawItemEncoder;
 		ByteBuffer m_drawItemByteBuffer;
 
     public:
@@ -184,7 +183,6 @@ namespace gfx {
 
         uint8_t* MapMemory(BufferId buffer, BufferAccess);
         void UnmapMemory(BufferId buffer);
-		DrawItemEncoder* GetDrawItemEncoder();
 
         void RenderFrame();
     private:

@@ -6,6 +6,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Renderer.h"
 #include "UIFrame.h"
+#include "StateGroupEncoder.h"
+#include "DrawItemEncoder.h"
+#include "VertexStream.h"
 
 struct UIViewConstants {
     glm::mat4 projection;
@@ -32,53 +35,55 @@ struct alignas(16) UIFrameRenderObj : public RenderObj {
     ConstantBuffer* frameData{nullptr};
     ui::UIFrame* frame;
 
-    void* operator new (size_t i) {
-        return _mm_malloc(i, 16);
-    }
+    const gfx::StateGroup* group{nullptr};
+    const gfx::DrawItem* item{nullptr};
 
-    void operator delete (void* p) {
-        _mm_free(p);
-    }
+    void* operator new(size_t i) { return _mm_malloc(i, 16); }
+
+    void operator delete(void* p) { _mm_free(p); }
 };
 
 class UIRenderer : public Renderer {
 private:
     static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 1024;
 
-    gfx::PipelineStateId _defaultPS;
     gfx::BufferId _vertexBuffer;
     size_t _bufferOffset;
     size_t _bufferSize;
     ConstantBuffer* _viewData{nullptr};
 
     std::vector<UIFrameRenderObj*> _objs;
+    const gfx::StateGroup* _base{nullptr};
 
 public:
     void OnInit() {
-        gfx::PipelineStateDesc psd;
-        psd.vertexShader               = GetShaderCache()->Get(gfx::ShaderType::VertexShader, "ui");
-        psd.pixelShader                = GetShaderCache()->Get(gfx::ShaderType::PixelShader, "ui");
-        gfx::VertexLayoutDesc vld = {{{
-            gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position,
-        }}};
-        psd.vertexLayout            = GetVertexLayoutCache()->Get(vld);
-        psd.topology                = gfx::PrimitiveType::Triangles;
-        psd.blendState.enable       = true;
-        psd.blendState.srcRgbFunc   = gfx::BlendFunc::SrcAlpha;
-        psd.blendState.srcAlphaFunc = psd.blendState.srcRgbFunc;
-        psd.blendState.dstRgbFunc   = gfx::BlendFunc::OneMinusSrcAlpha;
-        psd.blendState.dstAlphaFunc = psd.blendState.dstRgbFunc;
-
-        _defaultPS = GetPipelineStateCache()->Get(psd);
-        _viewData  = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
+        _viewData = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
 
         _vertexBuffer = GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, kDefaultVertexBufferSize,
                                                           gfx::BufferUsage::Static);
         _bufferOffset = 0;
         _bufferSize   = kDefaultVertexBufferSize;
 
+        gfx::BlendState blendState;
+        blendState.enable       = true;
+        blendState.srcRgbFunc   = gfx::BlendFunc::SrcAlpha;
+        blendState.srcAlphaFunc = blendState.srcRgbFunc;
+        blendState.dstRgbFunc   = gfx::BlendFunc::OneMinusSrcAlpha;
+        blendState.dstAlphaFunc = blendState.dstRgbFunc;
+
+        gfx::StateGroupEncoder encoder;
+        encoder.Begin();
+        encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "ui"));
+        encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "ui"));
+        gfx::VertexLayoutDesc vld = {{{
+            gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position,
+        }}};
+        encoder.SetVertexLayout(GetVertexLayoutCache()->Get(vld));
+        encoder.SetBlendState(blendState);
+        encoder.BindResource(_viewData->GetBinding(1));
+        encoder.SetVertexBuffer(_vertexBuffer);
+        _base = encoder.End();
         assert(_vertexBuffer);
-        assert(_defaultPS);
         assert(_viewData);
     }
 
@@ -131,6 +136,14 @@ public:
 
         uiRenderObj->frameData = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIFrameConstants));
 
+        gfx::StateGroupEncoder encoder;
+        encoder.Begin(_base);
+        encoder.BindResource(uiRenderObj->frameData->GetBinding(2));
+        uiRenderObj->group = encoder.End();
+
+        uiRenderObj->item =
+            gfx::DrawItemEncoder::Encode(GetRenderDevice(), uiRenderObj->drawCall, &uiRenderObj->group, 1);
+
         _objs.push_back(uiRenderObj);
         return uiRenderObj;
     }
@@ -163,17 +176,7 @@ public:
             frameConstants->bgColor = uiFrameRenderObj->borderColor;
             uiFrameRenderObj->frameData->Unmap();
 
-            gfx::DrawItemDesc did;
-            did.drawCall      = uiFrameRenderObj->drawCall;
-            did.pipelineState = _defaultPS;
-            did.streamCount   = 1;
-            did.streams[0]    = uiFrameRenderObj->stream;
-            did.bindingCount  = 2;
-            did.bindings[0]   = _viewData->GetBinding(1);
-            did.bindings[1]   = uiFrameRenderObj->frameData->GetBinding(2);
-
-            const gfx::DrawItem* item = GetRenderDevice()->GetDrawItemEncoder()->Encode(did);
-            renderQueue->AddDrawItem(1, item);
+            renderQueue->AddDrawItem(1, uiFrameRenderObj->item);
         }
     }
 };

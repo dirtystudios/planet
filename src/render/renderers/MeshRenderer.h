@@ -5,8 +5,6 @@
 class MeshRenderer : public Renderer {
 private:    
     gfx::PipelineStateId _defaultPS{0};
-    gfx::ShaderParamId _transform{0};    
-    gfx::ShaderParamId _normTransform{0};
 public:
     ~MeshRenderer();
 

@@ -230,7 +230,6 @@ public:
     }
 
     static GLVertexElement Convert(const VertexLayoutElement& element) {
-        GLVertexElement glElement;
         switch (element.type) {
         case VertexAttributeType::Float4:
             return {GL_FLOAT, 4};

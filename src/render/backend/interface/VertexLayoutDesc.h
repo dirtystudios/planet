@@ -15,7 +15,6 @@ enum class VertexAttributeUsage : uint8_t {
     Normal,
     Color0,
     Texcoord0,
-    Count,
 };
 
 static std::string VertexAttributeUsageToString(VertexAttributeUsage usage) {
@@ -30,8 +29,8 @@ static std::string VertexAttributeUsageToString(VertexAttributeUsage usage) {
         return "TEXCOORD";
     default:
         assert(false);
-        return "";
     }
+    return "";
 }
 
 struct VertexLayoutElement {

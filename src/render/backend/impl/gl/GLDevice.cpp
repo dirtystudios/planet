@@ -31,12 +31,9 @@ namespace gfx {
 GLDevice::GLDevice() {
     this->DeviceConfig.ShaderExtension    = ".glsl";
     this->DeviceConfig.DeviceAbbreviation = "GL";
-    _drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
-    _drawItemEncoder                = new DrawItemEncoder(&_drawItemByteBuffer);
 }
 
 GLDevice::~GLDevice() {
-    delete _drawItemEncoder;
 }
 
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
@@ -391,7 +388,6 @@ VertexLayoutId GLDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
     // GLVertexLayout* vertexLayout = GetOrCreateVertexLayout(desc):
 
     GLVertexLayout* vertexLayout = new GLVertexLayout();
-    size_t stride = 0;
     for (const VertexLayoutElement& element : desc.elements) {
         GLVertexElement glElement = GLEnumAdapter::Convert(element);
         vertexLayout->stride += GetByteCount(element.type);
@@ -525,40 +521,54 @@ CommandBuffer* GLDevice::CreateCommandBuffer() {
     assert(cmdBuffer);
     cmdBuffer->Reset();
     return cmdBuffer;
-        
 }
 void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
     _submittedBuffers.insert(end(_submittedBuffers), begin(cmdBuffers), end(cmdBuffers));
 }
 
-DrawItemEncoder* GLDevice::GetDrawItemEncoder() {
-    return _drawItemEncoder;
-}
-
 void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
-    
-    ByteBuffer _byteBuffer = cmdBuffer->GetByteBuffer();
+
+    ByteBuffer& _byteBuffer = cmdBuffer->GetByteBuffer();
     GLCommandBuffer::CommandType cmd;
-    while(_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
+    while (_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
         _byteBuffer >> cmd;
-        switch(cmd) {
-            case GLCommandBuffer::CommandType::DrawItem: {
-                LOG_D("%s", "DrawItem");
-                const DrawItem* item;
-                _byteBuffer >> item;
+        switch (cmd) {
+        case GLCommandBuffer::CommandType::DrawItem: {
+            LOG_D("%s", "DrawItem");
+            const DrawItem* item;
+            _byteBuffer >> item;
+
+            DrawItemDecoder decoder(item);
+
+                PipelineStateId psId;
+                DrawCall drawCall;
+                BufferId indexBufferId;
+                size_t streamCount = decoder.GetStreamCount();
+                size_t bindingCount = decoder.GetBindingCount();
+                std::vector<VertexStream> streams(streamCount);
+                std::vector<Binding> bindings(bindingCount);
+                VertexStream* streamPtr = streams.data();
+                Binding* bindingPtr = bindings.data();
                 
-                DrawItemDecoder decoder(item);
+                assert(streamCount == 1); // > 1 not supported
                 
-                GLPipelineState* pipelineState = GetResource(_pipelineStates, decoder.pipelineState());
+                assert(decoder.ReadDrawCall(&drawCall));
+                assert(decoder.ReadPipelineState(&psId));
+                assert(decoder.ReadIndexBuffer(&indexBufferId));
+                assert(decoder.ReadVertexStreams(&streamPtr));
+                if(bindingCount > 0) {
+                    assert(decoder.ReadBindings(&bindingPtr));
+                }
+                
+                GLPipelineState* pipelineState = GetResource(_pipelineStates, psId);
                 assert(pipelineState);
                 _context.BindPipelineState(pipelineState);
-
-                assert(decoder.vertexStreamCount() == 1); // > 1 not supported
-                const VertexStream& stream    = decoder.streams()[0];
+                
+                const VertexStream& stream    = streams[0];
                 GLShaderProgram* vertexShader = pipelineState->vertexShader;
                 GLVertexLayout* vertexLayout  = pipelineState->vertexLayout;
                 GLBuffer* vertexBuffer        = GetResource(_buffers, stream.vertexBuffer);
-                GLBuffer* indexBuffer = decoder.indexBuffer() ? GetResource(_buffers, decoder.indexBuffer()) : nullptr;
+                GLBuffer* indexBuffer         = indexBufferId ? GetResource(_buffers, indexBufferId) : nullptr;
                 assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
                 assert(vertexLayout);
 
@@ -569,8 +579,7 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                 _context.BindVertexArrayObject(vao);
 
                 // bindings
-                for (uint32_t idx = 0; idx < decoder.bindingCount(); ++idx) {
-                    const Binding& binding = decoder.bindings()[idx];
+                for(const Binding& binding : bindings) {
                     switch (binding.type) {
                     case Binding::Type::ConstantBuffer: {
                         _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
@@ -585,35 +594,34 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                     }
                 }
                 
-                
-                const DrawCall* drawCall = decoder.drawCall();
-                switch (drawCall->type) {
+                switch (drawCall.type) {
                     case DrawCall::Type::Arrays: {
-                        GL_CHECK(glDrawArrays(pipelineState->topology, (GLint) drawCall->offset, (GLsizei) drawCall->primitiveCount));
+                        GL_CHECK(glDrawArrays(pipelineState->topology, (GLint) drawCall.offset, (GLsizei) drawCall.primitiveCount));
                         break;
                     }
                     case DrawCall::Type::Indexed: {
                         assert(indexBuffer);
-                        GL_CHECK(glDrawElements(pipelineState->topology, drawCall->primitiveCount, GL_UNSIGNED_INT, ((char *) 0 + (drawCall->offset))));
+                        GL_CHECK(glDrawElements(pipelineState->topology, drawCall.primitiveCount, GL_UNSIGNED_INT,
+                                                ((char*)0 + (drawCall.offset))));
                         break;
                     }
-                }
-                
-                
-                break;
-            }
-            case GLCommandBuffer::CommandType::Clear: {
-                LOG_D("%s", "Clear");                
-                GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-                break;
-            }
-            case GLCommandBuffer::CommandType::BindResource: {
-                LOG_D("%s", "BindResource");
-                Binding binding;
-                _byteBuffer >> binding;
-                
-                // TODO:: this is copy pasted from above, dont do that.
-                switch (binding.type) {
+                    }
+
+                    break;
+        }
+        case GLCommandBuffer::CommandType::Clear: {
+            LOG_D("%s", "Clear");
+
+            GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+            break;
+        }
+        case GLCommandBuffer::CommandType::BindResource: {
+            LOG_D("%s", "BindResource");
+            Binding binding;
+            _byteBuffer >> binding;
+
+            // TODO:: this is copy pasted from above, dont do that.
+            switch (binding.type) {
                     case Binding::Type::ConstantBuffer: {
                         _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
                         break;
@@ -652,7 +660,6 @@ void GLDevice::RenderFrame() {
         glBuffer->Reset();
     }
     _submittedBuffers.clear();
-    _drawItemByteBuffer.Reset();
     
     
 }

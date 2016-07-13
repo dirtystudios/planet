@@ -1,19 +1,19 @@
 #pragma once
 
-#include "DrawItemDesc.h"
 #include "DrawItem.h"
+#include "DrawCall.h"
 #include <stdint.h>
 #include <vector>
 #include "ResourceTypes.h"
 #include "Bytebuffer.h"
+#include "StateGroup.h"
+#include "RenderDevice.h"
 #include <cassert>
 
 namespace gfx {
-class DrawItemEncoder {    
-private:
-    ByteBuffer* _byteBuffer;
+class DrawItemEncoder {
 public:
-    DrawItemEncoder(ByteBuffer* byteBuffer) : _byteBuffer(byteBuffer) {};
-    const DrawItem* Encode(const DrawItemDesc& desc);
+    static const DrawItem* Encode(RenderDevice* device, const DrawCall& drawCall, const StateGroup* const* stateGroups,
+                                  uint32_t count);
 };
 }

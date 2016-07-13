@@ -77,12 +77,12 @@ void ChunkedTerrainRenderer::Unregister(RenderObj* renderObj) {
 }
 
 void ChunkedTerrainRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
-    Camera* cam    = renderView->camera;
-    glm::mat4 proj = cam->BuildProjection();
-    glm::mat4 view = cam->BuildView();
-    glm::mat4 vp   = proj * view;
-
-    for (ChunkedTerrainRenderObj* terrain : _objs) {
+//    Camera* cam    = renderView->camera;
+//    glm::mat4 proj = cam->BuildProjection();
+//    glm::mat4 view = cam->BuildView();
+//    glm::mat4 vp   = proj * view;
+//
+//    for (ChunkedTerrainRenderObj* terrain : _objs) {
 //        gfx::DrawTask* task = renderQueue->AppendTask(0);
 //
 //        task->UpdateShaderParam(_transform, &vp);
@@ -91,5 +91,5 @@ void ChunkedTerrainRenderer::Submit(RenderQueue* renderQueue, RenderView* render
 //        task->vertexBuffer  = terrain->vertexBuffer;
 //        task->vertexCount   = terrain->vertexCount;
 //        task->vertexOffset  = 0;
-    }
+//    }
 }

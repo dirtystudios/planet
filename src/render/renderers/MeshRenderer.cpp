@@ -3,6 +3,8 @@
 #include <glm/gtx/transform.hpp>
 #include "ConstantBuffer.h"
 #include "ConstantBufferManager.h"
+#include "StateGroupEncoder.h"
+#include "DrawItemEncoder.h"
 
 Mesh* mesh;
 ConstantBuffer* cb1;
@@ -24,23 +26,24 @@ struct MaterialConstants {
     float ns;
 };
 Material* mat;
-
+const gfx::StateGroup* _base;
+const gfx::DrawItem* _item{nullptr};
 MeshRenderer::~MeshRenderer() {
     // TODO: Cleanup renderObjs
 }
 
 void MeshRenderer::OnInit() {
-    gfx::PipelineStateDesc psd;
-    psd.vertexShader = GetShaderCache()->Get(gfx::ShaderType::VertexShader, "blinn");
-    psd.pixelShader  = GetShaderCache()->Get(gfx::ShaderType::PixelShader, "blinn");
-    psd.vertexLayout = GetVertexLayoutCache()->Pos3fNormal3fTex2f();
-    psd.topology     = gfx::PrimitiveType::Triangles;
-    _defaultPS       = GetPipelineStateCache()->Get(psd);
+    gfx::StateGroupEncoder encoder;
+    encoder.Begin();
+    encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "blinn"));
+    encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
+    encoder.SetVertexLayout(GetVertexLayoutCache()->Pos3fNormal3fTex2f());
+    _base = encoder.End();
 
     cb1  = GetConstantBufferManager()->GetConstantBuffer(sizeof(MeshConstants));
     cb2  = GetConstantBufferManager()->GetConstantBuffer(sizeof(MaterialConstants));
     mesh = GetMeshCache()->Get("roxas/roxas.obj");
-    mat  = GetMaterialCache()->Get("roxas/roxas.obj", psd.pixelShader);
+    mat  = GetMaterialCache()->Get("roxas/roxas.obj", GetShaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
 }
 
 RenderObj* MeshRenderer::Register(SimObj* simObj) {
@@ -56,30 +59,24 @@ void MeshRenderer::Unregister(RenderObj* renderObj) {
 void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     glm::mat4 world = glm::scale(glm::mat4(), glm::vec3(5, 5, 5));
 
-    gfx::DrawItemDesc did;
-    did.drawCall.type           = gfx::DrawCall::Type::Indexed;
-    did.drawCall.offset         = mesh->indexOffset;
-    did.drawCall.primitiveCount = mesh->indexCount;
-    did.pipelineState           = _defaultPS;
+    if (!_item) {
+        gfx::StateGroupEncoder encoder;
+        encoder.Begin(_base);
+        encoder.BindResource(cb1->GetBinding(1));
+        encoder.BindResource(cb2->GetBinding(2));
+        encoder.BindTexture(0, mat->diffuseTextures[0]);
+        encoder.SetIndexBuffer(mesh->indexBuffer);
+        encoder.SetVertexBuffer(mesh->vertexBuffer);
+        const gfx::StateGroup* sg = encoder.End();
 
-    did.bindingCount = 3;
-    did.bindings[0]  = cb1->GetBinding(1);
+        gfx::DrawCall drawCall;
+        drawCall.type           = gfx::DrawCall::Type::Indexed;
+        drawCall.offset         = mesh->indexOffset;
+        drawCall.primitiveCount = mesh->indexCount;
 
-    did.bindings[1].type     = gfx::Binding::Type::Texture;
-    did.bindings[1].slot = 0;
-    did.bindings[1].resource = mat->diffuseTextures[0];
-
-    did.bindings[2] = cb2->GetBinding(2);
-
-    did.streamCount             = 1;
-    did.streams[0].offset       = mesh->vertexOffset;
-    did.streams[0].stride       = mesh->vertexStride;
-    did.streams[0].vertexBuffer = mesh->vertexBuffer;
-
-    did.indexBuffer = mesh->indexBuffer;
-    did.offset      = 0;
-
-    const gfx::DrawItem* item = GetRenderDevice()->GetDrawItemEncoder()->Encode(did);
+        _item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &sg, 1);
+        delete sg;
+    }    
 
     MeshConstants* meshBuffer = cb1->Map<MeshConstants>();
     meshBuffer->world = world;
@@ -88,11 +85,10 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     MaterialConstants* materialBuffer = cb2->Map<MaterialConstants>();
     materialBuffer->kd                = mat->KdData;
     materialBuffer->ka                = mat->KaData;
-    materialBuffer->ks = mat->KsData;
-    materialBuffer->ke = mat->KeData;
+    materialBuffer->ks                = mat->KsData;
+    materialBuffer->ke                = mat->KeData;
     materialBuffer->ns = mat->NsData;
     cb2->Unmap();
-    
-    
-    renderQueue->AddDrawItem(0, item);
+
+    renderQueue->AddDrawItem(0, _item);
 }

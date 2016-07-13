@@ -7,6 +7,8 @@
 #include "glm/detail/type_vec2.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "Log.h"
+#include "StateGroupEncoder.h"
+#include "DrawItemEncoder.h"
 
 struct TextViewConstants {
     glm::mat4 projection;
@@ -130,25 +132,30 @@ void TextRenderer::OnInit() {
 
     _vertexBufferSize   = kVertexBufferSize;
     _vertexBufferOffset = 0;
-    _vertexBuffer = GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, _vertexBufferSize,
-                                                      gfx::BufferUsage::Static);
+    _vertexBuffer =
+        GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, _vertexBufferSize, gfx::BufferUsage::Static);
     assert(_vertexBuffer);
 
     _viewData = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
     assert(_viewData);
 
-    gfx::PipelineStateDesc psd;
-    psd.vertexShader            = GetShaderCache()->Get(gfx::ShaderType::VertexShader, "text");
-    psd.pixelShader             = GetShaderCache()->Get(gfx::ShaderType::PixelShader, "text");
-    psd.blendState.enable       = true;
-    psd.blendState.srcRgbFunc   = gfx::BlendFunc::SrcAlpha;
-    psd.blendState.dstRgbFunc   = gfx::BlendFunc::OneMinusSrcAlpha;
-    psd.blendState.srcAlphaFunc = gfx::BlendFunc::One;
-    psd.blendState.dstAlphaFunc = gfx::BlendFunc::Zero;
-    psd.vertexLayout            = GetVertexLayoutCache()->GetPos2fTex2f();
-    psd.topology                = gfx::PrimitiveType::Triangles;
-    _textPS = GetPipelineStateCache()->Get(psd);
-    assert(_textPS);
+    gfx::BlendState bs;
+    bs.enable       = true;
+    bs.srcRgbFunc   = gfx::BlendFunc::SrcAlpha;
+    bs.dstRgbFunc   = gfx::BlendFunc::OneMinusSrcAlpha;
+    bs.srcAlphaFunc = gfx::BlendFunc::One;
+    bs.dstAlphaFunc = gfx::BlendFunc::Zero;
+
+    gfx::StateGroupEncoder encoder;
+    encoder.Begin();
+    encoder.SetVertexLayout(GetVertexLayoutCache()->GetPos2fTex2f());
+    encoder.SetBlendState(bs);
+    encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "text"));
+    encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "text"));
+    encoder.BindResource(_viewData->GetBinding(1));
+    encoder.BindTexture(0, _glyphAtlas);
+    encoder.SetVertexBuffer(_vertexBuffer);
+    _base = encoder.End();
 }
 
 TextRenderer::~TextRenderer() {}
@@ -216,6 +223,18 @@ RenderObj* TextRenderer::RegisterText(const std::string& text, float pixelX, flo
     textRenderObj->textColor = color;
     _vertexBufferOffset += (text.length() * quadSizeInBytes);
 
+    gfx::StateGroupEncoder encoder;
+    encoder.Begin(_base);
+    encoder.BindResource(textRenderObj->constantBuffer->GetBinding(2));
+    textRenderObj->_group = encoder.End();
+
+    gfx::DrawCall drawCall;
+    drawCall.type           = gfx::DrawCall::Type::Arrays;
+    drawCall.primitiveCount = textRenderObj->mesh.vertexCount;
+    drawCall.offset         = textRenderObj->mesh.vertexOffset;
+
+    textRenderObj->_item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &textRenderObj->_group, 1);
+
     return textRenderObj;
 }
 
@@ -228,23 +247,6 @@ void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
         text.constantBuffer->Map<TextConstants>()->textColor = text.textColor;
         text.constantBuffer->Unmap();
 
-        gfx::DrawItemDesc did;
-        did.drawCall.type           = gfx::DrawCall::Type::Arrays;
-        did.drawCall.primitiveCount = text.mesh.vertexCount;
-        did.drawCall.offset         = text.mesh.vertexOffset;
-        did.pipelineState           = _textPS;
-        did.streamCount             = 1;
-        did.streams[0].vertexBuffer = text.mesh.vertexBuffer;
-        did.streams[0].offset       = 0;
-        did.streams[0].stride       = sizeof(GlyphVertex);
-        did.bindingCount            = 3;
-        did.bindings[0]             = _viewData->GetBinding(1);
-        did.bindings[1]             = text.constantBuffer->GetBinding(2);
-        did.bindings[2].type        = gfx::Binding::Type::Texture;
-        did.bindings[2].resource    = _glyphAtlas;
-        did.bindings[2].slot        = 0;
-
-        const gfx::DrawItem* item = GetRenderDevice()->GetDrawItemEncoder()->Encode(did);
-        queue->AddDrawItem(2, item); // TODO:: sortkeys based on pass....text needs to be rendered after sky
+        queue->AddDrawItem(2, text._item); // TODO:: sortkeys based on pass....text needs to be rendered after sky
     }
 }

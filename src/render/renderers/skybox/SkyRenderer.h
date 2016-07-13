@@ -2,11 +2,11 @@
 
 #include "Renderer.h"
 #include "SkyboxRenderObj.h"
-
+#include "StateGroup.h"
 class SkyRenderer : public Renderer {
 private:
-    gfx::PipelineStateId _defaultPS;
     std::vector<SkyboxRenderObj*> _objs;
+    const gfx::StateGroup* _base;
 
 public:
     ~SkyRenderer();

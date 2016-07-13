@@ -11,7 +11,6 @@
 #include "BufferAccess.h"
 #include "Log.h"
 #include "CommandBuffer.h"
-#include "DrawItemEncoder.h"
 
 namespace gfx {
 
@@ -60,7 +59,6 @@ public:
         
     virtual uint8_t* MapMemory(BufferId buffer, BufferAccess) = 0;
     virtual void UnmapMemory(BufferId buffer) = 0;
-    virtual DrawItemEncoder* GetDrawItemEncoder() = 0;
 
     virtual void RenderFrame() = 0;
 };

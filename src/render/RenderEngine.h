@@ -13,6 +13,7 @@
 #include "MeshCache.h"
 #include "SimObj.h"
 #include "ConstantBufferManager.h"
+#include "StateGroup.h"
 
 
 
@@ -28,7 +29,9 @@ private:
     MeshCache* _meshCache;
     ConstantBufferManager* _constantBufferManager{nullptr};
     MaterialCache* _materialCache;
-
+    
+    
+    const gfx::StateGroup* _stateGroupDefaults{nullptr};
 public:
     RenderEngine(gfx::RenderDevice* device, RenderView* view);
     ~RenderEngine();

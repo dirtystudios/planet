@@ -1,7 +1,19 @@
 #pragma once
 
+#include <vector>
+
 namespace gfx {
-    struct DrawItem {
-        size_t size() { return static_cast<size_t>(*(size_t*) (this)); }
+    
+    enum class DrawItemField : uint8_t {
+        StreamCount = 0,
+        BindingCount,
+        DrawCall,
+        IndexBuffer,
+        PipelineState,
+        VertexStreams,
+        Bindings
     };
+
+    
+struct DrawItem : public std::vector<uint8_t> {};
 }

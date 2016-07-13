@@ -548,21 +548,42 @@ namespace gfx {
 				const DrawItem* item;
 				_byteBuffer >> item;
 
-				DrawItemDecoder decoder(item);
+                DrawItemDecoder decoder(item);
 
-				PipelineStateDX11* pipelineState = GetResourceFromSizeMap(m_pipelineStates, decoder.pipelineState());
+                PipelineStateId psId;
+                DrawCall drawCall;
+                BufferId indexBufferId;
+                size_t streamCount = decoder.GetStreamCount();
+                size_t bindingCount = decoder.GetBindingCount();
+                std::vector<VertexStream> streams(streamCount);
+                std::vector<Binding> bindings(bindingCount);
+                VertexStream* streamPtr = streams.data();
+                Binding* bindingPtr = bindings.data();
+
+                assert(streamCount == 1); // > 1 not supported
+
+                assert(decoder.ReadDrawCall(&drawCall));
+                assert(decoder.ReadPipelineState(&psId));
+                assert(decoder.ReadIndexBuffer(&indexBufferId));
+                assert(decoder.ReadVertexStreams(&streamPtr));
+                if (bindingCount > 0) {
+                    assert(decoder.ReadBindings(&bindingPtr));
+                }
+
+			
+				PipelineStateDX11* pipelineState = GetResourceFromSizeMap(m_pipelineStates, psId);
 				SetPipelineState(*pipelineState);
 
-				assert(decoder.vertexStreamCount() == 1); // > 1 not supported
-				const VertexStream& stream = decoder.streams()[0];
+				assert(streamCount == 1); // > 1 not supported
+				const VertexStream& stream = streamPtr[0];
 
 				auto vertexBuffer = GetResource(m_buffers, stream.vertexBuffer);
 				if (vertexBuffer)
 					m_context->SetVertexBuffer(stream.vertexBuffer, vertexBuffer->buffer.Get());
 
 				// bindings
-				for (uint32_t idx = 0; idx < decoder.bindingCount(); ++idx) {
-					const Binding& binding = decoder.bindings()[idx];
+				for (uint32_t idx = 0; idx <bindingCount; ++idx) {
+					const Binding& binding = bindingPtr[idx];
 					switch (binding.type) {
 					case Binding::Type::ConstantBuffer: {
                         BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
@@ -578,18 +599,17 @@ namespace gfx {
 					}
 					}
 				}
-
-				const DrawCall* drawCall = decoder.drawCall();
-				switch (drawCall->type) {
+                
+				switch (drawCall.type) {
 				case DrawCall::Type::Arrays: {
-					m_context->DrawPrimitive(pipelineState->topology, drawCall->offset, drawCall->primitiveCount, false);
+					m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, false);
 					break;
 				}
 				case DrawCall::Type::Indexed: {
-					auto indexBufferID = decoder.indexBuffer();
-					auto indexBuffer = GetResource(m_buffers, indexBufferID);
-					m_context->SetIndexBuffer(indexBufferID, indexBuffer->buffer.Get());
-					m_context->DrawPrimitive(pipelineState->topology, drawCall->offset, drawCall->primitiveCount, true);
+                    assert(indexBufferId);
+					auto indexBuffer = GetResource(m_buffers, indexBufferId);
+					m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
+					m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, true);
 					break;
 				}
 				}
@@ -701,10 +721,6 @@ namespace gfx {
         ResetViewport();
         m_context->SetRenderTarget(m_renderTarget.Get(), m_depthStencilView.Get());
     }
-
-	DrawItemEncoder* DX11Device::GetDrawItemEncoder() {
-		return m_drawItemEncoder.get();
-	}
 
     int32_t DX11Device::InitializeDevice(const DeviceInitialization & deviceInit) {
         m_winWidth = deviceInit.windowWidth;
@@ -828,8 +844,7 @@ namespace gfx {
         // todo: deal with this?
         CreateSetDefaultSampler();
 
-		m_drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
-		m_drawItemEncoder.reset(new DrawItemEncoder(&m_drawItemByteBuffer));
+        m_drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
 
         return 1;
     }

@@ -7,6 +7,7 @@
 #include "TextRenderer.h"
 #include "ConstantBuffer.h"
 #include "UIRenderer.h"
+#include "StateGroupEncoder.h"
 
 using namespace gfx;
 
@@ -26,7 +27,7 @@ CommandBuffer* cmdbuf;
 RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
     // _renderers.insert({RendererType::ChunkedTerrain, new ChunkedTerrainRenderer()});
     _renderers.insert({RendererType::Skybox, new SkyRenderer()});
-    //    _renderers.insert({RendererType::Mesh, new MeshRenderer()});
+    _renderers.insert({RendererType::Mesh, new MeshRenderer()});
     _renderers.insert({RendererType::Ui, new UIRenderer()});
     _renderers.insert({RendererType::Text, new TextRenderer()});
 
@@ -48,6 +49,13 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
         LOG_D("Initializing Renderer: %d", p.first);
         p.second->Init(this);
     }
+    
+    StateGroupEncoder encoder;
+    encoder.Begin();
+    encoder.SetBlendState(BlendState());
+    encoder.SetRasterState(RasterState());
+    encoder.SetDepthState(DepthState());
+    _stateGroupDefaults = encoder.End();
 }
 
 RenderEngine::~RenderEngine() {
@@ -65,6 +73,8 @@ RenderEngine::~RenderEngine() {
     }
 
     _renderers.clear();
+    
+    if(_stateGroupDefaults) delete _stateGroupDefaults;
 }
 
 RenderObj* RenderEngine::Register(SimObj* simObj, RendererType rendererType) {
@@ -83,9 +93,6 @@ void RenderEngine::Unregister(RenderObj* renderObj) {
     renderer->Unregister(renderObj);
 }
 
-
-
-
 void RenderEngine::RenderFrame() {        
     cmdbuf->Reset();          
     RenderQueue queue(cmdbuf);    
@@ -99,8 +106,6 @@ void RenderEngine::RenderFrame() {
     mapped->proj = _view->camera->BuildProjection();
     mapped->view = _view->camera->BuildView();
     viewConstantsBuffer->Unmap();
-    
-    
     
     cmdbuf->BindResource(viewConstantsBuffer->GetBinding(0));
     
