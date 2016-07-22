@@ -40,6 +40,8 @@ namespace gfx {
         ~DX11Context();
         void Clear(float r, float g, float b, float a);
 
+		void* MapBufferPointer(ID3D11Buffer* buffer);
+		void UnMapBufferPointer(ID3D11Buffer* buffer);
         void UpdateBufferData(ID3D11Buffer* buffer, void* data, size_t len);
         void SetVertexCBuffer(size_t handle, uint32_t slot, ID3D11Buffer* buffer);
         void SetPixelCBuffer(size_t handle, uint32_t slot, ID3D11Buffer* buffer);

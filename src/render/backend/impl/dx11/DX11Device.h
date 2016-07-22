@@ -2,11 +2,13 @@
 #include "RenderDevice.h"
 #include "DX11Context.h"
 #include "DX11CBufferHelper.h"
+#include "DX11CommandBuffer.h"
 
 #include <memory>
 #include <cstring>
 #include <unordered_map>
 #include <map>
+#include <array>
 
 #ifdef _DEBUG
 #define DEBUG_DX11
@@ -19,6 +21,31 @@
 #endif
 
 namespace gfx {
+
+    template <class T, size_t N>
+    class Pool {
+    private:
+        std::array<T, N> _items;
+        size_t _poolIdx{ 0 };
+        std::list<T*> _freeList;
+    public:
+        T* Get() {
+            T* ret = nullptr;
+            if (!_freeList.empty()) {
+                ret = _freeList.front();
+                _freeList.pop_front();
+            }
+            else if (_poolIdx < N) {
+                ret = &_items[_poolIdx++];
+            }
+            return ret;
+        }
+
+        void Release(T* v) {
+            _freeList.push_front(v);
+        }
+    };
+
     class DX11SemanticNameCache {
     private:
         // This is to cache semanticstrings, apparently sometimes we lose the reference on windows 7
@@ -117,6 +144,13 @@ namespace gfx {
 
         std::unique_ptr<DX11Context> m_context;
 
+		std::vector<CommandBuffer*> m_submittedBuffers;
+
+        Pool<DX11CommandBuffer, 1> m_commandBufferPool;
+
+		std::unique_ptr<DrawItemEncoder> m_drawItemEncoder;
+		ByteBuffer m_drawItemByteBuffer;
+
     public:
         DX11Device() {};
         ~DX11Device();
@@ -125,7 +159,7 @@ namespace gfx {
         void ResizeWindow(uint32_t width, uint32_t height);
         void PrintDisplayAdapterInfo();
 
-		BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage);
+        BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage);
         ShaderId CreateShader(ShaderType type, const std::string& source);
 
         ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
@@ -137,23 +171,22 @@ namespace gfx {
         TextureId CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data);
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
+        // todo: don't be eugene and actually delete these
         void DestroyBuffer(BufferId buffer) {}
-        void DestroyShader(ShaderId shader) { }
+        void DestroyShader(ShaderId shader) {}
         void DestroyShaderParam(ShaderParamId shaderParam) {}
         void DestroyPipelineState(PipelineStateId pipelineState) {}
         void DestroyTexture(TextureId texture) {}
         void DestroyVertexLayout(VertexLayoutId vertexLayout) {}
 
-        CommandBuffer* CreateCommandBuffer() { return nullptr; }
-        void Submit(const std::vector<CommandBuffer*>& cmdBuffers) {}
-        void UpdateBuffer(BufferId bufferId, void* data, size_t len) {}
-        void UpdateTexture(TextureId textureId, void* data, size_t len) {}
+        CommandBuffer* CreateCommandBuffer();
+		void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
 
-		uint8_t* MapMemory(BufferId buffer, BufferAccess) { return 0; };
-		void UnmapMemory(BufferId buffer) {};
-        DrawItemEncoder* GetDrawItemEncoder() { return nullptr;  }
+        uint8_t* MapMemory(BufferId buffer, BufferAccess);
+        void UnmapMemory(BufferId buffer);
+		DrawItemEncoder* GetDrawItemEncoder();
 
-		void RenderFrame();
+        void RenderFrame();
     private:
         ID3D11DepthStencilState* CreateDepthState(const DepthState& state);
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
@@ -161,10 +194,13 @@ namespace gfx {
 
         ID3D11Buffer* CreateConstantBuffer(CBufferDescriptor& desc, const std::vector<CBufDescEntry*>& cBufferDescs);
 
+		void SetPipelineState(const PipelineStateDX11& state);
+		void Execute(DX11CommandBuffer* cmdBuffer);
+
         // Texture Converter.
         // Returns pointer to use for data, may point to data or unique_ptr, 
         // unique_ptr is used to clear allocated data if needed
-        intptr_t TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, TextureFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef);
+        void* TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, TextureFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef);
 
         void CreateSetDefaultSampler();
         ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const std::string& source);

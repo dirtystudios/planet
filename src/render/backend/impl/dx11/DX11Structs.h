@@ -33,7 +33,7 @@ namespace gfx {
     };
 
     static D3D11_USAGE BufferUsageDX11[(uint32_t)BufferUsage::Count] = {
-        D3D11_USAGE_IMMUTABLE, // Static
+        D3D11_USAGE_DYNAMIC, // Static
         D3D11_USAGE_DYNAMIC,   // Dynamic
     };
 

@@ -13,13 +13,13 @@ namespace gfx {
         size_t vertexShaderHandle;
         ID3D11VertexShader* vertexShader;
 
-        ID3D11Buffer* vsCBuffer;
+        std::unordered_map<uint32_t, ID3D11Buffer*> vsCBuffers;
         std::vector<uint32_t> vsCBufferDirtySlots;
 
         std::unordered_map<uint32_t, ID3D11ShaderResourceView*> vsTextures;
         std::vector<uint32_t> vsDirtyTextureSlots;
 
-        ID3D11Buffer* psCBuffer;
+        std::unordered_map<uint32_t, ID3D11Buffer*> psCBuffers;
         std::vector<uint32_t> psCBufferDirtySlots;
 
         std::unordered_map<uint32_t, ID3D11ShaderResourceView*> psTextures;

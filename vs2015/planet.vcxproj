@@ -64,11 +64,13 @@
     <ClInclude Include="..\src\platform\Platform.h" />
     <ClInclude Include="..\src\platform\System.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11CBufferHelper.h" />
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11CommandBuffer.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11ContextState.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Device.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Structs.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Utils.h" />
+    <ClInclude Include="..\src\render\backend\impl\gl\GLCommandBuffer.h" />
     <ClInclude Include="..\src\render\backend\impl\gl\GLContext.h" />
     <ClInclude Include="..\src\render\backend\impl\gl\GLDevice.h" />
     <ClInclude Include="..\src\render\backend\impl\gl\GLEnumAdapter.h" />
@@ -100,7 +102,6 @@
     <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\TextureSlot.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\WindingOrder.h" />
-    <ClInclude Include="..\src\render\backend\interface\GLCommandBuffer.h" />
     <ClInclude Include="..\src\render\backend\interface\PipelineStateDesc.h" />
     <ClInclude Include="..\src\render\backend\interface\RasterState.h" />
     <ClInclude Include="..\src\render\backend\interface\RenderDevice.h" />

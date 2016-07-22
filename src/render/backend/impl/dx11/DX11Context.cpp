@@ -55,6 +55,22 @@ namespace gfx {
         m_devcon->RSSetViewports(target, &vp);
     }
 
+	void* DX11Context::MapBufferPointer(ID3D11Buffer* buffer) {
+		D3D11_BUFFER_DESC bufferDesc;
+		buffer->GetDesc(&bufferDesc);
+		if (bufferDesc.Usage != D3D11_USAGE_DYNAMIC) {
+			LOG_E("DX11RenderDev: Only dynamic buffer type updating allowed.");
+			return 0;
+		}
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		DX11_CHECK(m_devcon->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
+		return mappedResource.pData;
+	}
+
+	void DX11Context::UnMapBufferPointer(ID3D11Buffer* buffer) {
+		m_devcon->Unmap(buffer, 0);
+	}
+
     void DX11Context::UpdateBufferData(ID3D11Buffer* buffer, void* data, size_t len){
         D3D11_BUFFER_DESC bufferDesc;
         buffer->GetDesc(&bufferDesc);
@@ -70,25 +86,27 @@ namespace gfx {
     }
 
     void DX11Context::SetVertexCBuffer(size_t handle, uint32_t slot, ID3D11Buffer* buffer) {
-        if (m_currentState.vsCBuffer == buffer) {
-            m_pendingState.vsCBuffer = buffer;
-            return;
+        auto it = m_currentState.vsCBuffers.find(slot);
+        if (it == m_currentState.vsCBuffers.end()) {
+            m_pendingState.vsCBuffers.emplace(slot, buffer);
+            m_pendingState.vsCBufferDirtySlots.emplace_back((uint32_t)slot);
         }
-        m_pendingState.vsCBuffer = buffer;
-        /*if (std::find(m_pendingState.vsCBufferDirtySlots.begin(), m_pendingState.vsCBufferDirtySlots.end(), slot) == m_pendingState.vsCBufferDirtySlots.end()) {
-            m_pendingState.vsCBufferDirtySlots.push_back(slot);
-        }*/
+        else if (it->second != buffer) {
+            m_pendingState.vsCBuffers.at(slot) = buffer;
+            m_pendingState.vsCBufferDirtySlots.emplace_back((uint32_t)slot);
+        }
     }
 
     void DX11Context::SetPixelCBuffer(size_t handle, uint32_t slot, ID3D11Buffer* buffer) {
-        if (m_currentState.psCBuffer == buffer) {
-            m_pendingState.psCBuffer = buffer;
-            return;
+        auto it = m_currentState.psCBuffers.find(slot);
+        if (it == m_currentState.psCBuffers.end()) {
+            m_pendingState.psCBuffers.emplace(slot, buffer);
+            m_pendingState.psCBufferDirtySlots.emplace_back((uint32_t)slot);
         }
-        m_pendingState.psCBuffer = buffer;
-        /*if (std::find(m_pendingState.psCBufferDirtySlots.begin(), m_pendingState.psCBufferDirtySlots.end(), slot) == m_pendingState.psCBufferDirtySlots.end()) {
-            m_pendingState.psCBufferDirtySlots.push_back(slot);
-        }*/
+        else if (it->second != buffer) {
+            m_pendingState.psCBuffers.at(slot) = buffer;
+            m_pendingState.psCBufferDirtySlots.emplace_back((uint32_t)slot);
+        }
     }
 
     void DX11Context::SetInputLayout(size_t handle, uint32_t stride, ID3D11InputLayout* layout) {
@@ -177,24 +195,22 @@ namespace gfx {
 
         if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle) {
             m_devcon->PSSetShader(m_pendingState.pixelShader, 0, 0);
-            if (m_pendingState.psCBuffer)
-                m_devcon->PSSetConstantBuffers(
-                    0, static_cast<UINT>(1), &m_pendingState.psCBuffer);
+            if (m_pendingState.psCBufferDirtySlots.size()) {
+                for (uint32_t x = 0; x < m_pendingState.psCBufferDirtySlots.size(); ++x) {
+                    m_devcon->PSSetConstantBuffers(m_pendingState.psCBufferDirtySlots[x], static_cast<UINT>(1), &m_pendingState.psCBuffers.at(x));
+                }
+            }
         }
 
         if (m_pendingState.vertexShaderHandle != 0 && m_currentState.vertexShaderHandle != m_pendingState.vertexShaderHandle) {
             m_devcon->VSSetShader(m_pendingState.vertexShader, 0, 0);
-            if (m_pendingState.vsCBuffer)
-                m_devcon->VSSetConstantBuffers(
-                    0, static_cast<UINT>(1), &m_pendingState.vsCBuffer);
+            if (m_pendingState.vsCBufferDirtySlots.size()) {
+                for (uint32_t x = 0; x < m_pendingState.vsCBufferDirtySlots.size(); ++x) {
+                    m_devcon->VSSetConstantBuffers(m_pendingState.vsCBufferDirtySlots[x], static_cast<UINT>(1), &m_pendingState.vsCBuffers.at(x));
+                }
+            }
         }
-        /*
-        if (m_pendingState.vertexShaderHandle != 0 && m_pendingState.vsCBuffer)
-            UpdateConstantBuffer(m_pendingState.vsCBuffer, m_pendingState.vsCBufferDirtySlots);
 
-        if (m_pendingState.pixelShaderHandle != 0 && m_pendingState.psCBuffer)
-            UpdateConstantBuffer(m_pendingState.psCBuffer, m_pendingState.psCBufferDirtySlots);
-            */
         if (m_pendingState.inputLayoutHandle != 0 && m_currentState.inputLayoutHandle != m_pendingState.inputLayoutHandle)
             m_devcon->IASetInputLayout(m_pendingState.inputLayout);
 

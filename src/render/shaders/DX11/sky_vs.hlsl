@@ -1,10 +1,15 @@
-cbuffer cbPerObject : register(b0) {
+cbuffer viewConstants : register(b0) {
+  	float3 eyePos;
+    float4x4 view;
+    float4x4 proj;  
+}
+
+cbuffer cbPerObject : register(b1) {
     float4x4 world : WORLD;
 }
 
 struct VS_INPUT {
-	float3 vPos : POSITION0;
-    float2 vTex : TEXCOORD0;
+	float3 vPos : POSITION;
 };
 
 struct VS_OUTPUT {
@@ -14,7 +19,9 @@ struct VS_OUTPUT {
 
 VS_OUTPUT VSMain( VS_INPUT Input ) {  
     VS_OUTPUT output;
-    float4 worldPos = mul(world, float4(Input.vPos, 1.f));
+	
+	float4x4 wvp = mul(proj, mul(view, world));
+	float4 worldPos = mul(wvp, float4(Input.vPos, 1.f));
     output.vPosition = worldPos.xyww;
     output.vTexCoords = Input.vPos;
     return output;
