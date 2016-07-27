@@ -1,4 +1,4 @@
-cbuffer cbPerObject : register(b0) {
+cbuffer cbPerObject : register(b2) {
     float4 bgColor : COLOR0;
     float4 borderColor : COLOR1;
     float2 borderSize;
