@@ -102,7 +102,7 @@ void RenderEngine::RenderFrame() {
     
     // update view constants
     ViewConstants* mapped = viewConstantsBuffer->Map<ViewConstants>();
-    mapped->eye = glm::vec3(1, 0, 0);
+    mapped->eye = _view->camera->pos;
     mapped->proj = _view->camera->BuildProjection();
     mapped->view = _view->camera->BuildView();
     viewConstantsBuffer->Unmap();

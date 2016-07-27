@@ -86,7 +86,7 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     materialBuffer->ka                = mat->KaData;
     materialBuffer->ks                = mat->KsData;
     materialBuffer->ke                = mat->KeData;
-    materialBuffer->ns = mat->NsData;
+    materialBuffer->ns                = mat->NsData;
     cb2->Unmap();
 
     renderQueue->AddDrawItem(0, _item);
