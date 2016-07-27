@@ -17,7 +17,7 @@ namespace gfx {
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
         bufferDesc.Usage = SafeGet(BufferUsageDX11, usage);
-        bufferDesc.ByteWidth = static_cast<UINT>(size);
+
         if (type == BufferType::VertexBuffer)
             bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         else if (type == BufferType::IndexBuffer)
@@ -25,7 +25,17 @@ namespace gfx {
         else if (type == BufferType::ConstantBuffer)
             bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         else { assert(false); }
-		
+
+        if (bufferDesc.BindFlags == D3D11_BIND_CONSTANT_BUFFER) {
+            // length must be multiple of 16
+            uint32_t sizeCheck = size % 16;
+            if (sizeCheck != 0) {
+                size += (16 - sizeCheck);
+            }
+        }
+
+        bufferDesc.ByteWidth = static_cast<UINT>(size);
+
         if (bufferDesc.Usage == D3D11_USAGE_DYNAMIC)
             bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
         else
@@ -63,13 +73,13 @@ namespace gfx {
 
         ShaderDX11* shaderDX11 = new ShaderDX11();
         shaderDX11->shaderType = type;
-        shaderDX11->byteCode.Swap(blob);
         switch (type) {
         case ShaderType::VertexShader:
         {
             ID3D11VertexShader* vertexShader;
             DX11_CHECK_RET0(m_dev->CreateVertexShader(bufPtr, bufSize, NULL, &vertexShader));
             shaderDX11->vertexShader = vertexShader;
+            m_lastCompiledVertexShader.Swap(blob);
             return GenerateHandleEmplaceConstRef(m_shaders, *shaderDX11);
 
             //return GenerateHandleEmplaceConstRef<ComPtr<ID3D11VertexShader>>(m_vertexShaders, vertexShader.Get());
@@ -317,9 +327,10 @@ namespace gfx {
         ComPtr<ID3D11InputLayout> inputLayout;
         // screw it, here we loop over every shader and try to find the stupid one that 
         //  has the same inputlayout
+        
         for (auto shader : m_shaders) {
             HRESULT hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()), 
-                shader.second.byteCode->GetBufferPointer(), shader.second.byteCode->GetBufferSize(), &inputLayout);
+                m_lastCompiledVertexShader->GetBufferPointer(), m_lastCompiledVertexShader->GetBufferSize(), &inputLayout);
 
             if (hr == 0) {
                 break;
@@ -471,36 +482,6 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<TextureDX11>(m_textures, textureDX11);
     }
 
-    ID3D11Buffer* DX11Device::CreateConstantBuffer(CBufferDescriptor& desc, const std::vector<CBufDescEntry*>& cBufferDescs) {
-        // get total size 
-        size_t totalSize = 0;
-        for (CBufDescEntry* entry : cBufferDescs) {
-            CBufferVariable var;
-            var.size = GetByteCount(entry->type);
-            var.offset = totalSize;
-            totalSize += GetByteCount(entry->type);
-            desc.AddBufferVariable(entry->name, var);
-        }
-        desc.ResetDescriptor(totalSize, cBufferDescs.size());
-
-        ID3D11Buffer* cBuffer;
-        D3D11_BUFFER_DESC cbDesc;
-        // align to 16 bytes
-        size_t sizeAlignment = totalSize % 16;
-        if (sizeAlignment != 0) {
-            totalSize += (16 - sizeAlignment);
-        }
-        cbDesc.ByteWidth = static_cast<UINT>(totalSize);
-        cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-        cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        cbDesc.MiscFlags = 0;
-        cbDesc.StructureByteStride = 0;
-
-        DX11_CHECK_RET0(m_dev->CreateBuffer(&cbDesc, NULL, &cBuffer));
-        return cBuffer;
-    }
-
     void* DX11Device::TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, TextureFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef) {
         // currently we only care about converting 24 bit textures
         if (reqFormat == TextureFormat::RGB_U8) {
@@ -539,7 +520,7 @@ namespace gfx {
 	}
 
 	void DX11Device::Execute(DX11CommandBuffer* cmdBuffer) {
-		ByteBuffer _byteBuffer = cmdBuffer->GetByteBuffer();
+		ByteBuffer& _byteBuffer = cmdBuffer->GetByteBuffer();
 		DX11CommandBuffer::CommandType cmd;
 		while (_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
 			_byteBuffer >> cmd;

@@ -22,7 +22,6 @@ struct MaterialConstants {
     glm::vec3 ks;
     float padding2;
     glm::vec3 ke;
-    float padding3;
     float ns;
 };
 Material* mat;

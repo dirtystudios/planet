@@ -3,7 +3,7 @@
 #include "DX11Structs.h"
 
 #include <unordered_map>
-#include <vector>
+#include <unordered_set>
 
 namespace gfx {
     struct DX11ContextState {
@@ -14,16 +14,16 @@ namespace gfx {
         ID3D11VertexShader* vertexShader;
 
         std::unordered_map<uint32_t, ID3D11Buffer*> vsCBuffers;
-        std::vector<uint32_t> vsCBufferDirtySlots;
+        std::unordered_set<uint32_t> vsCBufferDirtySlots;
 
         std::unordered_map<uint32_t, ID3D11ShaderResourceView*> vsTextures;
-        std::vector<uint32_t> vsDirtyTextureSlots;
+        std::unordered_set<uint32_t> vsDirtyTextureSlots;
 
         std::unordered_map<uint32_t, ID3D11Buffer*> psCBuffers;
-        std::vector<uint32_t> psCBufferDirtySlots;
+        std::unordered_set<uint32_t> psCBufferDirtySlots;
 
         std::unordered_map<uint32_t, ID3D11ShaderResourceView*> psTextures;
-        std::vector<uint32_t> psDirtyTextureSlots;
+        std::unordered_set<uint32_t> psDirtyTextureSlots;
 
         size_t pixelShaderHandle;
         ID3D11PixelShader* pixelShader;

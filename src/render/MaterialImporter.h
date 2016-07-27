@@ -55,7 +55,7 @@ namespace materialImport {
         material->Get(AI_MATKEY_COLOR_EMISSIVE, color);
         matData.Ke = glm::vec3(color.r, color.g, color.b);
 
-        material->Get(AI_MATKEY_SHININESS_STRENGTH, matData.Ns);
+        assert(aiReturn_SUCCESS == material->Get(AI_MATKEY_SHININESS, matData.Ns));
 
         aiString path;
         material->GetTexture(aiTextureType_DIFFUSE, 0, &path);

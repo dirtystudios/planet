@@ -89,11 +89,11 @@ namespace gfx {
         auto it = m_currentState.vsCBuffers.find(slot);
         if (it == m_currentState.vsCBuffers.end()) {
             m_pendingState.vsCBuffers.emplace(slot, buffer);
-            m_pendingState.vsCBufferDirtySlots.emplace_back((uint32_t)slot);
+            m_pendingState.vsCBufferDirtySlots.emplace(slot);
         }
         else if (it->second != buffer) {
             m_pendingState.vsCBuffers.at(slot) = buffer;
-            m_pendingState.vsCBufferDirtySlots.emplace_back((uint32_t)slot);
+            m_pendingState.vsCBufferDirtySlots.emplace(slot);
         }
     }
 
@@ -101,11 +101,11 @@ namespace gfx {
         auto it = m_currentState.psCBuffers.find(slot);
         if (it == m_currentState.psCBuffers.end()) {
             m_pendingState.psCBuffers.emplace(slot, buffer);
-            m_pendingState.psCBufferDirtySlots.emplace_back((uint32_t)slot);
+            m_pendingState.psCBufferDirtySlots.emplace(slot);
         }
         else if (it->second != buffer) {
             m_pendingState.psCBuffers.at(slot) = buffer;
-            m_pendingState.psCBufferDirtySlots.emplace_back((uint32_t)slot);
+            m_pendingState.psCBufferDirtySlots.emplace(slot);
         }
     }
 
@@ -170,11 +170,11 @@ namespace gfx {
         auto it = m_currentState.psTextures.find(slot);
         if (it == m_currentState.psTextures.end()) {
             m_pendingState.psTextures.emplace(slot, srv);
-            m_pendingState.psDirtyTextureSlots.emplace_back((uint32_t)slot);
+            m_pendingState.psDirtyTextureSlots.emplace(slot);
         }
         else if (it->second != srv) {
             m_pendingState.psTextures.at(slot) = srv;
-            m_pendingState.psDirtyTextureSlots.emplace_back((uint32_t)slot);
+            m_pendingState.psDirtyTextureSlots.emplace(slot);
         }
     }
 
@@ -183,11 +183,11 @@ namespace gfx {
         auto it = m_currentState.vsTextures.find(slot);
         if (it == m_currentState.vsTextures.end()) {
             m_pendingState.vsTextures.emplace(slot, srv);
-            m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
+            m_pendingState.vsDirtyTextureSlots.emplace(slot);
         }
         else if (it->second != srv) {
             m_pendingState.vsTextures.at(slot) = srv;
-            m_pendingState.vsDirtyTextureSlots.emplace_back((uint32_t)slot);
+            m_pendingState.vsDirtyTextureSlots.emplace(slot);
         }
     }
 
@@ -195,19 +195,15 @@ namespace gfx {
 
         if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle) {
             m_devcon->PSSetShader(m_pendingState.pixelShader, 0, 0);
-            if (m_pendingState.psCBufferDirtySlots.size()) {
-                for (uint32_t x = 0; x < m_pendingState.psCBufferDirtySlots.size(); ++x) {
-                    m_devcon->PSSetConstantBuffers(m_pendingState.psCBufferDirtySlots[x], static_cast<UINT>(1), &m_pendingState.psCBuffers.at(x));
-                }
+            for (uint32_t slot : m_pendingState.psCBufferDirtySlots) {
+                m_devcon->PSSetConstantBuffers(slot, static_cast<UINT>(1), &m_pendingState.psCBuffers[slot]);
             }
         }
 
         if (m_pendingState.vertexShaderHandle != 0 && m_currentState.vertexShaderHandle != m_pendingState.vertexShaderHandle) {
             m_devcon->VSSetShader(m_pendingState.vertexShader, 0, 0);
-            if (m_pendingState.vsCBufferDirtySlots.size()) {
-                for (uint32_t x = 0; x < m_pendingState.vsCBufferDirtySlots.size(); ++x) {
-                    m_devcon->VSSetConstantBuffers(m_pendingState.vsCBufferDirtySlots[x], static_cast<UINT>(1), &m_pendingState.vsCBuffers.at(x));
-                }
+            for (uint32_t slot : m_pendingState.vsCBufferDirtySlots) {
+                m_devcon->VSSetConstantBuffers(slot, static_cast<UINT>(1), &m_pendingState.vsCBuffers[slot]);
             }
         }
 
@@ -220,19 +216,15 @@ namespace gfx {
             m_devcon->IASetVertexBuffers(0, 1, &m_pendingState.vertexBuffer, &stride, &offset);
         }
 
-        if (m_pendingState.vsDirtyTextureSlots.size()) {
+        for (uint32_t slot : m_pendingState.vsDirtyTextureSlots) {
             // todo: batch these calls
-            for (uint32_t x = 0; x < m_pendingState.vsDirtyTextureSlots.size(); ++x) {
-                m_devcon->VSSetShaderResources((uint32_t)m_pendingState.vsDirtyTextureSlots[x], 1, &m_pendingState.vsTextures.at(x));
-                m_devcon->VSSetSamplers((uint32_t)m_pendingState.vsDirtyTextureSlots[x], 1, &m_defaultSampler);
-            }
+            m_devcon->VSSetShaderResources(slot, 1, &m_pendingState.vsTextures[slot]);
+            m_devcon->VSSetSamplers(slot, 1, &m_defaultSampler);
         }
 
-        if (m_pendingState.psDirtyTextureSlots.size()) {
-            for (uint32_t x = 0; x < m_pendingState.psDirtyTextureSlots.size(); ++x) {
-                m_devcon->PSSetShaderResources((uint32_t)m_pendingState.psDirtyTextureSlots[x], 1, &m_pendingState.psTextures.at(x));
-                m_devcon->PSSetSamplers((uint32_t)m_pendingState.psDirtyTextureSlots[x], 1, &m_defaultSampler);
-            }
+        for (uint32_t slot : m_pendingState.psDirtyTextureSlots) {
+            m_devcon->PSSetShaderResources(slot, 1, &m_pendingState.vsTextures[slot]);
+            m_devcon->PSSetSamplers(slot, 1, &m_defaultSampler);
         }
 
         // todo: format?

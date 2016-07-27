@@ -124,6 +124,5 @@ namespace gfx {
         ShaderType shaderType;
         ID3D11VertexShader *vertexShader;
         ID3D11PixelShader *pixelShader;
-        ComPtr<ID3DBlob> byteCode;
     };
 }

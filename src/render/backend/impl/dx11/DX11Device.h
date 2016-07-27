@@ -142,6 +142,8 @@ namespace gfx {
         std::unordered_map<size_t, ComPtr<ID3D11RasterizerState>> m_rasterStates;
         std::unordered_map<size_t, ComPtr<ID3D11DepthStencilState>> m_depthStates;
 
+
+        ComPtr<ID3DBlob> m_lastCompiledVertexShader;
         std::unique_ptr<DX11Context> m_context;
 
 		std::vector<CommandBuffer*> m_submittedBuffers;
@@ -189,8 +191,6 @@ namespace gfx {
         ID3D11DepthStencilState* CreateDepthState(const DepthState& state);
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
         ID3D11BlendState* CreateBlendState(const BlendState& state);
-
-        ID3D11Buffer* CreateConstantBuffer(CBufferDescriptor& desc, const std::vector<CBufDescEntry*>& cBufferDescs);
 
 		void SetPipelineState(const PipelineStateDX11& state);
 		void Execute(DX11CommandBuffer* cmdBuffer);
