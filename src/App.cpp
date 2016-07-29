@@ -147,6 +147,10 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
     uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
 
+	SimObj* worldFrame = simulation.AddSimObj();
+	UI* ui = worldFrame->AddComponent<UI>(ComponentType::UI);
+	Spatial* spatial = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
+
     // TODO: Should use renderEngine interface instead of directly accessing renderer but we need to figure out object
     // model first
     uiManager->SetUIRenderer(static_cast<UIRenderer*>(renderEngine->GetRenderer(RendererType::Ui)));

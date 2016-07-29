@@ -1,13 +1,11 @@
 #include "System.h"
 
-#ifdef _WIN32
-#include "SDL.h"
-#include "SDL_syswm.h"
-#include <GL/glew.h>
-#include "DX11Device.h"
-#else
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
+
+#ifdef _WIN32
+#include <GL/glew.h>
+#include "DX11Device.h"
 #endif
 
 #include "GLDevice.h"
