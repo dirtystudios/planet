@@ -16,6 +16,7 @@
 #include "Config.h"
 #include "Simulation.h"
 #include "Skybox.h"
+#include "UI.h"
 #include <glm/gtx/transform.hpp>
 
 uint32_t frame_count     = 0;
@@ -147,16 +148,18 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
     uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
 
-	SimObj* worldFrame = simulation.AddSimObj();
-	UI* ui = worldFrame->AddComponent<UI>(ComponentType::UI);
-	Spatial* spatial = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
+    SimObj* worldFrame = simulation.AddSimObj();
+    UI* ui = worldFrame->AddComponent<UI>(ComponentType::UI);
+    Spatial* spatial = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
+    spatial->pos = glm::vec3(0.f, 0.f, 1.f);
+    spatial->direction = glm::vec3(0.f, 0.f, 0.f);
 
-    // TODO: Should use renderEngine interface instead of directly accessing renderer but we need to figure out object
-    // model first
     uiManager->SetUIRenderer(static_cast<UIRenderer*>(renderEngine->GetRenderer(RendererType::Ui)));
 
-    // Hard code consoleFrame for now, meh...stuff like this could be lua/xml, eventually
-    consoleUI = new ui::ConsoleUI(uiManager, uiContext);
+    // todo: make it so consoleUI reference doesnt have to persist
+    consoleUI = new ui::ConsoleUI(ui, uiContext);
+
+    uiManager->AddFrameObj(worldFrame);
 }
 
 void App::OnStart() {

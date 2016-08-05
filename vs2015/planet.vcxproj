@@ -59,6 +59,7 @@
     <ClInclude Include="..\src\components\ComponentType.h" />
     <ClInclude Include="..\src\components\Skybox.h" />
     <ClInclude Include="..\src\components\Spatial.h" />
+    <ClInclude Include="..\src\components\UI.h" />
     <ClInclude Include="..\src\ext\stb_image.h" />
     <ClInclude Include="..\src\Helpers.h" />
     <ClInclude Include="..\src\IdObj.h" />

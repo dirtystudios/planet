@@ -33,8 +33,7 @@ struct alignas(16) UIFrameRenderObj : public RenderObj {
     glm::vec2 borderSize;
 
     ConstantBuffer* frameData{nullptr};
-    ui::UIFrame* frame;
-
+	ui::UIFrame* frame;
     const gfx::StateGroup* group{nullptr};
     const gfx::DrawItem* item{nullptr};
 
@@ -45,12 +44,14 @@ struct alignas(16) UIFrameRenderObj : public RenderObj {
 
 class UIRenderer : public Renderer {
 private:
-    static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 1024;
+    static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 18;
 
     gfx::BufferId _vertexBuffer;
     size_t _bufferOffset;
     size_t _bufferSize;
     ConstantBuffer* _viewData{nullptr};
+
+	Viewport _lastViewPort{};
 
     std::vector<UIFrameRenderObj*> _objs;
     const gfx::StateGroup* _base{nullptr};
@@ -71,6 +72,14 @@ public:
         blendState.dstRgbFunc   = gfx::BlendFunc::OneMinusSrcAlpha;
         blendState.dstAlphaFunc = blendState.dstRgbFunc;
 
+        gfx::RasterState rasterState;
+        rasterState.fillMode = gfx::FillMode::Solid;
+        rasterState.cullMode = gfx::CullMode::Back;
+        rasterState.windingOrder = gfx::WindingOrder::FrontCCW;
+
+        gfx::DepthState depthState;
+        depthState.enable = false;
+
         gfx::StateGroupEncoder encoder;
         encoder.Begin();
         encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "ui"));
@@ -80,6 +89,8 @@ public:
         }}};
         encoder.SetVertexLayout(GetVertexLayoutCache()->Get(vld));
         encoder.SetBlendState(blendState);
+        encoder.SetDepthState(depthState);
+        encoder.SetRasterState(rasterState);
         encoder.BindResource(_viewData->GetBinding(1));
         encoder.SetVertexBuffer(_vertexBuffer);
         _base = encoder.End();
@@ -97,15 +108,13 @@ public:
     }
 
     // hopefully temporary work around until we figure out object model
-    RenderObj* RegisterFrame(ui::UIFrame* frame) {
+	UIFrameRenderObj* RegisterFrame(ui::UIFrame* uiframe,  ui::FrameScale& frame) {
         UIFrameRenderObj* uiRenderObj = new UIFrameRenderObj();
-        uiRenderObj->frame            = frame;
-
-        // currently frame location is immutable after registration
-        float w    = static_cast<float>(frame->GetFrameDesc()->width);
-        float h    = static_cast<float>(frame->GetFrameDesc()->height);
-        float xpos = frame->GetFrameDesc()->x;
-        float ypos = frame->GetFrameDesc()->y;
+		uiRenderObj->frame = uiframe;
+        float w    = static_cast<float>(frame.width);
+        float h    = static_cast<float>(frame.height);
+        float xpos = frame.x;
+        float ypos = frame.y;
 
         FrameVertex vertices[6] = {{{xpos, ypos + h, 0.0, 0.0}}, {{xpos, ypos, 0.0, 1.0}},
                                    {{xpos + w, ypos, 1.0, 1.0}}, {{xpos, ypos + h, 0.0, 0.0}},
@@ -128,7 +137,7 @@ public:
         uiRenderObj->drawCall.offset         = _bufferOffset / sizeof(FrameVertex);
 
         // pack all frames into a single buffer
-        uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::Write);
+        uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteInit);
         assert(mapped);
         memcpy(&mapped[_bufferOffset], &vertices, verticesSize);
         GetRenderDevice()->UnmapMemory(_vertexBuffer);
@@ -173,7 +182,7 @@ public:
             UIFrameConstants* frameConstants = uiFrameRenderObj->frameData->Map<UIFrameConstants>();
             frameConstants->borderSize       = uiFrameRenderObj->borderSize;
             frameConstants->borderColor      = uiFrameRenderObj->borderColor;
-            frameConstants->bgColor = uiFrameRenderObj->borderColor;
+            frameConstants->bgColor = uiFrameRenderObj->bgColor;
             uiFrameRenderObj->frameData->Unmap();
 
             renderQueue->AddDrawItem(1, uiFrameRenderObj->item);

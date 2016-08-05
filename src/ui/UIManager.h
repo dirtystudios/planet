@@ -3,33 +3,26 @@
 #include "UIFrame.h"
 #include "EditBox.h"
 #include "RenderDevice.h"
+#include "RenderEngine.h"
 #include "UIRenderer.h"
 #include "KeyboardManager.h"
 #include <unordered_map>
 #include <vector>
 #include <set>
 #include "Viewport.h"
+#include "UI.h"
 
 namespace ui {
 class UIManager {
 private:
-    // positions are rendered based on this for now until i get relative positioning n stuff
-    const uint32_t INTERNAL_UI_RESOLUTION_HEIGHT{600};
-    const uint32_t INTERNAL_UI_RESOLUTION_WIDTH{800};
-
-    struct FrameScale {
-        float x;
-        float y;
-        uint32_t width, height;
-    };
-
-    UIRenderer* m_uiRenderer{nullptr};
     //        TextRenderer* m_textRenderer;
     // should probly use a tree for this, oops
     // This stores <Parent, Child>
     std::unordered_multimap<UIFrame*, UIFrame*> m_frameTree;
     std::set<UIFrame*> m_parentFrames;
-    std::vector<UIFrame*> m_uiFrames;
+    std::unordered_multimap<UIFrame*, UIFrameRenderObj*> m_uiFrames;
+
+    UIRenderer* m_uiRenderer;
     Viewport m_viewport;
     // only 1 thing should have focus at a time, so these can go here
     float m_cursorBlink       = 0;
@@ -54,11 +47,11 @@ public:
         m_uiInputContext->BindContext<input::ContextBindingType::Action>(
             "EnterKey", BIND_MEM_CB(&UIManager::HandleEnterPress, this));
     };
-    ~UIManager() { delete m_uiRenderer; }
+    ~UIManager() {}
 
     void UpdateViewport(Viewport viewport);
 
-    void AddFrame(UIFrame* uiFrame);
+    void AddFrameObj(SimObj* uiFrame);
     void DoUpdate(float ms);
 
     // hackish for now
@@ -73,25 +66,9 @@ public:
     bool HandleEnterPress(const input::InputContextCallbackArgs& args);
 
 private:
-    void RenderFrame(UIFrame* uiFrame);
-
     void PreProcess();
     void PostProcess(float ms);
     void ProcessFrames();
-
-    void RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*>& map);
-
-    FrameScale GetScaledFrame(UIFrame::UIFrameDesc* frameDesc) {
-        FrameScale scaledFrame;
-        scaledFrame.width =
-            static_cast<uint32_t>(((float)frameDesc->width / INTERNAL_UI_RESOLUTION_WIDTH) * m_viewport.width);
-        scaledFrame.height =
-            static_cast<uint32_t>(((float)frameDesc->height / INTERNAL_UI_RESOLUTION_HEIGHT) * m_viewport.height);
-
-        scaledFrame.x = (frameDesc->x / INTERNAL_UI_RESOLUTION_WIDTH) * m_viewport.width;
-        scaledFrame.y = (frameDesc->y / INTERNAL_UI_RESOLUTION_HEIGHT) * m_viewport.height;
-        return scaledFrame;
-    }
 
     template <typename T, typename T2> void RemoveChildren(T* frame, std::unordered_multimap<T2, T2>& map) {
         bool hasChildren = false;

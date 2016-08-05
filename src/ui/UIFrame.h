@@ -4,6 +4,7 @@
 #include <string>
 #include "ScriptHandler.h"
 #include "RenderObj.h"
+#include "Viewport.h"
 
 namespace ui {
 
@@ -11,6 +12,16 @@ enum class FrameType : uint32_t {
     UIFRAME = 0,
     EDITBOX,
     COUNT,
+};
+
+// positions are rendered based on this for now until i get relative positioning n stuff
+const uint32_t INTERNAL_UI_RESOLUTION_HEIGHT{ 600 };
+const uint32_t INTERNAL_UI_RESOLUTION_WIDTH{ 800 };
+
+struct FrameScale {
+    float x;
+    float y;
+    uint32_t width, height;
 };
 
 class UIFrame {
@@ -25,10 +36,8 @@ public:
         uint32_t height;
         bool shown;
         bool acceptMouse;
-        UIFrame* parent;
+        UIFrame* parent{ nullptr };
     };
-
-    RenderObj* renderObj = nullptr;
 
 protected:
     UIFrameDesc m_frameDesc;
@@ -36,9 +45,9 @@ protected:
     ScriptHandler* m_scriptHandler;
 
 public:
-    UIFrame(UIFrameDesc frameDesc) : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME){};
+    UIFrame(UIFrameDesc frameDesc) : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME) {};
     UIFrame(UIFrameDesc frameDesc, ScriptHandler* scriptHandler)
-        : m_frameDesc(frameDesc), m_scriptHandler(scriptHandler), m_frameType(FrameType::UIFRAME){};
+        : m_frameDesc(frameDesc), m_scriptHandler(scriptHandler), m_frameType(FrameType::UIFRAME) {};
     UIFrameDesc* GetFrameDesc() { return &m_frameDesc; };
     FrameType GetFrameType() { return m_frameType; };
     void Show() { m_frameDesc.shown = true; };
@@ -49,11 +58,25 @@ public:
             return false;
         if (m_frameDesc.parent) {
             return m_frameDesc.parent->IsShown();
-        } else
+        }
+        else
             return m_frameDesc.shown;
     };
+
+    FrameScale GetScaledSize(Viewport viewport) {
+        FrameScale scaledFrame;
+        scaledFrame.width =
+            static_cast<uint32_t>(((float)m_frameDesc.width / INTERNAL_UI_RESOLUTION_WIDTH) * viewport.width);
+        scaledFrame.height =
+            static_cast<uint32_t>(((float)m_frameDesc.height / INTERNAL_UI_RESOLUTION_HEIGHT) * viewport.height);
+
+        scaledFrame.x = (m_frameDesc.x / INTERNAL_UI_RESOLUTION_WIDTH) * viewport.width;
+        scaledFrame.y = (m_frameDesc.y / INTERNAL_UI_RESOLUTION_HEIGHT) * viewport.height;
+        return scaledFrame;
+    }
+
     UIFrame* GetParent() { return m_frameDesc.parent; };
-    virtual void OnClick(){};
-    virtual void DoUpdate(float ms){};
+    virtual void OnClick() {};
+    virtual void DoUpdate(float ms) {};
 };
 }

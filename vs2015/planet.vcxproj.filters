@@ -432,6 +432,9 @@
     <ClInclude Include="..\src\render\backend\interface\StateGroupEncoder.h">
       <Filter>render\backend\interface</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\components\UI.h">
+      <Filter>components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">

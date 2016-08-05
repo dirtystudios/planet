@@ -27,16 +27,16 @@ bool UIManager::HandleMouse1(const input::InputContextCallbackArgs& args) {
         // ok.... we 'clicked', check if its within a frame and something we care about
         // todo: handle/add layers and parent child relations
         for (auto& uiFrame : m_uiFrames) {
-            if (!uiFrame->IsShown())
+            if (!uiFrame.first->IsShown())
                 continue;
-            if (uiFrame->GetFrameDesc()->acceptMouse) {
+            if (uiFrame.first->GetFrameDesc()->acceptMouse) {
                 // k this is a potential candidate, lets figure out its 'scaled' pos
-                UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
-                FrameScale scaledFrame = GetScaledFrame(frameDesc);
+                UIFrame::UIFrameDesc* frameDesc = uiFrame.first->GetFrameDesc();
+                FrameScale scaledFrame = uiFrame.first->GetScaledSize(m_viewport);
                 if (m_mouseX > scaledFrame.x && m_mouseX < (scaledFrame.x + scaledFrame.width) &&
                     m_mouseY > scaledFrame.y && m_mouseY < (scaledFrame.y + scaledFrame.height)) {
 
-                    uiFrame->OnClick();
+                    uiFrame.first->OnClick();
                     m_mouseDown = true;
                 }
             }
@@ -57,16 +57,17 @@ bool UIManager::HandleEnterPress(const input::InputContextCallbackArgs& args) {
     return true;
 }
 
-void UIManager::AddFrame(UIFrame* uiFrame) {
-    m_frameTree.emplace(uiFrame->GetParent(), uiFrame);
-    m_uiFrames.emplace_back(uiFrame);
-    m_parentFrames.emplace(uiFrame->GetParent());
+void UIManager::AddFrameObj(SimObj* frameObj) {
+    UI* ui = frameObj->GetComponent<UI>(ComponentType::UI);
+    assert(ui);
 
-    // TODO:: Handle scale and put on UIFrame so renderer can pull it out
-    UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
-    FrameScale scaledFrame          = GetScaledFrame(frameDesc);
-
-    uiFrame->renderObj = m_uiRenderer->RegisterFrame(uiFrame);
+    for (auto& uiFrame : ui->frames) {
+        m_frameTree.emplace(uiFrame->GetParent(), uiFrame.get());
+        // oops....
+        UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), uiFrame->GetScaledSize(m_viewport));
+        m_uiFrames.emplace(uiFrame.get(), renderObj);
+        m_parentFrames.emplace(uiFrame->GetParent());
+    }
 }
 
 // eugene: leaving this here because we need to reorganize text rendering
@@ -81,17 +82,6 @@ void UIManager::AddFrame(UIFrame* uiFrame) {
 //            float *tempColor = ((EditBox*)uiFrame)->GetColor();
 //            glm::vec3 color = { tempColor[0], tempColor[1], tempColor[2] };
 ////            m_textRenderer->RenderText(((EditBox*)uiFrame)->GetText(), scaledFrame.x, scaledFrame.y, 1.0, color);
-//        }
-//    }
-
-// eugene: this should all be handled in UIRenderer. Leaving here for now until we validate
-
-//    void UIManager::RenderChildren(UIFrame* frame, std::unordered_multimap<UIFrame*, UIFrame*> &map) {
-//        RenderFrame(frame);
-//
-//        auto its = map.equal_range(frame);
-//        for (auto it = its.first; it != its.second; ++it) {
-//            RenderChildren(it->second, map);
 //        }
 //    }
 
@@ -141,16 +131,6 @@ void UIManager::ProcessFrames() {
             }
         }
     }
-
-    // eugene: this should all be handled in UIRenderer. Leaving here for now until we validate
-
-    //        // K walking the tree, "hi impending stack overflow"
-    //        // m_temptree *should* contain only the shown frames
-    //        auto m_rootParentFrames = m_shownFramesTree.equal_range((UIFrame*)0);
-    //        for (auto it = m_rootParentFrames.first; it != m_rootParentFrames.second; ++it) {
-    //            if (it->second->GetFrameDesc()->shown)
-    //                RenderChildren(it->second, m_shownFramesTree);
-    //        }
 }
 
 void UIManager::PreProcess() {
@@ -214,8 +194,8 @@ void UIManager::DoUpdate(float ms) {
 
     // Process hide/show/focus and render
     ProcessFrames();
-    for (UIFrame* frame : m_uiFrames) {
-        frame->DoUpdate(ms);
+    for (auto& frame : m_uiFrames) {
+        frame.first->DoUpdate(ms);
     }
 
     PostProcess(ms);
