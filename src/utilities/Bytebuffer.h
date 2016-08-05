@@ -116,9 +116,10 @@ public:
         assert(_owned);
         assert(bytes + 1 > _wpos);
         assert(bytes >= _rpos);
+        assert(bytes > _capacity);
 
         uint8_t* newData = new uint8_t[bytes];
-        memcpy(newData, _data, bytes);
+        memcpy(newData, _data, _capacity);
         delete[] _data;
         _data     = newData;
         _capacity = bytes;
