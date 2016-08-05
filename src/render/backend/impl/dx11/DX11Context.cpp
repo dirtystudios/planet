@@ -55,21 +55,21 @@ namespace gfx {
         m_devcon->RSSetViewports(target, &vp);
     }
 
-	void* DX11Context::MapBufferPointer(ID3D11Buffer* buffer) {
-		D3D11_BUFFER_DESC bufferDesc;
-		buffer->GetDesc(&bufferDesc);
-		if (bufferDesc.Usage != D3D11_USAGE_DYNAMIC) {
-			LOG_E("DX11RenderDev: Only dynamic buffer type updating allowed.");
-			return 0;
-		}
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		DX11_CHECK(m_devcon->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
-		return mappedResource.pData;
-	}
+    void* DX11Context::MapBufferPointer(ID3D11Buffer* buffer, D3D11_MAP usage) {
+        D3D11_BUFFER_DESC bufferDesc;
+        buffer->GetDesc(&bufferDesc);
+        if (bufferDesc.Usage != D3D11_USAGE_DYNAMIC) {
+            LOG_E("DX11RenderDev: Only dynamic buffer type updating allowed.");
+            return 0;
+        }
+        D3D11_MAPPED_SUBRESOURCE mappedResource;
+        DX11_CHECK(m_devcon->Map(buffer, 0, usage, 0, &mappedResource));
+        return mappedResource.pData;
+    }
 
-	void DX11Context::UnMapBufferPointer(ID3D11Buffer* buffer) {
-		m_devcon->Unmap(buffer, 0);
-	}
+    void DX11Context::UnMapBufferPointer(ID3D11Buffer* buffer) {
+        m_devcon->Unmap(buffer, 0);
+    }
 
     void DX11Context::UpdateBufferData(ID3D11Buffer* buffer, void* data, size_t len){
         D3D11_BUFFER_DESC bufferDesc;
@@ -195,16 +195,18 @@ namespace gfx {
 
         if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle) {
             m_devcon->PSSetShader(m_pendingState.pixelShader, 0, 0);
-            for (uint32_t slot : m_pendingState.psCBufferDirtySlots) {
-                m_devcon->PSSetConstantBuffers(slot, static_cast<UINT>(1), &m_pendingState.psCBuffers[slot]);
-            }
+        }
+
+        for (uint32_t slot : m_pendingState.psCBufferDirtySlots) {
+            m_devcon->PSSetConstantBuffers(slot, static_cast<UINT>(1), &m_pendingState.psCBuffers[slot]);
         }
 
         if (m_pendingState.vertexShaderHandle != 0 && m_currentState.vertexShaderHandle != m_pendingState.vertexShaderHandle) {
             m_devcon->VSSetShader(m_pendingState.vertexShader, 0, 0);
-            for (uint32_t slot : m_pendingState.vsCBufferDirtySlots) {
-                m_devcon->VSSetConstantBuffers(slot, static_cast<UINT>(1), &m_pendingState.vsCBuffers[slot]);
-            }
+        }
+
+        for (uint32_t slot : m_pendingState.vsCBufferDirtySlots) {
+            m_devcon->VSSetConstantBuffers(slot, static_cast<UINT>(1), &m_pendingState.vsCBuffers[slot]);
         }
 
         if (m_pendingState.inputLayoutHandle != 0 && m_currentState.inputLayoutHandle != m_pendingState.inputLayoutHandle)

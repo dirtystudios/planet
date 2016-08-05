@@ -146,11 +146,11 @@ namespace gfx {
         ComPtr<ID3DBlob> m_lastCompiledVertexShader;
         std::unique_ptr<DX11Context> m_context;
 
-		std::vector<CommandBuffer*> m_submittedBuffers;
+        std::vector<CommandBuffer*> m_submittedBuffers;
 
         Pool<DX11CommandBuffer, 1> m_commandBufferPool;
 
-		ByteBuffer m_drawItemByteBuffer;
+        ByteBuffer m_drawItemByteBuffer;
 
     public:
         DX11Device() {};
@@ -181,7 +181,7 @@ namespace gfx {
         void DestroyVertexLayout(VertexLayoutId vertexLayout) {}
 
         CommandBuffer* CreateCommandBuffer();
-		void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
+        void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
 
         uint8_t* MapMemory(BufferId buffer, BufferAccess);
         void UnmapMemory(BufferId buffer);
@@ -192,8 +192,8 @@ namespace gfx {
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
         ID3D11BlendState* CreateBlendState(const BlendState& state);
 
-		void SetPipelineState(const PipelineStateDX11& state);
-		void Execute(DX11CommandBuffer* cmdBuffer);
+        void SetPipelineState(const PipelineStateDX11& state);
+        void Execute(DX11CommandBuffer* cmdBuffer);
 
         // Texture Converter.
         // Returns pointer to use for data, may point to data or unique_ptr, 

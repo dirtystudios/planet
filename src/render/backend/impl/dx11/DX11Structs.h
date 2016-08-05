@@ -5,6 +5,7 @@
 
 #include <wrl.h>
 
+#include "BufferAccess.h"
 #include "BufferUsage.h"
 #include "ParamType.h"
 #include "BlendMode.h"
@@ -35,6 +36,13 @@ namespace gfx {
     static D3D11_USAGE BufferUsageDX11[(uint32_t)BufferUsage::Count] = {
         D3D11_USAGE_DYNAMIC, // Static
         D3D11_USAGE_DYNAMIC,   // Dynamic
+    };
+
+    static D3D11_MAP MapAccessDX11[(uint32_t)BufferAccess::Count] = {
+        D3D11_MAP_READ,               // Read
+        D3D11_MAP_WRITE_DISCARD,      // Write
+        D3D11_MAP_WRITE_NO_OVERWRITE, // WriteInit
+        D3D11_MAP_READ_WRITE,         // ReadWrite
     };
 
     static DXGI_FORMAT TextureFormatDX11[(uint32_t)TextureFormat::Count] = {

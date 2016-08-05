@@ -7,7 +7,7 @@
 #include "Memory.h"
 #include "DrawItemDecoder.h"
 
-#define SafeGet(id, idx) id[(uint32_t)idx];
+#define SafeGet(id, idx) id[(uint32_t)idx]
 
 namespace gfx {
     std::vector<std::unique_ptr<const char[]>> DX11SemanticNameCache::m_semanticNameCache = {};
@@ -501,33 +501,33 @@ namespace gfx {
         return cmdBuffer;
     }
 
-	uint8_t* DX11Device::MapMemory(BufferId buffer, BufferAccess access) {
-		if (access != BufferAccess::Write)
-			assert(false);
-		BufferDX11* bufferdx11 = GetResourceFromSizeMap(m_buffers, buffer);
-		assert(bufferdx11);
-		return static_cast<uint8_t*>(m_context->MapBufferPointer(bufferdx11->buffer.Get()));
-	}
+    uint8_t* DX11Device::MapMemory(BufferId buffer, BufferAccess access) {
+        if (access != BufferAccess::Write && access != BufferAccess::WriteInit)
+            assert(false);
+        BufferDX11* bufferdx11 = GetResourceFromSizeMap(m_buffers, buffer);
+        assert(bufferdx11);
+        return static_cast<uint8_t*>(m_context->MapBufferPointer(bufferdx11->buffer.Get(), SafeGet(MapAccessDX11, access)));
+    }
 
-	void DX11Device::UnmapMemory(BufferId buffer) {
-		BufferDX11* bufferdx11 = GetResourceFromSizeMap(m_buffers, buffer);
-		assert(bufferdx11);
-		m_context->UnMapBufferPointer(bufferdx11->buffer.Get());
-	}
+    void DX11Device::UnmapMemory(BufferId buffer) {
+        BufferDX11* bufferdx11 = GetResourceFromSizeMap(m_buffers, buffer);
+        assert(bufferdx11);
+        m_context->UnMapBufferPointer(bufferdx11->buffer.Get());
+    }
 
-	void DX11Device::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
-		m_submittedBuffers.insert(end(m_submittedBuffers), begin(cmdBuffers), end(cmdBuffers));
-	}
+    void DX11Device::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
+        m_submittedBuffers.insert(end(m_submittedBuffers), begin(cmdBuffers), end(cmdBuffers));
+    }
 
-	void DX11Device::Execute(DX11CommandBuffer* cmdBuffer) {
-		ByteBuffer& _byteBuffer = cmdBuffer->GetByteBuffer();
-		DX11CommandBuffer::CommandType cmd;
-		while (_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
-			_byteBuffer >> cmd;
-			switch (cmd) {
-			case DX11CommandBuffer::CommandType::DrawItem: {
-				const DrawItem* item;
-				_byteBuffer >> item;
+    void DX11Device::Execute(DX11CommandBuffer* cmdBuffer) {
+        ByteBuffer& _byteBuffer = cmdBuffer->GetByteBuffer();
+        DX11CommandBuffer::CommandType cmd;
+        while (_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
+            _byteBuffer >> cmd;
+            switch (cmd) {
+            case DX11CommandBuffer::CommandType::DrawItem: {
+                const DrawItem* item;
+                _byteBuffer >> item;
 
                 DrawItemDecoder decoder(item);
 
@@ -551,60 +551,60 @@ namespace gfx {
                     assert(decoder.ReadBindings(&bindingPtr));
                 }
 
-			
-				PipelineStateDX11* pipelineState = GetResourceFromSizeMap(m_pipelineStates, psId);
-				SetPipelineState(*pipelineState);
+            
+                PipelineStateDX11* pipelineState = GetResourceFromSizeMap(m_pipelineStates, psId);
+                SetPipelineState(*pipelineState);
 
-				assert(streamCount == 1); // > 1 not supported
-				const VertexStream& stream = streamPtr[0];
+                assert(streamCount == 1); // > 1 not supported
+                const VertexStream& stream = streamPtr[0];
 
-				auto vertexBuffer = GetResource(m_buffers, stream.vertexBuffer);
-				if (vertexBuffer)
-					m_context->SetVertexBuffer(stream.vertexBuffer, vertexBuffer->buffer.Get());
+                auto vertexBuffer = GetResource(m_buffers, stream.vertexBuffer);
+                if (vertexBuffer)
+                    m_context->SetVertexBuffer(stream.vertexBuffer, vertexBuffer->buffer.Get());
 
-				// bindings
-				for (uint32_t idx = 0; idx <bindingCount; ++idx) {
-					const Binding& binding = bindingPtr[idx];
-					switch (binding.type) {
-					case Binding::Type::ConstantBuffer: {
+                // bindings
+                for (uint32_t idx = 0; idx <bindingCount; ++idx) {
+                    const Binding& binding = bindingPtr[idx];
+                    switch (binding.type) {
+                    case Binding::Type::ConstantBuffer: {
                         BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
                         m_context->SetVertexCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
                         m_context->SetPixelCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
-						break;
-					}
-					case Binding::Type::Texture: {
-						TextureDX11* texturedx11 = GetResource(m_textures, binding.resource);
-						m_context->SetVertexShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
-						m_context->SetPixelShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
-						break;
-					}
-					}
-				}
+                        break;
+                    }
+                    case Binding::Type::Texture: {
+                        TextureDX11* texturedx11 = GetResource(m_textures, binding.resource);
+                        m_context->SetVertexShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
+                        m_context->SetPixelShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
+                        break;
+                    }
+                    }
+                }
                 
-				switch (drawCall.type) {
-				case DrawCall::Type::Arrays: {
-					m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, false);
-					break;
-				}
-				case DrawCall::Type::Indexed: {
+                switch (drawCall.type) {
+                case DrawCall::Type::Arrays: {
+                    m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, false);
+                    break;
+                }
+                case DrawCall::Type::Indexed: {
                     assert(indexBufferId);
-					auto indexBuffer = GetResource(m_buffers, indexBufferId);
-					m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
-					m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, true);
-					break;
-				}
-				}
-				break;
-			}
-			case DX11CommandBuffer::CommandType::Clear: {
-				m_context->Clear(0.f, 0.f, 0.f, 0.f);
-				break;
-			}
-			case DX11CommandBuffer::CommandType::BindResource: {
-				Binding binding;
-				_byteBuffer >> binding;
+                    auto indexBuffer = GetResource(m_buffers, indexBufferId);
+                    m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
+                    m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, true);
+                    break;
+                }
+                }
+                break;
+            }
+            case DX11CommandBuffer::CommandType::Clear: {
+                m_context->Clear(0.f, 0.f, 0.f, 0.f);
+                break;
+            }
+            case DX11CommandBuffer::CommandType::BindResource: {
+                Binding binding;
+                _byteBuffer >> binding;
 
-				// TODO:: this is copy pasted from above, dont do that.
+                // TODO:: this is copy pasted from above, dont do that.
                 switch (binding.type) {
                 case Binding::Type::ConstantBuffer: {
                     BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
@@ -619,35 +619,35 @@ namespace gfx {
                     break;
                 }
                 }
-				break;
-			}
-			}
-		}
-	}
+                break;
+            }
+            }
+        }
+    }
 
-	void DX11Device::SetPipelineState(const PipelineStateDX11& state) {
-		m_context->SetDepthState(state.depthStateHandle, state.depthState);
-		m_context->SetRasterState(state.rasterStateHandle, state.rasterState);
-		m_context->SetBlendState(state.blendStateHandle, state.blendState);
+    void DX11Device::SetPipelineState(const PipelineStateDX11& state) {
+        m_context->SetDepthState(state.depthStateHandle, state.depthState);
+        m_context->SetRasterState(state.rasterStateHandle, state.rasterState);
+        m_context->SetBlendState(state.blendStateHandle, state.blendState);
 
-		m_context->SetVertexShader(state.vertexShaderHandle, state.vertexShader);
-		m_context->SetPixelShader(state.pixelShaderHandle, state.pixelShader);
-		
-		m_context->SetInputLayout(state.vertexLayoutHandle, state.vertexLayoutStride, state.vertexLayout);
-	}
+        m_context->SetVertexShader(state.vertexShaderHandle, state.vertexShader);
+        m_context->SetPixelShader(state.pixelShaderHandle, state.pixelShader);
+        
+        m_context->SetInputLayout(state.vertexLayoutHandle, state.vertexLayoutStride, state.vertexLayout);
+    }
 
     void DX11Device::RenderFrame() {
         //m_context->Clear(0.f, 0.f, 0.f, 0.f);
-		for (uint32_t idx = 0; idx < m_submittedBuffers.size(); ++idx) {
-			DX11CommandBuffer* dx11Buffer = reinterpret_cast<DX11CommandBuffer*>(m_submittedBuffers[idx]);
-			Execute(dx11Buffer);
-			dx11Buffer->Reset();
-		}
+        for (uint32_t idx = 0; idx < m_submittedBuffers.size(); ++idx) {
+            DX11CommandBuffer* dx11Buffer = reinterpret_cast<DX11CommandBuffer*>(m_submittedBuffers[idx]);
+            Execute(dx11Buffer);
+            dx11Buffer->Reset();
+        }
 
-		DX11_CHECK(m_swapchain->Present(1, 0));
+        DX11_CHECK(m_swapchain->Present(1, 0));
 
-		m_submittedBuffers.clear();
-		m_drawItemByteBuffer.Reset();
+        m_submittedBuffers.clear();
+        m_drawItemByteBuffer.Reset();
     }
 
     void DX11Device::ResetDepthStencilTexture() {

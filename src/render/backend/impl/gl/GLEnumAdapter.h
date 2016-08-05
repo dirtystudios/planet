@@ -52,6 +52,8 @@ public:
                 return GL_READ_ONLY;
             case BufferAccess::Write:
                 return GL_WRITE_ONLY;
+            case BufferAccess::WriteInit:
+                return GL_WRITE_ONLY;
             case BufferAccess::ReadWrite:
                 return GL_READ_WRITE;
             default:
