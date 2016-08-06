@@ -60,20 +60,6 @@ static size_t GetByteCount(VertexAttributeType paramType) {
 }
 
 namespace std {
-template <> struct hash<gfx::VertexAttributeType> {
-    size_t operator()(const gfx::VertexAttributeType& x) const {
-        return std::hash<std::underlying_type<gfx::VertexAttributeType>::type>()(
-            static_cast<std::underlying_type<gfx::VertexAttributeType>::type>(x));
-    }
-};
-
-template <> struct hash<gfx::VertexAttributeUsage> {
-    size_t operator()(const gfx::VertexAttributeUsage& x) const {
-        return std::hash<std::underlying_type<gfx::VertexAttributeUsage>::type>()(
-            static_cast<std::underlying_type<gfx::VertexAttributeUsage>::type>(x));
-    }
-};
-
 template <> struct hash<gfx::VertexLayoutElement> {
     size_t operator()(const gfx::VertexLayoutElement& x) const {
         size_t key = 0;

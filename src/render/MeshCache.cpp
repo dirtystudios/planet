@@ -35,43 +35,44 @@ Mesh* MeshCache::Get(const std::string& name) {
     std::vector<uint32_t> indices;
 
     uint32_t offset = 0;
-    for(const IndexedMeshData& meshData : meshDatas) {			
+    for (const IndexedMeshData& meshData : meshDatas) {
         assert(meshData.positions.size() == meshData.normals.size());
 
-        for(uint32_t idx = 0; idx < meshData.positions.size(); ++idx) {					
+        for (uint32_t idx = 0; idx < meshData.positions.size(); ++idx) {
             Vertex v;
-            v.pos = meshData.positions[idx];
-            v.norm =  meshData.normals[idx];
+            v.pos      = meshData.positions[idx];
+            v.norm     = meshData.normals[idx];
             v.texCoord = meshData.texcoords[idx];
             vertices.push_back(v);
         }
-        for(uint32_t idx = 0; idx < meshData.indices.size(); ++idx) {				
+        for (uint32_t idx = 0; idx < meshData.indices.size(); ++idx) {
             indices.push_back(offset + meshData.indices[idx]);
         }
 
         offset += meshData.positions.size();
-    }		
+    }
     size_t verticesSize = sizeof(Vertex) * vertices.size();
-    size_t indicesSize = sizeof(uint32_t) * indices.size();
-    gfx::BufferId vb = _device->AllocateBuffer(gfx::BufferType::VertexBuffer, verticesSize, gfx::BufferUsage::Static);
-    gfx::BufferId ib = _device->AllocateBuffer(gfx::BufferType::IndexBuffer, indicesSize, gfx::BufferUsage::Static);
+    size_t indicesSize  = sizeof(uint32_t) * indices.size();
+    gfx::BufferId vb = _device->AllocateBuffer(
+        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, verticesSize));
+    gfx::BufferId ib =
+        _device->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::IndexBufferBit, indicesSize));
     assert(ib);
     assert(vb);
-    
-    
+
     uint8_t* ptr = _device->MapMemory(vb, gfx::BufferAccess::Write);
     memcpy(ptr, vertices.data(), verticesSize);
     _device->UnmapMemory(vb);
-    
+
     ptr = _device->MapMemory(ib, gfx::BufferAccess::Write);
     memcpy(ptr, indices.data(), indicesSize);
     _device->UnmapMemory(ib);
-    
-    Mesh* mesh = new Mesh();
+
+    Mesh* mesh         = new Mesh();
     mesh->vertexBuffer = vb;
-    mesh->indexBuffer = ib;
-    mesh->indexCount = indices.size();
-    mesh->indexOffset = 0;
+    mesh->indexBuffer  = ib;
+    mesh->indexCount   = indices.size();
+    mesh->indexOffset  = 0;
     mesh->vertexStride = sizeof(Vertex);
     mesh->vertexOffset = 0;
 

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Hash.h"
 #include "BlendFunc.h"
 #include "BlendMode.h"
-#include "Helpers.h"
 
 namespace gfx {
 struct BlendState {
@@ -16,23 +16,14 @@ struct BlendState {
 };
 }
 
-namespace std
-{
-    template<> struct hash<gfx::BlendState>
-    {
-        typedef gfx::BlendState argument_type;
-        typedef std::size_t result_type;
-        result_type operator()(argument_type const& s) const
-        {
-            result_type key = 0;
-            HashCombine(key, s.enable);
-            HashCombine(key, (uint32_t)s.srcRgbFunc);
-            HashCombine(key, (uint32_t)s.srcAlphaFunc);
-            HashCombine(key, (uint32_t)s.dstRgbFunc);
-            HashCombine(key, (uint32_t)s.dstAlphaFunc);
-            HashCombine(key, (uint32_t)s.rgbMode);
-            HashCombine(key, (uint32_t)s.alphaMode);
-            return key;
-        }
-    };
+namespace std {
+template <>
+struct hash<gfx::BlendState> {
+    typedef gfx::BlendState argument_type;
+    typedef std::size_t result_type;
+    result_type operator()(argument_type const& s) const {
+        return HashCombine(s.enable, s.srcRgbFunc, s.srcAlphaFunc, s.dstRgbFunc, s.dstAlphaFunc, s.rgbMode,
+                           s.alphaMode);
+    }
+};
 }

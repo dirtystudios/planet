@@ -132,8 +132,9 @@ void TextRenderer::OnInit() {
 
     _vertexBufferSize   = kVertexBufferSize;
     _vertexBufferOffset = 0;
-    _vertexBuffer =
-        GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, _vertexBufferSize, gfx::BufferUsage::Static);
+    gfx::BufferDesc desc =
+        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, _vertexBufferSize);
+    _vertexBuffer = GetRenderDevice()->AllocateBuffer(desc);
     assert(_vertexBuffer);
 
     _viewData = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));

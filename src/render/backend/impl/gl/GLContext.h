@@ -33,16 +33,16 @@ namespace gfx {
 class GLContext {
 private:
     static constexpr size_t kMaxSupportedSlots = 8;
-    
+
     // Todo: might be faster to use ids
-    std::array<GLTexture*, static_cast<uint8_t>(TextureSlot::Count)>        _activeTextures {};
-    std::array<GLBuffer*, static_cast<uint8_t>(BufferType::Count)>          _activeBuffers {};
-    std::array<GLShaderProgram*, static_cast<uint8_t>(ShaderType::Count)>   _activeShaders {};
-    std::array<GLBuffer*, kMaxSupportedSlots>                               _constantBufferSlots {};
-    
+    std::array<GLTexture*, static_cast<uint8_t>(TextureSlot::Count)> _activeTextures{};
+    std::array<GLBuffer*, static_cast<uint8_t>(BufferType::Count)> _activeBuffers{};
+    std::array<GLShaderProgram*, static_cast<uint8_t>(ShaderType::Count)> _activeShaders{};
+    std::array<GLBuffer*, kMaxSupportedSlots> _constantBufferSlots{};
+
     GLPipelineState* _activePipelineState{nullptr};
     GLVertexArrayObject* _activeVao{nullptr};
-    
+
     float _activeClearColor[4];
     float _activeClearDepth;
 
@@ -52,7 +52,7 @@ public:
     GLContext();
     ~GLContext();
 
-    void WriteBufferData(GLBuffer* buffer, void* data, size_t size);
+    void WriteBufferData(GLBuffer* buffer, const void* data, size_t size);
     void WriteTextureData(GLTexture* texture, void* data, size_t size);
     void ForceBindBuffer(GLBuffer* buffer);
     void BindBuffer(GLBuffer* buffer, bool force = false);

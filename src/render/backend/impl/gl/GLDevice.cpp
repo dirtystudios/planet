@@ -45,15 +45,24 @@ void GLDevice::PrintDisplayAdapterInfo() {
     LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
 }
 
-BufferId GLDevice::AllocateBuffer(BufferType type, size_t size, BufferUsage usage) {
+BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
     GLBuffer* buffer = new GLBuffer();
     GL_CHECK(glGenBuffers(1, &buffer->id));
     assert(buffer->id);
-    buffer->usage = GLEnumAdapter::Convert(usage);
-    buffer->type = GLEnumAdapter::Convert(type);
 
-    if (size != 0) {
-        _context.WriteBufferData(buffer, nullptr, size);
+    if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
+        buffer->usage = GL_DYNAMIC_DRAW;
+    } else if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadBit)) {
+        buffer->usage = GL_STATIC_DRAW;
+    } else {
+        assert(false && "unsupported access flags");
+    }
+
+    // todo: dont support mutliple flags, just grab first one
+    buffer->type = GLEnumAdapter::Convert(desc.usageFlags);
+
+    if (desc.size != 0) {
+        _context.WriteBufferData(buffer, initialData, desc.size);
     }
 
     uint32_t handle = GenerateId();

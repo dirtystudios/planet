@@ -20,7 +20,7 @@ GLContext::~GLContext() {
     // cleanup pipeline
 }
 
-void GLContext::WriteBufferData(GLBuffer* buffer, void* data, size_t size) {
+void GLContext::WriteBufferData(GLBuffer* buffer, const void* data, size_t size) {
     BindBuffer(buffer);
     GL_CHECK(glBufferData(buffer->type, size, data, buffer->usage));
 }

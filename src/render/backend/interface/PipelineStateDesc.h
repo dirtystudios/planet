@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Hash.h"
 #include <stdint.h>
 #include <cstddef>
 #include "BlendState.h"
@@ -21,19 +22,13 @@ struct PipelineStateDesc {
 }
 
 namespace std {
-template <> struct hash<gfx::PipelineStateDesc> {
+template <>
+struct hash<gfx::PipelineStateDesc> {
     typedef gfx::PipelineStateDesc argument_type;
     typedef std::size_t result_type;
-    result_type operator()(argument_type const& s) const {
-        result_type key = 0;
-        HashCombine(key, s.vertexShader);
-        HashCombine(key, s.pixelShader);
-        HashCombine(key, s.vertexLayout);
-        HashCombine(key, s.topology);
-        HashCombine(key, s.blendState);
-        HashCombine(key, s.rasterState);
-        HashCombine(key, s.depthState);
-        return key;
+    size_t operator()(argument_type const& s) const {
+        return HashCombine(s.vertexShader, s.pixelShader, s.vertexLayout, s.topology, s.blendState, s.rasterState,
+                           s.depthState);
     }
 };
 }

@@ -29,10 +29,29 @@
 #include "DepthState.h"
 #include "VertexLayoutDesc.h"
 #include "BufferAccess.h"
+#include "BufferUsageFlags.h"
 
 namespace gfx {
 class GLEnumAdapter {
 public:
+    static GLenum Convert(BufferUsageFlags flags) {
+        for (BufferUsageFlags flag : BufferUsageFlagsHelpers::values) {
+            if (EnumBitflagTrue(flags & flag)) {
+                switch (flag) {
+                case BufferUsageFlags::VertexBufferBit:
+                    return GL_ARRAY_BUFFER;
+                case BufferUsageFlags::IndexBufferBit:
+                    return GL_ELEMENT_ARRAY_BUFFER;
+                case BufferUsageFlags::ConstantBufferBit:
+                    return GL_UNIFORM_BUFFER;
+                default:
+                    assert(false);
+                }
+            }
+        }
+        assert(false);
+    }
+
     static BufferType ConvertBufferType(GLenum enumIn) {
         switch (enumIn) {
         case GL_ARRAY_BUFFER:
@@ -40,7 +59,7 @@ public:
         case GL_ELEMENT_ARRAY_BUFFER:
             return BufferType::IndexBuffer;
         case GL_UNIFORM_BUFFER:
-                return BufferType::ConstantBuffer;
+            return BufferType::ConstantBuffer;
         default:
             assert(false);
         }

@@ -64,7 +64,8 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
     for (auto& uiFrame : ui->frames) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame.get());
         // oops....
-        UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), uiFrame->GetScaledSize(m_viewport));
+        FrameScale scaled           = uiFrame->GetScaledSize(m_viewport);
+        UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), scaled);
         m_uiFrames.emplace(uiFrame.get(), renderObj);
         m_parentFrames.emplace(uiFrame->GetParent());
     }

@@ -51,10 +51,10 @@ private:
     std::unordered_map<uint32_t, GLPipelineState*> _pipelineStates;
     std::unordered_map<uint32_t, GLVertexLayout*> _vertexLayouts;
 
-    
     Pool<GLCommandBuffer, 1> _commandBufferPool;
 
     GLVaoCache _vaoCache;
+
 public:
     GLDevice();
     ~GLDevice();
@@ -62,8 +62,8 @@ public:
     int32_t InitializeDevice(const DeviceInitialization& deviceInit) { return 0; }
     void ResizeWindow(uint32_t width, uint32_t height);
     void PrintDisplayAdapterInfo();
-    
-    BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage);
+
+    BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr);
     ShaderId CreateShader(ShaderType type, const std::string& source);
     ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);

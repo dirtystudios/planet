@@ -58,10 +58,10 @@ RenderObj* SkyRenderer::Register(SimObj* simObj) {
     SkyboxRenderObj* renderObj = new SkyboxRenderObj();
     renderObj->textureCubeId   = skyboxTextureId;
 
-    uint32_t vertexCount = 36;
-    size_t bufferSize = sizeof(SkyboxVertex) * vertexCount;
-    renderObj->vertexBuffer =
-        GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, bufferSize, gfx::BufferUsage::Static);
+    uint32_t vertexCount    = 36;
+    size_t bufferSize       = sizeof(SkyboxVertex) * vertexCount;
+    gfx::BufferDesc desc    = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, bufferSize);
+    renderObj->vertexBuffer = GetRenderDevice()->AllocateBuffer(desc);
 
     glm::vec3* mapped =
         reinterpret_cast<glm::vec3*>(GetRenderDevice()->MapMemory(renderObj->vertexBuffer, gfx::BufferAccess::Write));

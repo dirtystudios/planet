@@ -51,7 +51,7 @@ private:
     size_t _bufferSize;
     ConstantBuffer* _viewData{nullptr};
 
-	Viewport _lastViewPort{};
+    Viewport _lastViewPort{};
 
     std::vector<UIFrameRenderObj*> _objs;
     const gfx::StateGroup* _base{nullptr};
@@ -59,9 +59,9 @@ private:
 public:
     void OnInit() {
         _viewData = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
-
-        _vertexBuffer = GetRenderDevice()->AllocateBuffer(gfx::BufferType::VertexBuffer, kDefaultVertexBufferSize,
-                                                          gfx::BufferUsage::Static);
+        gfx::BufferDesc desc =
+            gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize);
+        _vertexBuffer = GetRenderDevice()->AllocateBuffer(desc);
         _bufferOffset = 0;
         _bufferSize   = kDefaultVertexBufferSize;
 

@@ -24,12 +24,3 @@ enum class BlendFunc : uint8_t {
     Count,
 };
 }
-
-namespace std {
-template <> struct hash<gfx::BlendFunc> {
-    size_t operator()(const gfx::BlendFunc& x) const {
-        return std::hash<std::underlying_type<gfx::BlendFunc>::type>()(
-            static_cast<std::underlying_type<gfx::BlendFunc>::type>(x));
-    }
-};
-}

@@ -11,6 +11,7 @@
 #include "BufferAccess.h"
 #include "Log.h"
 #include "CommandBuffer.h"
+#include "BufferDesc.h"
 
 namespace gfx {
 
@@ -35,9 +36,9 @@ public:
     virtual void ResizeWindow(uint32_t width, uint32_t height) = 0;
     virtual void PrintDisplayAdapterInfo() = 0;
 
-    virtual BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage) = 0;
+    virtual BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr) = 0;
     virtual ShaderId CreateShader(ShaderType type, const std::string& source) = 0;
-    
+
     virtual ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;
     virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
     virtual TextureId CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data) = 0;
