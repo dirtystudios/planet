@@ -89,6 +89,10 @@
     <ClInclude Include="..\src\render\backend\impl\gl\GLTextureFormatDesc.h" />
     <ClInclude Include="..\src\render\backend\interface\Binding.h" />
     <ClInclude Include="..\src\render\backend\interface\BlendState.h" />
+    <ClInclude Include="..\src\render\backend\interface\BufferAccessFlags.h" />
+    <ClInclude Include="..\src\render\backend\interface\BufferDesc.h" />
+    <ClInclude Include="..\src\render\backend\interface\BufferLifetime.h" />
+    <ClInclude Include="..\src\render\backend\interface\BufferUsageFlags.h" />
     <ClInclude Include="..\src\render\backend\interface\CommandBuffer.h" />
     <ClInclude Include="..\src\render\backend\interface\DepthState.h" />
     <ClInclude Include="..\src\render\backend\interface\DrawCall.h" />
@@ -170,7 +174,10 @@
     <ClInclude Include="..\src\utilities\Callback.h" />
     <ClInclude Include="..\src\utilities\Config.h" />
     <ClInclude Include="..\src\utilities\ConsoleCommands.h" />
+    <ClInclude Include="..\src\utilities\DGAssert.h" />
+    <ClInclude Include="..\src\utilities\EnumTraits.h" />
     <ClInclude Include="..\src\utilities\File.h" />
+    <ClInclude Include="..\src\utilities\Hash.h" />
     <ClInclude Include="..\src\utilities\IniParser.h" />
     <ClInclude Include="..\src\utilities\Log.h" />
   </ItemGroup>

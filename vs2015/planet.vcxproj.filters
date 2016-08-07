@@ -435,6 +435,27 @@
     <ClInclude Include="..\src\components\UI.h">
       <Filter>components</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\BufferAccessFlags.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\BufferDesc.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\BufferLifetime.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\BufferUsageFlags.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\DGAssert.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\EnumTraits.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\Hash.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">

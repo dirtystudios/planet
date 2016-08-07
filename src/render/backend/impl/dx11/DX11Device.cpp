@@ -3,6 +3,8 @@
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 
+#include "EnumTraits.h"
+
 #include "DX11Utils.h"
 #include "Memory.h"
 #include "DrawItemDecoder.h"
@@ -12,29 +14,47 @@
 namespace gfx {
     std::vector<std::unique_ptr<const char[]>> DX11SemanticNameCache::m_semanticNameCache = {};
 
-    BufferId DX11Device::AllocateBuffer(BufferType type, size_t size, BufferUsage usage) {
+    BufferId DX11Device::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
         ComPtr<ID3D11Buffer> buffer = NULL;
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
-        bufferDesc.Usage = SafeGet(BufferUsageDX11, usage);
+        //bufferDesc.Usage = SafeGet(BufferUsageDX11, desc.);
 
-        if (type == BufferType::VertexBuffer)
+        if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
+            bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+        }
+        else if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadBit)) {
+            bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+        }
+        else {
+            assert(false && "unsupported access flags");
+        }
+
+        switch (desc.usageFlags) {
+        case BufferUsageFlags::VertexBufferBit:
             bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        else if (type == BufferType::IndexBuffer)
+            break;
+        case BufferUsageFlags::IndexBufferBit:
             bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-        else if (type == BufferType::ConstantBuffer)
+            break;
+        case BufferUsageFlags::ConstantBufferBit:
             bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        else { assert(false); }
+            break;
+        default:
+            assert(false);
+        }
+        
+        uint32_t buffSize = desc.size;
 
         if (bufferDesc.BindFlags == D3D11_BIND_CONSTANT_BUFFER) {
             // length must be multiple of 16
-            uint32_t sizeCheck = size % 16;
+            uint32_t sizeCheck = buffSize % 16;
             if (sizeCheck != 0) {
-                size += (16 - sizeCheck);
+                buffSize += (16 - sizeCheck);
             }
         }
 
-        bufferDesc.ByteWidth = static_cast<UINT>(size);
+        bufferDesc.ByteWidth = static_cast<UINT>(buffSize);
 
         if (bufferDesc.Usage == D3D11_USAGE_DYNAMIC)
             bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -42,10 +62,16 @@ namespace gfx {
             bufferDesc.CPUAccessFlags = 0;
         bufferDesc.MiscFlags = 0;
 
-        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, NULL, &buffer));
+        D3D11_SUBRESOURCE_DATA initData;
+        if (initialData) {
+            initData.pSysMem = initialData;
+            initData.SysMemPitch = 0;
+            initData.SysMemSlicePitch = 0;
+        }
+
+        DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, initialData ? &initData : NULL, &buffer));
         BufferDX11 bufferdx11;
         bufferdx11.buffer.Swap(buffer);
-        bufferdx11.type = type;
         return GenerateHandleEmplaceConstRef(m_buffers, bufferdx11);
     }
 

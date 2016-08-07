@@ -115,7 +115,6 @@ namespace gfx {
 
         struct BufferDX11 {
             ComPtr<ID3D11Buffer> buffer;
-            BufferType type;
         };
 
         struct ConstantBufferDX11 {
@@ -160,7 +159,7 @@ namespace gfx {
         void ResizeWindow(uint32_t width, uint32_t height);
         void PrintDisplayAdapterInfo();
 
-        BufferId AllocateBuffer(BufferType type, size_t size, BufferUsage usage);
+        BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData);
         ShaderId CreateShader(ShaderType type, const std::string& source);
 
         ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);

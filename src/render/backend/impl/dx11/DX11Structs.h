@@ -33,11 +33,6 @@ namespace gfx {
         DXGI_FORMAT_R32G32B32A32_FLOAT,
     };
 
-    static D3D11_USAGE BufferUsageDX11[(uint32_t)BufferUsage::Count] = {
-        D3D11_USAGE_DYNAMIC, // Static
-        D3D11_USAGE_DYNAMIC,   // Dynamic
-    };
-
     static D3D11_MAP MapAccessDX11[(uint32_t)BufferAccess::Count] = {
         D3D11_MAP_READ,               // Read
         D3D11_MAP_WRITE_DISCARD,      // Write
