@@ -11,9 +11,8 @@ enum class ShaderStageFlags : uint8_t {
     ComputeBit     = 1 << 3,
     PixelBit       = 1 << 4,
 
-    AllStages = 0x0f
+    AllStages = 0xff
 };
 }
 
-template <>
-struct is_enum_flags<gfx::ShaderStageFlags> : public std::true_type {};
+ALLOW_FLAGS_FOR_ENUM(gfx::ShaderStageFlags);

@@ -423,7 +423,7 @@
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderType.h">
       <Filter>render\backend\interface\enums</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h">
+    <ClInclude Include="..\src\render\backend\interface\enums\PixelFormat.h">
       <Filter>render\backend\interface\enums</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\backend\interface\enums\TextureSlot.h">
@@ -431,9 +431,6 @@
     </ClInclude>
     <ClInclude Include="..\src\render\backend\interface\enums\WindingOrder.h">
       <Filter>render\backend\interface\enums</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11CommandBuffer.h">
-      <Filter>render\backend\impl\dx11</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\gl\GLCommandBuffer.h">
       <Filter>render\backend\impl\gl</Filter>

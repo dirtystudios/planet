@@ -22,16 +22,15 @@
 uint32_t frame_count     = 0;
 double accumulate        = 0;
 double total_frame_count = 0;
-Camera cam;
-input::InputManager* inputManager;
+Camera                         cam;
+input::InputManager*           inputManager;
 controllers::PlayerController* playerController;
-RenderEngine* renderEngine;
-Simulation simulation;
-RenderView* playerView;
-Viewport* playerViewport;
-ui::UIManager* uiManager;
-ui::ConsoleUI* consoleUI;
-
+RenderEngine*                  renderEngine;
+Simulation                     simulation;
+RenderView*                    playerView;
+Viewport*                      playerViewport;
+ui::UIManager*                 uiManager;
+ui::ConsoleUI*                 consoleUI;
 
 SimObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -47,7 +46,7 @@ SimObj* CreateSkybox() {
     sky->imagePaths[3] = assetDirPath + "/skybox/TropicalSunnyDayDown2048.png";
     sky->imagePaths[4] = assetDirPath + "/skybox/TropicalSunnyDayFront2048.png";
     sky->imagePaths[5] = assetDirPath + "/skybox/TropicalSunnyDayBack2048.png";
-    
+
     renderEngine->Register(skyObj, RendererType::Skybox);
     return skyObj;
 }
@@ -149,8 +148,8 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     SimObj* worldFrame = simulation.AddSimObj();
     UI* ui = worldFrame->AddComponent<UI>(ComponentType::UI);
     Spatial* spatial = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
-    spatial->pos = glm::vec3(0.f, 0.f, 1.f);
-    spatial->direction = glm::vec3(0.f, 0.f, 0.f);
+    spatial->pos        = glm::vec3(0.f, 0.f, 1.f);
+    spatial->direction  = glm::vec3(0.f, 0.f, 0.f);
 
     uiManager->SetUIRenderer(static_cast<UIRenderer*>(renderEngine->GetRenderer(RendererType::Ui)));
 
@@ -160,6 +159,8 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     uiManager->AddFrameObj(worldFrame);
 }
 
+#include "TextRenderer.h"
+
 void App::OnStart() {
     sys::SysWindowSize windowSize = sys::GetWindowSize();
     playerViewport                = new Viewport();
@@ -167,7 +168,7 @@ void App::OnStart() {
     playerViewport->height        = static_cast<float>(windowSize.height);
     playerView                    = new RenderView(&cam, playerViewport);
     renderEngine                  = new RenderEngine(renderDevice, playerView);
-    inputManager = new input::InputManager();
+    inputManager                  = new input::InputManager();
     SetupUI(renderDevice, playerViewport);
 
     SetupInputBindings();
@@ -177,40 +178,46 @@ void App::OnStart() {
     cam.LookAt(0, 0, 0);
 
     // gogoogog planet
-    
+
     CreateSkybox();
 
-//    glm::dvec3 origin(0, 0, 0);
-//    glm::mat4 rotate;
-//    glm::mat4 translate;
-//    float diamater = 2500;
-//    float radius   = diamater / 2.f;
-//
-//    translate = glm::translate(glm::vec3(origin.x, origin.y, origin.z + radius));
-//    CreateTerrain(diamater, glm::mat4(), translate); // front
-//
-//    translate = glm::translate(glm::vec3(origin.x, origin.y + radius, origin.z));
-//    rotate = glm::rotate(glm::mat4(), -3.1415f / 2.f, glm::normalize(glm::vec3(1, 0, 0)));
-//    CreateTerrain(diamater, rotate, translate); // top
-//
-//    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(1, 0, 0)));
-//    CreateTerrain(diamater, rotate, glm::mat4()); // bottom
-//
-//    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
-//    CreateTerrain(diamater, rotate, glm::mat4()); // right
-//
-//    rotate = glm::rotate(glm::mat4(), -3.1415f/2.f, glm::normalize(glm::vec3(0, 1, 0)));
-//    CreateTerrain(diamater, rotate, glm::mat4()); // left
-//
-//    rotate = glm::rotate(glm::mat4(), -3.1415f, glm::normalize(glm::vec3(0, 1, 0)));
-//    CreateTerrain(diamater, rotate, glm::mat4()); // back
+    //    glm::dvec3 origin(0, 0, 0);
+    //    glm::mat4 rotate;
+    //    glm::mat4 translate;
+    //    float diamater = 2500;
+    //    float radius   = diamater / 2.f;
+    //
+    //    translate = glm::translate(glm::vec3(origin.x, origin.y, origin.z +
+    //    radius));
+    //    CreateTerrain(diamater, glm::mat4(), translate); // front
+    //
+    //    translate = glm::translate(glm::vec3(origin.x, origin.y + radius,
+    //    origin.z));
+    //    rotate = glm::rotate(glm::mat4(), -3.1415f / 2.f,
+    //    glm::normalize(glm::vec3(1, 0, 0)));
+    //    CreateTerrain(diamater, rotate, translate); // top
+    //
+    //    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f,
+    //    glm::normalize(glm::vec3(1, 0, 0)));
+    //    CreateTerrain(diamater, rotate, glm::mat4()); // bottom
+    //
+    //    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f,
+    //    glm::normalize(glm::vec3(0, 1, 0)));
+    //    CreateTerrain(diamater, rotate, glm::mat4()); // right
+    //
+    //    rotate = glm::rotate(glm::mat4(), -3.1415f/2.f,
+    //    glm::normalize(glm::vec3(0, 1, 0)));
+    //    CreateTerrain(diamater, rotate, glm::mat4()); // left
+    //
+    //    rotate = glm::rotate(glm::mat4(), -3.1415f, glm::normalize(glm::vec3(0,
+    //    1, 0)));
+    //    CreateTerrain(diamater, rotate, glm::mat4()); // back
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // TODO:: Maybe have system pump events instead of polling?
     sys::SysWindowSize windowSize = sys::GetWindowSize();
-    if (   windowSize.width != static_cast<uint32_t>(playerViewport->width)
-        || windowSize.height != static_cast<uint32_t>(playerViewport->height)) {
+    if (windowSize.width != static_cast<uint32_t>(playerViewport->width) || windowSize.height != static_cast<uint32_t>(playerViewport->height)) {
 
         playerViewport->width  = static_cast<float>(windowSize.width);
         playerViewport->height = static_cast<float>(windowSize.height);
@@ -242,7 +249,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
         ss << " | Pos: " << cam.pos;
         sys::SetWindowTitle(ss.str().c_str());
         frame_count = 0;
-        accumulate = 0.0;
+        accumulate  = 0.0;
     }
 }
 

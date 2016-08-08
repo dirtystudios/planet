@@ -329,7 +329,7 @@
     <ClInclude Include="..\src\render\backend\interface\enums\PrimitiveType.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderStage.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderType.h" />
-    <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\PixelFormat.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\TextureSlot.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\WindingOrder.h" />
     <ClInclude Include="..\src\render\backend\interface\Frame.h" />

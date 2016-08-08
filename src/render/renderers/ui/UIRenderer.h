@@ -75,7 +75,7 @@ public:
 
         gfx::RasterState rasterState;
         rasterState.fillMode = gfx::FillMode::Solid;
-        rasterState.cullMode = gfx::CullMode::Back;
+        rasterState.cullMode     = gfx::CullMode::Back;
         rasterState.windingOrder = gfx::WindingOrder::FrontCCW;
 
         gfx::DepthState depthState;
@@ -85,9 +85,7 @@ public:
         encoder.Begin();
         encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "ui"));
         encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "ui"));
-        gfx::VertexLayoutDesc vld = {{{
-            gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position,
-        }}};
+        gfx::VertexLayoutDesc vld = {{{gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float}}};
         encoder.SetVertexLayout(GetVertexLayoutCache()->Get(vld));
         encoder.SetBlendState(blendState);
         encoder.SetDepthState(depthState);

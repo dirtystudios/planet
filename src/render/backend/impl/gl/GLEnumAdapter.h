@@ -1,60 +1,63 @@
 #pragma once
 
 // TODO::Dont use map -- just use switch statements
+#include <cassert>
 #include <map>
 #include <string>
-#include <cassert>
 #ifdef _WIN32
 #else
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
 #endif
+#include "BlendFunc.h"
+#include "BlendMode.h"
+#include "BlendState.h"
+#include "BufferAccess.h"
 #include "BufferType.h"
 #include "BufferUsage.h"
-#include "ParamType.h"
-#include "BlendMode.h"
+#include "BufferUsageFlags.h"
 #include "CullMode.h"
-#include "DepthWriteMask.h"
-#include "FillMode.h"
-#include "BlendFunc.h"
-#include "BlendState.h"
-#include "WindingOrder.h"
-#include "TextureFormat.h"
-#include "GLTextureFormatDesc.h"
-#include "Helpers.h"
-#include "PrimitiveType.h"
-#include "GLStructs.h"
-#include "RasterState.h"
 #include "DepthFunc.h"
 #include "DepthState.h"
+#include "DepthWriteMask.h"
+#include "FillMode.h"
+#include "GLStructs.h"
+#include "GLTextureFormatDesc.h"
+#include "Helpers.h"
+#include "ParamType.h"
+#include "PixelFormat.h"
+#include "PrimitiveType.h"
+#include "RasterState.h"
 #include "VertexLayoutDesc.h"
-#include "BufferAccess.h"
-#include "BufferUsageFlags.h"
-
+#include "WindingOrder.h"
 
 namespace gfx {
 class GLEnumAdapter {
 public:
     static GLenum Convert(BufferUsageFlags flags) {
-        if(flags & BufferUsageFlags::VertexBufferBit) return GL_ARRAY_BUFFER;
-        else if(flags & BufferUsageFlags::IndexBufferBit) return GL_ELEMENT_ARRAY_BUFFER;
-        else if(flags & BufferUsageFlags::ConstantBufferBit) return GL_UNIFORM_BUFFER;
-        else assert(false);
+        if (flags & BufferUsageFlags::VertexBufferBit)
+            return GL_ARRAY_BUFFER;
+        else if (flags & BufferUsageFlags::IndexBufferBit)
+            return GL_ELEMENT_ARRAY_BUFFER;
+        else if (flags & BufferUsageFlags::ConstantBufferBit)
+            return GL_UNIFORM_BUFFER;
+        else
+            assert(false);
     }
 
     static BufferType ConvertBufferType(GLenum enumIn) {
         switch (enumIn) {
-        case GL_ARRAY_BUFFER:
-            return BufferType::VertexBuffer;
-        case GL_ELEMENT_ARRAY_BUFFER:
-            return BufferType::IndexBuffer;
-        case GL_UNIFORM_BUFFER:
-            return BufferType::ConstantBuffer;
-        default:
-            assert(false);
+            case GL_ARRAY_BUFFER:
+                return BufferType::VertexBuffer;
+            case GL_ELEMENT_ARRAY_BUFFER:
+                return BufferType::IndexBuffer;
+            case GL_UNIFORM_BUFFER:
+                return BufferType::ConstantBuffer;
+            default:
+                assert(false);
         }
     }
-    
+
     static GLenum Convert(BufferAccess enumIn) {
         switch (enumIn) {
             case BufferAccess::Read:
@@ -72,14 +75,14 @@ public:
 
     static GLenum Convert(BufferType enumIn) {
         switch (enumIn) {
-        case BufferType::VertexBuffer:
-            return GL_ARRAY_BUFFER;
-        case BufferType::IndexBuffer:
-            return GL_ELEMENT_ARRAY_BUFFER;
-        case BufferType::ConstantBuffer:
-            return GL_UNIFORM_BUFFER;
-        default:
-            assert(false);
+            case BufferType::VertexBuffer:
+                return GL_ARRAY_BUFFER;
+            case BufferType::IndexBuffer:
+                return GL_ELEMENT_ARRAY_BUFFER;
+            case BufferType::ConstantBuffer:
+                return GL_UNIFORM_BUFFER;
+            default:
+                assert(false);
         }
     }
 
@@ -95,32 +98,29 @@ public:
     static GLenum Convert(ShaderType enumIn) {
         assert(enumIn != ShaderType::Count);
         switch (enumIn) {
-        case ShaderType::VertexShader:
-            return GL_VERTEX_SHADER;
-        case ShaderType::PixelShader:
-            return GL_FRAGMENT_SHADER;
-        default:
-            assert(false);
+            case ShaderType::VertexShader:
+                return GL_VERTEX_SHADER;
+            case ShaderType::PixelShader:
+                return GL_FRAGMENT_SHADER;
+            default:
+                assert(false);
         }
     }
 
     static ShaderType ConvertShaderType(GLenum enumIn) {
         switch (enumIn) {
-        case GL_VERTEX_SHADER:
-            return ShaderType::VertexShader;
-        case GL_FRAGMENT_SHADER:
-            return ShaderType::PixelShader;
-        default:
-            assert(false);
+            case GL_VERTEX_SHADER:
+                return ShaderType::VertexShader;
+            case GL_FRAGMENT_SHADER:
+                return ShaderType::PixelShader;
+            default:
+                assert(false);
         }
     }
 
     static GLenum Convert(PrimitiveType enumIn) {
         assert(enumIn != PrimitiveType::Count);
-        static std::map<PrimitiveType, GLenum> primitiveTypeMapping = {
-            {PrimitiveType::Triangles, GL_TRIANGLES},
-            {PrimitiveType::Lines, GL_LINES}
-        };
+        static std::map<PrimitiveType, GLenum> primitiveTypeMapping = {{PrimitiveType::Triangles, GL_TRIANGLES}, {PrimitiveType::Lines, GL_LINES}};
 
         return primitiveTypeMapping[enumIn];
     }
@@ -128,65 +128,69 @@ public:
     static GLenum Convert(ParamType enumIn) {
         assert(enumIn != ParamType::Count);
         switch (enumIn) {
-        case ParamType::Int32:
-            return GL_INT;
-        case ParamType::UInt32:
-            return GL_UNSIGNED_INT;
-        case ParamType::Float:
-            return GL_FLOAT;
-        case ParamType::Float2:
-            return GL_FLOAT_VEC2;
-        case ParamType::Float3:
-            return GL_FLOAT_VEC3;
-        case ParamType::Float4:
-            return GL_FLOAT_VEC4;
-        case ParamType::Float4x4:
-            return GL_FLOAT_MAT4;
-        default:
-            assert(false);
+            case ParamType::Int32:
+                return GL_INT;
+            case ParamType::UInt32:
+                return GL_UNSIGNED_INT;
+            case ParamType::Float:
+                return GL_FLOAT;
+            case ParamType::Float2:
+                return GL_FLOAT_VEC2;
+            case ParamType::Float3:
+                return GL_FLOAT_VEC3;
+            case ParamType::Float4:
+                return GL_FLOAT_VEC4;
+            case ParamType::Float4x4:
+                return GL_FLOAT_MAT4;
+            default:
+                assert(false);
         }
     }
 
     static ParamType ConvertParamType(GLenum enumIn) {
         switch (enumIn) {
-        case GL_INT:
-            return ParamType::Int32;
-        case GL_UNSIGNED_INT:
-            return ParamType::UInt32;
-        case GL_FLOAT:
-            return ParamType::Float;
-        case GL_FLOAT_VEC2:
-            return ParamType::Float2;
-        case GL_FLOAT_VEC3:
-            return ParamType::Float3;
-        case GL_FLOAT_VEC4:
-            return ParamType::Float4;
-        case GL_FLOAT_MAT4:
-            return ParamType::Float4x4;
-        default:
-            assert(false);
+            case GL_INT:
+                return ParamType::Int32;
+            case GL_UNSIGNED_INT:
+                return ParamType::UInt32;
+            case GL_FLOAT:
+                return ParamType::Float;
+            case GL_FLOAT_VEC2:
+                return ParamType::Float2;
+            case GL_FLOAT_VEC3:
+                return ParamType::Float3;
+            case GL_FLOAT_VEC4:
+                return ParamType::Float4;
+            case GL_FLOAT_MAT4:
+                return ParamType::Float4x4;
+            default:
+                assert(false);
         }
     }
 
-    static GLTextureFormatDesc Convert(TextureFormat enumIn) {
+    static GLTextureFormatDesc Convert(PixelFormat enumIn) {
         switch (enumIn) {
-            case TextureFormat::R32F: return {GL_R32F, GL_FLOAT, GL_RED};
-            case TextureFormat::RGB32F: return {GL_RGB32F, GL_FLOAT, GL_RGB};
-            case TextureFormat::RGBA32F: return {GL_RGBA32F, GL_FLOAT, GL_RGBA};
-            case TextureFormat::R_U8: return {GL_RED, GL_UNSIGNED_BYTE, GL_RED};
-            case TextureFormat::RGB_U8: return {GL_RGB, GL_UNSIGNED_BYTE, GL_RGB};
-            case TextureFormat::RGBA_U8: return {GL_RGBA, GL_UNSIGNED_BYTE, GL_RGBA};
-            default: assert(false);
+            case PixelFormat::R32Float:
+                return {GL_R32F, GL_FLOAT, GL_RED};
+            case PixelFormat::RGB32Float:
+                return {GL_RGB32F, GL_FLOAT, GL_RGB};
+            case PixelFormat::RGBA32Float:
+                return {GL_RGBA32F, GL_FLOAT, GL_RGBA};
+            case PixelFormat::R8Unorm:
+                return {GL_RED, GL_UNSIGNED_BYTE, GL_RED};
+            case PixelFormat::RGB8Unorm:
+                return {GL_RGB, GL_UNSIGNED_BYTE, GL_RGB};
+            case PixelFormat::RGBA8Unorm:
+                return {GL_RGBA, GL_UNSIGNED_BYTE, GL_RGBA};
+            default:
+                assert(false);
         }
     }
 
     static GLenum Convert(BlendMode enumIn) {
         assert(enumIn != BlendMode::Count);
         static std::map<BlendMode, GLenum> blendModeMapping = {
-            {BlendMode::Add, GL_FUNC_ADD},
-            {BlendMode::Subtract, GL_FUNC_SUBTRACT},
-            {BlendMode::ReverseSubtract, GL_FUNC_REVERSE_SUBTRACT},
-            {BlendMode::Min, GL_MIN},
+            {BlendMode::Add, GL_FUNC_ADD}, {BlendMode::Subtract, GL_FUNC_SUBTRACT}, {BlendMode::ReverseSubtract, GL_FUNC_REVERSE_SUBTRACT}, {BlendMode::Min, GL_MIN},
             {BlendMode::Max, GL_MAX},
         };
 
@@ -223,9 +227,8 @@ public:
     static GLenum Convert(DepthFunc enumIn) {
         assert(enumIn != DepthFunc::Count);
         static std::map<DepthFunc, GLenum> depthFunceMaskMapping = {
-            {DepthFunc::Never, GL_NEVER},         {DepthFunc::Less, GL_LESS},       {DepthFunc::Equal, GL_EQUAL},
-            {DepthFunc::LessEqual, GL_LEQUAL},    {DepthFunc::Greater, GL_GREATER}, {DepthFunc::NotEqual, GL_NOTEQUAL},
-            {DepthFunc::GreaterEqual, GL_GEQUAL}, {DepthFunc::Always, GL_ALWAYS},
+            {DepthFunc::Never, GL_NEVER},     {DepthFunc::Less, GL_LESS},         {DepthFunc::Equal, GL_EQUAL},         {DepthFunc::LessEqual, GL_LEQUAL},
+            {DepthFunc::Greater, GL_GREATER}, {DepthFunc::NotEqual, GL_NOTEQUAL}, {DepthFunc::GreaterEqual, GL_GEQUAL}, {DepthFunc::Always, GL_ALWAYS},
         };
 
         return depthFunceMaskMapping[enumIn];
@@ -242,27 +245,32 @@ public:
 
     static GLVertexElement Convert(const VertexLayoutElement& element) {
         switch (element.type) {
-        case VertexAttributeType::Float4:
-            return {GL_FLOAT, 4};
-        case VertexAttributeType::Float3:
-            return {GL_FLOAT, 3};
-        case VertexAttributeType::Float2:
-            return {GL_FLOAT, 2};
-        case VertexAttributeType::Float:
-            return {GL_FLOAT, 1};
-        default:
-            assert(false);
+            case VertexAttributeType::Float4:
+                return {GL_FLOAT, 4};
+            case VertexAttributeType::Float3:
+                return {GL_FLOAT, 3};
+            case VertexAttributeType::Float2:
+                return {GL_FLOAT, 2};
+            case VertexAttributeType::Float:
+                return {GL_FLOAT, 1};
+            default:
+                assert(false);
         }
     }
 
-     static GLVertexElement Convert(const GLAttributeMetadata& attribute) {        
+    static GLVertexElement Convert(const GLAttributeMetadata& attribute) {
         assert(attribute.size == 1);
-        switch (attribute.type) {                        
-            case GL_FLOAT:  return { GL_FLOAT, 1 };
-            case GL_FLOAT_VEC2: return { GL_FLOAT, 2 };
-            case GL_FLOAT_VEC3: return { GL_FLOAT, 3 };
-            case GL_FLOAT_VEC4: return { GL_FLOAT, 4 };
-            default:        assert(false);
+        switch (attribute.type) {
+            case GL_FLOAT:
+                return {GL_FLOAT, 1};
+            case GL_FLOAT_VEC2:
+                return {GL_FLOAT, 2};
+            case GL_FLOAT_VEC3:
+                return {GL_FLOAT, 3};
+            case GL_FLOAT_VEC4:
+                return {GL_FLOAT, 4};
+            default:
+                assert(false);
         }
     }
 

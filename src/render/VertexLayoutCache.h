@@ -19,37 +19,23 @@ public:
     }
 
     gfx::VertexLayoutId Pos3fNormal3fTex2f() {
-        static gfx::VertexLayoutDesc layout{
-        { {
-                    gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position,
-                },
-                {
-                    gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Normal,
-                },
-                {
-                    gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0,
-        } } };
+        static gfx::VertexLayoutDesc layout{{{gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
+                                             {gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Normal, gfx::VertexAttributeStorage::Float},
+                                             {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float}}};
 
         return Get(layout);
     }
 
     gfx::VertexLayoutId Pos3fNormal3f() {
-        static gfx::VertexLayoutDesc layout{
-        {{
-                 gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position,
-             },
-             {
-                 gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Normal,
-        }}};
+        static gfx::VertexLayoutDesc layout{{{gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
+                                             {gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Normal, gfx::VertexAttributeStorage::Float}}};
 
         return Get(layout);
     }
 
     gfx::VertexLayoutId Pos3f() {
         static gfx::VertexLayoutDesc layout{{
-            {
-                gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position,
-            },
+            {gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
 
         }};
 
@@ -57,15 +43,10 @@ public:
     }
 
     gfx::VertexLayoutId GetPos2fTex2f() {
-        static gfx::VertexLayoutDesc layout{
-            {{
-                 gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Position,
-             },
-             {
-                 gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0,
-             }
+        static gfx::VertexLayoutDesc layout{{{gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
+                                             {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float}
 
-            }};
+        }};
 
         return Get(layout);
     }

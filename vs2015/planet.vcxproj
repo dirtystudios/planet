@@ -83,7 +83,6 @@
     <ClInclude Include="..\src\render\backend\impl\common\SimpleShaderLibrary.h" />
     <ClInclude Include="..\src\render\backend\impl\common\TexConvert.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11CBufferHelper.h" />
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11CommandBuffer.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11ContextState.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Device.h" />
@@ -124,7 +123,7 @@
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderDataType.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderStage.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderType.h" />
-    <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\PixelFormat.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\TextureSlot.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\WindingOrder.h" />
     <ClInclude Include="..\src\render\backend\interface\PipelineStateDesc.h" />

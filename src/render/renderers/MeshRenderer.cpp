@@ -73,12 +73,14 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
         drawCall.offset         = mesh->indexOffset;
         drawCall.primitiveCount = mesh->indexCount;
 
-        _item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &sg, 1);
+        std::vector<const gfx::StateGroup*> groups = {sg, renderQueue->defaults};
+
+        _item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, groups.data(), groups.size());
         delete sg;
-    }    
+    }
 
     MeshConstants* meshBuffer = cb1->Map<MeshConstants>();
-    meshBuffer->world = world;
+    meshBuffer->world         = world;
     cb1->Unmap();
 
     MaterialConstants* materialBuffer = cb2->Map<MaterialConstants>();

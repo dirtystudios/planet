@@ -1,21 +1,22 @@
 #pragma once
 
-#include "RenderDevice.h"
 #include "Binding.h"
+#include "RenderDevice.h"
 class ConstantBuffer {
 private:
-    gfx::BufferId _constantBuffer;
+    gfx::BufferId      _constantBuffer;
     gfx::RenderDevice* _device;
-    uint8_t* _mappedPtr = nullptr;
-    gfx::Binding _binding;
+    uint8_t*           _mappedPtr = nullptr;
+    gfx::Binding       _binding;
+
 public:
     ConstantBuffer(gfx::BufferId buffer, gfx::RenderDevice* device) : _constantBuffer(buffer), _device(device) {
-        _binding.resource = _constantBuffer;
-        _binding.type = gfx::Binding::Type::ConstantBuffer;
+        _binding.resource   = _constantBuffer;
+        _binding.type       = gfx::Binding::Type::ConstantBuffer;
+        _binding.stageFlags = gfx::ShaderStageFlags::AllStages;
     }
-    
 
-    template<class T>
+    template <class T>
     T* Map(gfx::BufferAccess access = gfx::BufferAccess::Write) {
         return reinterpret_cast<T*>(Map(access));
     }

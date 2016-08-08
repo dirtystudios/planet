@@ -15,7 +15,7 @@
 #include "BlendFunc.h"
 #include "BlendState.h"
 #include "WindingOrder.h"
-#include "TextureFormat.h"
+#include "PixelFormat.h"
 #include "Helpers.h"
 #include "PrimitiveType.h"
 #include "RasterState.h"
@@ -25,7 +25,7 @@
 #include "ShaderType.h"
 
 namespace gfx {
-    using namespace Microsoft::WRL;
+using namespace Microsoft::WRL;
     static DXGI_FORMAT VertexAttributeTypeDX11[(uint32_t)VertexAttributeType::Count] = {
         DXGI_FORMAT_R32_FLOAT,
         DXGI_FORMAT_R32G32_FLOAT,
@@ -40,13 +40,15 @@ namespace gfx {
         D3D11_MAP_READ_WRITE,         // ReadWrite
     };
 
-    static DXGI_FORMAT TextureFormatDX11[(uint32_t)TextureFormat::Count] = {
-        DXGI_FORMAT_R32_FLOAT,          // R32F
-        DXGI_FORMAT_R32G32B32_FLOAT,    // RGB32F
-        DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBA32F
-        DXGI_FORMAT_R8_UNORM,           // R_U8
-        DXGI_FORMAT_R8G8B8A8_UNORM,     // RGB_U8, Converted before load
-        DXGI_FORMAT_R8G8B8A8_UNORM,     // RGBA_U8
+    static DXGI_FORMAT PixelFormatDX11[(uint32_t) PixelFormat::Count] = {
+        DXGI_FORMAT_R8_UNORM,           // R8Unorm
+        DXGI_FORMAT_R8G8B8A8_UNORM,     // RGB8Unorm, Converted before load
+        DXGI_FORMAT_R8G8B8A8_UNORM,     // RGBA8Unorm
+        DXGI_FORMAT_R8_UINT,            // R8Uint
+        DXGI_FORMAT_R32_FLOAT,          // R32Float
+        DXGI_FORMAT_R32G32B32_FLOAT,    // RGB32Float
+        DXGI_FORMAT_R32G32B32A32_FLOAT, // RGBA32Float
+
     };
 
     static D3D11_PRIMITIVE_TOPOLOGY PrimitiveTypeDX11[(uint32_t)PrimitiveType::Count] = {
@@ -115,7 +117,7 @@ namespace gfx {
         ComPtr<ID3D11Texture2D> texture; // ID3D11Resource instead? 
         ComPtr<ID3D11ShaderResourceView> shaderResourceView;
         DXGI_FORMAT format;
-        TextureFormat requestedFormat;
+        PixelFormat requestedFormat;
     };
 
     struct InputLayoutDX11 {

@@ -9,20 +9,23 @@
 #endif
 
 #include "GLDevice.h"
+#ifndef _WIN32
+#include "MetalDevice.h"
+#endif
 
-#include "Log.h"
-#include "Config.h"
 #include <map>
+#include "Config.h"
 #include "DGAssert.h"
+#include "Log.h"
 #include "RenderDeviceApi.h"
 
-SDL_Window* _window = NULL;
-SDL_Event _e;
-uint32_t _window_width    = 1200;
-uint32_t _window_height   = 800;
-const char* _window_title = "dirty";
-app::Application* _app    = {nullptr};
-bool shouldQuit = false;
+SDL_Window*        _window = NULL;
+SDL_Event          _e;
+uint32_t           _window_width  = 1200;
+uint32_t           _window_height = 800;
+const char*        _window_title  = "dirty";
+app::Application*  _app           = {nullptr};
+bool               shouldQuit     = false;
 std::vector<float> inputValues((int)input::InputCode::COUNT);
 std::map<int, input::InputCode> sdlkMapping;
 
@@ -146,7 +149,12 @@ int sys::Run(app::Application* app) {
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
     const char* subsystem = "Unknown System!";
-    int initRtn = 0;
+    int         initRtn   = 0;
+
+    gfx::DeviceInitialization devInit;
+    devInit.windowHeight = _window_height;
+    devInit.windowWidth  = _window_width;
+
     if (SDL_GetWindowWMInfo(_window, &info)) {
         switch (info.subsystem) {
             case SDL_SYSWM_UNKNOWN:
@@ -164,23 +172,29 @@ int sys::Run(app::Application* app) {
                     glGetError();
                     _app->renderDevice = new gfx::GLDevice();
                 } else {
-                    _app->renderDevice = new gfx::DX11Device();
-                    std::string usePrebuiltShadersConfig =
-                        config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
+                    _app->renderDevice                   = new gfx::DX11Device();
+                    std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
 
-                    gfx::DeviceInitialization devInit;
                     devInit.windowHandle       = info.info.win.window;
-                    devInit.windowHeight       = _window_height;
-                    devInit.windowWidth        = _window_width;
                     devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
-                    _app->renderDevice->InitializeDevice(devInit);
                 }
 #endif
                 break;
-            case SDL_SYSWM_COCOA:
-                subsystem          = "Apple OS X";
-                _app->renderDevice = new gfx::GLDevice();
+            case SDL_SYSWM_COCOA: {
+                subsystem = "Apple OS X";
+#ifndef _WIN32
+                if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
+                    _app->renderDevice = new gfx::GLDevice();
+                } else if (deviceApi == gfx::RenderDeviceApi::Metal) {
+                    _app->renderDevice = new gfx::MetalDevice();
+                } else {
+                    dg_assert_fail_nm();
+                }
+                devInit.windowHandle       = info.info.cocoa.window;
+                devInit.usePrebuiltShaders = false;
                 break;
+#endif
+            } break;
             // case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
             default:
                 dg_assert_fail_nm();
@@ -190,10 +204,11 @@ int sys::Run(app::Application* app) {
         LOG_E("Couldn't get window information: %s\n", SDL_GetError());
     }
 
+    _app->renderDevice->InitializeDevice(devInit);
+
     PopulateKeyMapping();
 
-    LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch,
-          subsystem);
+    LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch, subsystem);
 
     if (initRtn != 0) {
         LOG_E("%s", "DeviceRender Init Failed.");

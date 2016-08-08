@@ -372,20 +372,19 @@ PipelineStateId GLDevice::CreatePipelineState(const PipelineStateDesc& desc) {
     return _resourceManager.AddResource(pipelineState);
 }
 
-TextureId GLDevice::CreateTexture2D(TextureFormat texFormat, uint32_t width, uint32_t height, void* data) {
+TextureId GLDevice::CreateTexture2D(PixelFormat texFormat, uint32_t width, uint32_t height, void* data) {
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_2D;
 
     GL_CHECK(glGenTextures(1, &texture->id));
     _context.BindTexture(0, texture);
-    if (texFormat == TextureFormat::R_U8) {
+    if (texFormat == PixelFormat::R8Unorm) {
         GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
     }
     // TODO: Move to GLContext
-    GL_CHECK(glTexImage2D(texture->type, 0, texture->format.internalFormat, width, height, 0,
-                          texture->format.dataFormat, texture->format.dataType, data));
-    if (texFormat == TextureFormat::R_U8) {
+    GL_CHECK(glTexImage2D(texture->type, 0, texture->format.internalFormat, width, height, 0, texture->format.dataFormat, texture->format.dataType, data));
+    if (texFormat == PixelFormat::R8Unorm) {
         GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
     }
 
@@ -397,8 +396,7 @@ TextureId GLDevice::CreateTexture2D(TextureFormat texFormat, uint32_t width, uin
     return _resourceManager.AddResource(texture);
 }
 
-TextureId GLDevice::CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height,
-                                       uint32_t depth) {
+TextureId GLDevice::CreateTextureArray(PixelFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_2D_ARRAY;
@@ -416,10 +414,10 @@ TextureId GLDevice::CreateTextureArray(TextureFormat texFormat, uint32_t levels,
     return _resourceManager.AddResource(texture);
 }
 
-TextureId GLDevice::CreateTextureCube(TextureFormat texFormat, uint32_t width, uint32_t height, void** data) {
+TextureId GLDevice::CreateTextureCube(PixelFormat texFormat, uint32_t width, uint32_t height, void** data) {
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
-    texture->type = GL_TEXTURE_CUBE_MAP;
+    texture->type      = GL_TEXTURE_CUBE_MAP;
     assert(width == height);
 
     GL_CHECK(glGenTextures(1, &texture->id));
@@ -427,8 +425,8 @@ TextureId GLDevice::CreateTextureCube(TextureFormat texFormat, uint32_t width, u
 
     // TODO: Move to GLContext
     for (uint32_t side = 0; side < 6; ++side) {
-        GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, texture->format.internalFormat, width, height,
-                              0, texture->format.dataFormat, texture->format.dataType, data[side]));
+        GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, 0, texture->format.internalFormat, width, height, 0, texture->format.dataFormat, texture->format.dataType,
+                              data[side]));
     }
 
     GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -449,7 +447,7 @@ VertexLayoutId GLDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
     GLVertexLayout* vertexLayout = new GLVertexLayout();
     for (const VertexLayoutElement& element : desc.elements) {
         GLVertexElement glElement = GLEnumAdapter::Convert(element);
-        vertexLayout->stride += GetByteCount(element.type);
+        vertexLayout->stride += GetByteCount(element);
         vertexLayout->elements.push_back(glElement);
     }
 
@@ -491,10 +489,10 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
         _context.ForceBindBuffer(indexBuffer);
     }
 
-    size_t offset                                      = 0; // not sure if this is correct
+    size_t                                  offset     = 0;                                 // not sure if this is correct
     const std::vector<GLAttributeMetadata>& attributes = vertexShader->metadata.attributes; // should be sorted
     for (uint32_t idx = 0; idx < vertexLayout->elements.size(); ++idx) {
-        const GLVertexElement& element       = vertexLayout->elements[idx];
+        const GLVertexElement&     element   = vertexLayout->elements[idx];
         const GLAttributeMetadata& attribute = attributes[idx];
 
         // Attributes of a vertex shader are limited compared to attribute of other shaders
@@ -508,8 +506,7 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
               GLEnumToString(attributeAsElement.type).c_str(), vertexLayout->stride, offset, attribute.location);
 
         GL_CHECK(glEnableVertexAttribArray(attribute.location));
-        GL_CHECK(glVertexAttribPointer(attribute.location, element.count, element.type, GL_FALSE,
-                                       vertexLayout->stride, (const void*)offset));
+        GL_CHECK(glVertexAttribPointer(attribute.location, element.count, element.type, GL_FALSE, vertexLayout->stride, (const void*)offset));
 
         offset += GetByteCount(GLEnumAdapter::ConvertParamType(element.type)) * element.count;
     }
@@ -520,18 +517,17 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
 }
 
 CommandBuffer* GLDevice::CreateCommandBuffer() {
-    GLCommandBuffer* cmdBuffer = _commandBufferPool.Get();
+    CommandBuffer* cmdBuffer = _commandBufferPool.Get();
     assert(cmdBuffer);
     cmdBuffer->Reset();
     return cmdBuffer;
 }
-void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
-    _submittedBuffers.insert(end(_submittedBuffers), begin(cmdBuffers), end(cmdBuffers));
-}
+void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) { _submittedBuffers.insert(end(_submittedBuffers), begin(cmdBuffers), end(cmdBuffers)); }
 
 void GLDevice::BindResource(const Binding& binding) {
     if (binding.stageFlags != gfx::ShaderStageFlags::AllStages) {
-        LOG_W("Unsupported ShaderStageFlags configuration. Currently only support AllStages. Will render as AllStages");
+        LOG_W("Unsupported ShaderStageFlags configuration. Currently only support "
+              "AllStages. Will render as AllStages");
     }
 
     switch (binding.type) {
@@ -548,92 +544,64 @@ void GLDevice::BindResource(const Binding& binding) {
     }
 }
 
-void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
 
-    ByteBuffer& _byteBuffer = cmdBuffer->GetByteBuffer();
-    GLCommandBuffer::CommandType cmd;
-    while (_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
-        _byteBuffer >> cmd;
-        switch (cmd) {
-            case GLCommandBuffer::CommandType::DrawItem: {
-                LOG_D("%s", "DrawItem");
-                const DrawItem* item;
-                _byteBuffer >> item;
+void GLDevice::Execute(CommandBuffer* cmdBuffer) {
+    const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
+    for (const DrawItem* item : *items) {
+        LOG_D("%s", "DrawItem");
 
-                DrawItemDecoder decoder(item);
+        DrawItemDecoder decoder(item);
 
-                PipelineStateId psId;
-                DrawCall drawCall;
-                BufferId indexBufferId;
-                size_t streamCount  = decoder.GetStreamCount();
-                size_t bindingCount = decoder.GetBindingCount();
-                std::vector<VertexStream> streams(streamCount);
-                std::vector<Binding> bindings(bindingCount);
-                VertexStream* streamPtr = streams.data();
-                Binding* bindingPtr     = bindings.data();
+        PipelineStateId           psId;
+        DrawCall                  drawCall;
+        BufferId                  indexBufferId;
+        size_t                    streamCount  = decoder.GetStreamCount();
+        size_t                    bindingCount = decoder.GetBindingCount();
+        std::vector<VertexStream> streams(streamCount);
+        std::vector<Binding>      bindings(bindingCount);
+        VertexStream*             streamPtr  = streams.data();
+        Binding*                  bindingPtr = bindings.data();
 
-                assert(streamCount == 1); // > 1 not supported
-                
-                assert(decoder.ReadDrawCall(&drawCall));
-                assert(decoder.ReadPipelineState(&psId));
-                assert(decoder.ReadIndexBuffer(&indexBufferId));
-                assert(decoder.ReadVertexStreams(&streamPtr));
-                if(bindingCount > 0) {
-                    assert(decoder.ReadBindings(&bindingPtr));
-                }
-                
-                GLPipelineState* pipelineState = _resourceManager.GetResource<GLPipelineState>(psId);
-                assert(pipelineState);
-                _context.BindPipelineState(pipelineState);
-                
-                const VertexStream& stream    = streams[0];
-                GLShaderProgram* vertexShader = pipelineState->vertexShader;
-                GLVertexLayout* vertexLayout  = pipelineState->vertexLayout;
-                GLBuffer* vertexBuffer        = _resourceManager.GetResource<GLBuffer>(stream.vertexBuffer);
-                GLBuffer* indexBuffer         = indexBufferId ? _resourceManager.GetResource<GLBuffer>(indexBufferId) : nullptr;
-                assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
-                assert(vertexLayout);
+        assert(streamCount == 1); // > 1 not supported
 
-                GLVertexArrayObject* vao =
-                    GetOrCreateVertexArrayObject(vertexShader, vertexBuffer, stream, indexBuffer, vertexLayout);
-                assert(vao);
+        assert(decoder.ReadDrawCall(&drawCall));
+        assert(decoder.ReadPipelineState(&psId));
+        assert(decoder.ReadIndexBuffer(&indexBufferId));
+        assert(decoder.ReadVertexStreams(&streamPtr));
+        if (bindingCount > 0) {
+            assert(decoder.ReadBindings(&bindingPtr));
+        }
 
-                _context.BindVertexArrayObject(vao);
+        GLPipelineState* pipelineState = _resourceManager.GetResource<GLPipelineState>(psId);
+        assert(pipelineState);
+        _context.BindPipelineState(pipelineState);
 
-                // bindings
-                for (const Binding& binding : bindings) {
-                    BindResource(binding);
-                }
+        const VertexStream& stream       = streams[0];
+        GLShaderProgram*    vertexShader = pipelineState->vertexShader;
+        GLVertexLayout*     vertexLayout = pipelineState->vertexLayout;
+        GLBuffer*           vertexBuffer = _resourceManager.GetResource<GLBuffer>(stream.vertexBuffer);
+        GLBuffer*           indexBuffer  = indexBufferId ? _resourceManager.GetResource<GLBuffer>(indexBufferId) : nullptr;
+        assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
+        assert(vertexLayout);
 
-                switch (drawCall.type) {
-                    case DrawCall::Type::Arrays: {
-                        GL_CHECK(glDrawArrays(pipelineState->topology, (GLint)drawCall.offset,
-                                              (GLsizei)drawCall.primitiveCount));
-                        break;
-                    }
-                    case DrawCall::Type::Indexed: {
-                        assert(indexBuffer);
-                        GL_CHECK(glDrawElements(pipelineState->topology, drawCall.primitiveCount, GL_UNSIGNED_INT,
-                                                ((char*)0 + (drawCall.offset))));
-                        break;
-                    }
-                }
+        GLVertexArrayObject* vao = GetOrCreateVertexArrayObject(vertexShader, vertexBuffer, stream, indexBuffer, vertexLayout);
+        assert(vao);
 
+        _context.BindVertexArrayObject(vao);
+
+        // bindings
+        for (const Binding& binding : bindings) {
+            BindResource(binding);
+        }
+
+        switch (drawCall.type) {
+            case DrawCall::Type::Arrays: {
+                GL_CHECK(glDrawArrays(pipelineState->topology, (GLint)drawCall.offset, (GLsizei)drawCall.primitiveCount));
                 break;
             }
-            case GLCommandBuffer::CommandType::Clear: {
-                LOG_D("%s", "Clear");
-
-                GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-                break;
-            }
-            case GLCommandBuffer::CommandType::BindResource: {
-                LOG_D("%s", "BindResource");
-                Binding binding;
-                _byteBuffer >> binding;
-
-                BindResource(binding);
-
+            case DrawCall::Type::Indexed: {
+                assert(indexBuffer);
+                GL_CHECK(glDrawElements(pipelineState->topology, drawCall.primitiveCount, GL_UNSIGNED_INT, ((char*)0 + (drawCall.offset))));
                 break;
             }
         }
@@ -649,17 +617,16 @@ void GLDevice::UnmapMemory(BufferId bufferId) {
     GLBuffer* buffer = _resourceManager.GetResource<GLBuffer>(bufferId);
     _context.Unmap(buffer);
 }
-    
 
 void GLDevice::RenderFrame() {
     LOG_D("%s", "RenderFrame");
+    GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
     for (uint32_t idx = 0; idx < _submittedBuffers.size(); ++idx) {
-        GLCommandBuffer* glBuffer = reinterpret_cast<GLCommandBuffer*>(_submittedBuffers[idx]);
-        Execute(glBuffer);
-        glBuffer->Reset();
+        CommandBuffer* cmdBuffer = _submittedBuffers[idx];
+        Execute(cmdBuffer);
+        cmdBuffer->Reset();
     }
     _submittedBuffers.clear();
-    
-    
 }
 }

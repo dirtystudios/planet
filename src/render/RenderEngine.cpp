@@ -25,36 +25,36 @@ ConstantBuffer* viewConstantsBuffer;
 CommandBuffer* cmdbuf;
 
 RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
-    // _renderers.insert({RendererType::ChunkedTerrain, new ChunkedTerrainRenderer()});
+    // _renderers.insert({RendererType::ChunkedTerrain, new
+    // ChunkedTerrainRenderer()});
     _renderers.insert({RendererType::Skybox, new SkyRenderer()});
     _renderers.insert({RendererType::Mesh, new MeshRenderer()});
     _renderers.insert({RendererType::Ui, new UIRenderer()});
     _renderers.insert({RendererType::Text, new TextRenderer()});
 
-    std::string shaderDirPath =
-        config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
-    std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
+    std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
+    std::string assetDirPath  = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
 
     _shaderCache           = new ShaderCache(_device, shaderDirPath);
     _pipelineStateCache    = new PipelineStateCache(_device);
     _vertexLayoutCache     = new VertexLayoutCache(_device);
     _meshCache             = new MeshCache(_device, assetDirPath);
     _constantBufferManager = new ConstantBufferManager(_device);
-    _materialCache      = new MaterialCache(_device, assetDirPath);
+    _materialCache         = new MaterialCache(_device, assetDirPath);
 
-   
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants));
-    cmdbuf = _device->CreateCommandBuffer();
+    cmdbuf              = _device->CreateCommandBuffer();
     for (auto p : _renderers) {
         LOG_D("Initializing Renderer: %d", p.first);
         p.second->Init(this);
     }
-    
+
     StateGroupEncoder encoder;
     encoder.Begin();
     encoder.SetBlendState(BlendState());
     encoder.SetRasterState(RasterState());
     encoder.SetDepthState(DepthState());
+    encoder.BindResource(viewConstantsBuffer->GetBinding(0));
     _stateGroupDefaults = encoder.End();
 }
 
@@ -73,8 +73,9 @@ RenderEngine::~RenderEngine() {
     }
 
     _renderers.clear();
-    
-    if(_stateGroupDefaults) delete _stateGroupDefaults;
+
+    if (_stateGroupDefaults)
+        delete _stateGroupDefaults;
 }
 
 RenderObj* RenderEngine::Register(SimObj* simObj, RendererType rendererType) {
@@ -93,39 +94,38 @@ void RenderEngine::Unregister(RenderObj* renderObj) {
     renderer->Unregister(renderObj);
 }
 
-void RenderEngine::RenderFrame() {        
-    cmdbuf->Reset();          
-    RenderQueue queue(cmdbuf);    
-    
-    
-    cmdbuf->Clear(1, 0, 0, 1);
-    
+void RenderEngine::RenderFrame() {
+    cmdbuf->Reset();
+    RenderQueue queue(cmdbuf);
+    queue.defaults = _stateGroupDefaults;
+
     // update view constants
     ViewConstants* mapped = viewConstantsBuffer->Map<ViewConstants>();
-    mapped->eye = _view->camera->pos;
-    mapped->proj = _view->camera->BuildProjection();
-    mapped->view = _view->camera->BuildView();
+    mapped->eye           = _view->camera->pos;
+    mapped->proj          = _view->camera->BuildProjection();
+    mapped->view          = _view->camera->BuildView();
     viewConstantsBuffer->Unmap();
-    
-    cmdbuf->BindResource(viewConstantsBuffer->GetBinding(0));
-    
 
     assert(_view);
     for (const std::pair<RendererType, Renderer*>& p : _renderers) {
-        p.second->Submit(&queue, _view);
+        if (p.second->IsActive()) {
+            p.second->Submit(&queue, _view);
+        }
     }
     queue.Submit(_device);
-    _device->RenderFrame();    
+    _device->RenderFrame();
 }
 
 ShaderCache* RenderEngine::GetShaderCache() { return _shaderCache; }
 
 PipelineStateCache* RenderEngine::GetPipelineStateCache() { return _pipelineStateCache; }
 
-gfx::RenderDevice* RenderEngine::GetRenderDevice() { return _device; }
+gfx::RenderDevice *RenderEngine::GetRenderDevice() { return _device; }
 
-VertexLayoutCache* RenderEngine::GetVertexLayoutCache() { return _vertexLayoutCache; }
-MeshCache* RenderEngine::GetMeshCache() { return _meshCache; }
+VertexLayoutCache *RenderEngine::GetVertexLayoutCache() {
+  return _vertexLayoutCache;
+}
+MeshCache *RenderEngine::GetMeshCache() { return _meshCache; }
 ConstantBufferManager* RenderEngine::GetConstantBufferManager() { return _constantBufferManager; }
 MaterialCache* RenderEngine::GetMaterialCache() { return _materialCache; }
 

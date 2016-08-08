@@ -2,11 +2,12 @@
 #include "RenderDevice.h"
 #include "DX11Context.h"
 #include "DX11CBufferHelper.h"
-#include "DX11CommandBuffer.h"
+#include "CommandBuffer.h"
 #include "SimpleShaderLibrary.h"
 #include "ResourceId.h"
 #include "Pool.h"
 #include "DMath.h"
+#include "ByteBuffer.h"
 
 #include <memory>
 #include <cstring>
@@ -126,7 +127,7 @@ namespace gfx {
 
 
         SimpleShaderLibrary m_shaderLibrary;
-        Pool<DX11CommandBuffer, 1> m_commandBufferPool;
+        Pool<CommandBuffer, 1> m_commandBufferPool;
 
         ByteBuffer m_drawItemByteBuffer;
 
@@ -147,11 +148,11 @@ namespace gfx {
 
         ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-        TextureId CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data);
-        TextureId CreateTextureArray(TextureFormat format, uint32_t levels, uint32_t width, uint32_t height,
+        TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
+        TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height,
             uint32_t depth);
 
-        TextureId CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data);
+        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data);
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
         CommandBuffer* CreateCommandBuffer();
@@ -171,12 +172,12 @@ namespace gfx {
         ShaderId CreateShader(ShaderType type, const std::string& source);
 
         void SetPipelineState(const PipelineStateDX11& state);
-        void Execute(DX11CommandBuffer* cmdBuffer);
+        void Execute(CommandBuffer* cmdBuffer);
 
         // Texture Converter.
         // Returns pointer to use for data, may point to data or unique_ptr, 
         // unique_ptr is used to clear allocated data if needed
-        void* TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, TextureFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef);
+        void* TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, PixelFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef);
 
         void CreateSetDefaultSampler();
         ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const std::string& source);

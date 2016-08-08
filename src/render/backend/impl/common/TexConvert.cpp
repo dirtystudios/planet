@@ -57,4 +57,4 @@ namespace gfx {
             src32 += 3;
         }
     }
-}
+    }

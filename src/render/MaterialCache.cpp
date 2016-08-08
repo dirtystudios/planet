@@ -10,22 +10,20 @@ MaterialCache::MaterialCache(gfx::RenderDevice* device, const std::string& baseD
     }
 }
 
-
 Material* MaterialCache::Get(const std::string& name, gfx::ShaderId ps) {
     auto it = _cache.find(name);
     if (it != _cache.end()) {
         return it->second.get();
     }
 
-    std::string fpath = _baseDir + "/" + name;
+    std::string  fpath   = _baseDir + "/" + name;
     MaterialData matData = materialImport::LoadMaterialDataFromFile(fpath);
-    Image* img = matData.diffuseTexture.get();
+    Image*       img     = matData.diffuseTexture.get();
 
     std::unique_ptr<Material> mat(new Material());
 
-    gfx::TextureId texId = _device->CreateTexture2D(
-        img->pixel_format == PixelFormat::RGB ? gfx::TextureFormat::RGB_U8 : gfx::TextureFormat::RGBA_U8,
-        img->width, img->height, img->data);
+    gfx::TextureId texId =
+        _device->CreateTexture2D(img->pixel_format == PixelFormat::RGB ? gfx::PixelFormat::RGB8Unorm : gfx::PixelFormat::RGBA8Unorm, img->width, img->height, img->data);
 
     mat->diffuseTextures.push_back(texId);
     mat->KaData = matData.Ka;

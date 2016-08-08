@@ -383,7 +383,7 @@ namespace gfx {
             ied.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
             ied.InstanceDataStepRate = 0;
             ied.Format = SafeGet(VertexAttributeTypeDX11, layout.type);
-            stride += GetByteCount(layout.type);
+            stride += GetByteCount(layout);
             first = false;
             ieds.emplace_back(ied);
         }
@@ -413,7 +413,7 @@ namespace gfx {
         return UseHandleEmplaceConstRef(m_inputLayouts, hash, layout);
     }
 
-    TextureId DX11Device::CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data) {
+    TextureId DX11Device::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data) {
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -425,7 +425,7 @@ namespace gfx {
         tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
         tdesc.CPUAccessFlags = 0;
         tdesc.MiscFlags = 0;
-        tdesc.Format = SafeGet(TextureFormatDX11, format);;
+        tdesc.Format = SafeGet(PixelFormatDX11, format);;
 
         std::unique_ptr<byte> dataByteRef;
         D3D11_SUBRESOURCE_DATA srd;
@@ -460,7 +460,7 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
-    TextureId DX11Device::CreateTextureArray(TextureFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
+    TextureId DX11Device::CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -472,7 +472,7 @@ namespace gfx {
         tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
         tdesc.CPUAccessFlags = 0;
         tdesc.MiscFlags = 0;
-        tdesc.Format = SafeGet(TextureFormatDX11, format);
+        tdesc.Format = SafeGet(PixelFormatDX11, format);
 
         ComPtr<ID3D11Texture2D> texture;
 
@@ -501,7 +501,7 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
-    TextureId DX11Device::CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data) {
+    TextureId DX11Device::CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data) {
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -513,7 +513,7 @@ namespace gfx {
         tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
         tdesc.CPUAccessFlags = 0;
         tdesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
-        tdesc.Format = SafeGet(TextureFormatDX11, format);
+        tdesc.Format = SafeGet(PixelFormatDX11, format);
 
         std::unique_ptr<byte> dataByteRef[6];
         D3D11_SUBRESOURCE_DATA srd[6];
@@ -551,9 +551,9 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
-    void* DX11Device::TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, TextureFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef) {
+    void* DX11Device::TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, PixelFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef) {
         // currently we only care about converting 24 bit textures
-        if (reqFormat == TextureFormat::RGB_U8) {
+        if (reqFormat == PixelFormat::RGB8Unorm) {
             size_t numPixels = tDesc.Width * tDesc.Height;
             dataRef.reset(new byte[numPixels * 4]);
             Convert24BitTo32Bit(reinterpret_cast<uintptr_t>(data), 
@@ -564,7 +564,7 @@ namespace gfx {
     }
 
     CommandBuffer* DX11Device::CreateCommandBuffer() {
-        DX11CommandBuffer* cmdBuffer = m_commandBufferPool.Get();
+        CommandBuffer* cmdBuffer = m_commandBufferPool.Get();
         assert(cmdBuffer);
         cmdBuffer->Reset();
         return cmdBuffer;
@@ -588,92 +588,45 @@ namespace gfx {
         m_submittedBuffers.insert(end(m_submittedBuffers), begin(cmdBuffers), end(cmdBuffers));
     }
 
-    void DX11Device::Execute(DX11CommandBuffer* cmdBuffer) {
-        ByteBuffer& _byteBuffer = cmdBuffer->GetByteBuffer();
-        DX11CommandBuffer::CommandType cmd;
-        while (_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
-            _byteBuffer >> cmd;
-            switch (cmd) {
-            case DX11CommandBuffer::CommandType::DrawItem: {
-                const DrawItem* item;
-                _byteBuffer >> item;
+    void DX11Device::Execute(CommandBuffer* cmdBuffer) {
+        const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
+        for(const DrawItem* item : *items) {                        
+            DrawItemDecoder decoder(item);
 
-                DrawItemDecoder decoder(item);
+            PipelineStateId psId;
+            DrawCall drawCall;
+            BufferId indexBufferId;
+            size_t streamCount = decoder.GetStreamCount();
+            size_t bindingCount = decoder.GetBindingCount();
+            std::vector<VertexStream> streams(streamCount);
+            std::vector<Binding> bindings(bindingCount);
+            VertexStream* streamPtr = streams.data();
+            Binding* bindingPtr = bindings.data();
 
-                PipelineStateId psId;
-                DrawCall drawCall;
-                BufferId indexBufferId;
-                size_t streamCount = decoder.GetStreamCount();
-                size_t bindingCount = decoder.GetBindingCount();
-                std::vector<VertexStream> streams(streamCount);
-                std::vector<Binding> bindings(bindingCount);
-                VertexStream* streamPtr = streams.data();
-                Binding* bindingPtr = bindings.data();
+            assert(streamCount == 1); // > 1 not supported
 
-                assert(streamCount == 1); // > 1 not supported
-
-                assert(decoder.ReadDrawCall(&drawCall));
-                assert(decoder.ReadPipelineState(&psId));
-                assert(decoder.ReadIndexBuffer(&indexBufferId));
-                assert(decoder.ReadVertexStreams(&streamPtr));
-                if (bindingCount > 0) {
-                    assert(decoder.ReadBindings(&bindingPtr));
-                }
+            assert(decoder.ReadDrawCall(&drawCall));
+            assert(decoder.ReadPipelineState(&psId));
+            assert(decoder.ReadIndexBuffer(&indexBufferId));
+            assert(decoder.ReadVertexStreams(&streamPtr));
+            if (bindingCount > 0) {
+                assert(decoder.ReadBindings(&bindingPtr));
+            }
 
             
-                PipelineStateDX11* pipelineState = GetResourceFromSizeMap(m_pipelineStates, psId);
-                SetPipelineState(*pipelineState);
+            PipelineStateDX11* pipelineState = GetResourceFromSizeMap(m_pipelineStates, psId);
+            SetPipelineState(*pipelineState);
 
-                assert(streamCount == 1); // > 1 not supported
-                const VertexStream& stream = streamPtr[0];
+            assert(streamCount == 1); // > 1 not supported
+            const VertexStream& stream = streamPtr[0];
 
-                auto vertexBuffer = GetResource(m_buffers, stream.vertexBuffer);
-                if (vertexBuffer)
-                    m_context->SetVertexBuffer(stream.vertexBuffer, vertexBuffer->buffer.Get());
+            auto vertexBuffer = GetResource(m_buffers, stream.vertexBuffer);
+            if (vertexBuffer)
+                m_context->SetVertexBuffer(stream.vertexBuffer, vertexBuffer->buffer.Get());
 
-                // bindings
-                for (uint32_t idx = 0; idx <bindingCount; ++idx) {
-                    const Binding& binding = bindingPtr[idx];
-                    switch (binding.type) {
-                    case Binding::Type::ConstantBuffer: {
-                        BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
-                        m_context->SetVertexCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
-                        m_context->SetPixelCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
-                        break;
-                    }
-                    case Binding::Type::Texture: {
-                        TextureDX11* texturedx11 = GetResource(m_textures, binding.resource);
-                        m_context->SetVertexShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
-                        m_context->SetPixelShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
-                        break;
-                    }
-                    }
-                }
-                
-                switch (drawCall.type) {
-                case DrawCall::Type::Arrays: {
-                    m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, false);
-                    break;
-                }
-                case DrawCall::Type::Indexed: {
-                    assert(indexBufferId);
-                    auto indexBuffer = GetResource(m_buffers, indexBufferId);
-                    m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
-                    m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, true);
-                    break;
-                }
-                }
-                break;
-            }
-            case DX11CommandBuffer::CommandType::Clear: {
-                m_context->Clear(0.f, 0.f, 0.f, 0.f);
-                break;
-            }
-            case DX11CommandBuffer::CommandType::BindResource: {
-                Binding binding;
-                _byteBuffer >> binding;
-
-                // TODO:: this is copy pasted from above, dont do that.
+            // bindings
+            for (uint32_t idx = 0; idx <bindingCount; ++idx) {
+                const Binding& binding = bindingPtr[idx];
                 switch (binding.type) {
                 case Binding::Type::ConstantBuffer: {
                     BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
@@ -688,9 +641,21 @@ namespace gfx {
                     break;
                 }
                 }
+            }
+                
+            switch (drawCall.type) {
+            case DrawCall::Type::Arrays: {
+                m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, false);
                 break;
             }
+            case DrawCall::Type::Indexed: {
+                assert(indexBufferId);
+                auto indexBuffer = GetResource(m_buffers, indexBufferId);
+                m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
+                m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, true);
+                break;
             }
+            }                         
         }
     }
 
@@ -718,11 +683,11 @@ namespace gfx {
     }
 
     void DX11Device::RenderFrame() {
-        //m_context->Clear(0.f, 0.f, 0.f, 0.f);
+        m_context->Clear(0.f, 0.f, 0.f, 0.f);
         for (uint32_t idx = 0; idx < m_submittedBuffers.size(); ++idx) {
-            DX11CommandBuffer* dx11Buffer = reinterpret_cast<DX11CommandBuffer*>(m_submittedBuffers[idx]);
-            Execute(dx11Buffer);
-            dx11Buffer->Reset();
+            CommandBuffer* cmdBuffer = m_submittedBuffers[idx];
+            Execute(cmdBuffer);
+            cmdBuffer->Reset();
         }
 
         DX11_CHECK(m_swapchain->Present(1, 0));

@@ -8,11 +8,13 @@ if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif ()
 
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE   ON)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -x objective-c++")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
@@ -40,12 +42,15 @@ set(SOURCE_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(ASSETS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets)
+set(SHADERS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders)
+set(METAL_SHADERS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/metal)
 
-FILE(GLOB gfx_SOURCES ${SOURCE_DIR_ROOT}/render/*.cpp)
-FILE(GLOB gfx_HEADERS ${SOURCE_DIR_ROOT}/render/*.h)
+FILE(GLOB GFX_SOURCES ${SOURCE_DIR_ROOT}/render/*.cpp)
+FILE(GLOB GFX_HEADERS ${SOURCE_DIR_ROOT}/render/*.h)
 
-FILE(GLOB_RECURSE gfx_SOURCES2 ${SOURCE_DIR_ROOT}/render/backend/interface/*.cpp)
-FILE(GLOB_RECURSE gfx_HEADERS2 ${SOURCE_DIR_ROOT}/render/backend/interface/*.h)
+FILE(GLOB_RECURSE GFX_SOURCES2 ${SOURCE_DIR_ROOT}/render/backend/interface/*.cpp)
+FILE(GLOB_RECURSE GFX_HEADERS2 ${SOURCE_DIR_ROOT}/render/backend/interface/*.h)
 
 FILE(GLOB RENDERERS_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/*.cpp)
 FILE(GLOB RENDERERS_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/*.h)
@@ -58,13 +63,17 @@ FILE(GLOB RENDERERS_SKYBOX_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/skybox/*.
 FILE(GLOB RENDERERS_UI_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/ui/*.cpp)
 FILE(GLOB RENDERERS_UI_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/ui/*.h)
 
-FILE(GLOB gfx_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/render/backend/*.cpp)
-FILE(GLOB gfx_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/render/backend/*.h)
-FILE(GLOB gfx_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/gl/*.cpp)
-FILE(GLOB gfx_GL_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/*.h)
+FILE(GLOB GFX_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/render/backend/*.cpp)
+FILE(GLOB GFX_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/render/backend/*.h)
 
-FILE(GLOB gfx_GL_BACKEND_COMMON_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/common/*.cpp)
-FILE(GLOB gfx_GL_BACKEND_COMMON_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/common/*.h)
+FILE(GLOB GFX_BACKEND_GL_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/gl/*.cpp)    
+FILE(GLOB GFX_BACKEND_GL_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/gl/*.h)    
+FILE(GLOB GFX_BACKEND_METAL_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/metal/*.cpp ${SOURCE_DIR_ROOT}/render/backend/impl/metal/*.mm)    
+FILE(GLOB GFX_BACKEND_METAL_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/metal/*.h)    
+
+
+FILE(GLOB GFX_BACKEND_COMMON_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/common/*.cpp)
+FILE(GLOB GFX_BACKEND_COMMON_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/common/*.h)
 
 FILE(GLOB INPUT_SOURCES ${SOURCE_DIR_ROOT}/input/*.cpp)
 FILE(GLOB INPUT_HEADERS ${SOURCE_DIR_ROOT}/input/*.h)
@@ -95,6 +104,12 @@ FILE(GLOB PLATFORM_SDL_HEADERS ${SOURCE_DIR_ROOT}/platform/sdl/*.h)
 # FILE(GLOB PLATFORM_GLFW3_SOURCES ${SOURCE_DIR_ROOT}/platform/GLFW3/*.cpp)
 # FILE(GLOB PLATFORM_GLFW3_HEADERS ${SOURCE_DIR_ROOT}/platform/GLFW3/*.h)
 
+set(CMAKE_EXE_LINKER_FLAGS
+    "-framework QuartzCore -framework Metal"
+)
+
+message("${QUARTZCORE_LIBRARY} ${METAL_LIBRARY}")
+
 find_package(OpenGL REQUIRED)
 find_package(LIBNOISE REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -112,10 +127,10 @@ include_directories(
     ${SOURCE_DIR_ROOT}/render/backend/
     ${SOURCE_DIR_ROOT}/render/backend/interface
     ${SOURCE_DIR_ROOT}/render/backend/interface/tasks
-    ${SOURCE_DIR_ROOT}/render/backend/interface/enums
+    ${SOURCE_DIR_ROOT}/render/backend/interface/enums    
+    ${SOURCE_DIR_ROOT}/render/backend/impl/metal
     ${SOURCE_DIR_ROOT}/render/backend/impl/gl
     ${SOURCE_DIR_ROOT}/render/backend/impl/common
-    ${SOURCE_DIR_ROOT}/render/backend/GL
     ${SOURCE_DIR_ROOT}/render/
     ${SOURCE_DIR_ROOT}/utilities/
     ${SOURCE_DIR_ROOT}/utilities/win32
@@ -134,27 +149,28 @@ include_directories(
     ${EXTERNAL_DIR_ROOT}/include/enum-flags/include
 )
 
-
-set(LIBS
-    ${OPENGL_LIBRARIES}
+set(LIBS  
+    ${OPENGL_LIBRARIES}  
     ${LIBNOISE_LIBRARIES}
     ${SDL2_LIBRARY}
     ${FREETYPE_LIBRARIES}
     ${ASSIMP_LIBRARIES}
 )
 
-
 link_directories(/usr/local/lib)
 
 # create application
 FILE(GLOB_RECURSE ALL_H RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/*.h)
+FILE(GLOB_RECURSE ALL_METAL RELATIVE ${SHADERS_DIR_ROOT} ${METAL_SHADERS_DIR_ROOT}/*.metal)
 
 add_executable(dg 
     ${SOURCE_DIR_ROOT}/main.cpp
-    ${gfx_SOURCES} ${gfx_SOURCES2}
-    ${gfx_BACKEND_SOURCES} 
-    ${gfx_GL_BACKEND_SOURCES} 
-    ${gfx_GL_BACKEND_COMMON_SOURCES}
+    ${GFX_SOURCES} 
+    ${GFX_SOURCES2}
+    ${GFX_BACKEND_SOURCES} 
+    ${GFX_BACKEND_METAL_SOURCES} 
+    ${GFX_BACKEND_GL_SOURCES} 
+    ${GFX_BACKEND_COMMON_SOURCES}
     ${RENDERERS_SOURCES}
     ${COMPONENT_SOURCES}
     ${RENDERERS_CHUNKED_TERRAIN_SOURCES}
@@ -168,12 +184,14 @@ add_executable(dg
     ${PLATFORM_SOURCES}
     ${PLATFORM_SDL_SOURCES}
     ${UI_SOURCES}
-    ${ALL_H}) #need to have ALL_H files in this otherwise they wont be added to sourcegroups
+    ${ALL_H} #need to have ALL_H files in this otherwise they wont be added to sourcegroups
+     ${METAL_SHADERS_DIR_ROOT}/blinn.metal)
 
+set_source_files_properties( ${METAL_SHADERS_DIR_ROOT}/blinn.metal PROPERTIES HEADER_FILE_ONLY TRUE)
 target_link_libraries(dg ${LIBS})
 
 # create source groups
-FILE(GLOB_RECURSE ALL_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/*.cpp)
+FILE(GLOB_RECURSE ALL_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/*.cpp ${SOURCE_DIR_ROOT}/*.mm)
 set(ALL_FILES ${ALL_H} ${ALL_CPP})
 
 foreach(FILE ${ALL_FILES}) 

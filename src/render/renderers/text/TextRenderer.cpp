@@ -123,18 +123,17 @@ void TextRenderer::OnInit() {
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
-    _glyphAtlas = GetRenderDevice()->CreateTexture2D(gfx::TextureFormat::R_U8, kAtlasWidth, kAtlasHeight, buffer);
+    _glyphAtlas = GetRenderDevice()->CreateTexture2D(gfx::PixelFormat::R8Unorm, kAtlasWidth, kAtlasHeight, buffer);
     assert(_glyphAtlas || "Failed to create glyph atlas");
 
     delete[] buffer;
     FT_Done_Face(face);
     FT_Done_FreeType(library);
 
-    _vertexBufferSize   = kVertexBufferSize;
-    _vertexBufferOffset = 0;
-    gfx::BufferDesc desc =
-        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, _vertexBufferSize);
-    _vertexBuffer = GetRenderDevice()->AllocateBuffer(desc);
+    _vertexBufferSize    = kVertexBufferSize;
+    _vertexBufferOffset  = 0;
+    gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, _vertexBufferSize);
+    _vertexBuffer        = GetRenderDevice()->AllocateBuffer(desc);
     assert(_vertexBuffer);
 
     _viewData = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
