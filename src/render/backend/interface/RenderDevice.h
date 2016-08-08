@@ -48,16 +48,11 @@ public:
     virtual TextureId CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data) = 0;
     virtual VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc) = 0;
 
-    virtual void DestroyBuffer(BufferId buffer) = 0;
-    virtual void DestroyShader(ShaderId shader) = 0;
-    virtual void DestroyShaderParam(ShaderParamId shaderParam) = 0;
-    virtual void DestroyPipelineState(PipelineStateId pipelineState) = 0;
-    virtual void DestroyTexture(TextureId texture) = 0;
-    virtual void DestroyVertexLayout(VertexLayoutId vertexLayout) = 0;
+    virtual void DestroyResource(ResourceId resourceId) = 0;
 
     virtual CommandBuffer* CreateCommandBuffer() = 0;
     virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) = 0;
-        
+
     virtual uint8_t* MapMemory(BufferId buffer, BufferAccess) = 0;
     virtual void UnmapMemory(BufferId buffer) = 0;
 

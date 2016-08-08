@@ -8,37 +8,17 @@
 #include <unordered_map>
 #include <array>
 #include <list>
-
-template <class T, size_t N>
-class Pool {
-private:
-    std::array<T, N> _items;
-    size_t _poolIdx{ 0 };
-    std::list<T*> _freeList;
-public:
-    T* Get() {
-        T* ret = nullptr;
-        if (!_freeList.empty()) {
-            ret = _freeList.front();
-            _freeList.pop_front();
-        }
-        else if (_poolIdx < N) {
-            ret = &_items[_poolIdx++];
-        }
-        return ret;
-    }
-
-    void Release(T* v) {
-        _freeList.push_front(v);
-    }
-};
+#include "Pool.h"
+#include "DMath.h"
 
 namespace gfx {
 class GLDevice : public RenderDevice {
 private:
-    using GLVaoCacheKey = size_t;
-    using GLVaoCache    = std::unordered_map<GLVaoCacheKey, GLVertexArrayObject*>;
+    static constexpr size_t kMaxResourceId         = dm::pow_<size_t, 2, 56>::value - 1;
+    using GLVaoCacheKey                            = size_t;
+    using GLVaoCache                               = std::unordered_map<GLVaoCacheKey, GLVertexArrayObject*>;
     constexpr static size_t kCommandBufferPoolSize = 32;
+
 private:
     GLContext _context;
 
@@ -73,12 +53,7 @@ public:
     TextureId CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data);
     VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& desc);
 
-    void DestroyBuffer(BufferId buffer);
-    void DestroyShader(ShaderId shader);
-    void DestroyShaderParam(ShaderParamId shaderParam);
-    void DestroyPipelineState(PipelineStateId pipelineState);
-    void DestroyTexture(TextureId texture);
-    void DestroyVertexLayout(VertexLayoutId layout);
+    void DestroyResource(ResourceId resourceId);
 
     CommandBuffer* CreateCommandBuffer();
     void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
@@ -87,7 +62,17 @@ public:
     void RenderFrame();
 
 private:
-    uint32_t GenerateId();
+    void DestroyBuffer(BufferId buffer);
+    void DestroyShader(ShaderId shader);
+    void DestroyShaderParam(ShaderParamId shaderParam);
+    void DestroyPipelineState(PipelineStateId pipelineState);
+    void DestroyTexture(TextureId texture);
+    void DestroyVertexLayout(VertexLayoutId layout);
+
+    ResourceId GenerateId(ResourceType type);
+
+    ResourceType ExtractResourceType(ResourceId id);
+    size_t ExtractResourceKey(ResourceId id);
 
     size_t BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout);
     GLVertexArrayObject* GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer,
@@ -97,7 +82,9 @@ private:
     void Execute(GLCommandBuffer* cmdBuffer);
 
     template <class T>
-    bool DestroyResource(uint32_t handle, std::unordered_map<uint32_t, T*>& map, std::function<void(T*)> destroy) {
+    bool DestroyResource(ResourceId resourceId, std::unordered_map<uint32_t, T*>& map,
+                         std::function<void(T*)> destroy) {
+        size_t handle = ExtractResourceKey(resourceId);
         auto it = map.find(handle);
         if (it == map.end()) {
             return false;
@@ -114,7 +101,9 @@ private:
         return true;
     }
 
-    template <class T> T* GetResource(std::unordered_map<uint32_t, T*>& map, uint32_t handle) {
+    template <class T>
+    T* GetResource(std::unordered_map<uint32_t, T*>& map, ResourceId resourceId) {
+        size_t handle = ExtractResourceKey(resourceId);
         auto it = map.find(handle);
         if (it == map.end()) {
             return nullptr;

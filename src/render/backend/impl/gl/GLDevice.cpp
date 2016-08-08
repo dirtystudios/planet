@@ -11,12 +11,13 @@
 #include "ShaderStage.h"
 #include "Memory.h"
 #include "DrawItemDecoder.h"
+#include "DMath.h"
 
 int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
     static constexpr uint32_t kMaxSlot = 10;
     std::string prefix = type == gfx::Binding::Type::ConstantBuffer ? "_b" : "_s";
-    for(uint32_t slotIdx = 0; slotIdx < kMaxSlot; ++slotIdx) {
-        std::string searchString =  prefix + std::to_string(slotIdx) + "_";
+    for (uint32_t slotIdx = 0; slotIdx < kMaxSlot; ++slotIdx) {
+        std::string searchString = prefix + std::to_string(slotIdx) + "_";
         if (source.find(searchString) == 0) {
             return slotIdx;
         }
@@ -65,7 +66,7 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
         _context.WriteBufferData(buffer, initialData, desc.size);
     }
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::Buffer);
     _buffers.insert(std::make_pair(handle, buffer));
     return handle;
 }
@@ -208,7 +209,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
                 glGetActiveUniformsiv(shader->id, 1, &uniform->index, GL_UNIFORM_ARRAY_STRIDE, &uniform->arrayStride);
                 // offset between two vectors in matrix
                 glGetActiveUniformsiv(shader->id, 1, &uniform->index, GL_UNIFORM_MATRIX_STRIDE, &uniform->matrixStride);
-            }            
+            }
             delete[] uniformIndices;
 
             block->index = glGetUniformBlockIndex(shader->id, name);
@@ -218,9 +219,9 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
         delete[] name;
     }
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::Shader);
     _shaders.insert(std::make_pair(handle, shader));
-   
+
     return handle;
 }
 
@@ -242,7 +243,7 @@ ShaderParamId GLDevice::CreateShaderParam(ShaderId shaderHandle, const char* par
     shaderParam->program           = shader;
     shaderParam->metadata          = (*it);
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::ShaderParam);
     _shaderParams.insert(std::make_pair(handle, shaderParam));
 
     return handle;
@@ -305,11 +306,11 @@ PipelineStateId GLDevice::CreatePipelineState(const PipelineStateDesc& desc) {
     assert(pipelineState->vertexLayout);
 
     // TODO:: Do this first
-    assert(isVertexLayoutValidWithShader(*pipelineState->vertexLayout, *pipelineState->vertexShader));    
+    assert(isVertexLayoutValidWithShader(*pipelineState->vertexLayout, *pipelineState->vertexShader));
 
     pipelineState->topology = GLEnumAdapter::Convert(desc.topology);
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::PipelineState);
     _pipelineStates.insert(std::make_pair(handle, pipelineState));
 
     return handle;
@@ -337,7 +338,7 @@ TextureId GLDevice::CreateTexture2D(TextureFormat texFormat, uint32_t width, uin
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::Texture);
     _textures.insert(std::make_pair(handle, texture));
     return handle;
 }
@@ -358,7 +359,7 @@ TextureId GLDevice::CreateTextureArray(TextureFormat texFormat, uint32_t levels,
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::Texture);
     _textures.insert(std::make_pair(handle, texture));
 
     return handle;
@@ -385,7 +386,7 @@ TextureId GLDevice::CreateTextureCube(TextureFormat texFormat, uint32_t width, u
     GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::Texture);
     _textures.insert(std::make_pair(handle, texture));
     return handle;
 }
@@ -403,9 +404,21 @@ VertexLayoutId GLDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
         vertexLayout->elements.push_back(glElement);
     }
 
-    uint32_t handle = GenerateId();
+    uint32_t handle = GenerateId(ResourceType::VertexLayout);
     _vertexLayouts.insert(std::make_pair(handle, vertexLayout));
     return handle;
+}
+
+void GLDevice::DestroyResource(ResourceId resourceId) {
+    size_t key = ExtractResourceKey(resourceId);
+    switch (ExtractResourceType(resourceId)) {
+    case ResourceType::Shader: {
+        DestroyShader(key);
+        break;
+    }
+    default:
+        assert(false); // worry about this when we actually need ot
+    }
 }
 
 void GLDevice::DestroyVertexLayout(VertexLayoutId layout) { assert(false && "TODO"); }
@@ -460,11 +473,14 @@ void GLDevice::DestroyTexture(TextureId handle) {
     assert(DestroyResource<GLTexture>(handle, _textures, func));
 }
 
-uint32_t GLDevice::GenerateId() {
-    static uint32_t key = 0;
-    assert(key < std::numeric_limits<uint32_t>::max());
-    return ++key;
+ResourceId GLDevice::GenerateId(ResourceType type) {
+    static ResourceId key = 0;
+    assert(key < kMaxResourceId);
+    return (static_cast<size_t>(type) << 56) | (++key & kMaxResourceId);
 }
+
+ResourceType GLDevice::ExtractResourceType(ResourceId id) { return static_cast<ResourceType>(id >> 56); }
+size_t GLDevice::ExtractResourceKey(ResourceId id) { return id & kMaxResourceId; }
 
 size_t GLDevice::BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout) {
     size_t key = 0;

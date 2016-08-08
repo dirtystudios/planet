@@ -28,7 +28,7 @@ public:
 
     ~ShaderCache() {
         for (auto it : _shaderCache) {
-            _device->DestroyShader(it.second);
+            _device->DestroyResource(it.second);
         }
     }
 
