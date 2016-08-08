@@ -12,6 +12,7 @@
 #include "Memory.h"
 #include "DrawItemDecoder.h"
 #include "DMath.h"
+#include "ResourceTypes.h"
 
 int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
     static constexpr uint32_t kMaxSlot = 10;
@@ -25,7 +26,10 @@ int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
     return -1;
 };
 
-
+static gfx::ResourceId GenerateId(gfx::ResourceType type) {
+    static size_t key = 0;
+    return GenerateResourceId(type, ++key);
+}
 
 namespace gfx {
 
@@ -34,8 +38,7 @@ GLDevice::GLDevice() {
     this->DeviceConfig.DeviceAbbreviation = "GL";
 }
 
-GLDevice::~GLDevice() {
-}
+GLDevice::~GLDevice() {}
 
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
 
@@ -66,7 +69,7 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
         _context.WriteBufferData(buffer, initialData, desc.size);
     }
 
-    uint32_t handle = GenerateId(ResourceType::Buffer);
+    ResourceId handle = GenerateId(ResourceType::Buffer);
     _buffers.insert(std::make_pair(handle, buffer));
     return handle;
 }
@@ -472,15 +475,6 @@ void GLDevice::DestroyTexture(TextureId handle) {
     auto func = [](GLTexture* tex) -> void { GL_CHECK(glDeleteTextures(1, &tex->id)); };
     assert(DestroyResource<GLTexture>(handle, _textures, func));
 }
-
-ResourceId GLDevice::GenerateId(ResourceType type) {
-    static ResourceId key = 0;
-    assert(key < kMaxResourceId);
-    return (static_cast<size_t>(type) << 56) | (++key & kMaxResourceId);
-}
-
-ResourceType GLDevice::ExtractResourceType(ResourceId id) { return static_cast<ResourceType>(id >> 56); }
-size_t GLDevice::ExtractResourceKey(ResourceId id) { return id & kMaxResourceId; }
 
 size_t GLDevice::BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout) {
     size_t key = 0;

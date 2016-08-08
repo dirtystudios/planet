@@ -10,11 +10,11 @@
 #include <list>
 #include "Pool.h"
 #include "DMath.h"
+#include "ResourceId.h"
 
 namespace gfx {
 class GLDevice : public RenderDevice {
 private:
-    static constexpr size_t kMaxResourceId         = dm::pow_<size_t, 2, 56>::value - 1;
     using GLVaoCacheKey                            = size_t;
     using GLVaoCache                               = std::unordered_map<GLVaoCacheKey, GLVertexArrayObject*>;
     constexpr static size_t kCommandBufferPoolSize = 32;
@@ -68,11 +68,6 @@ private:
     void DestroyPipelineState(PipelineStateId pipelineState);
     void DestroyTexture(TextureId texture);
     void DestroyVertexLayout(VertexLayoutId layout);
-
-    ResourceId GenerateId(ResourceType type);
-
-    ResourceType ExtractResourceType(ResourceId id);
-    size_t ExtractResourceKey(ResourceId id);
 
     size_t BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout);
     GLVertexArrayObject* GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer,

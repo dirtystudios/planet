@@ -63,6 +63,9 @@ FILE(GLOB gfx_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/render/backend/*.h)
 FILE(GLOB gfx_GL_BACKEND_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/gl/*.cpp)
 FILE(GLOB gfx_GL_BACKEND_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/*.h)
 
+FILE(GLOB gfx_GL_BACKEND_COMMON_SOURCES ${SOURCE_DIR_ROOT}/render/backend/impl/common/*.cpp)
+FILE(GLOB gfx_GL_BACKEND_COMMON_HEADERS ${SOURCE_DIR_ROOT}/render/backend/impl/common/*.h)
+
 FILE(GLOB INPUT_SOURCES ${SOURCE_DIR_ROOT}/input/*.cpp)
 FILE(GLOB INPUT_HEADERS ${SOURCE_DIR_ROOT}/input/*.h)
 
@@ -111,6 +114,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/render/backend/interface/tasks
     ${SOURCE_DIR_ROOT}/render/backend/interface/enums
     ${SOURCE_DIR_ROOT}/render/backend/impl/gl
+    ${SOURCE_DIR_ROOT}/render/backend/impl/common
     ${SOURCE_DIR_ROOT}/render/backend/GL
     ${SOURCE_DIR_ROOT}/render/
     ${SOURCE_DIR_ROOT}/utilities/
@@ -150,6 +154,7 @@ add_executable(dg
     ${gfx_SOURCES} ${gfx_SOURCES2}
     ${gfx_BACKEND_SOURCES} 
     ${gfx_GL_BACKEND_SOURCES} 
+    ${gfx_GL_BACKEND_COMMON_SOURCES}
     ${RENDERERS_SOURCES}
     ${COMPONENT_SOURCES}
     ${RENDERERS_CHUNKED_TERRAIN_SOURCES}
