@@ -49,7 +49,7 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
     GLBuffer* buffer = new GLBuffer();
     GL_CHECK(glGenBuffers(1, &buffer->id));
     assert(buffer->id);
-
+    
     if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
         buffer->usage = GL_DYNAMIC_DRAW;
     } else if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadBit)) {

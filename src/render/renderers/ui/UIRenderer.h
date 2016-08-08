@@ -116,9 +116,13 @@ public:
         float xpos = frame.x;
         float ypos = frame.y;
 
-        FrameVertex vertices[6] = {{{xpos, ypos + h, 0.0, 0.0}}, {{xpos, ypos, 0.0, 1.0}},
-                                   {{xpos + w, ypos, 1.0, 1.0}}, {{xpos, ypos + h, 0.0, 0.0}},
-                                   {{xpos + w, ypos, 1.0, 1.0}}, {{xpos + w, ypos + h, 1.0, 0.0}}};
+//        FrameVertex vertices[6] = {{{xpos, ypos + h, 0.0, 0.0}}, {{xpos, ypos, 0.0, 1.0}},
+//                                   {{xpos + w, ypos, 1.0, 1.0}}, {{xpos, ypos + h, 0.0, 0.0}},
+//                                   {{xpos + w, ypos, 1.0, 1.0}}, {{xpos + w, ypos + h, 1.0, 0.0}}};
+        
+        FrameVertex vertices[6] = {{{xpos, ypos, 0.0, 0.0}}, {{xpos + w, ypos, 1.0, 0.0}},
+                                   {{xpos + w, ypos + h, 1.0, 1.0}}, {{xpos + w, ypos + h, 1.0, 1.0}},
+                                   {{xpos, ypos + h, 0.0, 1.0}}, {{xpos, ypos, 0.0, 0.0}}};
 
         size_t verticesSize = sizeof(vertices);
         assert(_bufferOffset + verticesSize < _bufferSize);

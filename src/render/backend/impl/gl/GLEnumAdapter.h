@@ -31,25 +31,15 @@
 #include "BufferAccess.h"
 #include "BufferUsageFlags.h"
 
+
 namespace gfx {
 class GLEnumAdapter {
 public:
     static GLenum Convert(BufferUsageFlags flags) {
-        for (BufferUsageFlags flag : BufferUsageFlagsHelpers::values) {
-            if (EnumBitflagTrue(flags & flag)) {
-                switch (flag) {
-                case BufferUsageFlags::VertexBufferBit:
-                    return GL_ARRAY_BUFFER;
-                case BufferUsageFlags::IndexBufferBit:
-                    return GL_ELEMENT_ARRAY_BUFFER;
-                case BufferUsageFlags::ConstantBufferBit:
-                    return GL_UNIFORM_BUFFER;
-                default:
-                    assert(false);
-                }
-            }
-        }
-        assert(false);
+        if(flags & BufferUsageFlags::VertexBufferBit) return GL_ARRAY_BUFFER;
+        else if(flags & BufferUsageFlags::IndexBufferBit) return GL_ELEMENT_ARRAY_BUFFER;
+        else if(flags & BufferUsageFlags::ConstantBufferBit) return GL_UNIFORM_BUFFER;
+        else assert(false);
     }
 
     static BufferType ConvertBufferType(GLenum enumIn) {

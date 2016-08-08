@@ -1,33 +1,13 @@
 #pragma once
 
+#include <flags/flags.hpp>
+
 // enum stuff
 
-template<typename EnumType>
-struct EnumTraits {};
+template <class E, class Enabler = void> struct is_enum_flags
+: public std::false_type {};
 
-template <typename EnumType, typename RetType>
-using IsBitflagEnumRet = typename std::enable_if<EnumTraits<EnumType>::is_bitflags, RetType>::type;
-
-template<typename EnumType>
-constexpr IsBitflagEnumRet<EnumType, bool> EnumBitflagTrue(EnumType e) {
-    using T = typename std::underlying_type<EnumType>::type;
-    return static_cast<T>(e) != 0;
-}
-
-template<typename EnumType>
-constexpr IsBitflagEnumRet<EnumType, EnumType> operator&(EnumType a, EnumType b) {
-    using T = typename std::underlying_type<EnumType>::type;
-    return static_cast<EnumType>(static_cast<T>(a) & static_cast<T>(b));
-}
-
-template<typename EnumType>
-constexpr IsBitflagEnumRet<EnumType, EnumType> operator|(EnumType a, EnumType b) {
-    using T = typename std::underlying_type<EnumType>::type;
-    return static_cast<EnumType>(static_cast<T>(a) | static_cast<T>(b));
-}
-
-template<typename EnumType>
-constexpr IsBitflagEnumRet<EnumType, EnumType> operator^(EnumType a, EnumType b) {
-    using T = typename std::underlying_type<EnumType>::type;
-    return static_cast<EnumType>(static_cast<T>(a) ^ static_cast<T>(b));
-}
+// convert our "is enum flags" to flag modules "is enum flags"
+template<typename E>
+struct flags::is_flags<E, typename std::enable_if<is_enum_flags<E>::value>::type> : std::true_type {
+};

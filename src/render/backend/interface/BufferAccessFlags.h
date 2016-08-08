@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EnumTraits.h"
+
 namespace gfx {
 enum class BufferAccessFlags : uint16_t {
     None        = 0,
@@ -13,7 +15,5 @@ enum class BufferAccessFlags : uint16_t {
 }
 
 template <>
-struct EnumTraits<gfx::BufferAccessFlags> {
-    static constexpr bool is_bitflags = true;
-    static constexpr size_t count     = 4;
-};
+struct is_enum_flags<gfx::BufferAccessFlags> : public std::true_type {};
+
