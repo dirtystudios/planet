@@ -27,7 +27,7 @@ struct FrameScale {
 class UIFrame {
 public:
     struct UIFrameDesc {
-        UIFrameDesc() : name(""), x(0), y(0), width(0), height(0), parent(0), shown(true), acceptMouse(false) {}
+        UIFrameDesc() : name(""), x(0), y(0), width(0), height(0), shown(true), acceptMouse(false), parent(0) {}
 
         std::string name;
         float x;
@@ -47,7 +47,7 @@ protected:
 public:
     UIFrame(UIFrameDesc frameDesc) : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME) {};
     UIFrame(UIFrameDesc frameDesc, ScriptHandler* scriptHandler)
-        : m_frameDesc(frameDesc), m_scriptHandler(scriptHandler), m_frameType(FrameType::UIFRAME) {};
+        : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME), m_scriptHandler(scriptHandler) {};
     UIFrameDesc* GetFrameDesc() { return &m_frameDesc; };
     FrameType GetFrameType() { return m_frameType; };
     void Show() { m_frameDesc.shown = true; };

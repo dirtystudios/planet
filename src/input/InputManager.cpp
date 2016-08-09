@@ -63,8 +63,7 @@ namespace input {
         m_showCursor = true;
 
         // Call Keyboard handler first, this handles focused typing interactions
-        for (uint32_t x = 0; x < inputValues.size(); ++x) {
-            float prevValue = actionCache[x];
+        for (uint32_t x = 0; x < inputValues.size(); ++x) {            
             float newValue = inputValues[x];
             bool handled = m_keyboardManager.HandlingKey((input::InputCode)x);
             if (handled) {

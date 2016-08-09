@@ -137,8 +137,7 @@ int sys::Run(app::Application* app){
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
     const char *subsystem = "Unknown System!";
-    int initRtn = 0;
-    void* windowHandle = 0;
+    int initRtn = 0;    
     if (SDL_GetWindowWMInfo(_window, &info)){
         switch (info.subsystem){
         case SDL_SYSWM_UNKNOWN: break;

@@ -20,7 +20,7 @@ namespace input {
             bool ignoreHeld;
             ActionConfig() : ignoreRelease(true), hideCursor(false), ignoreHeld(true) {};
             ActionConfig(bool p_ignoreRelease, bool p_ignoreHeld, bool hideCursorDuringHandled) 
-                : ignoreRelease(p_ignoreRelease), ignoreHeld(p_ignoreHeld), hideCursor(hideCursorDuringHandled) {};
+                : ignoreRelease(p_ignoreRelease), hideCursor(hideCursorDuringHandled), ignoreHeld(p_ignoreHeld) {};
         };
 
         enum class ContextPriority : uint32_t {

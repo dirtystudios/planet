@@ -4,7 +4,6 @@
 
 class MeshRenderer : public Renderer {
 private:    
-    gfx::PipelineStateId _defaultPS{0};
 public:
     ~MeshRenderer();
 

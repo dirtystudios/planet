@@ -3,7 +3,7 @@
 namespace ui {
 
 EditBox::EditBox(EditBoxDesc editBoxDesc)
-    : UIFrame(editBoxDesc), m_textBoxState(TextBoxState::UNFOCUSED), m_cursorPos(0), m_editBoxDesc(editBoxDesc) {
+    : UIFrame(editBoxDesc), m_cursorPos(0), m_textBoxState(TextBoxState::UNFOCUSED), m_editBoxDesc(editBoxDesc) {
     m_frameType = FrameType::EDITBOX;
     if (editBoxDesc.blinkSpeed <= 0.0f) {
         m_editBoxDesc.blinkSpeed = 530;
@@ -14,7 +14,7 @@ EditBox::EditBox(EditBoxDesc editBoxDesc)
 }
 
 EditBox::EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler)
-    : UIFrame(editBoxDesc, scriptHandler), m_textBoxState(TextBoxState::UNFOCUSED), m_cursorPos(0),
+    : UIFrame(editBoxDesc, scriptHandler), m_cursorPos(0), m_textBoxState(TextBoxState::UNFOCUSED), 
       m_editBoxDesc(editBoxDesc) {
     m_frameType = FrameType::EDITBOX;
     if (editBoxDesc.blinkSpeed <= 0.0f) {

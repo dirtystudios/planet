@@ -434,11 +434,11 @@ void GLDevice::DestroyBuffer(BufferId handle) {
 
 void GLDevice::DestroyShader(ShaderId handle) {
     auto func = [](GLShaderProgram* shader) -> void {
-        for (GLPipelineState* pipeline : shader->members) {
-            // Note(eugene): We have pipelines referencing a shader that is
-            // being destroy. How should this be handled?
-            // Also, ShaderParameters reference ShaderPrograms
-        }
+//        for (GLPipelineState* pipeline : shader->members) {
+//            // Note(eugene): We have pipelines referencing a shader that is
+//            // being destroy. How should this be handled?
+//            // Also, ShaderParameters reference ShaderPrograms
+//        }
         GL_CHECK(glDeleteProgram(shader->id));
     };
     assert(DestroyResource<GLShaderProgram>(handle, _shaders, func));
