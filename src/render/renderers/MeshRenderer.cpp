@@ -63,7 +63,7 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
         encoder.Begin(_base);
         encoder.BindResource(cb1->GetBinding(1));
         encoder.BindResource(cb2->GetBinding(2));
-        encoder.BindTexture(0, mat->diffuseTextures[0]);
+        encoder.BindTexture(0, mat->diffuseTextures[0], gfx::ShaderStageFlags::AllStages);
         encoder.SetIndexBuffer(mesh->indexBuffer);
         encoder.SetVertexBuffer(mesh->vertexBuffer);
         const gfx::StateGroup* sg = encoder.End();

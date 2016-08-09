@@ -154,7 +154,7 @@ void TextRenderer::OnInit() {
     encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "text"));
     encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "text"));
     encoder.BindResource(_viewData->GetBinding(1));
-    encoder.BindTexture(0, _glyphAtlas);
+    encoder.BindTexture(0, _glyphAtlas, gfx::ShaderStageFlags::AllStages);
     encoder.SetVertexBuffer(_vertexBuffer);
     _base = encoder.End();
 }

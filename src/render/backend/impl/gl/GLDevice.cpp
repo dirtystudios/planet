@@ -8,7 +8,7 @@
 #include <OpenGL/gl3ext.h>
 #endif
 #include "Log.h"
-#include "ShaderStage.h"
+#include "ShaderStageFlags.h"
 #include "Memory.h"
 #include "DrawItemDecoder.h"
 #include "DMath.h"
@@ -545,6 +545,25 @@ void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
     _submittedBuffers.insert(end(_submittedBuffers), begin(cmdBuffers), end(cmdBuffers));
 }
 
+void GLDevice::BindResource(const Binding& binding) {
+    if (binding.stageFlags != gfx::ShaderStageFlags::AllStages) {
+        LOG_W("Unsupported ShaderStageFlags configuration. Currently only support AllStages. Will render as AllStages");
+    }
+
+    switch (binding.type) {
+        case Binding::Type::ConstantBuffer: {
+            _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
+            break;
+        }
+        case Binding::Type::Texture: {
+            GLTexture* texture = GetResource(_textures, binding.resource);
+            assert(texture);
+            _context.BindTextureAsShaderResource(texture, binding.slot);
+            break;
+        }
+    }
+}
+
 void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
 
     ByteBuffer& _byteBuffer = cmdBuffer->GetByteBuffer();
@@ -552,23 +571,23 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
     while (_byteBuffer.ReadPos() < _byteBuffer.WritePos()) {
         _byteBuffer >> cmd;
         switch (cmd) {
-        case GLCommandBuffer::CommandType::DrawItem: {
-            LOG_D("%s", "DrawItem");
-            const DrawItem* item;
-            _byteBuffer >> item;
+            case GLCommandBuffer::CommandType::DrawItem: {
+                LOG_D("%s", "DrawItem");
+                const DrawItem* item;
+                _byteBuffer >> item;
 
-            DrawItemDecoder decoder(item);
+                DrawItemDecoder decoder(item);
 
                 PipelineStateId psId;
                 DrawCall drawCall;
                 BufferId indexBufferId;
-                size_t streamCount = decoder.GetStreamCount();
+                size_t streamCount  = decoder.GetStreamCount();
                 size_t bindingCount = decoder.GetBindingCount();
                 std::vector<VertexStream> streams(streamCount);
                 std::vector<Binding> bindings(bindingCount);
                 VertexStream* streamPtr = streams.data();
-                Binding* bindingPtr = bindings.data();
-                
+                Binding* bindingPtr     = bindings.data();
+
                 assert(streamCount == 1); // > 1 not supported
                 
                 assert(decoder.ReadDrawCall(&drawCall));
@@ -598,24 +617,14 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                 _context.BindVertexArrayObject(vao);
 
                 // bindings
-                for(const Binding& binding : bindings) {
-                    switch (binding.type) {
-                    case Binding::Type::ConstantBuffer: {
-                        _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
-                            break;
-                        }
-                        case Binding::Type::Texture: {
-                            GLTexture* texture = GetResource(_textures, binding.resource);
-                            assert(texture);
-                            _context.BindTextureAsShaderResource(texture, binding.slot);
-                            break;
-                        }
-                    }
+                for (const Binding& binding : bindings) {
+                    BindResource(binding);
                 }
-                
+
                 switch (drawCall.type) {
                     case DrawCall::Type::Arrays: {
-                        GL_CHECK(glDrawArrays(pipelineState->topology, (GLint) drawCall.offset, (GLsizei) drawCall.primitiveCount));
+                        GL_CHECK(glDrawArrays(pipelineState->topology, (GLint)drawCall.offset,
+                                              (GLsizei)drawCall.primitiveCount));
                         break;
                     }
                     case DrawCall::Type::Indexed: {
@@ -624,42 +633,29 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                                                 ((char*)0 + (drawCall.offset))));
                         break;
                     }
-                    }
-
-                    break;
-        }
-        case GLCommandBuffer::CommandType::Clear: {
-            LOG_D("%s", "Clear");
-
-            GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-            break;
-        }
-        case GLCommandBuffer::CommandType::BindResource: {
-            LOG_D("%s", "BindResource");
-            Binding binding;
-            _byteBuffer >> binding;
-
-            // TODO:: this is copy pasted from above, dont do that.
-            switch (binding.type) {
-                    case Binding::Type::ConstantBuffer: {
-                        _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
-                        break;
-                    }
-                    case Binding::Type::Texture: {
-                        GLTexture* texture = GetResource(_textures, binding.resource);
-                        assert(texture);
-                        _context.BindTextureAsShaderResource(texture, binding.slot);                        
-                        break;
-                    }
                 }
-                
+
+                break;
+            }
+            case GLCommandBuffer::CommandType::Clear: {
+                LOG_D("%s", "Clear");
+
+                GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+                break;
+            }
+            case GLCommandBuffer::CommandType::BindResource: {
+                LOG_D("%s", "BindResource");
+                Binding binding;
+                _byteBuffer >> binding;
+
+                BindResource(binding);
 
                 break;
             }
         }
     }
 }
-    
+
 uint8_t* GLDevice::MapMemory(BufferId bufferId, BufferAccess access) {
     GLBuffer* buffer = GetResource(_buffers, bufferId);
     return _context.Map(buffer, access);

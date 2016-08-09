@@ -62,6 +62,7 @@ public:
     void RenderFrame();
 
 private:
+    void BindResource(const Binding& binding);
     void DestroyBuffer(BufferId buffer);
     void DestroyShader(ShaderId shader);
     void DestroyShaderParam(ShaderParamId shaderParam);

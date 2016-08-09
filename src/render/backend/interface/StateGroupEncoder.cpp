@@ -99,17 +99,18 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
                 LZY(PixelShader)
                 LZY(DepthState)
                 case StateGroupBit::Bindings: {
-                    
+
                     std::vector<Binding> bindings(header.bindingCount);
                     Binding* ptr = bindings.data();
                     candidateDecoder.ReadBindings(&ptr);
-                    
-                    for(const Binding& binding : bindings) {
-                        encoder.BindResource(binding.slot, binding.type, binding.resource);
+
+                    for (const Binding& binding : bindings) {
+                        encoder.BindResource(binding.slot, binding.type, binding.resource, binding.stageFlags);
                     }
                     break;
                 }
-                default: assert(false);
+                default:
+                    assert(false);
             }
             // always keep this one open
             openStates |= AsBit(StateGroupIndex::Bindings);
@@ -142,19 +143,22 @@ void StateGroupEncoder::SetRasterState(const RasterState& rs) {
 void StateGroupEncoder::SetDepthState(const DepthState& ds) {
     WriteState(StateGroupBit::DepthState, StateGroupIndex::DepthState, &ds, sizeof(DepthState));
 }
-void StateGroupEncoder::BindTexture(uint32_t slot, TextureId tex) { BindResource(slot, Binding::Type::Texture, tex); }
-void StateGroupEncoder::BindConstantBuffer(uint32_t slot, BufferId cb) {
-    BindResource(slot, Binding::Type::ConstantBuffer, cb);
+void StateGroupEncoder::BindTexture(uint32_t slot, TextureId tex, ShaderStageFlags flags) {
+    BindResource(slot, Binding::Type::Texture, tex, flags);
+}
+void StateGroupEncoder::BindConstantBuffer(uint32_t slot, BufferId cb, ShaderStageFlags flags) {
+    BindResource(slot, Binding::Type::ConstantBuffer, cb, flags);
 }
 
 const StateGroup* StateGroupEncoder::End() {
     StateGroup* sg = new StateGroup();
-    
-    if(_bindingStagingBuffer.size() > 0) {
+
+    if (_bindingStagingBuffer.size() > 0) {
         // TODO: pack the bindings?
-        WriteState(StateGroupBit::Bindings, StateGroupIndex::Bindings, _bindingStagingBuffer.data(), _bindingStagingBuffer.size() * sizeof(Binding));
+        WriteState(StateGroupBit::Bindings, StateGroupIndex::Bindings, _bindingStagingBuffer.data(),
+                   _bindingStagingBuffer.size() * sizeof(Binding));
     }
-    
+
     for(uint32_t idx = 0; idx < 16; ++idx) {
         if(_currentHeader.offsets[idx] != -1) {
             _currentHeader.offsets[idx] += sizeof(StateGroupHeader);
@@ -170,19 +174,20 @@ const StateGroup* StateGroupEncoder::End() {
     memcpy(sg->data() + offset, &_currentHeader, sizeof(StateGroupHeader));
     offset += sizeof(StateGroupHeader);
     memcpy(sg->data() + offset, _groupStagingBuffer.GetDataPtr(), _groupStagingBuffer.WritePos());
-    
+
     return sg;
 }
 
-void StateGroupEncoder::BindResource(uint32_t slot, Binding::Type type, ResourceId resource) {
+void StateGroupEncoder::BindResource(uint32_t slot, Binding::Type type, ResourceId resource, ShaderStageFlags flags) {
     Binding binding;
-    binding.type     = type;
-    binding.slot     = slot;
-    binding.resource = resource;
+    binding.type       = type;
+    binding.slot       = slot;
+    binding.resource   = resource;
+    binding.stageFlags = flags;
 
     BindResource(binding);
 }
-    
+
 void StateGroupEncoder::BindResource(const Binding& binding) {
     if (!HasBinding(binding)) {
         ++_currentHeader.bindingCount;
