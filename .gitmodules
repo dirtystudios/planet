@@ -13,4 +13,4 @@
 	
 [submodule "external/include/enum-flags"]
 	path = external/include/enum-flags
-	url = https://github.com/grisumbras/enum-flags.git
+url=https://bitbucket.org/dirtystudios/enum-flags.git
