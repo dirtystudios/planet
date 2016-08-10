@@ -32,9 +32,9 @@ inline void HashCombine(size_t& seed, const HashType& v, HashArgs... args) {
     HashCombine(seed, args...);
 }
 
-template <typename HashType, typename... HashArgs>
-inline size_t HashCombine(const HashType& v, HashArgs... args) {
-    size_t key = 0;
-    HashCombine(key, args...);
-    return key;
+template <typename... Args>
+inline size_t HashCombine(Args... args) {
+    size_t hash = 0;
+    HashCombine(hash, args...);
+    return hash;
 }
