@@ -13,6 +13,7 @@
 #include "DrawItemDecoder.h"
 #include "DMath.h"
 #include "ResourceTypes.h"
+#include "SimpleShaderLibrary.h"
 
 int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
     static constexpr uint32_t kMaxSlot = 10;
@@ -72,6 +73,29 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
     ResourceId handle = GenerateId(ResourceType::Buffer);
     _buffers.insert(std::make_pair(handle, buffer));
     return handle;
+}
+
+ShaderLibrary* GLDevice::CreateShaderLibrary(const std::vector<ShaderDataDesc>& dataDescs) {
+    SimpleShaderLibrary* lib = new SimpleShaderLibrary();
+
+    for (const ShaderDataDesc& dataDesc : dataDescs) {
+        const ShaderData& shaderData = dataDesc.data;
+        assert(shaderData.type == ShaderDataType::Source);
+
+        for (const ShaderFunctionDesc& function : dataDesc.functions) {
+            ShaderId shaderId = CreateShader(function, shaderData);
+            assert(shaderId);
+            lib->AddShader(shaderId, function);
+        }
+    }
+
+    _libraries.push_back(lib);
+    return lib;
+}
+
+ShaderId GLDevice::CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& shaderData) {
+    assert(shaderData.type == ShaderDataType::Source);
+    return CreateShader(funcDesc.type, reinterpret_cast<const char*>(shaderData.data));
 }
 
 ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source) {

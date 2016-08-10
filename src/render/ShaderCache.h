@@ -12,7 +12,7 @@ private:
     using ShaderCacheKey = size_t;
     gfx::RenderDevice* _device;
     std::string _baseDir;
-
+    gfx::ShaderDataType _dataType;
     std::unordered_map<ShaderCacheKey, gfx::ShaderId> _shaderCache;
 
 public:
@@ -24,6 +24,9 @@ public:
 
         _baseDir += "/" + _device->DeviceConfig.DeviceAbbreviation;
         LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
+
+        // TODO: determine if we will need set as Binary instead of Source
+        _dataType = gfx::ShaderDataType::Source;
     }
 
     ~ShaderCache() {
@@ -39,8 +42,19 @@ public:
             return it->second;
         }
 
-        std::string fileContents  = ReadFileContents(BuildFilePathForShader(shaderType, name));
-        gfx::ShaderId shader = _device->CreateShader(shaderType, fileContents);
+        std::string fileContents = ReadFileContents(BuildFilePathForShader(shaderType, name));
+
+        gfx::ShaderFunctionDesc functionDesc;
+        functionDesc.functionName = name;
+        functionDesc.entryPoint   = functionDesc.functionName;
+        functionDesc.type         = shaderType;
+
+        gfx::ShaderData shaderData;
+        shaderData.type = _dataType;
+        shaderData.data = fileContents.data();
+        shaderData.len  = fileContents.size();
+
+        gfx::ShaderId shader = _device->CreateShader(functionDesc, shaderData);
         assert(shader);
 
         _shaderCache.insert(std::make_pair(key, shader));

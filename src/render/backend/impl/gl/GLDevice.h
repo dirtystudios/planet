@@ -30,7 +30,7 @@ private:
     std::unordered_map<uint32_t, GLShaderParameter*> _shaderParams;
     std::unordered_map<uint32_t, GLPipelineState*> _pipelineStates;
     std::unordered_map<uint32_t, GLVertexLayout*> _vertexLayouts;
-
+    std::vector<ShaderLibrary*> _libraries;
     Pool<GLCommandBuffer, 1> _commandBufferPool;
 
     GLVaoCache _vaoCache;
@@ -44,7 +44,10 @@ public:
     void PrintDisplayAdapterInfo();
 
     BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr);
-    ShaderId CreateShader(ShaderType type, const std::string& source);
+
+    ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data);
+    ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderDataDesc>& shaderDatas);
+
     ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
     TextureId CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data);
@@ -62,6 +65,7 @@ public:
     void RenderFrame();
 
 private:
+    ShaderId CreateShader(ShaderType type, const std::string& source);
     void BindResource(const Binding& binding);
     void DestroyBuffer(BufferId buffer);
     void DestroyShader(ShaderId shader);
