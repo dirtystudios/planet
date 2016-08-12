@@ -72,7 +72,7 @@ namespace gfx {
         DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, initialData ? &initData : NULL, &buffer));
         BufferDX11 bufferdx11;
         bufferdx11.buffer.Swap(buffer);
-        return GenerateHandleEmplaceConstRef(m_buffers, bufferdx11);
+        return GenerateHandleEmplaceConstRef<ResourceType::Buffer>(m_buffers, bufferdx11);
     }
 
     ShaderId DX11Device::CreateShader(ShaderType type, const std::string& source) {
@@ -106,7 +106,7 @@ namespace gfx {
             DX11_CHECK_RET0(m_dev->CreateVertexShader(bufPtr, bufSize, NULL, &vertexShader));
             shaderDX11->vertexShader = vertexShader;
             m_lastCompiledVertexShader.Swap(blob);
-            return GenerateHandleEmplaceConstRef(m_shaders, *shaderDX11);
+            return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX11);
 
             //return GenerateHandleEmplaceConstRef<ComPtr<ID3D11VertexShader>>(m_vertexShaders, vertexShader.Get());
             break;
@@ -117,7 +117,7 @@ namespace gfx {
             DX11_CHECK_RET0(m_dev->CreatePixelShader(bufPtr, bufSize, NULL, &pixelShader));
 
             shaderDX11->pixelShader = pixelShader;
-            return GenerateHandleEmplaceConstRef(m_shaders, *shaderDX11);
+            return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX11);
             //return GenerateHandleEmplaceConstRef<ComPtr<ID3D11PixelShader>>(m_pixelShaders, pixelShader.Get());
             break;
         }
@@ -176,7 +176,7 @@ namespace gfx {
         entry.name = std::string(param);
         entry.type = paramType;
 
-        ShaderParamId shaderParamId = GenerateHandleEmplaceConstRef<CBufDescEntry>(m_cBufferParams, entry);
+        ShaderParamId shaderParamId = GenerateHandleEmplaceConstRef<ResourceType::Buffer>(m_cBufferParams, entry);
 
         auto cbufferdx11 = m_shaderCBufferMapping.find(shader);
         if (cbufferdx11 == m_shaderCBufferMapping.end()) {
@@ -242,7 +242,7 @@ namespace gfx {
         }
         stateDx11.rasterStateHandle = hash;
 
-        return GenerateHandleEmplaceConstRef(m_pipelineStates, stateDx11);
+        return GenerateHandleEmplaceConstRef<ResourceType::PipelineState>(m_pipelineStates, stateDx11);
     }
 
     ID3D11DepthStencilState* DX11Device::CreateDepthState(const DepthState& state) {
@@ -414,7 +414,7 @@ namespace gfx {
         textureDX11.shaderResourceView.Swap(shaderResourceView);
         textureDX11.format = tdesc.Format;
         textureDX11.requestedFormat = format;
-        return GenerateHandleEmplaceConstRef<TextureDX11>(m_textures, textureDX11);
+        return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
     TextureId DX11Device::CreateTextureArray(TextureFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
@@ -455,7 +455,7 @@ namespace gfx {
         textureDX11.shaderResourceView.Swap(shaderResourceView);
         textureDX11.format = tdesc.Format;
         textureDX11.requestedFormat = format;
-        return GenerateHandleEmplaceConstRef<TextureDX11>(m_textures, textureDX11);
+        return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
     TextureId DX11Device::CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data) {
@@ -505,7 +505,7 @@ namespace gfx {
         textureDX11.shaderResourceView.Swap(shaderResourceView);
         textureDX11.format = tdesc.Format;
         textureDX11.requestedFormat = format;
-        return GenerateHandleEmplaceConstRef<TextureDX11>(m_textures, textureDX11);
+        return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
     void* DX11Device::TextureDataConverter(const D3D11_TEXTURE2D_DESC& tDesc, TextureFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef) {
@@ -660,6 +660,18 @@ namespace gfx {
         m_context->SetPixelShader(state.pixelShaderHandle, state.pixelShader);
         
         m_context->SetInputLayout(state.vertexLayoutHandle, state.vertexLayoutStride, state.vertexLayout);
+    }
+
+    void DX11Device::DestroyResource(ResourceId resourceId) {
+        size_t key = ExtractResourceKey(resourceId);
+        switch (ExtractResourceType(resourceId)) {
+        case ResourceType::Shader: {
+            DestroyShader(key);
+            break;
+        }
+        default:
+            assert(false); // worry about this when we actually need ot
+        }
     }
 
     void DX11Device::RenderFrame() {

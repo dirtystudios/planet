@@ -85,6 +85,9 @@
     <ClCompile Include="..\src\render\backend\interface\StateGroupEncoder.cpp">
       <Filter>render\backend\interface</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\common\ResourceId.cpp">
+      <Filter>render\backend\impl\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -456,6 +459,12 @@
     <ClInclude Include="..\src\utilities\Hash.h">
       <Filter>utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\common\ResourceId.h">
+      <Filter>render\backend\impl\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\Pool.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">
@@ -517,6 +526,9 @@
     </Filter>
     <Filter Include="render\backend\impl\dx11">
       <UniqueIdentifier>{ef58647d-e591-415d-9412-7058c39dc98f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\backend\impl\common">
+      <UniqueIdentifier>{8b800251-ecae-4e55-a5dc-84bc74bd4f90}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

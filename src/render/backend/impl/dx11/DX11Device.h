@@ -3,6 +3,9 @@
 #include "DX11Context.h"
 #include "DX11CBufferHelper.h"
 #include "DX11CommandBuffer.h"
+#include "ResourceId.h"
+#include "Pool.h"
+#include "DMath.h"
 
 #include <memory>
 #include <cstring>
@@ -21,31 +24,6 @@
 #endif
 
 namespace gfx {
-
-    template <class T, size_t N>
-    class Pool {
-    private:
-        std::array<T, N> _items;
-        size_t _poolIdx{ 0 };
-        std::list<T*> _freeList;
-    public:
-        T* Get() {
-            T* ret = nullptr;
-            if (!_freeList.empty()) {
-                ret = _freeList.front();
-                _freeList.pop_front();
-            }
-            else if (_poolIdx < N) {
-                ret = &_items[_poolIdx++];
-            }
-            return ret;
-        }
-
-        void Release(T* v) {
-            _freeList.push_front(v);
-        }
-    };
-
     class DX11SemanticNameCache {
     private:
         // This is to cache semanticstrings, apparently sometimes we lose the reference on windows 7
@@ -171,14 +149,6 @@ namespace gfx {
         TextureId CreateTextureCube(TextureFormat format, uint32_t width, uint32_t height, void** data);
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
-        // todo: don't be eugene and actually delete these
-        void DestroyBuffer(BufferId buffer) {}
-        void DestroyShader(ShaderId shader) {}
-        void DestroyShaderParam(ShaderParamId shaderParam) {}
-        void DestroyPipelineState(PipelineStateId pipelineState) {}
-        void DestroyTexture(TextureId texture) {}
-        void DestroyVertexLayout(VertexLayoutId vertexLayout) {}
-
         CommandBuffer* CreateCommandBuffer();
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
 
@@ -186,6 +156,8 @@ namespace gfx {
         void UnmapMemory(BufferId buffer);
 
         void RenderFrame();
+
+        void DestroyResource(ResourceId resourceId);
     private:
         ID3D11DepthStencilState* CreateDepthState(const DepthState& state);
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
@@ -204,6 +176,35 @@ namespace gfx {
         void ResetDepthStencilTexture();
         void ResetViewport();
 
+        // todo: don't be eugene and actually delete these
+        void DestroyBuffer(BufferId buffer) {}
+        void DestroyShader(ShaderId shader) {}
+        void DestroyShaderParam(ShaderParamId shaderParam) {}
+        void DestroyPipelineState(PipelineStateId pipelineState) {}
+        void DestroyTexture(TextureId texture) {}
+        void DestroyVertexLayout(VertexLayoutId vertexLayout) {}
+        template <class T>
+        bool DestroyResource(ResourceId resourceId, std::unordered_map<uint32_t, T*>& map,
+            std::function<void(T*)> destroy) {
+            size_t handle = ExtractResourceKey(resourceId);
+            auto it = map.find(handle);
+            if (it == map.end()) {
+                return false;
+            }
+
+            T* resource = (*it).second;
+
+            if (resource->id) {
+                destroy(resource);
+            }
+            else {
+                return false;
+            }
+            map.erase(it);
+            return true;
+        }
+
+
         int GetFormatByteSize(DXGI_FORMAT dxFormat) {
             switch (dxFormat) {
             case DXGI_FORMAT_R8_UINT: return 1;
@@ -216,14 +217,14 @@ namespace gfx {
             }
         }
 
-        inline size_t GenerateHandle() {
+        inline size_t GenerateHandle(gfx::ResourceType type) {
             static size_t key = 0;
-            return ++key;
+            return GenerateResourceId(type, ++key);
         }
 
-        template<class T>
+        template<gfx::ResourceType t, class T>
         size_t GenerateHandleEmplaceConstRef(std::unordered_map<size_t, T>& map, const T& item) {
-            size_t handle = GenerateHandle();
+            size_t handle = GenerateHandle(t);
             map.emplace(handle, item);
             return handle;
         }

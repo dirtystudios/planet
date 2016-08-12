@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <cstdint>
 
 namespace gfx {
 using TextureId       = size_t;
