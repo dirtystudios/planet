@@ -15,12 +15,12 @@
 
 class DGAssert {
 public:
-    static void assertTrue(bool condition, const char* conditionStr, const char* file, int line, const char* fmt,
-                           ...) {
+    static void assertTrue(bool condition, const char* conditionStr, const char* file, int line, const char* fmt, ...) {
         static char _formatBuffer[1024];
         if (!condition) {
-            snprintf(_formatBuffer, sizeof(_formatBuffer), "cond:%s, file:%s, line:%d, msg:%s", conditionStr, file,
-                     line, fmt);
+            snprintf(_formatBuffer, sizeof(_formatBuffer),
+                     "\nAssertion Failure:\ncondition: %s\nfile:%s, line:%d\nmsg:\"%s\"\n", conditionStr, file, line,
+                     fmt);
 
             va_list args;
             va_start(args, fmt);

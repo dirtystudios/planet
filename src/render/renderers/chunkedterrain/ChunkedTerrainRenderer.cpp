@@ -17,8 +17,7 @@ void ChunkedTerrainRenderer::OnInit() {
     psd.pixelShader  = GetShaderCache()->Get(gfx::ShaderType::PixelShader, "diffuse");
     psd.vertexLayout = GetVertexLayoutCache()->Get(ChunkedTerrainVertex::GetVertexLayoutDesc());
     psd.topology     = gfx::PrimitiveType::Triangles;
-    _defaultPS       = GetPipelineStateCache()->Get(psd);
-    _transform = GetRenderDevice()->CreateShaderParam(psd.vertexShader, "wvp", gfx::ParamType::Float4x4);
+    _defaultPS = GetPipelineStateCache()->Get(psd);
     assert(_defaultPS);
     assert(_transform);
 }

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <cassert>
+#include <fstream>
 #include "Log.h"
 
 std::string fs::GetProcessDirectory() {
@@ -53,13 +54,27 @@ std::vector<std::string> fs::ListFilesInDirectory(const std::string& path) {
             
             // dirFile.name is the name of the file. Do whatever string comparison
             // you want here. Something like:
-//            if ( strstr( hFile->d_name, ".txt" ))
-            if(hFile->d_type == DT_REG) {                
+            //            if ( strstr( hFile->d_name, ".txt" ))
+            if (hFile->d_type == DT_REG) {
                 fnames.push_back(hFile->d_name);
             }
-              //  printf( "%s\n", hFile->d_name);
-        }         
-        closedir( dirFile );
+            //  printf( "%s\n", hFile->d_name);
+        }
+        closedir(dirFile);
     }
     return fnames;
+}
+
+bool fs::ReadFileContents(const std::string& fpath, std::string* output) {
+    assert(output);
+    std::ifstream fin(fpath, std::ios::in | std::ios::binary);
+
+    if (fin.fail()) {
+        LOG_E("Failed to open file '%s'\n", fpath.c_str());
+        return false;
+    }
+
+    output->insert(end(*output), std::istreambuf_iterator<char>(fin), std::istreambuf_iterator<char>());
+
+    return true;
 }

@@ -65,7 +65,7 @@ public:
     void RenderFrame();
 
 private:
-    ShaderId CreateShader(ShaderType type, const std::string& source);
+    ShaderId CreateShader(ShaderType type, const char* source);
     void BindResource(const Binding& binding);
     void DestroyBuffer(BufferId buffer);
     void DestroyShader(ShaderId shader);

@@ -14,6 +14,7 @@
 #include "DMath.h"
 #include "ResourceTypes.h"
 #include "SimpleShaderLibrary.h"
+#include "DGAssert.h"
 
 int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
     static constexpr uint32_t kMaxSlot = 10;
@@ -84,7 +85,10 @@ ShaderLibrary* GLDevice::CreateShaderLibrary(const std::vector<ShaderDataDesc>& 
 
         for (const ShaderFunctionDesc& function : dataDesc.functions) {
             ShaderId shaderId = CreateShader(function, shaderData);
-            assert(shaderId);
+            if (shaderId == 0) {
+                LOG_D("Failed to compile shader:%s", ToString(function).c_str());
+                continue;
+            }
             lib->AddShader(shaderId, function);
         }
     }
@@ -95,14 +99,15 @@ ShaderLibrary* GLDevice::CreateShaderLibrary(const std::vector<ShaderDataDesc>& 
 
 ShaderId GLDevice::CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& shaderData) {
     assert(shaderData.type == ShaderDataType::Source);
-    return CreateShader(funcDesc.type, reinterpret_cast<const char*>(shaderData.data));
+    const char* csrc = reinterpret_cast<const char*>(shaderData.data);
+    return CreateShader(funcDesc.type, csrc);
 }
 
-ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source) {
+ShaderId GLDevice::CreateShader(ShaderType shaderType, const char* source) {
     GLShaderProgram* shader = new GLShaderProgram();
 
     shader->type               = GLEnumAdapter::Convert(shaderType);
-    const char* shaderSource[] = {source.c_str()};
+    const char* shaderSource[] = {source};
     shader->id = glCreateShaderProgramv(shader->type, 1, (const GLchar**)shaderSource);
     assert(shader->id);
 
@@ -111,8 +116,9 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
     if (!linked) {
         char log[1024];
         GL_CHECK(glGetProgramInfoLog(shader->id, 1024, nullptr, log));
-        LOG_E("Failed to compile/link program: %s\n--------------:\n%s\n", log, source.c_str());
-        assert(false);
+        LOG_E("Failed to compile/link program: %s\n--------------:\n%s\n", log, source);
+        delete shader;
+        return 0;
     }
 
     GLShaderMetadata* metadata = &shader->metadata;
@@ -161,20 +167,22 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const std::string& source
             assert(uniform->location >= 0);
 
             switch (uniform->type) {
-            case GL_SAMPLER_1D_ARRAY:
-            case GL_SAMPLER_2D_ARRAY:
-            case GL_SAMPLER_CUBE:
-            case GL_SAMPLER_2D: {
-                assert(uniform->name.find("_s") ==
-                       0); // samplers need to define their slot in their name..yay opengl 4.1
-                GLSamplerMetadata samplerMetadata;
-                samplerMetadata.uniform = uniform;
-                samplerMetadata.slot = GetSlotFromString(uniform->name, gfx::Binding::Type::Texture);
-                metadata->samplers.push_back(samplerMetadata);
-                break;
-            }
-            default: {
-                assert(uniform->name.find("_s") != 0); // right now just to catch my mistakes
+                case GL_SAMPLER_1D_ARRAY:
+                case GL_SAMPLER_2D_ARRAY:
+                case GL_SAMPLER_CUBE:
+                case GL_SAMPLER_2D: {
+                    dg_assert(
+                        uniform->name.find("_s") == 0, "Invalid sampler name:%s. Sampler must be prefix with slot id. "
+                                                       "(ex. \"_s<slot id>_<param_nam>\")",
+                        uniform->name.c_str()); // samplers need to define their slot in their name..yay opengl 4.1
+                    GLSamplerMetadata samplerMetadata;
+                    samplerMetadata.uniform = uniform;
+                    samplerMetadata.slot = GetSlotFromString(uniform->name, gfx::Binding::Type::Texture);
+                    metadata->samplers.push_back(samplerMetadata);
+                    break;
+                }
+                default: {
+                    assert(uniform->name.find("_s") != 0); // right now just to catch my mistakes
                 }
             }
         }

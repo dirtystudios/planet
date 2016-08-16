@@ -21,4 +21,11 @@ namespace fs {
     std::vector<std::string> ListFilesInDirectory(const std::string& dir);
 
     bool IsPathDirectory(std::string path);
+
+    /**
+     * Read entires contents of file and append to provided string paramter
+     *
+     * @return Success of file read
+     */
+    bool ReadFileContents(const std::string& fpath, std::string* output);
 }

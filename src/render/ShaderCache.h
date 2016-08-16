@@ -6,6 +6,7 @@
 #include "File.h"
 #include "ShaderType.h"
 #include "Helpers.h"
+#include "DGAssert.h"
 
 class ShaderCache {
 private:
@@ -14,6 +15,7 @@ private:
     std::string _baseDir;
     gfx::ShaderDataType _dataType;
     std::unordered_map<ShaderCacheKey, gfx::ShaderId> _shaderCache;
+    gfx::ShaderLibrary* _library;
 
 public:
     ShaderCache(gfx::RenderDevice* device, const std::string& baseDir) : _device(device), _baseDir(baseDir) {
@@ -25,8 +27,63 @@ public:
         _baseDir += "/" + _device->DeviceConfig.DeviceAbbreviation;
         LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
 
+        std::vector<std::string> dirFiles = fs::ListFilesInDirectory(_baseDir);
+
         // TODO: determine if we will need set as Binary instead of Source
         _dataType = gfx::ShaderDataType::Source;
+        std::vector<gfx::ShaderDataDesc> sdds;
+        std::vector<std::string> allSrcs;
+
+        for (const std::string& fname : dirFiles) {
+            std::string absPath = _baseDir + "/" + fname;
+
+            LOG_D("Creating shader for file:%s", fname.c_str());
+            size_t nameBreak = fname.find_first_of("_");
+
+            if (nameBreak == std::string::npos) {
+                LOG_D("Incorrect name format for file:%s. Expected \"<function_name>_(vs|(ps|fs)).(glsl|hlsl|metal)\"",
+                      fname.c_str());
+                continue;
+            }
+
+            size_t fileBreak = fname.find_first_of(".");
+            if (fileBreak == std::string::npos) {
+                LOG_D("Incorrect name format for file:%s. Expected \"<function_name>_(vs|(ps|fs)).(glsl|hlsl|metal)\"",
+                      fname.c_str());
+                continue;
+            }
+
+            std::string shaderExt = fname.substr(nameBreak + 1, (fileBreak - nameBreak) - 1);
+            gfx::ShaderType shaderType;
+            if (!GetShaderTypeFromExt(shaderExt, &shaderType)) {
+                LOG_D("Incorrect shader type for file:%s. Expected \"<function_name>_(vs|(ps|fs)).(glsl|hlsl|metal)\"",
+                      fname.c_str());
+                continue;
+            }
+
+            sdds.emplace_back();
+            gfx::ShaderDataDesc& sdd = sdds.back();
+            sdd.functions.emplace_back();
+
+            gfx::ShaderFunctionDesc& fd = sdd.functions.back();
+            fd.functionName             = fname.substr(0, nameBreak);
+            fd.entryPoint               = fd.functionName;
+            fd.type                     = shaderType;
+
+            allSrcs.emplace_back();
+            std::string& fileContentsBuffer = allSrcs.back();
+
+            if (!fs::ReadFileContents(absPath, &fileContentsBuffer)) {
+                LOG_D("Filed to read file contents for file:%s", fname.c_str());
+                continue;
+            }
+
+            gfx::ShaderData& shaderData = sdd.data;
+            shaderData.type             = _dataType;
+            shaderData.data             = fileContentsBuffer.data();
+            shaderData.len              = fileContentsBuffer.size();
+        }
+        _library = _device->CreateShaderLibrary(sdds);
     }
 
     ~ShaderCache() {
@@ -35,56 +92,22 @@ public:
         }
     }
 
-    gfx::ShaderId Get(gfx::ShaderType shaderType, const std::string& name) {
-        ShaderCacheKey key = BuildKey(shaderType, name);
-        auto it = _shaderCache.find(key);
-        if (it != _shaderCache.end()) {
-            return it->second;
-        }
-
-        std::string fileContents = ReadFileContents(BuildFilePathForShader(shaderType, name));
-
-        gfx::ShaderFunctionDesc functionDesc;
-        functionDesc.functionName = name;
-        functionDesc.entryPoint   = functionDesc.functionName;
-        functionDesc.type         = shaderType;
-
-        gfx::ShaderData shaderData;
-        shaderData.type = _dataType;
-        shaderData.data = fileContents.data();
-        shaderData.len  = fileContents.size();
-
-        gfx::ShaderId shader = _device->CreateShader(functionDesc, shaderData);
-        assert(shader);
-
-        _shaderCache.insert(std::make_pair(key, shader));
+    gfx::ShaderId Get(gfx::ShaderType shaderType, const std::string& functionName) {
+        gfx::ShaderId shader = _library->GetShader(shaderType, functionName);
+        dg_assert(shader, "Failed to get shader (type:%s, functionName:%s)", ToString(shaderType).c_str(),
+                  functionName.c_str());
         return shader;
     }
 
 private:
-    std::string BuildFilePathForShader(gfx::ShaderType type, const std::string& name) {
-        return _baseDir + "/" + name + BuildExtension(type);
-    }
-    std::string BuildExtension(gfx::ShaderType type) {
-        std::string extension;
-        switch (type) {
-        case gfx::ShaderType::VertexShader:
-            extension += "_vs";
-            break;
-        case gfx::ShaderType::PixelShader:
-            extension += "_ps";
-            break;
-        default:
-            assert(false);
+    bool GetShaderTypeFromExt(const std::string& ext, gfx::ShaderType* typeOut) {
+        if (ext == "vs") {
+            *typeOut = gfx::ShaderType::VertexShader;
+        } else if (ext == "ps" || ext == "fs") {
+            *typeOut = gfx::ShaderType::PixelShader;
+        } else {
+            return false;
         }
-        extension += _device->DeviceConfig.ShaderExtension;
-        ;
-        return extension;
-    }
-    ShaderCacheKey BuildKey(gfx::ShaderType type, const std::string& name) {
-        size_t h = 0;
-        HashCombine(h, type);
-        HashCombine(h, name);
-        return h;
+        return true;
     }
 };

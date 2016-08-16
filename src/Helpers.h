@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include "glm/glm.hpp"
+#include <vector>
 
 const glm::vec3 X_AXIS = glm::vec3(1, 0, 0);
 const glm::vec3 Y_AXIS = glm::vec3(0, 1, 0);
@@ -58,19 +59,6 @@ static inline glm::vec3 GetColor(uint32_t index) {
     float g       = (colors[index] >> 8 & mask) / 255.f;
     float b = (colors[index] & mask) / 255.f;
     return glm::vec3(r, g, b);
-}
-
-static std::string ReadFileContents(const std::string& fpath) {
-    std::ifstream fin(fpath, std::ios::in | std::ios::binary);
-
-    if (fin.fail()) {
-        LOG_E("Failed to open file '%s'\n", fpath.c_str());
-        assert(false);
-    }
-
-    std::string ss((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
-
-    return ss;
 }
 
 static void ToLowercase(std::string& s) { std::transform(begin(s), end(s), begin(s), ::tolower); }

@@ -155,43 +155,47 @@ int sys::Run(app::Application* app) {
                 subsystem = "X Window System";
                 break;
             case SDL_SYSWM_WINDOWS:
-            subsystem = "Microsoft Windows";
+                subsystem = "Microsoft Windows";
 #ifdef _WIN32
-            if (renderDeviceConfig == "opengl") {
-                // start GLEW extension handler
-                glewExperimental = GL_TRUE;
-                glewInit();
-                glGetError();
-                _app->renderDevice = new gfx::GLDevice();
-            }
-            else {
-                _app->renderDevice = new gfx::DX11Device();
-                std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
+                if (renderDeviceConfig == "opengl") {
+                    // start GLEW extension handler
+                    glewExperimental = GL_TRUE;
+                    glewInit();
+                    glGetError();
+                    _app->renderDevice = new gfx::GLDevice();
+                } else {
+                    _app->renderDevice = new gfx::DX11Device();
+                    std::string usePrebuiltShadersConfig =
+                        config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
 
-                gfx::DeviceInitialization devInit;
-                devInit.windowHandle       = info.info.win.window;
-                devInit.windowHeight       = _window_height;
-                devInit.windowWidth        = _window_width;
-                devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
-                _app->renderDevice->InitializeDevice(devInit);
-            }
+                    gfx::DeviceInitialization devInit;
+                    devInit.windowHandle       = info.info.win.window;
+                    devInit.windowHeight       = _window_height;
+                    devInit.windowWidth        = _window_width;
+                    devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
+                    _app->renderDevice->InitializeDevice(devInit);
+                }
 #endif
-            break;
-        case SDL_SYSWM_COCOA:
-            subsystem = "Apple OS X";
-            _app->renderDevice = new gfx::GLDevice();
-            break;
+                break;
+            case SDL_SYSWM_COCOA:
+                subsystem          = "Apple OS X";
+                _app->renderDevice = new gfx::GLDevice();
+                break;
             // case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
+            default:
+                dg_assert_fail_nm();
         }
+
     } else {
         LOG_E("Couldn't get window information: %s\n", SDL_GetError());
     }
 
     PopulateKeyMapping();
 
-    LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch, subsystem);
+    LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch,
+          subsystem);
 
-    if (initRtn != 0){
+    if (initRtn != 0) {
         LOG_E("%s", "DeviceRender Init Failed.");
         return -1;
     }
