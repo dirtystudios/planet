@@ -1,7 +1,7 @@
 #pragma once
 #include "DX11ContextState.h"
 
-#include "DX11Utils.h"
+#include "DX11Debug.h"
 
 #include <unordered_map>
 #include <wrl.h>

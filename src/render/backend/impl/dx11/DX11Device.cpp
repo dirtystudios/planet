@@ -6,7 +6,8 @@
 #include "EnumTraits.h"
 #include "SimpleShaderLibrary.h"
 
-#include "DX11Utils.h"
+#include "DX11Debug.h"
+#include "TexConvert.h"
 #include "Memory.h"
 #include "DrawItemDecoder.h"
 

@@ -43,9 +43,6 @@
     <ClCompile Include="..\src\render\backend\impl\dx11\DX11Context.cpp">
       <Filter>render\backend\impl\dx11</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Utils.cpp">
-      <Filter>render\backend\impl\dx11</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\render\Camera.cpp">
       <Filter>render</Filter>
     </ClCompile>
@@ -92,6 +89,12 @@
       <Filter>render\backend\interface</Filter>
     </ClCompile>
     <ClCompile Include="..\src\render\backend\impl\common\SimpleShaderLibrary.cpp">
+      <Filter>render\backend\impl\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Debug.cpp">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\common\TexConvert.cpp">
       <Filter>render\backend\impl\common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -228,9 +231,6 @@
       <Filter>render\backend\impl\gl</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Device.h">
-      <Filter>render\backend\impl\dx11</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Utils.h">
       <Filter>render\backend\impl\dx11</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Structs.h">
@@ -491,6 +491,12 @@
     </ClInclude>
     <ClInclude Include="..\src\render\backend\interface\ShaderLibrary.h">
       <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Debug.h">
+      <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\common\TexConvert.h">
+      <Filter>render\backend\impl\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
