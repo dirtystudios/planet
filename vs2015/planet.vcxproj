@@ -27,12 +27,14 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
     <ClCompile Include="..\src\render\backend\impl\common\ResourceId.cpp" />
+    <ClCompile Include="..\src\render\backend\impl\common\SimpleShaderLibrary.cpp" />
     <ClCompile Include="..\src\render\backend\impl\dx11\DX11Context.cpp" />
     <ClCompile Include="..\src\render\backend\impl\dx11\DX11Device.cpp" />
     <ClCompile Include="..\src\render\backend\impl\dx11\DX11Utils.cpp" />
     <ClCompile Include="..\src\render\backend\impl\gl\GLContext.cpp" />
     <ClCompile Include="..\src\render\backend\impl\gl\GLDevice.cpp" />
     <ClCompile Include="..\src\render\backend\interface\DrawItemEncoder.cpp" />
+    <ClCompile Include="..\src\render\backend\interface\RenderDeviceApi.cpp" />
     <ClCompile Include="..\src\render\backend\interface\StateGroupEncoder.cpp" />
     <ClCompile Include="..\src\render\Camera.cpp" />
     <ClCompile Include="..\src\render\Frustum.cpp" />
@@ -75,6 +77,7 @@
     <ClInclude Include="..\src\platform\Platform.h" />
     <ClInclude Include="..\src\platform\System.h" />
     <ClInclude Include="..\src\render\backend\impl\common\ResourceId.h" />
+    <ClInclude Include="..\src\render\backend\impl\common\SimpleShaderLibrary.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11CBufferHelper.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11CommandBuffer.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h" />
@@ -113,6 +116,8 @@
     <ClInclude Include="..\src\render\backend\interface\enums\FillMode.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\ParamType.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\PrimitiveType.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\RenderDeviceApi.h" />
+    <ClInclude Include="..\src\render\backend\interface\enums\ShaderDataType.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderStage.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\ShaderType.h" />
     <ClInclude Include="..\src\render\backend\interface\enums\TextureFormat.h" />
@@ -122,6 +127,10 @@
     <ClInclude Include="..\src\render\backend\interface\RasterState.h" />
     <ClInclude Include="..\src\render\backend\interface\RenderDevice.h" />
     <ClInclude Include="..\src\render\backend\interface\ResourceTypes.h" />
+    <ClInclude Include="..\src\render\backend\interface\ShaderData.h" />
+    <ClInclude Include="..\src\render\backend\interface\ShaderDataDesc.h" />
+    <ClInclude Include="..\src\render\backend\interface\ShaderFunctionDesc.h" />
+    <ClInclude Include="..\src\render\backend\interface\ShaderLibrary.h" />
     <ClInclude Include="..\src\render\backend\interface\StateGroup.h" />
     <ClInclude Include="..\src\render\backend\interface\StateGroupDecoder.h" />
     <ClInclude Include="..\src\render\backend\interface\StateGroupEncoder.h" />

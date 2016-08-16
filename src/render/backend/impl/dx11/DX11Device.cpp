@@ -4,6 +4,7 @@
 #include <d3dcompiler.inl>
 
 #include "EnumTraits.h"
+#include "SimpleShaderLibrary.h"
 
 #include "DX11Utils.h"
 #include "Memory.h"
@@ -18,12 +19,11 @@ namespace gfx {
         ComPtr<ID3D11Buffer> buffer = NULL;
 
         D3D11_BUFFER_DESC bufferDesc = { 0 };
-        //bufferDesc.Usage = SafeGet(BufferUsageDX11, desc.);
 
-        if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
+        if ((desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits) == BufferAccessFlags::GpuReadCpuWriteBits) {
             bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         }
-        else if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadBit)) {
+        else if ((desc.accessFlags & BufferAccessFlags::GpuReadBit) == BufferAccessFlags::GpuReadBit) {
             bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
         }
         else {
@@ -75,6 +75,30 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<ResourceType::Buffer>(m_buffers, bufferdx11);
     }
 
+    ShaderLibrary* DX11Device::CreateShaderLibrary(const std::vector<ShaderDataDesc>& dataDescs) {
+        SimpleShaderLibrary* lib = new SimpleShaderLibrary();
+
+        for (const ShaderDataDesc& dataDesc : dataDescs) {
+            const ShaderData& shaderData = dataDesc.data;
+            assert(shaderData.type == ShaderDataType::Source);
+
+            for (const ShaderFunctionDesc& function : dataDesc.functions) {
+                ShaderId shaderId = CreateShader(function, shaderData);
+                assert(shaderId);
+                lib->AddShader(shaderId, function);
+            }
+        }
+
+        m_libraries.push_back(lib);
+        return lib;
+    }
+
+
+    ShaderId DX11Device::CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& shaderData) {
+        assert(shaderData.type == ShaderDataType::Source);
+        return CreateShader(funcDesc.type, reinterpret_cast<const char*>(shaderData.data));
+    }
+
     ShaderId DX11Device::CreateShader(ShaderType type, const std::string& source) {
         ComPtr<ID3DBlob> blob;
         void* bufPtr;
@@ -107,8 +131,6 @@ namespace gfx {
             shaderDX11->vertexShader = vertexShader;
             m_lastCompiledVertexShader.Swap(blob);
             return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX11);
-
-            //return GenerateHandleEmplaceConstRef<ComPtr<ID3D11VertexShader>>(m_vertexShaders, vertexShader.Get());
             break;
         }
         case ShaderType::PixelShader:
@@ -118,7 +140,6 @@ namespace gfx {
 
             shaderDX11->pixelShader = pixelShader;
             return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX11);
-            //return GenerateHandleEmplaceConstRef<ComPtr<ID3D11PixelShader>>(m_pixelShaders, pixelShader.Get());
             break;
         }
         default:

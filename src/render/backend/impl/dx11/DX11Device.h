@@ -119,6 +119,7 @@ namespace gfx {
         std::unordered_map<size_t, ComPtr<ID3D11RasterizerState>> m_rasterStates;
         std::unordered_map<size_t, ComPtr<ID3D11DepthStencilState>> m_depthStates;
 
+        std::vector<ShaderLibrary*> m_libraries;
 
         ComPtr<ID3DBlob> m_lastCompiledVertexShader;
         std::unique_ptr<DX11Context> m_context;
@@ -138,7 +139,9 @@ namespace gfx {
         void PrintDisplayAdapterInfo();
 
         BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData);
-        ShaderId CreateShader(ShaderType type, const std::string& source);
+
+        ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data);
+        ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderDataDesc>& shaderDatas);
 
         ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
@@ -162,6 +165,8 @@ namespace gfx {
         ID3D11DepthStencilState* CreateDepthState(const DepthState& state);
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
         ID3D11BlendState* CreateBlendState(const BlendState& state);
+
+        ShaderId CreateShader(ShaderType type, const std::string& source);
 
         void SetPipelineState(const PipelineStateDX11& state);
         void Execute(DX11CommandBuffer* cmdBuffer);

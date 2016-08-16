@@ -88,6 +88,12 @@
     <ClCompile Include="..\src\render\backend\impl\common\ResourceId.cpp">
       <Filter>render\backend\impl\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\render\backend\interface\RenderDeviceApi.cpp">
+      <Filter>render\backend\interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\common\SimpleShaderLibrary.cpp">
+      <Filter>render\backend\impl\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -464,6 +470,27 @@
     </ClInclude>
     <ClInclude Include="..\src\utilities\Pool.h">
       <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\RenderDeviceApi.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\common\SimpleShaderLibrary.h">
+      <Filter>render\backend\impl\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\enums\ShaderDataType.h">
+      <Filter>render\backend\interface\enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\ShaderData.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\ShaderDataDesc.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\ShaderFunctionDesc.h">
+      <Filter>render\backend\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\interface\ShaderLibrary.h">
+      <Filter>render\backend\interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
