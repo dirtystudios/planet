@@ -14,6 +14,7 @@
 #include "Config.h"
 #include <map>
 #include "DGAssert.h"
+#include "RenderDeviceApi.h"
 
 SDL_Window* _window = NULL;
 SDL_Event _e;
