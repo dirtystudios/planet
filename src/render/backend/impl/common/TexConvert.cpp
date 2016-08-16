@@ -1,16 +1,15 @@
 #include "TexConvert.h"
 #include "Log.h"
+#include "CpuId.h"
 
 #include <emmintrin.h>
 #include <tmmintrin.h>
-#include <intrin.h>
 
 namespace gfx {
     void Convert24BitTo32Bit(const std::uintptr_t src, std::uintptr_t dst, uint32_t numPixels) {
-        int info[4];
-        __cpuidex(info, 1, 0);
-        bool hasSSSE3 = (info[2] & ((int)1 << 9)) != 0;
-        bool hasSSE41 = (info[2] & ((int)1 << 19)) != 0;
+        CpuId cpuId(1);
+        bool hasSSSE3 = (cpuId.ECX() & ((int)1 << 9)) != 0;
+        bool hasSSE41 = (cpuId.ECX() & ((int)1 << 19)) != 0;
         bool alignedSource = ((src & 15) == 0);
         bool alignedDst = ((dst & 15) == 0);
 

@@ -498,6 +498,9 @@
     <ClInclude Include="..\src\render\backend\impl\common\TexConvert.h">
       <Filter>render\backend\impl\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\utilities\CpuId.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">

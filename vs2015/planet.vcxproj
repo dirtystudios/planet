@@ -28,9 +28,10 @@
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
     <ClCompile Include="..\src\render\backend\impl\common\ResourceId.cpp" />
     <ClCompile Include="..\src\render\backend\impl\common\SimpleShaderLibrary.cpp" />
+    <ClCompile Include="..\src\render\backend\impl\common\TexConvert.cpp" />
     <ClCompile Include="..\src\render\backend\impl\dx11\DX11Context.cpp" />
     <ClCompile Include="..\src\render\backend\impl\dx11\DX11Device.cpp" />
-    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Utils.cpp" />
+    <ClCompile Include="..\src\render\backend\impl\dx11\DX11Debug.cpp" />
     <ClCompile Include="..\src\render\backend\impl\gl\GLContext.cpp" />
     <ClCompile Include="..\src\render\backend\impl\gl\GLDevice.cpp" />
     <ClCompile Include="..\src\render\backend\interface\DrawItemEncoder.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="..\src\utilities\Callback.h" />
     <ClInclude Include="..\src\utilities\Config.h" />
     <ClInclude Include="..\src\utilities\ConsoleCommands.h" />
+    <ClInclude Include="..\src\utilities\CpuId.h" />
     <ClInclude Include="..\src\utilities\DGAssert.h" />
     <ClInclude Include="..\src\utilities\EnumTraits.h" />
     <ClInclude Include="..\src\utilities\File.h" />
