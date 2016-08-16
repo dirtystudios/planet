@@ -1,6 +1,6 @@
-#ifndef __helpers_h__
-#define __helpers_h__
+#pragma once
 
+#include <algorithm>
 #include "Log.h"
 #include <string>
 #include <fstream>
@@ -10,8 +10,7 @@
 const glm::vec3 X_AXIS = glm::vec3(1, 0, 0);
 const glm::vec3 Y_AXIS = glm::vec3(0, 1, 0);
 const glm::vec3 Z_AXIS = glm::vec3(0, 0, 1);
-const float PI = 3.1415926f;
-
+const float PI         = 3.1415926f;
 
 static void Orthogonalize(glm::vec3* v1, glm::vec3* v2, glm::vec3* v3) {
     *v1 = glm::normalize(*v1);
@@ -74,4 +73,10 @@ static std::string ReadFileContents(const std::string& fpath) {
     return ss;
 }
 
-#endif
+static void ToLowercase(std::string& s) { std::transform(begin(s), end(s), begin(s), ::tolower); }
+
+static std::string ToLowercase(const std::string& s) {
+    std::string copied(s);
+    ToLowercase(copied);
+    return copied;
+}

@@ -13,13 +13,14 @@
 #include "Log.h"
 #include "Config.h"
 #include <map>
+#include "DGAssert.h"
 
 SDL_Window* _window = NULL;
 SDL_Event _e;
 uint32_t _window_width    = 1200;
-uint32_t _window_height   = 800 ;
+uint32_t _window_height   = 800;
 const char* _window_title = "dirty";
-app::Application* _app = { nullptr };
+app::Application* _app    = {nullptr};
 bool shouldQuit = false;
 std::vector<float> inputValues((int)input::InputCode::COUNT);
 std::map<int, input::InputCode> sdlkMapping;
@@ -102,47 +103,57 @@ void sys::ShowCursor(bool showCursor) {
     }
 }
 
-int sys::Run(app::Application* app){
+int sys::Run(app::Application* app) {
     _app = app;
 
-    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) != 0){
+    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) != 0) {
         LOG_E("SDL Init Failed: %s", SDL_GetError());
         return -1;
     }
 
-    std::string renderDeviceConfig =  config::Config::getInstance().GetConfigString("RenderDeviceSettings", "RenderDevice");
-    if (renderDeviceConfig != "directx11" && renderDeviceConfig != "opengl") {
-        renderDeviceConfig = "";
-        LOG_D("Invalid RenderDevice set in ini. Using Default for system. Given: %s", renderDeviceConfig.c_str());
+    std::string renderDeviceConfig =
+        config::Config::getInstance().GetConfigString("RenderDeviceSettings", "RenderDevice");
+    gfx::RenderDeviceApi deviceApi = gfx::ApiFromString(renderDeviceConfig);
+    dg_assert(deviceApi != gfx::RenderDeviceApi::Unknown, "Could not find compatible device api for string:%s",
+              renderDeviceConfig.c_str());
+
+    if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
+        // TODO: context creation should probably be moved to render backend
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     }
 
-    // TODO: context creation should probably be moved to render backend
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);    
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    uint32_t sdlCreateAdditionalFlags = deviceApi == gfx::RenderDeviceApi::OpenGL ? SDL_WINDOW_OPENGL : 0;
 
-    _window = SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width, _window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width,
+                               _window_height, sdlCreateAdditionalFlags | SDL_WINDOW_RESIZABLE);
 
-    if (_window == NULL){
+    if (_window == NULL) {
         LOG_E("SDL could not create window: %s", SDL_GetError());
         return -1;
     }
 
-    SDL_GLContext glcontext = SDL_GL_CreateContext(_window);
-    printf("%s\n", SDL_GetError() );
-    SDL_GL_MakeCurrent(_window, glcontext);
+    if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
+        SDL_GLContext glcontext = SDL_GL_CreateContext(_window);
+        SDL_GL_MakeCurrent(_window, glcontext);
+    }
+    printf("%s\n", SDL_GetError());
 
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
-    const char *subsystem = "Unknown System!";
-    int initRtn = 0;    
-    if (SDL_GetWindowWMInfo(_window, &info)){
-        switch (info.subsystem){
-        case SDL_SYSWM_UNKNOWN: break;
-        case SDL_SYSWM_X11: subsystem = "X Window System"; break;
-        case SDL_SYSWM_WINDOWS:
+    const char* subsystem = "Unknown System!";
+    int initRtn = 0;
+    if (SDL_GetWindowWMInfo(_window, &info)) {
+        switch (info.subsystem) {
+            case SDL_SYSWM_UNKNOWN:
+                break;
+            case SDL_SYSWM_X11:
+                subsystem = "X Window System";
+                break;
+            case SDL_SYSWM_WINDOWS:
             subsystem = "Microsoft Windows";
 #ifdef _WIN32
             if (renderDeviceConfig == "opengl") {
