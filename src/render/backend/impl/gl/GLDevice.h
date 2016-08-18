@@ -13,6 +13,7 @@
 #include "ResourceId.h"
 #include "SimpleShaderLibrary.h"
 
+
 namespace gfx {
 class GLDevice : public RenderDevice {
 private:
@@ -42,6 +43,7 @@ public:
     GLDevice();
     ~GLDevice();
 
+    RenderDeviceApi GetDeviceApi();
     int32_t InitializeDevice(const DeviceInitialization& deviceInit) { return 0; }
     void ResizeWindow(uint32_t width, uint32_t height);
     void PrintDisplayAdapterInfo();

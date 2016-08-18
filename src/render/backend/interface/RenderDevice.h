@@ -16,6 +16,7 @@
 #include "ShaderFunctionDesc.h"
 #include "ShaderDataDesc.h"
 #include "ShaderLibrary.h"
+#include "RenderDeviceApi.h"
 
 namespace gfx {
 
@@ -35,7 +36,7 @@ struct DeviceInitialization {
 class RenderDevice {
 public:
     DeviceConfiguration DeviceConfig;
-
+    virtual RenderDeviceApi GetDeviceApi() = 0;
     virtual int32_t InitializeDevice(const DeviceInitialization& deviceInit) = 0;
     virtual void ResizeWindow(uint32_t width, uint32_t height) = 0;
     virtual void PrintDisplayAdapterInfo() = 0;

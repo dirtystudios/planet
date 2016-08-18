@@ -38,7 +38,10 @@ public:
             shaderData.len              = fileContents.size();
             _device->AddOrUpdateShaders({shaderData});
         };
-        _watcherId = fs::WatchDir(_baseDir, eventCallback);
+        
+        if(_device->GetDeviceApi() != gfx::RenderDeviceApi::OpenGL) {
+            _watcherId = fs::WatchDir(_baseDir, eventCallback);
+        }
 
         std::vector<std::string> dirFiles = fs::ListFilesInDirectory(_baseDir);
 

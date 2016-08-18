@@ -39,6 +39,9 @@ GLDevice::GLDevice() {
     this->DeviceConfig.DeviceAbbreviation = "GL";
 }
 
+RenderDeviceApi GLDevice::GetDeviceApi() {
+    return RenderDeviceApi::OpenGL;
+}
 GLDevice::~GLDevice() {}
 
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
@@ -113,9 +116,13 @@ void GLDevice::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
             GLShaderProgram* existing = GetResource(_shaders, existingShaderId);
             GLShaderProgram* updated = GetResource(_shaders, shaderId);
             dg_assert_nm(existing && updated);
-            _shaders[existingShaderId] = updated;
-            delete existing;
-            _shaders.erase(shaderId);
+            
+            GL_CHECK(glDeleteShader(existing->id));
+            existing->id = updated->id;
+            existing->metadata = updated->metadata;
+                    
+            _shaders.erase(shaderId);            
+            delete updated;            
         } else {
             _lib.AddShader(shaderId, function);
         }
