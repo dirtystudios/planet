@@ -8,6 +8,7 @@
 #include <cassert>
 #include <fstream>
 #include "Log.h"
+#include "WatchDirManager.h"
 
 std::string fs::GetProcessDirectory() {
     char current_path[FILENAME_MAX];
@@ -78,3 +79,9 @@ bool fs::ReadFileContents(const std::string& fpath, std::string* output) {
 
     return true;
 }
+
+uint64_t fs::WatchDir(const std::string& path, fs::FileEventDelegate delegate) {
+    return fs::WatchDirManager::AddWatcher(path, delegate);
+}
+
+bool fs::StopWatching(uint64_t watcherId) { return fs::WatchDirManager::RemoveWatcher(watcherId); }

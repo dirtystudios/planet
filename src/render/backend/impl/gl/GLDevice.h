@@ -11,6 +11,7 @@
 #include "Pool.h"
 #include "DMath.h"
 #include "ResourceId.h"
+#include "SimpleShaderLibrary.h"
 
 namespace gfx {
 class GLDevice : public RenderDevice {
@@ -21,6 +22,8 @@ private:
 
 private:
     GLContext _context;
+
+    SimpleShaderLibrary _lib;
 
     std::vector<CommandBuffer*> _submittedBuffers;
 
@@ -45,8 +48,8 @@ public:
 
     BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr);
 
-    ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data);
-    ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderData>& datas);
+    ShaderId GetShader(ShaderType type, const std::string& functionName);
+    void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
     ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
@@ -65,6 +68,7 @@ public:
     void RenderFrame();
 
 private:
+    ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data);
     ShaderId CreateShader(ShaderType type, const char* source);
     void BindResource(const Binding& binding);
     void DestroyBuffer(BufferId buffer);

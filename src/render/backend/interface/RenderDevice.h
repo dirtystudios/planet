@@ -42,10 +42,8 @@ public:
 
     virtual BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr) = 0;
 
-    [[deprecated("Use ShaderLibraries instead")]] virtual ShaderId CreateShader(const ShaderFunctionDesc& funcDesc,
-                                                                                const ShaderData& data) = 0;
-
-    virtual ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderData>& datas) = 0;
+    virtual ShaderId GetShader(ShaderType type, const std::string& functionName) = 0;
+    virtual void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) = 0;
 
     [[deprecated("Use Uniform Buffers instead. Keeping around for future push contants")]] virtual ShaderParamId
     CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;

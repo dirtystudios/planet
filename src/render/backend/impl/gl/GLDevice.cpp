@@ -13,7 +13,6 @@
 #include "DrawItemDecoder.h"
 #include "DMath.h"
 #include "ResourceTypes.h"
-#include "SimpleShaderLibrary.h"
 #include "DGAssert.h"
 
 int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
@@ -76,38 +75,51 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
     return handle;
 }
 
-ShaderLibrary* GLDevice::CreateShaderLibrary(const std::vector<ShaderData>& datas) {
-    SimpleShaderLibrary* lib = new SimpleShaderLibrary();
+ShaderId GLDevice::GetShader(ShaderType type, const std::string& functionName) {
+    return _lib.GetShader(type, functionName);
+}
 
-    for (const ShaderData& shaderData : datas) {
+void GLDevice::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
+    for (const ShaderData& shaderData : shaderData) {
         dg_assert_nm(shaderData.type == ShaderDataType::Source);
-        
+
         // I regert nothing
-        const char* src = reinterpret_cast<const char*>(shaderData.data);
-        const char* ptr = src;
+        const char* src       = reinterpret_cast<const char*>(shaderData.data);
+        const char* ptr       = src;
         const char* nameStart = 0;
         const char* typeStart = 0;
-        while(*ptr++ != '\n') {
-            if(*ptr == '/' || *ptr == ' ') continue;
-            if(!nameStart) nameStart = ptr;
+        while (*ptr++ != '\n') {
+            if (*ptr == '/' || *ptr == ' ')
+                continue;
+            if (!nameStart)
+                nameStart = ptr;
             else if(*ptr == '_') typeStart = ptr+1;
         }
-        
-        std::string name(nameStart, typeStart-1);
-        std::string type(typeStart, ptr-1);
-        
-        dg_assert_nm(type == "vertex" || type == "pixel");
-        
-        ShaderFunctionDesc function;
-        function.type = type == "pixel" ? ShaderType::PixelShader : ShaderType::VertexShader;
-        function.functionName = name;
-        function.entryPoint = "main";
-        ShaderId shaderId = CreateShader(function, shaderData);
-        lib->AddShader(shaderId, function);
-    }
 
-    _libraries.push_back(lib);
-    return lib;
+        std::string name(nameStart, typeStart - 1);
+        std::string type(typeStart, ptr - 1);
+
+        dg_assert_nm(type == "vertex" || type == "pixel");
+
+        ShaderFunctionDesc function;
+        function.type         = type == "pixel" ? ShaderType::PixelShader : ShaderType::VertexShader;
+        function.functionName = name;
+        function.entryPoint   = "main";
+
+        ShaderId existingShaderId = _lib.GetShader(function.type, function.functionName);
+        ShaderId shaderId         = CreateShader(function, shaderData);
+
+        if (existingShaderId && shaderId) {
+            GLShaderProgram* existing = GetResource(_shaders, existingShaderId);
+            GLShaderProgram* updated = GetResource(_shaders, shaderId);
+            dg_assert_nm(existing && updated);
+            _shaders[existingShaderId] = updated;
+            delete existing;
+            _shaders.erase(shaderId);
+        } else {
+            _lib.AddShader(shaderId, function);
+        }
+    }
 }
 
 ShaderId GLDevice::CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& shaderData) {

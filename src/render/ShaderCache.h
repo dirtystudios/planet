@@ -13,9 +13,7 @@ private:
     using ShaderCacheKey = size_t;
     gfx::RenderDevice* _device;
     std::string _baseDir;
-    gfx::ShaderDataType _dataType;
-    std::unordered_map<ShaderCacheKey, gfx::ShaderId> _shaderCache;
-    gfx::ShaderLibrary* _library;
+    fs::WatcherId _watcherId;
 
 public:
     ShaderCache(gfx::RenderDevice* device, const std::string& baseDir) : _device(device), _baseDir(baseDir) {
@@ -27,10 +25,15 @@ public:
         _baseDir += "/" + _device->DeviceConfig.DeviceAbbreviation;
         LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
 
+        auto eventCallback = [&](const fs::FileEvent& event) {
+            // todo
+        };
+        _watcherId = fs::WatchDir(_baseDir, eventCallback);
+
         std::vector<std::string> dirFiles = fs::ListFilesInDirectory(_baseDir);
 
         // TODO: determine if we will need set as Binary instead of Source
-        _dataType = gfx::ShaderDataType::Source;
+        gfx::ShaderDataType dataType = gfx::ShaderDataType::Source;
         std::vector<gfx::ShaderData> datas;
         std::vector<std::string> allSrcs;
 
@@ -49,22 +52,17 @@ public:
 
             datas.emplace_back();
             gfx::ShaderData& shaderData = datas.back();
-            shaderData.type             = _dataType;
+            shaderData.type             = dataType;
             shaderData.data             = fileContentsBuffer.data();
             shaderData.len              = fileContentsBuffer.size();
         }
-
-        _library = _device->CreateShaderLibrary(datas);
+        _device->AddOrUpdateShaders(datas);
     }
 
-    ~ShaderCache() {
-        for (auto it : _shaderCache) {
-            _device->DestroyResource(it.second);
-        }
-    }
+    ~ShaderCache() { fs::StopWatching(_watcherId); }
 
     gfx::ShaderId Get(gfx::ShaderType shaderType, const std::string& functionName) {
-        gfx::ShaderId shader = _library->GetShader(shaderType, functionName);
+        gfx::ShaderId shader = _device->GetShader(shaderType, functionName);
         dg_assert(shader, "Failed to get shader (type:%s, functionName:%s)", ToString(shaderType).c_str(),
                   functionName.c_str());
         return shader;

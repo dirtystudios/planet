@@ -1,0 +1,99 @@
+#include "WatchDirManager.h"
+
+namespace fs {
+
+std::vector<Watcher> WatchDirManager::_watchers = std::vector<Watcher>();
+std::unordered_map<std::string, std::vector<Watcher*>> WatchDirManager::_watchedPaths =
+    std::unordered_map<std::string, std::vector<Watcher*>>();
+
+void WatchDirManager::FsEventDelegate(ConstFSEventStreamRef streamRef, void* clientCallBackInfo, size_t numEvents,
+                                      void* eventPaths, const FSEventStreamEventFlags eventFlags[],
+                                      const FSEventStreamEventId eventIds[]) {
+
+    char** paths = (char**)eventPaths;
+
+    FSEventStreamEventFlags interest =
+        kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemModified;
+    for (uint32_t i = 0; i < numEvents; i++) {
+        FSEventStreamEventFlags flags = eventFlags[i];
+        if ((flags & interest) == 0) {
+            continue;
+        }
+
+        auto observers = _watchedPaths.find(paths[i]);
+        if (observers == end(_watchedPaths)) {
+            continue;
+        }
+
+        fs::FileEvent event;
+        event.fpath = std::string(paths[i]);
+        if (flags & kFSEventStreamEventFlagItemCreated) {
+            event.type = fs::FileEventType::FileCreated;
+        } else if (flags & kFSEventStreamEventFlagItemRemoved) {
+            event.type = fs::FileEventType::FileDeleted;
+        } else if (flags & kFSEventStreamEventFlagItemModified) {
+            event.type = fs::FileEventType::FileModified;
+        } else {
+            // huh
+        }
+
+        for (const Watcher* watcher : observers->second) {
+            watcher->delegate(event);
+        }
+    }
+}
+
+WatcherId WatchDirManager::AddWatcher(const std::string& path, fs::FileEventDelegate delegate) {
+    static uint64_t key     = 0;
+    CFStringRef mypath      = CFStringCreateWithCStringNoCopy(NULL, path.c_str(), kCFStringEncodingUTF8, kCFAllocatorNull);
+    CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void**)&mypath, 1, NULL);
+    FSEventStreamRef stream;
+    CFAbsoluteTime latency = 3.0; // seconds
+
+    stream = FSEventStreamCreate(NULL, &WatchDirManager::FsEventDelegate, NULL, pathsToWatch,
+                                 kFSEventStreamEventIdSinceNow, latency, kFSEventStreamCreateFlagFileEvents);
+
+    /* Create the stream before calling this. */
+    FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    FSEventStreamStart(stream);
+
+    _watchers.emplace_back();
+    Watcher& watcher = _watchers.back();
+    watcher.id       = key++;
+    watcher.stream   = stream;
+    watcher.delegate = delegate;
+    watcher.path     = path;
+
+    auto it = _watchedPaths.find(path);
+    if (it == end(_watchedPaths)) {
+        std::vector<Watcher*> watchers;
+        watchers.push_back(&watcher);
+        _watchedPaths.insert(std::make_pair(path, watchers));
+    } else {
+        it->second.push_back(&watcher);
+    }
+
+    return watcher.id;
+}
+
+bool WatchDirManager::RemoveWatcher(WatcherId watcherId) {
+    auto result =
+        std::find_if(begin(_watchers), end(_watchers), [&](const Watcher& watcher) { return watcher.id == watcherId; });
+    if (result == end(_watchers)) {
+        return false;
+    }
+    FSEventStreamStop(result->stream);
+    FSEventStreamInvalidate(result->stream);
+    FSEventStreamRelease(result->stream);
+    auto pathObservers = _watchedPaths.find(result->path);
+    if (pathObservers == end(_watchedPaths)) {
+        // this is unexpected, but ok
+    } else {
+        Watcher* watcher = &(*result);
+        auto watcherRef = std::find(begin(pathObservers->second), end(pathObservers->second), watcher);
+        pathObservers->second.erase(watcherRef);
+    }
+    _watchers.erase(result);
+    return true;
+}
+}
