@@ -46,5 +46,6 @@ using FileEventDelegate = std::function<void(const FileEvent& event)>;
 
 WatcherId WatchDir(const std::string& path, FileEventDelegate delegate);
 bool StopWatching(WatcherId watcherId);
-    
+
+std::string GetParentDir(const std::string& fpath);
 }

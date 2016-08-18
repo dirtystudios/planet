@@ -85,3 +85,11 @@ uint64_t fs::WatchDir(const std::string& path, fs::FileEventDelegate delegate) {
 }
 
 bool fs::StopWatching(uint64_t watcherId) { return fs::WatchDirManager::RemoveWatcher(watcherId); }
+
+std::string fs::GetParentDir(const std::string& fpath) {
+    size_t pos = fpath.find_last_of("/");
+    if(pos == std::string::npos) {
+        return "";
+    }
+    return fpath.substr(0, pos);
+}

@@ -19,8 +19,10 @@ void WatchDirManager::FsEventDelegate(ConstFSEventStreamRef streamRef, void* cli
         if ((flags & interest) == 0) {
             continue;
         }
-
-        auto observers = _watchedPaths.find(paths[i]);
+        
+        std::string eventPath = paths[i];
+        std::string parent = GetParentDir(eventPath);
+        auto observers = _watchedPaths.find(parent);
         if (observers == end(_watchedPaths)) {
             continue;
         }
@@ -36,7 +38,8 @@ void WatchDirManager::FsEventDelegate(ConstFSEventStreamRef streamRef, void* cli
         } else {
             // huh
         }
-
+        
+        // TODO: A smart person with do this on another thread since chances are Ill be doing IO in these callbacks
         for (const Watcher* watcher : observers->second) {
             watcher->delegate(event);
         }
@@ -44,7 +47,7 @@ void WatchDirManager::FsEventDelegate(ConstFSEventStreamRef streamRef, void* cli
 }
 
 WatcherId WatchDirManager::AddWatcher(const std::string& path, fs::FileEventDelegate delegate) {
-    static uint64_t key     = 0;
+    static uint64_t key     = 1;
     CFStringRef mypath      = CFStringCreateWithCStringNoCopy(NULL, path.c_str(), kCFStringEncodingUTF8, kCFAllocatorNull);
     CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void**)&mypath, 1, NULL);
     FSEventStreamRef stream;
@@ -67,11 +70,9 @@ WatcherId WatchDirManager::AddWatcher(const std::string& path, fs::FileEventDele
     auto it = _watchedPaths.find(path);
     if (it == end(_watchedPaths)) {
         std::vector<Watcher*> watchers;
-        watchers.push_back(&watcher);
         _watchedPaths.insert(std::make_pair(path, watchers));
-    } else {
-        it->second.push_back(&watcher);
     }
+    _watchedPaths[path].push_back(&watcher);
 
     return watcher.id;
 }

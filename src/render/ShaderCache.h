@@ -26,7 +26,17 @@ public:
         LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
 
         auto eventCallback = [&](const fs::FileEvent& event) {
-            // todo
+            std::string fileContents;
+            if (!fs::ReadFileContents(event.fpath, &fileContents)) {
+                LOG_D("Filed to read file contents for file:%s", event.fpath.c_str());
+                return;
+            }
+            
+            gfx::ShaderData shaderData;
+            shaderData.type             = gfx::ShaderDataType::Source;
+            shaderData.data             = fileContents.data();
+            shaderData.len              = fileContents.size();
+            _device->AddOrUpdateShaders({shaderData});
         };
         _watcherId = fs::WatchDir(_baseDir, eventCallback);
 
