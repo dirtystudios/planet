@@ -121,7 +121,6 @@ namespace gfx {
 
         std::vector<ShaderLibrary*> m_libraries;
 
-        ComPtr<ID3DBlob> m_lastCompiledVertexShader;
         std::unique_ptr<DX11Context> m_context;
 
         std::vector<CommandBuffer*> m_submittedBuffers;

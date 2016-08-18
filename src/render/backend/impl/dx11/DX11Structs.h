@@ -124,6 +124,7 @@ namespace gfx {
     };
 
     struct ShaderDX11 {
+        ComPtr<ID3DBlob> blob;
         ShaderType shaderType;
         ID3D11VertexShader *vertexShader;
         ID3D11PixelShader *pixelShader;

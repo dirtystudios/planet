@@ -130,7 +130,7 @@ namespace gfx {
             ID3D11VertexShader* vertexShader;
             DX11_CHECK_RET0(m_dev->CreateVertexShader(bufPtr, bufSize, NULL, &vertexShader));
             shaderDX11->vertexShader = vertexShader;
-            m_lastCompiledVertexShader.Swap(blob);
+            shaderDX11->blob.Swap(blob);
             return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX11);
             break;
         }
@@ -373,14 +373,20 @@ namespace gfx {
             ieds.emplace_back(ied);
         }
         ComPtr<ID3D11InputLayout> inputLayout;
+
         // screw it, here we loop over every shader and try to find the stupid one that 
         //  has the same inputlayout
-        
         for (auto shader : m_shaders) {
-            HRESULT hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()), 
-                m_lastCompiledVertexShader->GetBufferPointer(), m_lastCompiledVertexShader->GetBufferSize(), &inputLayout);
+            // only check vertex shaders for now
+            if (shader.second.vertexShader == 0)
+                continue;
+            HRESULT hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()),
+                shader.second.blob->GetBufferPointer(), shader.second.blob->GetBufferSize(), NULL);
 
-            if (hr == 0) {
+            if (hr == S_FALSE) {
+                hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()),
+                    shader.second.blob->GetBufferPointer(), shader.second.blob->GetBufferSize(), &inputLayout);
+                assert(hr == 0);
                 break;
             }
         }
