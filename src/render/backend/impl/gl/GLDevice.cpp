@@ -76,21 +76,34 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
     return handle;
 }
 
-ShaderLibrary* GLDevice::CreateShaderLibrary(const std::vector<ShaderDataDesc>& dataDescs) {
+ShaderLibrary* GLDevice::CreateShaderLibrary(const std::vector<ShaderData>& datas) {
     SimpleShaderLibrary* lib = new SimpleShaderLibrary();
 
-    for (const ShaderDataDesc& dataDesc : dataDescs) {
-        const ShaderData& shaderData = dataDesc.data;
-        assert(shaderData.type == ShaderDataType::Source);
-
-        for (const ShaderFunctionDesc& function : dataDesc.functions) {
-            ShaderId shaderId = CreateShader(function, shaderData);
-            if (shaderId == 0) {
-                LOG_D("Failed to compile shader:%s", ToString(function).c_str());
-                continue;
-            }
-            lib->AddShader(shaderId, function);
+    for (const ShaderData& shaderData : datas) {
+        dg_assert_nm(shaderData.type == ShaderDataType::Source);
+        
+        // I regert nothing
+        const char* src = reinterpret_cast<const char*>(shaderData.data);
+        const char* ptr = src;
+        const char* nameStart = 0;
+        const char* typeStart = 0;
+        while(*ptr++ != '\n') {
+            if(*ptr == '/' || *ptr == ' ') continue;
+            if(!nameStart) nameStart = ptr;
+            else if(*ptr == '_') typeStart = ptr+1;
         }
+        
+        std::string name(nameStart, typeStart-1);
+        std::string type(typeStart, ptr-1);
+        
+        dg_assert_nm(type == "vertex" || type == "pixel");
+        
+        ShaderFunctionDesc function;
+        function.type = type == "pixel" ? ShaderType::PixelShader : ShaderType::VertexShader;
+        function.functionName = name;
+        function.entryPoint = "main";
+        ShaderId shaderId = CreateShader(function, shaderData);
+        lib->AddShader(shaderId, function);
     }
 
     _libraries.push_back(lib);

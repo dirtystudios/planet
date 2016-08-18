@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <cstdio>
+#include <iostream>
 
 // just pulled this off stackoverflow, not sure if this works or is necessary
 #ifdef _MSC_VER
@@ -15,6 +16,17 @@
 
 class DGAssert {
 public:
+    template <typename T, typename K>
+    static void assertEquals(const T& a, const K& b, const char* conditionAStr, const char* conditionBStr,
+                             const char* file, int line) {
+        if (a != b) {
+            std::cerr << "\nAssertion Failure:\ncondition:" << conditionAStr << " == " << conditionBStr
+                      << "\nexpected:" << b << " but was:" << a << "\nfile:" << file << ", line:" << line << "\n";
+            DEBUG_BREAK();
+            assert(a == b);
+        }
+    }
+
     static void assertTrue(bool condition, const char* conditionStr, const char* file, int line, const char* fmt, ...) {
         static char _formatBuffer[1024];
         if (!condition) {
@@ -66,3 +78,4 @@ public:
 #define dg_assert_nm(cond) DGAssert::assertTrue(cond, #cond, __FILE__, __LINE__)
 #define dg_assert_fail(fmt, ...) DGAssert::assertFail(__FILE__, __LINE__, fmt, ##__VA_ARGS__)
 #define dg_assert_fail_nm() DGAssert::assertFail(__FILE__, __LINE__)
+#define dg_assert_equals_nm(a, b) DGAssert::assertEquals(a, b, #a, #b, __FILE__, __LINE__)

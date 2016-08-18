@@ -31,44 +31,13 @@ public:
 
         // TODO: determine if we will need set as Binary instead of Source
         _dataType = gfx::ShaderDataType::Source;
-        std::vector<gfx::ShaderDataDesc> sdds;
+        std::vector<gfx::ShaderData> datas;
         std::vector<std::string> allSrcs;
 
         for (const std::string& fname : dirFiles) {
             std::string absPath = _baseDir + "/" + fname;
 
             LOG_D("Creating shader for file:%s", fname.c_str());
-            size_t nameBreak = fname.find_first_of("_");
-
-            if (nameBreak == std::string::npos) {
-                LOG_D("Incorrect name format for file:%s. Expected \"<function_name>_(vs|(ps|fs)).(glsl|hlsl|metal)\"",
-                      fname.c_str());
-                continue;
-            }
-
-            size_t fileBreak = fname.find_first_of(".");
-            if (fileBreak == std::string::npos) {
-                LOG_D("Incorrect name format for file:%s. Expected \"<function_name>_(vs|(ps|fs)).(glsl|hlsl|metal)\"",
-                      fname.c_str());
-                continue;
-            }
-
-            std::string shaderExt = fname.substr(nameBreak + 1, (fileBreak - nameBreak) - 1);
-            gfx::ShaderType shaderType;
-            if (!GetShaderTypeFromExt(shaderExt, &shaderType)) {
-                LOG_D("Incorrect shader type for file:%s. Expected \"<function_name>_(vs|(ps|fs)).(glsl|hlsl|metal)\"",
-                      fname.c_str());
-                continue;
-            }
-
-            sdds.emplace_back();
-            gfx::ShaderDataDesc& sdd = sdds.back();
-            sdd.functions.emplace_back();
-
-            gfx::ShaderFunctionDesc& fd = sdd.functions.back();
-            fd.functionName             = fname.substr(0, nameBreak);
-            fd.entryPoint               = fd.functionName;
-            fd.type                     = shaderType;
 
             allSrcs.emplace_back();
             std::string& fileContentsBuffer = allSrcs.back();
@@ -78,12 +47,14 @@ public:
                 continue;
             }
 
-            gfx::ShaderData& shaderData = sdd.data;
+            datas.emplace_back();
+            gfx::ShaderData& shaderData = datas.back();
             shaderData.type             = _dataType;
             shaderData.data             = fileContentsBuffer.data();
             shaderData.len              = fileContentsBuffer.size();
         }
-        _library = _device->CreateShaderLibrary(sdds);
+
+        _library = _device->CreateShaderLibrary(datas);
     }
 
     ~ShaderCache() {

@@ -1,3 +1,4 @@
+// sky_pixel
  #version 410                               
 in vec3 tex_coord0;
 uniform samplerCube _s0_baseTexture;

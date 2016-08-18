@@ -1,3 +1,4 @@
+// blinn_pixel
 #version 410 core                                                  
 
 uniform sampler2D _s0_diffuse;

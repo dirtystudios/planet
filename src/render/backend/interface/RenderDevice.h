@@ -41,15 +41,15 @@ public:
     virtual void PrintDisplayAdapterInfo() = 0;
 
     virtual BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr) = 0;
-    
-    [[deprecated("Use ShaderLibraries instead")]]
-    virtual ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data) = 0;
-    
-    virtual ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderDataDesc>& shaderData) = 0;
-    
-    [[deprecated("Use Uniform Buffers instead. Keeping around for future push contants")]]
-    virtual ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;
-    
+
+    [[deprecated("Use ShaderLibraries instead")]] virtual ShaderId CreateShader(const ShaderFunctionDesc& funcDesc,
+                                                                                const ShaderData& data) = 0;
+
+    virtual ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderData>& datas) = 0;
+
+    [[deprecated("Use Uniform Buffers instead. Keeping around for future push contants")]] virtual ShaderParamId
+    CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;
+
     virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
     virtual TextureId CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data) = 0;
     virtual TextureId CreateTextureArray(TextureFormat format, uint32_t levels, uint32_t width, uint32_t height,

@@ -46,7 +46,7 @@ public:
     BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr);
 
     ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data);
-    ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderDataDesc>& shaderDatas);
+    ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderData>& datas);
 
     ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
