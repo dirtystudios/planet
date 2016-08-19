@@ -10,8 +10,6 @@
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
-#else
-#include <CoreServices/CoreServices.h>
 #endif
 
 
@@ -39,17 +37,12 @@ class WatchDirManager {
 private:
     static std::vector<std::unique_ptr<Watcher>> _watchers;
     static std::unordered_map<std::string, std::vector<Watcher*>> _watchedPaths;
-
 public:
     static WatcherId AddWatcher(const std::string& path, fs::FileEventDelegate delegate);
     static bool RemoveWatcher(WatcherId watcherId);
 private:
 #ifdef _WIN32
     static void CALLBACK NotificationCompletion(DWORD dwErrorCode, DWORD dwNumberOfBytesTransfered, LPOVERLAPPED lpOverlapped);
-#else
-    static void FsEventDelegate(ConstFSEventStreamRef streamRef, void* clientCallBackInfo, size_t numEvents,
-        void* eventPaths, const FSEventStreamEventFlags eventFlags[],
-        const FSEventStreamEventId eventIds[]);
 #endif
 };
 }

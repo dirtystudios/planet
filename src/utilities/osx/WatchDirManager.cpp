@@ -10,16 +10,17 @@ struct Watcher {
     std::string path;
 };
 
-std::vector<Watcher> WatchDirManager::_watchers = std::vector<Watcher>();
+std::vector<std::unique_ptr<Watcher>> WatchDirManager::_watchers = std::vector<std::unique_ptr<Watcher>>();
 std::unordered_map<std::string, std::vector<Watcher*>> WatchDirManager::_watchedPaths =
     std::unordered_map<std::string, std::vector<Watcher*>>();
 
-void WatchDirManager::FsEventDelegate(ConstFSEventStreamRef streamRef, void* clientCallBackInfo, size_t numEvents,
+void FsEventDelegate(ConstFSEventStreamRef streamRef, void* clientCallBackInfo, size_t numEvents,
                                       void* eventPaths, const FSEventStreamEventFlags eventFlags[],
                                       const FSEventStreamEventId eventIds[]) {
 
     char** paths = (char**)eventPaths;
-
+    Watcher* watcher = reinterpret_cast<Watcher*>(clientCallBackInfo);
+    
     FSEventStreamEventFlags interest =
         kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemModified;
     for (uint32_t i = 0; i < numEvents; i++) {
@@ -29,12 +30,7 @@ void WatchDirManager::FsEventDelegate(ConstFSEventStreamRef streamRef, void* cli
         }
         
         std::string eventPath = paths[i];
-        std::string parent = GetParentDir(eventPath);
-        auto observers = _watchedPaths.find(parent);
-        if (observers == end(_watchedPaths)) {
-            continue;
-        }
-
+    
         fs::FileEvent event;
         event.fpath = std::string(paths[i]);
         if (flags & kFSEventStreamEventFlagItemCreated) {
@@ -47,10 +43,7 @@ void WatchDirManager::FsEventDelegate(ConstFSEventStreamRef streamRef, void* cli
             // huh
         }
         
-        // TODO: A smart person with do this on another thread since chances are Ill be doing IO in these callbacks
-        for (const Watcher* watcher : observers->second) {
-            watcher->delegate(event);
-        }
+        watcher->delegate(event);
     }
 }
 
@@ -61,31 +54,32 @@ WatcherId WatchDirManager::AddWatcher(const std::string& path, fs::FileEventDele
     FSEventStreamRef stream;
     CFAbsoluteTime latency = 3.0; // seconds
 
-    stream = FSEventStreamCreate(NULL, &WatchDirManager::FsEventDelegate, NULL, pathsToWatch,
+    std::unique_ptr<Watcher> watcher(new Watcher());
+    FSEventStreamContext context = { 0, reinterpret_cast<void*>(watcher.get()), nullptr, nullptr};
+    
+    stream = FSEventStreamCreate(NULL, &FsEventDelegate, &context, pathsToWatch,
                                  kFSEventStreamEventIdSinceNow, latency, kFSEventStreamCreateFlagFileEvents);
 
     /* Create the stream before calling this. */
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
 
-
-    std::unique_ptr<Watcher> watcher(new Watcher());
-
     watcher->id = key++;
     watcher->stream = stream;
     watcher->delegate = delegate;
     watcher->path = path;
-
-    _watchers.push_back(std::move(watcher));
-
+    
     auto it = _watchedPaths.find(path);
     if (it == end(_watchedPaths)) {
         std::vector<Watcher*> watchers;
         _watchedPaths.insert(std::make_pair(path, watchers));
     }
     _watchedPaths[path].push_back(watcher.get());
+    
+    WatcherId watcherId = watcher->id;
+    _watchers.push_back(std::move(watcher));
 
-    return watcher->id;
+    return watcherId;
 }
 
 bool WatchDirManager::RemoveWatcher(WatcherId watcherId) {
