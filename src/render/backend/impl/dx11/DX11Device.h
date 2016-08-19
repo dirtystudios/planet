@@ -3,6 +3,7 @@
 #include "DX11Context.h"
 #include "DX11CBufferHelper.h"
 #include "DX11CommandBuffer.h"
+#include "SimpleShaderLibrary.h"
 #include "ResourceId.h"
 #include "Pool.h"
 #include "DMath.h"
@@ -119,12 +120,12 @@ namespace gfx {
         std::unordered_map<size_t, ComPtr<ID3D11RasterizerState>> m_rasterStates;
         std::unordered_map<size_t, ComPtr<ID3D11DepthStencilState>> m_depthStates;
 
-        std::vector<ShaderLibrary*> m_libraries;
-
         std::unique_ptr<DX11Context> m_context;
 
         std::vector<CommandBuffer*> m_submittedBuffers;
 
+
+        SimpleShaderLibrary m_shaderLibrary;
         Pool<DX11CommandBuffer, 1> m_commandBufferPool;
 
         ByteBuffer m_drawItemByteBuffer;
@@ -133,14 +134,16 @@ namespace gfx {
         DX11Device() {};
         ~DX11Device();
 
+        RenderDeviceApi GetDeviceApi() { return RenderDeviceApi::D3D11; };
+
         int32_t InitializeDevice(const DeviceInitialization& deviceInit);
         void ResizeWindow(uint32_t width, uint32_t height);
         void PrintDisplayAdapterInfo();
 
         BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData);
 
-        ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data);
-        ShaderLibrary* CreateShaderLibrary(const std::vector<ShaderDataDesc>& shaderDatas);
+        ShaderId GetShader(ShaderType type, const std::string& functionName);
+        void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
         ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
@@ -182,31 +185,18 @@ namespace gfx {
 
         // todo: don't be eugene and actually delete these
         void DestroyBuffer(BufferId buffer) {}
-        void DestroyShader(ShaderId shader) {}
+        void DestroyShader(ShaderId shader) { 
+            auto it = m_shaders.find(shader);
+            if (it != m_shaders.end()) {
+                it->second.pixelShader->Release();
+                it->second.vertexShader->Release();
+                m_shaders.erase(shader);
+            }
+        }
         void DestroyShaderParam(ShaderParamId shaderParam) {}
         void DestroyPipelineState(PipelineStateId pipelineState) {}
         void DestroyTexture(TextureId texture) {}
         void DestroyVertexLayout(VertexLayoutId vertexLayout) {}
-        template <class T>
-        bool DestroyResource(ResourceId resourceId, std::unordered_map<uint32_t, T*>& map,
-            std::function<void(T*)> destroy) {
-            size_t handle = ExtractResourceKey(resourceId);
-            auto it = map.find(handle);
-            if (it == map.end()) {
-                return false;
-            }
-
-            T* resource = (*it).second;
-
-            if (resource->id) {
-                destroy(resource);
-            }
-            else {
-                return false;
-            }
-            map.erase(it);
-            return true;
-        }
 
 
         int GetFormatByteSize(DXGI_FORMAT dxFormat) {

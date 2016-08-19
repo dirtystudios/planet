@@ -76,28 +76,43 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<ResourceType::Buffer>(m_buffers, bufferdx11);
     }
 
-    ShaderLibrary* DX11Device::CreateShaderLibrary(const std::vector<ShaderDataDesc>& dataDescs) {
-        SimpleShaderLibrary* lib = new SimpleShaderLibrary();
-
-        for (const ShaderDataDesc& dataDesc : dataDescs) {
-            const ShaderData& shaderData = dataDesc.data;
-            assert(shaderData.type == ShaderDataType::Source);
-
-            for (const ShaderFunctionDesc& function : dataDesc.functions) {
-                ShaderId shaderId = CreateShader(function, shaderData);
-                assert(shaderId);
-                lib->AddShader(shaderId, function);
-            }
-        }
-
-        m_libraries.push_back(lib);
-        return lib;
+    ShaderId DX11Device::GetShader(ShaderType type, const std::string& functionName) {
+        return m_shaderLibrary.GetShader(type, functionName);
     }
 
+    void DX11Device::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
+        for (const ShaderData& shaderData : shaderData) {
+            assert(shaderData.type == ShaderDataType::Source);
 
-    ShaderId DX11Device::CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& shaderData) {
-        assert(shaderData.type == ShaderDataType::Source);
-        return CreateShader(funcDesc.type, reinterpret_cast<const char*>(shaderData.data));
+            ShaderType shaderType = ShaderType::VertexShader;
+
+            if (shaderData.name.find("ps") != std::string::npos)
+                shaderType = ShaderType::PixelShader;
+            else if (shaderData.name.find("vs") != std::string::npos)
+                shaderType = ShaderType::VertexShader;
+            else {
+                assert(false);
+            }
+
+            std::string funcName = shaderData.name.substr(0, shaderData.name.length() - 8);
+
+            ShaderId existingShaderId = m_shaderLibrary.GetShader(shaderType, funcName);
+            ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len));
+
+            assert(newID);
+
+            ShaderFunctionDesc desc;
+            desc.entryPoint = "";
+            desc.functionName = funcName;
+            desc.type = shaderType;
+
+            if (existingShaderId == 0) {
+                m_shaderLibrary.AddShader(newID, desc);
+            }
+            else {
+                assert(false);
+            }
+        }
     }
 
     ShaderId DX11Device::CreateShader(ShaderType type, const std::string& source) {

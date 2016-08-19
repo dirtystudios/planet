@@ -7,5 +7,6 @@ struct ShaderData {
     ShaderDataType type{ShaderDataType::Source};
     const void* data{nullptr};
     size_t len{0};
+    std::string name;
 };
 }

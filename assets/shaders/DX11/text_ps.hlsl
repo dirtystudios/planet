@@ -1,4 +1,4 @@
-cbuffer cbPerObject : register(b0) {
+cbuffer cbPerObject : register(b2) {
     float3 textColor : COLOR0;
 }
 

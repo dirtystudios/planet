@@ -46,8 +46,8 @@ public:
     virtual ShaderId GetShader(ShaderType type, const std::string& functionName) = 0;
     virtual void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) = 0;
 
-    [[deprecated("Use Uniform Buffers instead. Keeping around for future push contants")]] virtual ShaderParamId
-    CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;
+    [[deprecated("Use Uniform Buffers instead. Keeping around for future push contants")]]
+    virtual ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) = 0;
 
     virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
     virtual TextureId CreateTexture2D(TextureFormat format, uint32_t width, uint32_t height, void* data) = 0;
