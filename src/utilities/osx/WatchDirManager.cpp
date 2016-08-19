@@ -1,6 +1,14 @@
 #include "WatchDirManager.h"
+#include <CoreServices/CoreServices.h>
 
 namespace fs {
+
+struct Watcher {
+    WatcherId id;
+    FSEventStreamRef stream;
+    fs::FileEventDelegate delegate;
+    std::string path;
+};
 
 std::vector<Watcher> WatchDirManager::_watchers = std::vector<Watcher>();
 std::unordered_map<std::string, std::vector<Watcher*>> WatchDirManager::_watchedPaths =
@@ -60,37 +68,40 @@ WatcherId WatchDirManager::AddWatcher(const std::string& path, fs::FileEventDele
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
 
-    _watchers.emplace_back();
-    Watcher& watcher = _watchers.back();
-    watcher.id       = key++;
-    watcher.stream   = stream;
-    watcher.delegate = delegate;
-    watcher.path     = path;
+
+    std::unique_ptr<Watcher> watcher(new Watcher());
+
+    watcher->id = key++;
+    watcher->stream = stream;
+    watcher->delegate = delegate;
+    watcher->path = path;
+
+    _watchers.push_back(std::move(watcher));
 
     auto it = _watchedPaths.find(path);
     if (it == end(_watchedPaths)) {
         std::vector<Watcher*> watchers;
         _watchedPaths.insert(std::make_pair(path, watchers));
     }
-    _watchedPaths[path].push_back(&watcher);
+    _watchedPaths[path].push_back(watcher.get());
 
-    return watcher.id;
+    return watcher->id;
 }
 
 bool WatchDirManager::RemoveWatcher(WatcherId watcherId) {
     auto result =
-        std::find_if(begin(_watchers), end(_watchers), [&](const Watcher& watcher) { return watcher.id == watcherId; });
+        std::find_if(begin(_watchers), end(_watchers), [&](const std::unique_ptr<Watcher>& watcher) { return watcher->id == watcherId; });
     if (result == end(_watchers)) {
         return false;
     }
-    FSEventStreamStop(result->stream);
-    FSEventStreamInvalidate(result->stream);
-    FSEventStreamRelease(result->stream);
-    auto pathObservers = _watchedPaths.find(result->path);
+    FSEventStreamStop(result->get()->stream);
+    FSEventStreamInvalidate(result->get()->stream);
+    FSEventStreamRelease(result->get()->stream);
+    auto pathObservers = _watchedPaths.find(result->get()->path);
     if (pathObservers == end(_watchedPaths)) {
         // this is unexpected, but ok
     } else {
-        Watcher* watcher = &(*result);
+         Watcher* watcher = result->get();
         auto watcherRef = std::find(begin(pathObservers->second), end(pathObservers->second), watcher);
         pathObservers->second.erase(watcherRef);
     }

@@ -4,6 +4,7 @@
 #include <cassert>
 #include <iostream>
 #include "File.h"
+#include "WatchDirManager.h"
 #include "ShaderType.h"
 #include "Helpers.h"
 #include "DGAssert.h"
@@ -25,7 +26,7 @@ public:
         _baseDir += "/" + _device->DeviceConfig.DeviceAbbreviation;
         LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
 
-        auto eventCallback = [&](const fs::FileEvent& event) {
+        fs::FileEventDelegate eventCallback = [&](const fs::FileEvent& event) {
             std::string fileContents;
             if (!fs::ReadFileContents(event.fpath, &fileContents)) {
                 LOG_D("Filed to read file contents for file:%s", event.fpath.c_str());
@@ -36,11 +37,12 @@ public:
             shaderData.type             = gfx::ShaderDataType::Source;
             shaderData.data             = fileContents.data();
             shaderData.len              = fileContents.size();
+            shaderData.name             = event.fpath;
             _device->AddOrUpdateShaders({shaderData});
         };
         
         if(_device->GetDeviceApi() != gfx::RenderDeviceApi::OpenGL) {
-            _watcherId = fs::WatchDir(_baseDir, eventCallback);
+            _watcherId = fs::WatchDirManager::AddWatcher(_baseDir, eventCallback);
         }
 
         std::vector<std::string> dirFiles = fs::ListFilesInDirectory(_baseDir);
@@ -68,11 +70,12 @@ public:
             shaderData.type             = dataType;
             shaderData.data             = fileContentsBuffer.data();
             shaderData.len              = fileContentsBuffer.size();
+            shaderData.name             = fname;
         }
         _device->AddOrUpdateShaders(datas);
     }
 
-    ~ShaderCache() { fs::StopWatching(_watcherId); }
+    ~ShaderCache() { fs::WatchDirManager::RemoveWatcher(_watcherId); }
 
     gfx::ShaderId Get(gfx::ShaderType shaderType, const std::string& functionName) {
         gfx::ShaderId shader = _device->GetShader(shaderType, functionName);

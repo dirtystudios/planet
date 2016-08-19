@@ -30,22 +30,5 @@ bool IsPathDirectory(std::string path);
  */
 bool ReadFileContents(const std::string& fpath, std::string* output);
 
-enum class FileEventType : uint8_t {
-    FileDeleted = 0,
-    FileModified,
-    FileCreated,
-};
-
-struct FileEvent {
-    FileEventType type;
-    std::string fpath;
-};
-
-using WatcherId         = uint64_t;
-using FileEventDelegate = std::function<void(const FileEvent& event)>;
-
-WatcherId WatchDir(const std::string& path, FileEventDelegate delegate);
-bool StopWatching(WatcherId watcherId);
-
 std::string GetParentDir(const std::string& fpath);
 }
