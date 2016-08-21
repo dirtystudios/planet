@@ -15,5 +15,5 @@ out vec4 color;
 void main() {
     //becomes positive when inside the border and 0 when outside
     vec2 within_border = clamp((i_texCoords * i_texCoords - i_texCoords) - (b2_borderSize * b2_borderSize - b2_borderSize), 0, 1); 
-    color = (i_texCoords.x < b2_borderSize.x && i_texCoords.y < b2_borderSize.y)? b2_bgColor : b2_borderColor;//(-within_border.x == within_border.y) ?  b2_bgColor : b2_borderColor;
+    color = (-within_border.x == within_border.y) ?  b2_bgColor : b2_borderColor;
 }

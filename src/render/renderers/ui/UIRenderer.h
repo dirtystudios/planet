@@ -18,6 +18,7 @@ struct UIFrameConstants {
     glm::vec4 bgColor;
     glm::vec4 borderColor;
     glm::vec2 borderSize;
+    float pad[2];
 };
 
 struct FrameVertex {
@@ -184,9 +185,9 @@ public:
             }
 
             UIFrameConstants* frameConstants = uiFrameRenderObj->frameData->Map<UIFrameConstants>();
-            frameConstants->borderSize       = uiFrameRenderObj->borderSize;
+            frameConstants->bgColor          = uiFrameRenderObj->bgColor;
             frameConstants->borderColor      = uiFrameRenderObj->borderColor;
-            frameConstants->bgColor = uiFrameRenderObj->bgColor;
+            frameConstants->borderSize       = uiFrameRenderObj->borderSize;
             uiFrameRenderObj->frameData->Unmap();
 
             renderQueue->AddDrawItem(1, uiFrameRenderObj->item);
