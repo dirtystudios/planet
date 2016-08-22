@@ -5,6 +5,7 @@
 
 #include "EnumTraits.h"
 #include "SimpleShaderLibrary.h"
+#include "SemanticNameCache.h"
 
 #include "DX11Debug.h"
 #include "TexConvert.h"
@@ -14,8 +15,6 @@
 #define SafeGet(id, idx) id[(uint32_t)idx]
 
 namespace gfx {
-    std::vector<std::unique_ptr<const char[]>> DX11SemanticNameCache::m_semanticNameCache = {};
-
     BufferId DX11Device::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
         ComPtr<ID3D11Buffer> buffer = NULL;
 
@@ -355,7 +354,7 @@ namespace gfx {
         uint32_t stride = 0;
         for (auto layout : layoutDesc.elements) {
             D3D11_INPUT_ELEMENT_DESC ied;
-            ied.SemanticName = DX11SemanticNameCache::AddGetSemanticNameToCache(VertexAttributeUsageToString(layout.usage).c_str());
+            ied.SemanticName = SemanticNameCache::AddGetSemanticNameToCache(VertexAttributeUsageToString(layout.usage).c_str());
             ied.SemanticIndex = 0;
             ied.InputSlot = 0;
             ied.AlignedByteOffset = first ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;

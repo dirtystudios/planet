@@ -27,6 +27,7 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\platform\sdl\SystemSDL2.cpp" />
     <ClCompile Include="..\src\render\backend\impl\common\ResourceManager.cpp" />
+    <ClCompile Include="..\src\render\backend\impl\common\SemanticNameCache.cpp" />
     <ClCompile Include="..\src\render\backend\impl\common\SimpleShaderLibrary.cpp" />
     <ClCompile Include="..\src\render\backend\impl\common\TexConvert.cpp" />
     <ClCompile Include="..\src\render\backend\impl\dx11\DX11Context.cpp" />
@@ -81,6 +82,7 @@
     <ClInclude Include="..\src\platform\System.h" />
     <ClInclude Include="..\src\render\backend\impl\common\Resource.h" />
     <ClInclude Include="..\src\render\backend\impl\common\ResourceManager.h" />
+    <ClInclude Include="..\src\render\backend\impl\common\SemanticNameCache.h" />
     <ClInclude Include="..\src\render\backend\impl\common\SimpleShaderLibrary.h" />
     <ClInclude Include="..\src\render\backend\impl\common\TexConvert.h" />
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h" />

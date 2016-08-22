@@ -25,29 +25,6 @@
 #endif
 
 namespace gfx {
-    class DX11SemanticNameCache {
-    private:
-        // This is to cache semanticstrings, apparently sometimes we lose the reference on windows 7
-        static std::vector<std::unique_ptr<const char[]>> m_semanticNameCache;
-    public:
-        static const char* AddGetSemanticNameToCache(const char* semName) {
-            const char* semanticName = nullptr;
-            for (auto &name : m_semanticNameCache) {
-                if (!strcmp(name.get(), semName)) {
-                    semanticName = name.get();
-                    break;
-                }
-            }
-
-            // didnt find it
-            if (!semanticName) {
-                m_semanticNameCache.emplace_back(_strdup(semName));
-                semanticName = m_semanticNameCache.at(m_semanticNameCache.size() - 1).get();
-            }
-            return semanticName;
-        }
-    };
-
     class DX11Device : public RenderDevice {
     private:
 

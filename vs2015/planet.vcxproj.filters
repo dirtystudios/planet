@@ -103,6 +103,9 @@
     <ClCompile Include="..\src\render\backend\impl\common\ResourceManager.cpp">
       <Filter>render\backend\impl\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\common\SemanticNameCache.cpp">
+      <Filter>render\backend\impl\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -503,6 +506,9 @@
     </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11EnumAdapter.h">
       <Filter>render\backend\impl\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\common\SemanticNameCache.h">
+      <Filter>render\backend\impl\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
