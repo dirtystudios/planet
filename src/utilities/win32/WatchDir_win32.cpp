@@ -8,6 +8,8 @@
 #include <vector>
 #include <cassert>
 #include <atlstr.h>
+#define NOMINMAX
+#include <Windows.h>
 
 namespace fs {
 
@@ -30,7 +32,7 @@ namespace fs {
     std::unordered_map<std::string, std::vector<Watcher*>> WatchDirManager::_watchedPaths =
         std::unordered_map<std::string, std::vector<Watcher*>>();
 
-    void CALLBACK WatchDirManager::NotificationCompletion(
+    void CALLBACK NotificationCompletion(
         DWORD dwErrorCode,									// completion code
         DWORD dwNumberOfBytesTransfered,					// number of bytes transferred
         LPOVERLAPPED lpOverlapped)							// I/O information buffer

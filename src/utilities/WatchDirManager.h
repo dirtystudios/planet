@@ -7,12 +7,6 @@
 #include <atomic>
 #include <mutex>
 
-#ifdef _WIN32
-#define NOMINMAX
-#include <Windows.h>
-#endif
-
-
 namespace fs {
 
 // Implementation specific
@@ -40,9 +34,5 @@ private:
 public:
     static WatcherId AddWatcher(const std::string& path, fs::FileEventDelegate delegate);
     static bool RemoveWatcher(WatcherId watcherId);
-private:
-#ifdef _WIN32
-    static void CALLBACK NotificationCompletion(DWORD dwErrorCode, DWORD dwNumberOfBytesTransfered, LPOVERLAPPED lpOverlapped);
-#endif
 };
 }

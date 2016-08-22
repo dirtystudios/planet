@@ -12,7 +12,6 @@
 #include "GLStructs.h"
 #include "Pool.h"
 #include "RenderDevice.h"
-#include "ResourceId.h"
 #include "VertexStream.h"
 
 namespace gfx {

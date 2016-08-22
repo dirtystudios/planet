@@ -109,26 +109,4 @@ using namespace Microsoft::WRL;
         D3D11_COMPARISON_GREATER_EQUAL,
         D3D11_COMPARISON_ALWAYS
     };
-
-    typedef uint32_t SamplerHandle;
-    typedef uint32_t ConstantBufferHandle;
-
-    struct TextureDX11 {
-        ComPtr<ID3D11Texture2D> texture; // ID3D11Resource instead? 
-        ComPtr<ID3D11ShaderResourceView> shaderResourceView;
-        DXGI_FORMAT format;
-        PixelFormat requestedFormat;
-    };
-
-    struct InputLayoutDX11 {
-        ComPtr<ID3D11InputLayout> inputLayout;
-        uint32_t stride;
-    };
-
-    struct ShaderDX11 {
-        ComPtr<ID3DBlob> blob;
-        ShaderType shaderType;
-        ID3D11VertexShader *vertexShader;
-        ID3D11PixelShader *pixelShader;
-    };
 }

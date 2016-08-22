@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DX11Structs.h"
+#include "DX11EnumAdapter.h"
 
 #include <unordered_map>
 #include <unordered_set>

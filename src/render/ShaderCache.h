@@ -79,7 +79,7 @@ public:
 
     gfx::ShaderId Get(gfx::ShaderType shaderType, const std::string& functionName) {
         gfx::ShaderId shader = _device->GetShader(shaderType, functionName);
-        dg_assert(shader, "Failed to get shader (type:%s, functionName:%s)", ToString(shaderType).c_str(),
+        dg_assert((shader > 0), "Failed to get shader (type:%s, functionName:%s)", ToString(shaderType).c_str(),
                   functionName.c_str());
         return shader;
     }

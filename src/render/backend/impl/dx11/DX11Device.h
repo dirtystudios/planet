@@ -1,13 +1,12 @@
 #pragma once
 #include "RenderDevice.h"
 #include "DX11Context.h"
-#include "DX11CBufferHelper.h"
 #include "CommandBuffer.h"
 #include "SimpleShaderLibrary.h"
-#include "ResourceId.h"
 #include "Pool.h"
 #include "DMath.h"
 #include "ByteBuffer.h"
+#include "ResourceManager.h"
 
 #include <memory>
 #include <cstring>
@@ -87,21 +86,8 @@ namespace gfx {
             ID3D11DepthStencilState* depthState;
         };
 
-        struct CBufDescEntry {
-            uint32_t shaderId;
-            std::string name;
-            ParamType type;
-        };
-
         struct BufferDX11 {
             ComPtr<ID3D11Buffer> buffer;
-        };
-
-        struct ConstantBufferDX11 {
-            ID3D11Buffer* constantBuffer;
-            std::vector<CBufDescEntry*> cBufferDescs;
-            bool sizeChanged = true;
-            CBufferDescriptor* bufferData;
         };
 
         struct InputLayoutDX11 {
@@ -109,10 +95,22 @@ namespace gfx {
             uint32_t stride;
         };
 
+        struct TextureDX11 {
+            ComPtr<ID3D11Texture2D> texture; // ID3D11Resource instead? 
+            ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+            DXGI_FORMAT format;
+            PixelFormat requestedFormat;
+        };
+
+        struct ShaderDX11 {
+            ComPtr<ID3DBlob> blob;
+            ShaderType shaderType;
+            ID3D11VertexShader *vertexShader;
+            ID3D11PixelShader *pixelShader;
+        };
+
         std::unordered_map<size_t, BufferDX11> m_buffers;
         std::unordered_map<size_t, ShaderDX11> m_shaders;
-        std::unordered_map<size_t, CBufDescEntry> m_cBufferParams;
-        std::unordered_map<size_t, ConstantBufferDX11> m_shaderCBufferMapping;
         std::unordered_map<size_t, PipelineStateDX11> m_pipelineStates;
         std::unordered_map<size_t, TextureDX11> m_textures;
 
@@ -125,7 +123,7 @@ namespace gfx {
 
         std::vector<CommandBuffer*> m_submittedBuffers;
 
-
+        ResourceManager m_resourceManager;
         SimpleShaderLibrary m_shaderLibrary;
         Pool<CommandBuffer, 1> m_commandBufferPool;
 
@@ -146,7 +144,6 @@ namespace gfx {
         ShaderId GetShader(ShaderType type, const std::string& functionName);
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
-        ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
         TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
         TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height,
@@ -163,7 +160,7 @@ namespace gfx {
 
         void RenderFrame();
 
-        void DestroyResource(ResourceId resourceId);
+        void DestroyResource(ResourceId resourceId) {};
     private:
         ID3D11DepthStencilState* CreateDepthState(const DepthState& state);
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
@@ -194,11 +191,9 @@ namespace gfx {
                 m_shaders.erase(shader);
             }
         }
-        void DestroyShaderParam(ShaderParamId shaderParam) {}
         void DestroyPipelineState(PipelineStateId pipelineState) {}
         void DestroyTexture(TextureId texture) {}
         void DestroyVertexLayout(VertexLayoutId vertexLayout) {}
-
 
         int GetFormatByteSize(DXGI_FORMAT dxFormat) {
             switch (dxFormat) {
@@ -213,8 +208,8 @@ namespace gfx {
         }
 
         inline size_t GenerateHandle(gfx::ResourceType type) {
-            static size_t key = 0;
-            return GenerateResourceId(type, ++key);
+            static size_t key = 1;
+            return key++;
         }
 
         template<gfx::ResourceType t, class T>
@@ -224,34 +219,14 @@ namespace gfx {
             return handle;
         }
 
-        template<class T>
-        size_t UseHandleEmplaceConstRef(std::unordered_map<size_t, T>& map, size_t handle, const T& item) {
+        template<class K, class T>
+        K UseHandleEmplaceConstRef(std::unordered_map<K, T>& map, K handle, const T& item) {
             map.emplace(handle, item);
             return handle;
         }
 
-        template <class T>
-        T* GetResourceFromSizeMap(std::unordered_map<size_t, T>& map, size_t handle) {
-            auto it = map.find(handle);
-            if (it == map.end()) {
-                return nullptr;
-            }
-
-            return &(*it).second;
-        }
-
-        template <class T>
-        T GetResourceNonPtr(std::unordered_map<size_t, T>& map, size_t handle) {
-            auto it = map.find(handle);
-            if (it == map.end()) {
-                return nullptr;
-            }
-
-            return (*it).second;
-        }
-
-        template <class T>
-        T* GetResource(std::unordered_map<size_t, T>& map, size_t handle) {
+        template <class K, class T>
+        T* GetResource(std::unordered_map<K, T>& map, K handle) {
             auto it = map.find(handle);
             if (it == map.end()) {
                 return nullptr;

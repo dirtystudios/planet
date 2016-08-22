@@ -82,9 +82,6 @@
     <ClCompile Include="..\src\render\backend\interface\StateGroupEncoder.cpp">
       <Filter>render\backend\interface</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\backend\impl\common\ResourceId.cpp">
-      <Filter>render\backend\impl\common</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\render\backend\interface\RenderDeviceApi.cpp">
       <Filter>render\backend\interface</Filter>
     </ClCompile>
@@ -102,6 +99,9 @@
     </ClCompile>
     <ClCompile Include="..\src\utilities\common\File.cpp">
       <Filter>utilities\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\backend\impl\common\ResourceManager.cpp">
+      <Filter>render\backend\impl\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -227,9 +227,6 @@
     <ClInclude Include="..\src\render\backend\impl\gl\GLEnumAdapter.h">
       <Filter>render\backend\impl\gl</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\gl\GLResourceManager.h.h">
-      <Filter>render\backend\impl\gl</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\gl\GLStructs.h">
       <Filter>render\backend\impl\gl</Filter>
     </ClInclude>
@@ -239,16 +236,10 @@
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Device.h">
       <Filter>render\backend\impl\dx11</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11Structs.h">
-      <Filter>render\backend\impl\dx11</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11Context.h">
       <Filter>render\backend\impl\dx11</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\backend\impl\dx11\DX11ContextState.h">
-      <Filter>render\backend\impl\dx11</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\dx11\DX11CBufferHelper.h">
       <Filter>render\backend\impl\dx11</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Memory.h" />
@@ -468,9 +459,6 @@
     <ClInclude Include="..\src\utilities\Hash.h">
       <Filter>utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\backend\impl\common\ResourceId.h">
-      <Filter>render\backend\impl\common</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\utilities\Pool.h">
       <Filter>utilities</Filter>
     </ClInclude>
@@ -506,6 +494,15 @@
     </ClInclude>
     <ClInclude Include="..\src\utilities\WatchDirManager.h">
       <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\common\Resource.h">
+      <Filter>render\backend\impl\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\common\ResourceManager.h">
+      <Filter>render\backend\impl\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\backend\impl\dx11\DX11EnumAdapter.h">
+      <Filter>render\backend\impl\dx11</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

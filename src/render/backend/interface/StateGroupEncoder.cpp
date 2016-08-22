@@ -16,7 +16,7 @@ size_t GetStateGroupFieldSize(const StateGroupHeader& header, StateGroupIndex in
         case StateGroupIndex::RasterState: return sizeof(RasterState);
         case StateGroupIndex::DepthState: return sizeof(DepthState);
         case StateGroupIndex::Bindings: return header.bindingCount * sizeof(Binding);
-        default: assert(false);
+        default: assert(false); return 0;
     }
 }
     
@@ -77,7 +77,7 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
 
         for (uint32_t shift = 0; shift < 16; ++shift) {
             uint16_t stateBit = 1 << shift;
-            bool isOpen = openStates & (stateBit);
+            bool isOpen = ((openStates & stateBit) > 0);
             if (!isOpen || !candidateDecoder.HasState(stateBit)) {
                 continue;
             }

@@ -207,27 +207,6 @@ namespace gfx {
         return blob;
     }
 
-    ShaderParamId DX11Device::CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) {
-        CBufDescEntry entry;
-        entry.shaderId = shader;
-        entry.name = std::string(param);
-        entry.type = paramType;
-
-        ShaderParamId shaderParamId = GenerateHandleEmplaceConstRef<ResourceType::Buffer>(m_cBufferParams, entry);
-
-        auto cbufferdx11 = m_shaderCBufferMapping.find(shader);
-        if (cbufferdx11 == m_shaderCBufferMapping.end()) {
-            ConstantBufferDX11 newCbufferDx11;
-            newCbufferDx11.cBufferDescs.emplace_back(&m_cBufferParams[shaderParamId]);
-            m_shaderCBufferMapping[shader] = newCbufferDx11;
-        }
-        else {
-            cbufferdx11->second.sizeChanged = true;
-            cbufferdx11->second.cBufferDescs.emplace_back(&m_cBufferParams[shaderParamId]);
-        }
-        return shaderParamId;
-    }
-
     PipelineStateId DX11Device::CreatePipelineState(const PipelineStateDesc & desc) {
         PipelineStateDX11 stateDx11;
 
@@ -241,7 +220,7 @@ namespace gfx {
 
         stateDx11.topology = SafeGet(PrimitiveTypeDX11, desc.topology);
 
-        auto layout = GetResourceFromSizeMap(m_inputLayouts, desc.vertexLayout);
+        auto layout = GetResource(m_inputLayouts, desc.vertexLayout);
         stateDx11.vertexLayout = layout->inputLayout.Get();
         stateDx11.vertexLayoutHandle = desc.vertexLayout;
         stateDx11.vertexLayoutStride = layout->stride;
@@ -306,7 +285,7 @@ namespace gfx {
         DX11_CHECK_RET0(m_dev->CreateDepthStencilState(&dsDesc, &depthStateDX));
         size_t hash = 0;
         HashCombine(hash, state);
-        UseHandleEmplaceConstRef<ComPtr<ID3D11DepthStencilState>>(m_depthStates, hash, depthStateDX.Get());
+        UseHandleEmplaceConstRef<size_t, ComPtr<ID3D11DepthStencilState>>(m_depthStates, hash, depthStateDX.Get());
         return depthStateDX.Get();
     }
 
@@ -329,7 +308,7 @@ namespace gfx {
         DX11_CHECK_RET0(m_dev->CreateRasterizerState(&rasterDesc, &rasterStateDX));
         size_t hash = 0;
         HashCombine(hash, state);
-        UseHandleEmplaceConstRef<ComPtr<ID3D11RasterizerState>>(m_rasterStates, hash, rasterStateDX.Get());
+        UseHandleEmplaceConstRef<size_t, ComPtr<ID3D11RasterizerState>>(m_rasterStates, hash, rasterStateDX.Get());
         return rasterStateDX.Get();
     }
 
@@ -353,7 +332,7 @@ namespace gfx {
         DX11_CHECK_RET0(m_dev->CreateBlendState(&blendDesc, &blendStateDX));
         size_t hash = 0;
         HashCombine(hash, state);
-        UseHandleEmplaceConstRef<ComPtr<ID3D11BlendState>>(m_blendStates, hash, blendStateDX.Get());
+        UseHandleEmplaceConstRef<size_t, ComPtr<ID3D11BlendState>>(m_blendStates, hash, blendStateDX.Get());
         return blendStateDX.Get();
     }
 
@@ -367,7 +346,7 @@ namespace gfx {
         // not internal, check hash first
         size_t hash = 0;
         HashCombine(hash, layoutDesc);
-        auto layoutCheck = GetResourceFromSizeMap(m_inputLayouts, hash);
+        auto layoutCheck = GetResource(m_inputLayouts, hash);
         if (layoutCheck != nullptr)
             return hash;
 
@@ -573,13 +552,13 @@ namespace gfx {
     uint8_t* DX11Device::MapMemory(BufferId buffer, BufferAccess access) {
         if (access != BufferAccess::Write && access != BufferAccess::WriteInit)
             assert(false);
-        BufferDX11* bufferdx11 = GetResourceFromSizeMap(m_buffers, buffer);
+        BufferDX11* bufferdx11 = GetResource(m_buffers, buffer);
         assert(bufferdx11);
         return static_cast<uint8_t*>(m_context->MapBufferPointer(bufferdx11->buffer.Get(), SafeGet(MapAccessDX11, access)));
     }
 
     void DX11Device::UnmapMemory(BufferId buffer) {
-        BufferDX11* bufferdx11 = GetResourceFromSizeMap(m_buffers, buffer);
+        BufferDX11* bufferdx11 = GetResource(m_buffers, buffer);
         assert(bufferdx11);
         m_context->UnMapBufferPointer(bufferdx11->buffer.Get());
     }
@@ -614,7 +593,7 @@ namespace gfx {
             }
 
             
-            PipelineStateDX11* pipelineState = GetResourceFromSizeMap(m_pipelineStates, psId);
+            PipelineStateDX11* pipelineState = GetResource(m_pipelineStates, psId);
             SetPipelineState(*pipelineState);
 
             assert(streamCount == 1); // > 1 not supported
@@ -668,18 +647,6 @@ namespace gfx {
         m_context->SetPixelShader(state.pixelShaderHandle, state.pixelShader);
         
         m_context->SetInputLayout(state.vertexLayoutHandle, state.vertexLayoutStride, state.vertexLayout);
-    }
-
-    void DX11Device::DestroyResource(ResourceId resourceId) {
-        size_t key = ExtractResourceKey(resourceId);
-        switch (ExtractResourceType(resourceId)) {
-        case ResourceType::Shader: {
-            DestroyShader(key);
-            break;
-        }
-        default:
-            assert(false); // worry about this when we actually need ot
-        }
     }
 
     void DX11Device::RenderFrame() {

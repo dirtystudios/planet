@@ -51,7 +51,7 @@ void GLDevice::PrintDisplayAdapterInfo() {
 BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
     GLBuffer* buffer = new GLBuffer();
     GL_CHECK(glGenBuffers(1, &buffer->id));
-    dg_assert_nm(buffer->id);
+    dg_assert_nm((buffer->id > 0));
     
     if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
         buffer->usage = GL_DYNAMIC_DRAW;
