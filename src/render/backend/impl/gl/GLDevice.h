@@ -28,13 +28,6 @@ private:
     SimpleShaderLibrary _lib;
 
     std::vector<CommandBuffer*> _submittedBuffers;
-
-    std::unordered_map<uint32_t, GLBuffer*>          _buffers;
-    std::unordered_map<uint32_t, GLShaderProgram*>   _shaders;
-    std::unordered_map<uint32_t, GLTexture*>         _textures;
-    std::unordered_map<uint32_t, GLShaderParameter*> _shaderParams;
-    std::unordered_map<uint32_t, GLPipelineState*>   _pipelineStates;
-    std::unordered_map<uint32_t, GLVertexLayout*>    _vertexLayouts;
     std::vector<ShaderLibrary*> _libraries;
     Pool<CommandBuffer, 1> _commandBufferPool;
 
@@ -54,7 +47,6 @@ public:
     ShaderId GetShader(ShaderType type, const std::string& functionName);
     void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
-    ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType);
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
     TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
     TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);

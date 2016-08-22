@@ -56,7 +56,6 @@ public:
     void SetDepthState(const DepthState& depthState);
     void SetRasterState(const RasterState& rasterState);
     void SetBlendState(const BlendState& blendState);
-    void WriteShaderParamater(GLShaderParameter* shaderParam, void* data, size_t size);
     bool IsBound(GLShaderProgram* shader);
     uint8_t* Map(GLBuffer* buffer, BufferAccess access);
     void Unmap(GLBuffer* buffer);

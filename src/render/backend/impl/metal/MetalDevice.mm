@@ -171,7 +171,7 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     pipelineState->reflection           = reflection;
     
     [rpd release];
-    [dsd release]
+    [dsd release];
     
     return _resourceManager.AddResource(pipelineState);
 }

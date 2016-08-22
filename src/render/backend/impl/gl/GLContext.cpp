@@ -110,41 +110,42 @@ void GLContext::BindShader(GLShaderProgram* shader) {
     }
 }
 
-void GLContext::WriteShaderParamater(GLShaderParameter* shaderParam, void* data, size_t size) {
-    GLShaderProgram* program = shaderParam->program;
-    GLint location           = shaderParam->metadata.location;
-    ParamType paramType      = GLEnumAdapter::ConvertParamType(shaderParam->metadata.type);
-
-    assert(size == GetByteCount(paramType));
-    assert(IsBound(program));    
-    switch (paramType) {
-    case ParamType::Float: {
-        GL_CHECK(glProgramUniform1f(program->id, location, (float)*((float*)data)));
-        break;
-    }
-    case ParamType::Int32: {
-        GL_CHECK(glProgramUniform1i(program->id, location, (int)*((int*)data)));
-        break;
-    }
-    case ParamType::Float4x4: {
-        GL_CHECK(glProgramUniformMatrix4fv(program->id, location, 1, GL_FALSE, (float*)data));
-        break;
-    }
-    case ParamType::Float3: {
-        GL_CHECK(glProgramUniform3fv(program->id, location, 1, (float*)data));
-        break;
-    }
-    case ParamType::Float2: {
-        GL_CHECK(glProgramUniform2fv(program->id, location, 1, (float*)data));
-        break;
-    }
-    case ParamType::Float4: {
-        GL_CHECK(glProgramUniform4fv(program->id, location, 1, (float*)data));
-        break;
-    }
-    default: { assert(false); }
-    }
-}
+// Maybe be useful later
+//void GLContext::WriteShaderParamater(GLShaderParameter* shaderParam, void* data, size_t size) {
+//    GLShaderProgram* program = shaderParam->program;
+//    GLint location           = shaderParam->metadata.location;
+//    ParamType paramType      = GLEnumAdapter::ConvertParamType(shaderParam->metadata.type);
+//
+//    assert(size == GetByteCount(paramType));
+//    assert(IsBound(program));    
+//    switch (paramType) {
+//    case ParamType::Float: {
+//        GL_CHECK(glProgramUniform1f(program->id, location, (float)*((float*)data)));
+//        break;
+//    }
+//    case ParamType::Int32: {
+//        GL_CHECK(glProgramUniform1i(program->id, location, (int)*((int*)data)));
+//        break;
+//    }
+//    case ParamType::Float4x4: {
+//        GL_CHECK(glProgramUniformMatrix4fv(program->id, location, 1, GL_FALSE, (float*)data));
+//        break;
+//    }
+//    case ParamType::Float3: {
+//        GL_CHECK(glProgramUniform3fv(program->id, location, 1, (float*)data));
+//        break;
+//    }
+//    case ParamType::Float2: {
+//        GL_CHECK(glProgramUniform2fv(program->id, location, 1, (float*)data));
+//        break;
+//    }
+//    case ParamType::Float4: {
+//        GL_CHECK(glProgramUniform4fv(program->id, location, 1, (float*)data));
+//        break;
+//    }
+//    default: { assert(false); }
+//    }
+//}
 
 bool GLContext::IsBound(GLShaderProgram* shader) {
     ShaderType shaderType = GLEnumAdapter::ConvertShaderType(shader->type);

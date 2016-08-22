@@ -113,9 +113,7 @@ void GLDevice::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
             GL_CHECK(glDeleteShader(existing->id));
             existing->id = updated->id;
             existing->metadata = updated->metadata;
-                    
-            _shaders.erase(shaderId);            
-            delete updated;            
+                        
         } else {
             _lib.AddShader(shaderId, function);
         }
@@ -281,33 +279,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const char* source) {
     
     return _resourceManager.AddResource(shader);
 }
-
-ShaderParamId GLDevice::CreateShaderParam(ShaderId shaderHandle, const char* paramName, ParamType paramType) {
-//    GLShaderProgram* shader = GetResource<GLShaderProgram>(_shaders, shaderHandle);
-//    assert(shader);
-//
-//    const std::vector<GLUniformMetadata>& uniforms = shader->metadata.uniforms;
-//    GLenum glParamType                             = GLEnumAdapter::Convert(paramType);
-//    auto pred                                      = [&](const GLUniformMetadata& a) -> bool { return a.name == paramName && a.type == glParamType; };
-//
-//    auto it = std::find_if(uniforms.begin(), uniforms.end(), pred);
-//    if (it == uniforms.end()) {
-//        LOG_W("Failed to create shaderParam (shader:%d, param:%s)", shaderHandle, paramName);
-//        return 0;
-//    }
-//
-//    GLShaderParameter* shaderParam = new GLShaderParameter();
-//    shaderParam->program           = shader;
-//    shaderParam->metadata          = (*it);
-//
-//    uint32_t handle = GenerateId(ResourceType::ShaderParam);
-//    _shaderParams.insert(std::make_pair(handle, shaderParam));
-//
-//    return handle;
-    LOG_W("CreateShaderParam unsupported");
-    return 0;
-}
-
+    
 bool isVertexLayoutValidWithShader(const GLVertexLayout& layout, const GLShaderProgram& shader) {
     assert(shader.type == GL_VERTEX_SHADER);
     assert(layout.elements.size() == shader.metadata.attributes.size());

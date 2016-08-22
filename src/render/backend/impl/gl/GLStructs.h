@@ -95,11 +95,6 @@ struct GLShaderProgram : public Resource {
     }
 };
 
-struct GLShaderParameter {
-    GLShaderProgram* program;
-    GLUniformMetadata metadata;
-};
-
 struct GLBlendState {
     bool enable{false};
     GLenum srcRgbFunc{GL_ONE};

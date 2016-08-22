@@ -19,7 +19,6 @@ void ChunkedTerrainRenderer::OnInit() {
     psd.topology     = gfx::PrimitiveType::Triangles;
     _defaultPS = GetPipelineStateCache()->Get(psd);
     assert(_defaultPS);
-    assert(_transform);
 }
 
 RenderObj* ChunkedTerrainRenderer::Register(SimObj* simObj) {

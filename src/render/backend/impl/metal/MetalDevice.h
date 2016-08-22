@@ -62,7 +62,6 @@ public:
     TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
     TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data);
     void          PrintDisplayAdapterInfo() {}
-    ShaderParamId CreateShaderParam(ShaderId shader, const char* param, ParamType paramType) { assert(false); }
     void DestroyResource(ResourceId resourceId) {}
     void UnmapMemory(BufferId bufferId) {}
 

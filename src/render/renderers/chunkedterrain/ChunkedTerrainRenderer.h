@@ -7,7 +7,6 @@ class ChunkedTerrainRenderer : public Renderer {
 private:
     std::vector<ChunkedTerrainRenderObj*> _objs;
     gfx::PipelineStateId _defaultPS{0};
-    gfx::ShaderParamId _transform{0};
 
     const uint32_t kQuadResolution{2};
     const float kSplitFactor{1.5f};
