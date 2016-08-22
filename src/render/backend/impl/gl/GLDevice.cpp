@@ -27,11 +27,6 @@ int32_t GetSlotFromString(const std::string& source, gfx::Binding::Type type) {
     return -1;
 };
 
-static gfx::ResourceId GenerateId(gfx::ResourceType type) {
-    static size_t key = 0;
-    return GenerateResourceId(type, ++key);
-}
-
 namespace gfx {
 
 GLDevice::GLDevice() {
@@ -56,7 +51,7 @@ void GLDevice::PrintDisplayAdapterInfo() {
 BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
     GLBuffer* buffer = new GLBuffer();
     GL_CHECK(glGenBuffers(1, &buffer->id));
-    assert(buffer->id);
+    dg_assert_nm(buffer->id);
     
     if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
         buffer->usage = GL_DYNAMIC_DRAW;
@@ -72,10 +67,8 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
     if (desc.size != 0) {
         _context.WriteBufferData(buffer, initialData, desc.size);
     }
-
-    ResourceId handle = GenerateId(ResourceType::Buffer);
-    _buffers.insert(std::make_pair(handle, buffer));
-    return handle;
+    
+    return _resourceManager.AddResource(buffer);
 }
 
 ShaderId GLDevice::GetShader(ShaderType type, const std::string& functionName) {
@@ -113,8 +106,8 @@ void GLDevice::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
         ShaderId shaderId         = CreateShader(function, shaderData);
 
         if (existingShaderId && shaderId) {
-            GLShaderProgram* existing = GetResource(_shaders, existingShaderId);
-            GLShaderProgram* updated = GetResource(_shaders, shaderId);
+            GLShaderProgram* existing = _resourceManager.GetResource<GLShaderProgram>(existingShaderId);
+            GLShaderProgram* updated = _resourceManager.GetResource<GLShaderProgram>(shaderId);
             dg_assert_nm(existing && updated);
             
             GL_CHECK(glDeleteShader(existing->id));
@@ -285,35 +278,34 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const char* source) {
         }
         delete[] name;
     }
-
-    uint32_t handle = GenerateId(ResourceType::Shader);
-    _shaders.insert(std::make_pair(handle, shader));
-
-    return handle;
+    
+    return _resourceManager.AddResource(shader);
 }
 
 ShaderParamId GLDevice::CreateShaderParam(ShaderId shaderHandle, const char* paramName, ParamType paramType) {
-    GLShaderProgram* shader = GetResource<GLShaderProgram>(_shaders, shaderHandle);
-    assert(shader);
-
-    const std::vector<GLUniformMetadata>& uniforms = shader->metadata.uniforms;
-    GLenum glParamType                             = GLEnumAdapter::Convert(paramType);
-    auto pred                                      = [&](const GLUniformMetadata& a) -> bool { return a.name == paramName && a.type == glParamType; };
-
-    auto it = std::find_if(uniforms.begin(), uniforms.end(), pred);
-    if (it == uniforms.end()) {
-        LOG_W("Failed to create shaderParam (shader:%d, param:%s)", shaderHandle, paramName);
-        return 0;
-    }
-
-    GLShaderParameter* shaderParam = new GLShaderParameter();
-    shaderParam->program           = shader;
-    shaderParam->metadata          = (*it);
-
-    uint32_t handle = GenerateId(ResourceType::ShaderParam);
-    _shaderParams.insert(std::make_pair(handle, shaderParam));
-
-    return handle;
+//    GLShaderProgram* shader = GetResource<GLShaderProgram>(_shaders, shaderHandle);
+//    assert(shader);
+//
+//    const std::vector<GLUniformMetadata>& uniforms = shader->metadata.uniforms;
+//    GLenum glParamType                             = GLEnumAdapter::Convert(paramType);
+//    auto pred                                      = [&](const GLUniformMetadata& a) -> bool { return a.name == paramName && a.type == glParamType; };
+//
+//    auto it = std::find_if(uniforms.begin(), uniforms.end(), pred);
+//    if (it == uniforms.end()) {
+//        LOG_W("Failed to create shaderParam (shader:%d, param:%s)", shaderHandle, paramName);
+//        return 0;
+//    }
+//
+//    GLShaderParameter* shaderParam = new GLShaderParameter();
+//    shaderParam->program           = shader;
+//    shaderParam->metadata          = (*it);
+//
+//    uint32_t handle = GenerateId(ResourceType::ShaderParam);
+//    _shaderParams.insert(std::make_pair(handle, shaderParam));
+//
+//    return handle;
+    LOG_W("CreateShaderParam unsupported");
+    return 0;
 }
 
 bool isVertexLayoutValidWithShader(const GLVertexLayout& layout, const GLShaderProgram& shader) {
@@ -350,14 +342,14 @@ bool isVertexLayoutValidWithShader(const GLVertexLayout& layout, const GLShaderP
 PipelineStateId GLDevice::CreatePipelineState(const PipelineStateDesc& desc) {
     GLPipelineState* pipelineState = new GLPipelineState();
 
-    pipelineState->vertexShader = GetResource<GLShaderProgram>(_shaders, desc.vertexShader);
+    pipelineState->vertexShader = _resourceManager.GetResource<GLShaderProgram>(desc.vertexShader);
     if (pipelineState->vertexShader) {
         pipelineState->vertexShader->members.push_back(pipelineState);
     }
 
     assert(pipelineState->vertexShader);
 
-    pipelineState->pixelShader = GetResource<GLShaderProgram>(_shaders, desc.pixelShader);
+    pipelineState->pixelShader = _resourceManager.GetResource<GLShaderProgram>(desc.pixelShader);
     if (pipelineState->pixelShader) {
         pipelineState->pixelShader->members.push_back(pipelineState);
     }
@@ -369,7 +361,7 @@ PipelineStateId GLDevice::CreatePipelineState(const PipelineStateDesc& desc) {
     pipelineState->blendState  = GLEnumAdapter::Convert(desc.blendState);
     pipelineState->rasterState = GLEnumAdapter::Convert(desc.rasterState);
 
-    pipelineState->vertexLayout = GetResource<GLVertexLayout>(_vertexLayouts, desc.vertexLayout);
+    pipelineState->vertexLayout = _resourceManager.GetResource<GLVertexLayout>(desc.vertexLayout);
     assert(pipelineState->vertexLayout);
 
     // TODO:: Do this first
@@ -377,10 +369,7 @@ PipelineStateId GLDevice::CreatePipelineState(const PipelineStateDesc& desc) {
 
     pipelineState->topology = GLEnumAdapter::Convert(desc.topology);
 
-    uint32_t handle = GenerateId(ResourceType::PipelineState);
-    _pipelineStates.insert(std::make_pair(handle, pipelineState));
-
-    return handle;
+    return _resourceManager.AddResource(pipelineState);
 }
 
 TextureId GLDevice::CreateTexture2D(TextureFormat texFormat, uint32_t width, uint32_t height, void* data) {
@@ -404,10 +393,8 @@ TextureId GLDevice::CreateTexture2D(TextureFormat texFormat, uint32_t width, uin
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
-    uint32_t handle = GenerateId(ResourceType::Texture);
-    _textures.insert(std::make_pair(handle, texture));
-    return handle;
+    
+    return _resourceManager.AddResource(texture);
 }
 
 TextureId GLDevice::CreateTextureArray(TextureFormat texFormat, uint32_t levels, uint32_t width, uint32_t height,
@@ -426,10 +413,7 @@ TextureId GLDevice::CreateTextureArray(TextureFormat texFormat, uint32_t levels,
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     GL_CHECK(glTexParameteri(texture->type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
-    uint32_t handle = GenerateId(ResourceType::Texture);
-    _textures.insert(std::make_pair(handle, texture));
-
-    return handle;
+    return _resourceManager.AddResource(texture);
 }
 
 TextureId GLDevice::CreateTextureCube(TextureFormat texFormat, uint32_t width, uint32_t height, void** data) {
@@ -453,9 +437,7 @@ TextureId GLDevice::CreateTextureCube(TextureFormat texFormat, uint32_t width, u
     GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-    uint32_t handle = GenerateId(ResourceType::Texture);
-    _textures.insert(std::make_pair(handle, texture));
-    return handle;
+    return _resourceManager.AddResource(texture);
 }
 
 VertexLayoutId GLDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
@@ -471,73 +453,11 @@ VertexLayoutId GLDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
         vertexLayout->elements.push_back(glElement);
     }
 
-    uint32_t handle = GenerateId(ResourceType::VertexLayout);
-    _vertexLayouts.insert(std::make_pair(handle, vertexLayout));
-    return handle;
+    return _resourceManager.AddResource(vertexLayout);
 }
 
 void GLDevice::DestroyResource(ResourceId resourceId) {
-    size_t key = ExtractResourceKey(resourceId);
-    switch (ExtractResourceType(resourceId)) {
-    case ResourceType::Shader: {
-        DestroyShader(key);
-        break;
-    }
-    default:
-        assert(false); // worry about this when we actually need ot
-    }
-}
-
-void GLDevice::DestroyVertexLayout(VertexLayoutId layout) { assert(false && "TODO"); }
-
-void GLDevice::DestroyBuffer(BufferId handle) {
-    // warning: buffer could be referenced by context state
-    auto func = [](GLBuffer* buffer) -> void { GL_CHECK(glDeleteBuffers(1, &buffer->id)); };
-    assert(DestroyResource<GLBuffer>(handle, _buffers, func));
-}
-
-void GLDevice::DestroyShader(ShaderId handle) {
-    auto func = [](GLShaderProgram* shader) -> void {
-//        for (GLPipelineState* pipeline : shader->members) {
-//            // Note(eugene): We have pipelines referencing a shader that is
-//            // being destroy. How should this be handled?
-//            // Also, ShaderParameters reference ShaderPrograms
-//        }
-        GL_CHECK(glDeleteProgram(shader->id));
-    };
-    assert(DestroyResource<GLShaderProgram>(handle, _shaders, func));
-}
-
-void GLDevice::DestroyShaderParam(ShaderParamId handle) {
-    GLShaderParameter* param = GetResource<GLShaderParameter>(_shaderParams, handle);
-    if (param) {
-        _shaderParams.erase(handle);
-        delete param;
-    }
-}
-
-void GLDevice::DestroyPipelineState(PipelineStateId handle) {
-    GLPipelineState* pipelineState = GetResource<GLPipelineState>(_pipelineStates, handle);
-    if (pipelineState) {
-        if (pipelineState->vertexShader) {
-            std::vector<GLPipelineState*>& shaderPipelineRefs = pipelineState->vertexShader->members;
-            shaderPipelineRefs.erase(std::remove(shaderPipelineRefs.begin(), shaderPipelineRefs.end(), pipelineState),
-                                     shaderPipelineRefs.end());
-        }
-        if (pipelineState->pixelShader) {
-            std::vector<GLPipelineState*>& shaderPipelineRefs = pipelineState->pixelShader->members;
-            shaderPipelineRefs.erase(std::remove(shaderPipelineRefs.begin(), shaderPipelineRefs.end(), pipelineState),
-                                     shaderPipelineRefs.end());
-        }
-
-        _pipelineStates.erase(handle);
-        delete pipelineState;
-    }
-}
-
-void GLDevice::DestroyTexture(TextureId handle) {
-    auto func = [](GLTexture* tex) -> void { GL_CHECK(glDeleteTextures(1, &tex->id)); };
-    assert(DestroyResource<GLTexture>(handle, _textures, func));
+    _resourceManager.DestroyResource(resourceId);
 }
 
 size_t GLDevice::BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout) {
@@ -585,7 +505,7 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
         assert(attributeAsElement.type == element.type);
 
         LOG_D("Binding attribute (size:%d, type:%s, stride:%d, offset:%d) to location:%d", attributeAsElement.count,
-              GLEnumAdapter::Convert(attributeAsElement.type).c_str(), vertexLayout->stride, offset, attribute.location);
+              GLEnumToString(attributeAsElement.type).c_str(), vertexLayout->stride, offset, attribute.location);
 
         GL_CHECK(glEnableVertexAttribArray(attribute.location));
         GL_CHECK(glVertexAttribPointer(attribute.location, element.count, element.type, GL_FALSE,
@@ -616,12 +536,12 @@ void GLDevice::BindResource(const Binding& binding) {
 
     switch (binding.type) {
         case Binding::Type::ConstantBuffer: {
-            _context.BindUniformBufferToSlot(GetResource(_buffers, binding.resource), binding.slot);
+            _context.BindUniformBufferToSlot(_resourceManager.GetResource<GLBuffer>(binding.resource), binding.slot);
             break;
         }
         case Binding::Type::Texture: {
-            GLTexture* texture = GetResource(_textures, binding.resource);
-            assert(texture);
+            GLTexture* texture = _resourceManager.GetResource<GLTexture>(binding.resource);
+            dg_assert_nm(texture);
             _context.BindTextureAsShaderResource(texture, binding.slot);
             break;
         }
@@ -662,15 +582,15 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
                     assert(decoder.ReadBindings(&bindingPtr));
                 }
                 
-                GLPipelineState* pipelineState = GetResource(_pipelineStates, psId);
+                GLPipelineState* pipelineState = _resourceManager.GetResource<GLPipelineState>(psId);
                 assert(pipelineState);
                 _context.BindPipelineState(pipelineState);
                 
                 const VertexStream& stream    = streams[0];
                 GLShaderProgram* vertexShader = pipelineState->vertexShader;
                 GLVertexLayout* vertexLayout  = pipelineState->vertexLayout;
-                GLBuffer* vertexBuffer        = GetResource(_buffers, stream.vertexBuffer);
-                GLBuffer* indexBuffer         = indexBufferId ? GetResource(_buffers, indexBufferId) : nullptr;
+                GLBuffer* vertexBuffer        = _resourceManager.GetResource<GLBuffer>(stream.vertexBuffer);
+                GLBuffer* indexBuffer         = indexBufferId ? _resourceManager.GetResource<GLBuffer>(indexBufferId) : nullptr;
                 assert(vertexBuffer && vertexBuffer->type == GL_ARRAY_BUFFER);
                 assert(vertexLayout);
 
@@ -721,12 +641,12 @@ void GLDevice::Execute(GLCommandBuffer* cmdBuffer) {
 }
 
 uint8_t* GLDevice::MapMemory(BufferId bufferId, BufferAccess access) {
-    GLBuffer* buffer = GetResource(_buffers, bufferId);
+    GLBuffer* buffer = _resourceManager.GetResource<GLBuffer>(bufferId);
     return _context.Map(buffer, access);
 }
 
 void GLDevice::UnmapMemory(BufferId bufferId) {
-    GLBuffer* buffer = GetResource(_buffers, bufferId);
+    GLBuffer* buffer = _resourceManager.GetResource<GLBuffer>(bufferId);
     _context.Unmap(buffer);
 }
     

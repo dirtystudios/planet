@@ -15,19 +15,8 @@
 #include "BufferType.h"
 #include "Helpers.h"
 #include "ShaderStageFlags.h"
-#ifndef NDEBUG
-#define GL_CHECK(func)                                                                                                 \
-    do {                                                                                                               \
-        func;                                                                                                          \
-        GLenum err = glGetError();                                                                                     \
-        if (err != GL_NO_ERROR) {                                                                                      \
-            LOG_E("GL error: %d (%s) %s\n", err, GLEnumAdapter::Convert(err).c_str(), #func);                          \
-            assert(false);                                                                                             \
-        }                                                                                                              \
-    } while (false)
-#else
-#define GL_CHECK(func) func
-#endif
+#include "GLUtils.h"
+
 namespace gfx {
 
 class GLContext {

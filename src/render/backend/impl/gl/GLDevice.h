@@ -10,9 +10,8 @@
 #include <list>
 #include "Pool.h"
 #include "DMath.h"
-#include "ResourceId.h"
 #include "SimpleShaderLibrary.h"
-
+#include "ResourceManager.h"
 
 namespace gfx {
 class GLDevice : public RenderDevice {
@@ -38,7 +37,7 @@ private:
     Pool<GLCommandBuffer, 1> _commandBufferPool;
 
     GLVaoCache _vaoCache;
-
+    ResourceManager _resourceManager;
 public:
     GLDevice();
     ~GLDevice();
@@ -72,13 +71,7 @@ public:
 private:
     ShaderId CreateShader(const ShaderFunctionDesc& funcDesc, const ShaderData& data);
     ShaderId CreateShader(ShaderType type, const char* source);
-    void BindResource(const Binding& binding);
-    void DestroyBuffer(BufferId buffer);
-    void DestroyShader(ShaderId shader);
-    void DestroyShaderParam(ShaderParamId shaderParam);
-    void DestroyPipelineState(PipelineStateId pipelineState);
-    void DestroyTexture(TextureId texture);
-    void DestroyVertexLayout(VertexLayoutId layout);
+    void BindResource(const Binding& binding);    
 
     size_t BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout);
     GLVertexArrayObject* GetOrCreateVertexArrayObject(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer,
@@ -86,36 +79,5 @@ private:
                                                       GLVertexLayout* vertexLayout);
 
     void Execute(GLCommandBuffer* cmdBuffer);
-
-    template <class T>
-    bool DestroyResource(ResourceId resourceId, std::unordered_map<uint32_t, T*>& map,
-                         std::function<void(T*)> destroy) {
-        size_t handle = ExtractResourceKey(resourceId);
-        auto it = map.find(handle);
-        if (it == map.end()) {
-            return false;
-        }
-
-        T* resource = (*it).second;
-
-        if (resource->id) {
-            destroy(resource);
-        } else {
-            return false;
-        }
-        map.erase(it);
-        return true;
-    }
-
-    template <class T>
-    T* GetResource(std::unordered_map<uint32_t, T*>& map, ResourceId resourceId) {
-        size_t handle = ExtractResourceKey(resourceId);
-        auto it = map.find(handle);
-        if (it == map.end()) {
-            return nullptr;
-        }
-
-        return (*it).second;
-    }
 };
 }

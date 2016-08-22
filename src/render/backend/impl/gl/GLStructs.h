@@ -9,9 +9,12 @@
 #include <vector>
 #include <string>
 #include "GLTextureFormatDesc.h"
+#include "Resource.h"
+#include "GLUtils.h"
 #include <algorithm>
 
 using namespace std;
+
 namespace gfx {
 struct GLUniformMetadata {
     string name;
@@ -57,20 +60,30 @@ struct GLShaderMetadata {
     vector<GLSamplerMetadata> samplers;
 };
 
-struct GLTexture {
-    GLuint id;
+struct GLTexture : public Resource {
+    ~GLTexture() {
+        if(id) {
+            GL_CHECK(glDeleteTextures(1, &id));
+        }
+    }
+    
+    GLuint id{0};
     GLenum type;
     GLTextureFormatDesc format;
 };
 
-class GLResource {
-public:
-    size_t GetId();
-};
-
 struct GLPipelineState;
-struct GLShaderProgram {
-    GLuint id;
+struct GLShaderProgram : public Resource {
+    ~GLShaderProgram() {
+        if(id) {
+            for (GLPipelineState* pipeline : members) {
+                // Note(eugene): We have pipelines referencing a shader that is
+                // being destroy. How should this be handled?
+            }
+            GL_CHECK(glDeleteProgram(id));
+        }
+    }
+    GLuint id{0};
     GLenum type;
     GLShaderMetadata metadata;
     vector<GLPipelineState*> members;
@@ -121,25 +134,44 @@ struct GLVertexElement {
 // Next time you think, "Why do I want vertex layout's again", it's because they will be needed
 // to evenutally support multiple vertex data streams. Right now we only assume we will have one
 // vertex buffer so it seems kind of pointless
-struct GLVertexLayout {
+struct GLVertexLayout : public Resource {
     std::vector<GLVertexElement> elements;
     size_t stride{0};
 };
 
-struct GLBuffer {
-    GLuint id;
+struct GLBuffer : public Resource {
+    ~GLBuffer() {
+        if(id)
+            GL_CHECK(glDeleteBuffers(1, &id));
+    }
+    
+    GLuint id{0};
     GLenum type;
     GLenum usage;
     GLVertexLayout* layout{nullptr};
 };
 
-struct GLPipelineState {
-    GLShaderProgram* vertexShader;
-    GLShaderProgram* pixelShader;
+
+struct GLPipelineState : public Resource {
+    ~GLPipelineState() {
+        if (vertexShader) {
+            std::vector<GLPipelineState*>& shaderPipelineRefs = vertexShader->members;
+            shaderPipelineRefs.erase(std::remove(shaderPipelineRefs.begin(), shaderPipelineRefs.end(), this),
+                                     shaderPipelineRefs.end());
+        }
+        if (pixelShader) {
+            std::vector<GLPipelineState*>& shaderPipelineRefs = pixelShader->members;
+            shaderPipelineRefs.erase(std::remove(shaderPipelineRefs.begin(), shaderPipelineRefs.end(), this),
+                                     shaderPipelineRefs.end());
+        }
+
+    }
+    GLShaderProgram* vertexShader{nullptr};
+    GLShaderProgram* pixelShader{nullptr};
     GLRasterState rasterState;
     GLBlendState blendState;
     GLDepthState depthState;
-    GLVertexLayout* vertexLayout;
+    GLVertexLayout* vertexLayout{nullptr};
     GLenum topology;
 };
 
