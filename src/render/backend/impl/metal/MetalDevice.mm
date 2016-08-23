@@ -53,6 +53,7 @@ uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width) {
 MetalDevice::MetalDevice() {
     DeviceConfig.ShaderExtension    = ".metal";
     DeviceConfig.DeviceAbbreviation = "metal";
+    DeviceConfig.ShaderDir          = "metal";
 }
 
 MetalDevice::~MetalDevice() {}

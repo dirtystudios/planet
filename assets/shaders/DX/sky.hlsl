@@ -8,6 +8,9 @@ cbuffer cbPerObject : register(b1) {
     float4x4 world : WORLD;
 }
 
+TextureCube<float4> cubeTexture : register(t0);
+SamplerState samplerCube : register(s0);
+
 struct VS_INPUT {
 	float3 vPos : POSITION;
 };
@@ -25,4 +28,8 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
     output.vPosition = worldPos.xyww;
     output.vTexCoords = Input.vPos;
     return output;
+}
+
+float3 PSMain( VS_OUTPUT Input ) : SV_TARGET {  
+    return (cubeTexture.Sample(samplerCube, Input.vTexCoords).rgb);
 }

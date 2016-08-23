@@ -23,7 +23,7 @@ public:
             _baseDir = fs::AppendPathProcessDir("/shaders");
         }
 
-        _baseDir += "/" + _device->DeviceConfig.DeviceAbbreviation;
+        _baseDir += "/" + _device->DeviceConfig.ShaderDir;
         LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
 
         fs::FileEventDelegate eventCallback = [&](const fs::FileEvent& event) {

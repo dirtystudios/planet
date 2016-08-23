@@ -165,18 +165,21 @@ int sys::Run(app::Application* app) {
             case SDL_SYSWM_WINDOWS:
                 subsystem = "Microsoft Windows";
 #ifdef _WIN32
-                if (renderDeviceConfig == "opengl") {
+                if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
                     // start GLEW extension handler
                     glewExperimental = GL_TRUE;
                     glewInit();
                     glGetError();
                     _app->renderDevice = new gfx::GLDevice();
-                } else {
+                } else if (deviceApi == gfx::RenderDeviceApi::D3D11) {
                     _app->renderDevice                   = new gfx::DX11Device();
                     std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
 
                     devInit.windowHandle       = info.info.win.window;
                     devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
+                }
+                else {
+                    assert(false);
                 }
 #endif
                 break;

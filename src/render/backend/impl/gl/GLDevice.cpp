@@ -33,6 +33,7 @@ namespace gfx {
 GLDevice::GLDevice() {
     this->DeviceConfig.ShaderExtension    = ".glsl";
     this->DeviceConfig.DeviceAbbreviation = "GL";
+    this->DeviceConfig.ShaderDir          = "GL";
 }
 
 RenderDeviceApi GLDevice::GetDeviceApi() {

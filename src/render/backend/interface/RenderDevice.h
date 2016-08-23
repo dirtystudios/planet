@@ -22,6 +22,8 @@ namespace gfx {
 
 struct DeviceConfiguration {
     std::string DeviceAbbreviation;
+    // Shader SubDirectory
+    std::string ShaderDir;
     // Extension including dot
     std::string ShaderExtension;
 };

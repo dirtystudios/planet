@@ -76,40 +76,55 @@ namespace gfx {
     }
 
     ShaderId DX11Device::GetShader(ShaderType type, const std::string& functionName) {
-        return m_shaderLibrary.GetShader(type, functionName);
+        auto shaderId = m_shaderLibrary.GetShader(type, functionName);
+        assert(shaderId);
+        return shaderId;
     }
 
     void DX11Device::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
         for (const ShaderData& shaderData : shaderData) {
             assert(shaderData.type == ShaderDataType::Source);
 
-            ShaderType shaderType = ShaderType::VertexShader;
+            std::string funcName = shaderData.name.substr(0, shaderData.name.length() - 5);
+            {
+                ShaderType shaderType = ShaderType::PixelShader;
 
-            if (shaderData.name.find("ps") != std::string::npos)
-                shaderType = ShaderType::PixelShader;
-            else if (shaderData.name.find("vs") != std::string::npos)
-                shaderType = ShaderType::VertexShader;
-            else {
-                assert(false);
+                ShaderId existingShaderId = m_shaderLibrary.GetShader(shaderType, funcName);
+                ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len));
+
+                assert(newID);
+
+                ShaderFunctionDesc desc;
+                desc.entryPoint = "";
+                desc.functionName = funcName;
+                desc.type = shaderType;
+
+                if (existingShaderId == 0) {
+                    m_shaderLibrary.AddShader(newID, desc);
+                }
+                else {
+                    assert(false);
+                }
             }
+            {
+                ShaderType shaderType = ShaderType::VertexShader;
 
-            std::string funcName = shaderData.name.substr(0, shaderData.name.length() - 8);
+                ShaderId existingShaderId = m_shaderLibrary.GetShader(shaderType, funcName);
+                ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len));
 
-            ShaderId existingShaderId = m_shaderLibrary.GetShader(shaderType, funcName);
-            ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len));
+                assert(newID);
 
-            assert(newID);
+                ShaderFunctionDesc desc;
+                desc.entryPoint = "";
+                desc.functionName = funcName;
+                desc.type = shaderType;
 
-            ShaderFunctionDesc desc;
-            desc.entryPoint = "";
-            desc.functionName = funcName;
-            desc.type = shaderType;
-
-            if (existingShaderId == 0) {
-                m_shaderLibrary.AddShader(newID, desc);
-            }
-            else {
-                assert(false);
+                if (existingShaderId == 0) {
+                    m_shaderLibrary.AddShader(newID, desc);
+                }
+                else {
+                    assert(false);
+                }
             }
         }
     }
@@ -173,14 +188,23 @@ namespace gfx {
         HRESULT hr;
 
         // ---- Compile Shader Source 
+        // ifdef is for xbox, which only advertises 4_0 support
         switch (shaderType) {
         case ShaderType::PixelShader:
             entryPoint = "PSMain";
+#ifdef DX11_3_API
             target = "ps_4_0";
+#else      
+            target = "ps_5_0";
+#endif
             break;
         case ShaderType::VertexShader:
             entryPoint = "VSMain";
+#ifdef DX11_3_API
             target = "vs_4_0";
+#else      
+            target = "vs_5_0";
+#endif
             break;
         default:
             LOG_E("DX11RenderDev: Unsupported shader type supplied. Type: %d", shaderType);
@@ -720,14 +744,12 @@ namespace gfx {
         m_winHeight = deviceInit.windowHeight;
         m_usePrebuiltShaders = deviceInit.usePrebuiltShaders;
 
-        if (m_usePrebuiltShaders) {
-            DeviceConfig.DeviceAbbreviation = "DX11";
+        DeviceConfig.DeviceAbbreviation = "DX11";
+        DeviceConfig.ShaderDir = "DX";
+        if (m_usePrebuiltShaders)
             DeviceConfig.ShaderExtension = ".cso";
-        }
-        else {
-            DeviceConfig.DeviceAbbreviation = "DX11";
+        else 
             DeviceConfig.ShaderExtension = ".hlsl";
-        }
 
         D3D_FEATURE_LEVEL FeatureLevelsRequested[] = {
             D3D_FEATURE_LEVEL_11_1,
