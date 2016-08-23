@@ -510,6 +510,9 @@
     <ClInclude Include="..\src\render\backend\impl\common\SemanticNameCache.h">
       <Filter>render\backend\impl\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\utilities\StringUtil.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">

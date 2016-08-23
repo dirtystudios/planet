@@ -8,6 +8,7 @@
 #include <OpenGL/gl3ext.h>
 #endif
 #include "Log.h"
+#include "StringUtil.h"
 #include "ShaderStageFlags.h"
 #include "Memory.h"
 #include "DrawItemDecoder.h"
@@ -94,6 +95,7 @@ void GLDevice::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
 
         std::string name(nameStart, typeStart - 1);
         std::string type(typeStart, ptr - 1);
+        type = StringUtil::TrimRight(type);
 
         dg_assert_nm(type == "vertex" || type == "pixel");
 

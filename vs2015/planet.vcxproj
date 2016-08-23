@@ -197,6 +197,7 @@
     <ClInclude Include="..\src\utilities\IniParser.h" />
     <ClInclude Include="..\src\utilities\Log.h" />
     <ClInclude Include="..\src\utilities\Pool.h" />
+    <ClInclude Include="..\src\utilities\StringUtil.h" />
     <ClInclude Include="..\src\utilities\WatchDirManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
