@@ -69,6 +69,7 @@ namespace gfx {
 
         struct InputLayoutDX11 {
             ComPtr<ID3D11InputLayout> inputLayout;
+            VertexLayoutDesc layoutDesc;
             uint32_t stride;
         };
 
@@ -143,9 +144,11 @@ namespace gfx {
         ID3D11RasterizerState* CreateRasterState(const RasterState& state);
         ID3D11BlendState* CreateBlendState(const BlendState& state);
 
+        ID3D11InputLayout* CreateInputLayout(InputLayoutDX11* state, ShaderId shaderId);
+
         ShaderId CreateShader(ShaderType type, const std::string& source);
 
-        void SetPipelineState(const PipelineStateDX11& state);
+        void SetPipelineState(PipelineStateDX11* state);
         void Execute(CommandBuffer* cmdBuffer);
 
         // Texture Converter.

@@ -366,17 +366,25 @@ namespace gfx {
     }
 
     VertexLayoutId DX11Device::CreateVertexLayout(const VertexLayoutDesc& layoutDesc) {
-        // not internal, check hash first
+        // Here we just take the hash and shove the empty layout into our cache
+        //  this will be created when needed on draw
         size_t hash = 0;
         HashCombine(hash, layoutDesc);
         auto layoutCheck = GetResource(m_inputLayouts, hash);
         if (layoutCheck != nullptr)
             return hash;
 
+        InputLayoutDX11 layout;
+        layout.stride = 0;
+        layout.layoutDesc.elements = layoutDesc.elements;
+        return UseHandleEmplaceConstRef(m_inputLayouts, hash, layout);
+    }
+
+    ID3D11InputLayout* DX11Device::CreateInputLayout(InputLayoutDX11* state, ShaderId shaderId) {
         bool first = true;
         std::vector<D3D11_INPUT_ELEMENT_DESC> ieds;
         uint32_t stride = 0;
-        for (auto layout : layoutDesc.elements) {
+        for (auto layout : state->layoutDesc.elements) {
             D3D11_INPUT_ELEMENT_DESC ied;
             ied.SemanticName = SemanticNameCache::AddGetSemanticNameToCache(VertexAttributeUsageToString(layout.usage).c_str());
             ied.SemanticIndex = 0;
@@ -389,30 +397,27 @@ namespace gfx {
             first = false;
             ieds.emplace_back(ied);
         }
+
+        ShaderDX11* shader = GetResource(m_shaders, shaderId);
+
         ComPtr<ID3D11InputLayout> inputLayout;
 
-        // screw it, here we loop over every shader and try to find the stupid one that 
-        //  has the same inputlayout
-        for (auto shader : m_shaders) {
-            // only check vertex shaders for now
-            if (shader.second.vertexShader == 0)
-                continue;
-            HRESULT hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()),
-                shader.second.blob->GetBufferPointer(), shader.second.blob->GetBufferSize(), NULL);
+        // quick verify cause why not
+        HRESULT hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()),
+            shader->blob->GetBufferPointer(), shader->blob->GetBufferSize(), NULL);
 
-            if (hr == S_FALSE) {
-                hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()),
-                    shader.second.blob->GetBufferPointer(), shader.second.blob->GetBufferSize(), &inputLayout);
-                assert(hr == 0);
-                break;
-            }
+        if (hr == S_FALSE) {
+            hr = m_dev->CreateInputLayout(ieds.data(), static_cast<UINT>(ieds.size()),
+                shader->blob->GetBufferPointer(), shader->blob->GetBufferSize(), &inputLayout);
+            assert(hr == 0);
         }
-        assert(inputLayout.Get() != 0);
-        InputLayoutDX11 layout;
-        layout.inputLayout.Swap(inputLayout);
-        layout.stride = stride;
 
-        return UseHandleEmplaceConstRef(m_inputLayouts, hash, layout);
+        assert(inputLayout.Get() != 0);
+
+        state->inputLayout.Swap(inputLayout);
+        state->stride = stride;
+
+        return state->inputLayout.Get();
     }
 
     TextureId DX11Device::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data) {
@@ -617,7 +622,7 @@ namespace gfx {
 
             
             PipelineStateDX11* pipelineState = GetResource(m_pipelineStates, psId);
-            SetPipelineState(*pipelineState);
+            SetPipelineState(pipelineState);
 
             assert(streamCount == 1); // > 1 not supported
             const VertexStream& stream = streamPtr[0];
@@ -661,15 +666,28 @@ namespace gfx {
         }
     }
 
-    void DX11Device::SetPipelineState(const PipelineStateDX11& state) {
-        m_context->SetDepthState(state.depthStateHandle, state.depthState);
-        m_context->SetRasterState(state.rasterStateHandle, state.rasterState);
-        m_context->SetBlendState(state.blendStateHandle, state.blendState);
+    void DX11Device::SetPipelineState(PipelineStateDX11* state) {
+        m_context->SetDepthState(state->depthStateHandle, state->depthState);
+        m_context->SetRasterState(state->rasterStateHandle, state->rasterState);
+        m_context->SetBlendState(state->blendStateHandle, state->blendState);
 
-        m_context->SetVertexShader(state.vertexShaderHandle, state.vertexShader);
-        m_context->SetPixelShader(state.pixelShaderHandle, state.pixelShader);
+        m_context->SetVertexShader(state->vertexShaderHandle, state->vertexShader);
+        m_context->SetPixelShader(state->pixelShaderHandle, state->pixelShader);
         
-        m_context->SetInputLayout(state.vertexLayoutHandle, state.vertexLayoutStride, state.vertexLayout);
+        // If we have an invalid layouthandle, check if we have created it yet, otherwise create it based on the given shader
+        if (state->vertexLayoutHandle != 0 && state->vertexLayout == 0) {
+            auto check = m_inputLayouts.find(state->vertexLayoutHandle);
+            if (check->second.inputLayout != 0) {
+                state->vertexLayout = check->second.inputLayout.Get();
+                state->vertexLayoutStride = check->second.stride;
+            }
+            else {
+                state->vertexLayout = CreateInputLayout(&check->second, state->vertexShaderHandle);
+                state->vertexLayoutStride = check->second.stride;
+            }
+        }
+
+        m_context->SetInputLayout(state->vertexLayoutHandle, state->vertexLayoutStride, state->vertexLayout);
     }
 
     void DX11Device::RenderFrame() {

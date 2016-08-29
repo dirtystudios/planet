@@ -10,7 +10,8 @@ Texture2D<float> text : register(t0);
 SamplerState textSampler : register(s0);
 
 struct VS_INPUT {
-	float4 vPos : POSITION0;
+	float2 vPos : POSITION0;
+	float2 vTex : TEXCOORD0;
 };
 
 struct VS_OUTPUT {
@@ -20,14 +21,14 @@ struct VS_OUTPUT {
 
 VS_OUTPUT VSMain( VS_INPUT Input ) {  
     VS_OUTPUT output;
-    output.vPosition = mul(projection, float4(Input.vPos.xy, 0.0, 1.0));
-    output.vTexCoords = Input.vPos.zw;
+    output.vPosition = mul(projection, float4(Input.vPos, 0.0, 1.0));
+    output.vTexCoords = Input.vTex;
     return output;
 }
 
 float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {  
 
-    float4 sampled = float4(1.0, 1.0, 1.0, text.Sample(textSampler, Input.vTexCoords).r);
-    float4 vColor = float4(textColor, 1.0) * sampled;
-    return vColor;
+	float alpha = text.Sample(textSampler, Input.vTexCoords);
+	float4 color = float4(textColor, alpha);
+    return color;
 }
