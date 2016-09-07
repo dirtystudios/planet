@@ -45,7 +45,7 @@ struct alignas(16) UIFrameRenderObj : public RenderObj {
 
 class UIRenderer : public Renderer {
 private:
-    static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 18;
+    static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 48;
 
     gfx::BufferId _vertexBuffer;
     size_t _bufferOffset;

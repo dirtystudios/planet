@@ -1,16 +1,17 @@
 #pragma once
 #include "UIFrame.h"
-#include <vector>
+#include "FontDesc.h"
+#include <string>
 
 namespace ui {
 
 class EditBox : public UIFrame {
 public:
     struct EditBoxDesc : UIFrameDesc {
-        float textSize;   // ignored
         float blinkSpeed; // in ms
-        float* color = 0; // rgb, null = default
+        std::string intialText;
         // bool multiLine;
+        FontDesc font;
     };
     struct HighLightState {
         uint32_t start, end;

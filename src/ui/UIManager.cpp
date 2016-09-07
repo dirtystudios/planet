@@ -63,11 +63,20 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
 
     for (auto& uiFrame : ui->frames) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame.get());
-        // oops....
+
         FrameScale scaled           = uiFrame->GetScaledSize(m_viewport);
-        UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), scaled);
-        m_uiFrames.emplace(uiFrame.get(), renderObj);
-        m_parentFrames.emplace(uiFrame->GetParent());
+        
+        if (uiFrame->GetFrameType() == FrameType::LABEL) {
+            // for now a label is just text, no bg and border. It's also static for now
+            Label* label = dynamic_cast<Label*>((uiFrame.get()));
+            glm::vec3 color = { label->GetColor()[0], label->GetColor()[1], label->GetColor()[2] };
+            m_textRenderer->RegisterText(label->GetText(), scaled.x, scaled.y, color);
+        }
+        else {
+            UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), scaled);
+            m_uiFrames.emplace(uiFrame.get(), renderObj);
+            m_parentFrames.emplace(uiFrame->GetParent());
+        }
     }
 }
 

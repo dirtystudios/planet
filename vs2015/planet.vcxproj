@@ -51,6 +51,7 @@
     <ClCompile Include="..\src\render\renderers\skybox\SkyRenderer.cpp" />
     <ClCompile Include="..\src\render\renderers\text\TextRenderer.cpp" />
     <ClCompile Include="..\src\ui\EditBox.cpp" />
+    <ClCompile Include="..\src\ui\Label.cpp" />
     <ClCompile Include="..\src\ui\UIManager.cpp" />
     <ClCompile Include="..\src\utilities\common\File.cpp" />
     <ClCompile Include="..\src\utilities\win32\File_win32.cpp" />
@@ -182,6 +183,9 @@
     <ClInclude Include="..\src\Simulation.h" />
     <ClInclude Include="..\src\ui\ConsoleUI.h" />
     <ClInclude Include="..\src\ui\EditBox.h" />
+    <ClInclude Include="..\src\ui\FontDesc.h" />
+    <ClInclude Include="..\src\ui\Label.h" />
+    <ClInclude Include="..\src\ui\LabelUI.h" />
     <ClInclude Include="..\src\ui\ScriptHandler.h" />
     <ClInclude Include="..\src\ui\UIFrame.h" />
     <ClInclude Include="..\src\ui\UIManager.h" />

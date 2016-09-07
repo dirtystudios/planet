@@ -4,11 +4,14 @@ namespace ui {
 
 EditBox::EditBox(EditBoxDesc editBoxDesc)
     : UIFrame(editBoxDesc), m_cursorPos(0), m_textBoxState(TextBoxState::UNFOCUSED), m_editBoxDesc(editBoxDesc) {
+
     m_frameType = FrameType::EDITBOX;
+    m_contents = editBoxDesc.intialText;
     if (editBoxDesc.blinkSpeed <= 0.0f) {
         m_editBoxDesc.blinkSpeed = 530;
     }
-    if (!editBoxDesc.color) {
+
+    if (!editBoxDesc.font.color) {
         m_color[0] = m_color[1] = m_color[2] = 1.f;
     }
 }
@@ -16,11 +19,13 @@ EditBox::EditBox(EditBoxDesc editBoxDesc)
 EditBox::EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler)
     : UIFrame(editBoxDesc, scriptHandler), m_cursorPos(0), m_textBoxState(TextBoxState::UNFOCUSED), 
       m_editBoxDesc(editBoxDesc) {
+
     m_frameType = FrameType::EDITBOX;
+    m_contents = editBoxDesc.intialText;
     if (editBoxDesc.blinkSpeed <= 0.0f) {
         m_editBoxDesc.blinkSpeed = 530;
     }
-    if (!editBoxDesc.color) {
+    if (!editBoxDesc.font.color) {
         m_color[0] = m_color[1] = m_color[2] = 1.f;
     }
 }

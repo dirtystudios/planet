@@ -27,9 +27,6 @@ public:
     ConsoleUI(UI* uiFrameObj, input::InputContext* inputContext) {
         inputContext->BindContext<input::ContextBindingType::Action>("ToggleConsole",
                                                                      BIND_MEM_CB(&ConsoleUI::HandleConsoleKey, this));
-        
-        // This keeps references valid cause of stupidity below
-        uiFrameObj->frames.reserve(2);
 
         UIFrame::UIFrameDesc consoleFrameDesc;
         consoleFrameDesc.name        = "ConsoleFrame";
@@ -44,22 +41,22 @@ public:
 
         m_scriptHandler.reset(new ConsoleScriptHandler());
 
-        consoleFrame = uiFrameObj->frames[0].get();
+        consoleFrame = uiFrameObj->frames.back().get();
 
         EditBox::EditBoxDesc editBoxDesc;
-        editBoxDesc.name        = "ConsoleEditBox";
-        editBoxDesc.parent      = consoleFrame;
-        editBoxDesc.height      = 40;
-        editBoxDesc.width       = 780;
-        editBoxDesc.x           = 10.f;
-        editBoxDesc.y           = 410;
-        editBoxDesc.textSize    = 12.f;
-        editBoxDesc.blinkSpeed  = 0.f;
-        editBoxDesc.shown       = true;
-        editBoxDesc.acceptMouse = true;
+        editBoxDesc.name          = "ConsoleEditBox";
+        editBoxDesc.parent        = consoleFrame;
+        editBoxDesc.height        = 40;
+        editBoxDesc.width         = 780;
+        editBoxDesc.x             = 10.f;
+        editBoxDesc.y             = 410;
+        editBoxDesc.font.textSize = 12.f;
+        editBoxDesc.blinkSpeed    = 0.f;
+        editBoxDesc.shown         = true;
+        editBoxDesc.acceptMouse   = true;
         uiFrameObj->frames.push_back(std::make_unique<EditBox>(editBoxDesc, m_scriptHandler.get()));
 
-        editBox = static_cast<EditBox*>(uiFrameObj->frames[1].get());
+        editBox = static_cast<EditBox*>(uiFrameObj->frames.back().get());
     }
 
     bool HandleConsoleKey(const input::InputContextCallbackArgs& args) {

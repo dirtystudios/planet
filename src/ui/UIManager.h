@@ -2,15 +2,18 @@
 #include "InputManager.h"
 #include "UIFrame.h"
 #include "EditBox.h"
+#include "Label.h"
 #include "RenderDevice.h"
 #include "RenderEngine.h"
 #include "UIRenderer.h"
+#include "TextRenderer.h"
 #include "KeyboardManager.h"
+#include "Viewport.h"
+#include "UI.h"
+
 #include <unordered_map>
 #include <vector>
 #include <set>
-#include "Viewport.h"
-#include "UI.h"
 
 namespace ui {
 class UIManager {
@@ -23,6 +26,7 @@ private:
     std::unordered_multimap<UIFrame*, UIFrameRenderObj*> m_uiFrames;
 
     UIRenderer* m_uiRenderer;
+    TextRenderer* m_textRenderer;
     Viewport m_viewport;
     // only 1 thing should have focus at a time, so these can go here
     float m_cursorBlink       = 0;
@@ -55,7 +59,7 @@ public:
     void DoUpdate(float ms);
 
     // hackish for now
-    //        void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
+    void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
     void SetUIRenderer(UIRenderer* uiRenderer) { m_uiRenderer = uiRenderer; };
 
     // Callbacks from inputmanager

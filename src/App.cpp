@@ -11,6 +11,7 @@
 #include "UIManager.h"
 #include "PlayerController.h"
 #include "ConsoleUI.h"
+#include "LabelUI.h"
 #include "ChunkedTerrain.h"
 #include "Spatial.h"
 #include "Config.h"
@@ -152,14 +153,16 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     spatial->direction  = glm::vec3(0.f, 0.f, 0.f);
 
     uiManager->SetUIRenderer(static_cast<UIRenderer*>(renderEngine->GetRenderer(RendererType::Ui)));
+    uiManager->SetTextRenderer(static_cast<TextRenderer*>(renderEngine->GetRenderer(RendererType::Text)));
 
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);
 
+    // Show/Hide sample text test with this call
+    ui::LabelUI::AttachLabel(ui);
+
     uiManager->AddFrameObj(worldFrame);
 }
-
-#include "TextRenderer.h"
 
 void App::OnStart() {
     sys::SysWindowSize windowSize = sys::GetWindowSize();

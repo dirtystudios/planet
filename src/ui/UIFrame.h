@@ -11,6 +11,7 @@ namespace ui {
 enum class FrameType : uint32_t {
     UIFRAME = 0,
     EDITBOX,
+    LABEL,
     COUNT,
 };
 
