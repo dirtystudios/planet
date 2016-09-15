@@ -52,6 +52,7 @@ namespace input {
 
         if (handleCursorKeys(inputCode)) return;
         if (handleDeleteKeys(inputCode)) return;
+        if (handleEnterKeys(inputCode)) return;
     }
 
     // This function notifys the input manager if we want to 'take-care' of the key handling
@@ -62,12 +63,24 @@ namespace input {
         // Avoid keys that ui manager will want instead of us
         switch (inputCode) {
         case InputCode::INPUT_KEY_TAB:
-        case InputCode::INPUT_KEY_ENTER:
+        //case InputCode::INPUT_KEY_ENTER:
         case InputCode::INPUT_KEY_ESCAPE:
         case InputCode::INPUT_KEY_BACKTICK:
             return false;
         default: return m_isCapturing;
         }
+    }
+
+    bool KeyboardManager::HasMessage() {
+        return m_hasMessage;
+    }
+
+    bool KeyboardManager::handleEnterKeys(InputCode inputCode) {
+        if (inputCode == InputCode::INPUT_KEY_ENTER) {
+            m_hasMessage = true;
+            return true;
+        }
+        return false;
     }
 
     bool KeyboardManager::handleDeleteKeys(InputCode inputCode) {
@@ -151,6 +164,7 @@ namespace input {
     void KeyboardManager::RestartCapture(std::string initial, uint32_t cursorPosition) {
         m_hasChanged = true;
         m_isCapturing = true;
+        m_hasMessage = false;
         m_contents = initial;
         if (cursorPosition > initial.length()) {
             cursorPosition = initial.length();

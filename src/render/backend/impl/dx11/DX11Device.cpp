@@ -578,7 +578,7 @@ namespace gfx {
     }
 
     uint8_t* DX11Device::MapMemory(BufferId buffer, BufferAccess access) {
-        if (access != BufferAccess::Write && access != BufferAccess::WriteInit)
+        if (access != BufferAccess::Write && access != BufferAccess::WriteNoOverwrite)
             assert(false);
         BufferDX11* bufferdx11 = GetResource(m_buffers, buffer);
         assert(bufferdx11);

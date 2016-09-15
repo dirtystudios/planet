@@ -24,6 +24,7 @@ private:
     std::unordered_multimap<UIFrame*, UIFrame*> m_frameTree;
     std::set<UIFrame*> m_parentFrames;
     std::unordered_multimap<UIFrame*, UIFrameRenderObj*> m_uiFrames;
+    std::unordered_multimap<UIFrame*, TextRenderObj*> m_textFrames;
 
     UIRenderer* m_uiRenderer;
     TextRenderer* m_textRenderer;
@@ -36,7 +37,6 @@ private:
     input::InputContext* m_uiInputContext;
     bool m_mouseDown = false;
     float m_mouseX = 0.f, m_mouseY = 0.f;
-    bool m_enterWasPressed = false;
 
 public:
     UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, Viewport viewport)
@@ -48,8 +48,6 @@ public:
                                                                        BIND_MEM_CB(&UIManager::HandleMouseY, this));
         m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1",
                                                                          BIND_MEM_CB(&UIManager::HandleMouse1, this));
-        m_uiInputContext->BindContext<input::ContextBindingType::Action>(
-            "EnterKey", BIND_MEM_CB(&UIManager::HandleEnterPress, this));
     };
     ~UIManager() {}
 
@@ -67,7 +65,6 @@ public:
     bool HandleMouseX(const input::InputContextCallbackArgs& args);
     bool HandleMouseY(const input::InputContextCallbackArgs& args);
     bool HandleMouse1(const input::InputContextCallbackArgs& args);
-    bool HandleEnterPress(const input::InputContextCallbackArgs& args);
 
 private:
     void PreProcess();

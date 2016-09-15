@@ -38,6 +38,9 @@ static constexpr uint32_t kAtlasHeight      = 128;
 static constexpr size_t kVerticesPerQuad    = 6;
 static constexpr size_t kBufferedQuadsCount = 1024; // Maximum number of characters to buffer.
 static constexpr size_t kVertexBufferSize   = kBufferedQuadsCount * kVerticesPerQuad * sizeof(GlyphVertex);
+static constexpr size_t quadSizeInBytes = 6 * sizeof(GlyphVertex);
+
+static constexpr size_t kStringBufferSize = 100;
 
 TextRenderer::TextRenderer(float scaleX, float scaleY) : _scaleX(scaleX), _scaleY(scaleY) {}
 
@@ -166,22 +169,39 @@ RenderObj* TextRenderer::Register(SimObj* simObj) {
 }
 void TextRenderer::Unregister(RenderObj* renderObj) { assert(false); }
 
-RenderObj* TextRenderer::RegisterText(const std::string& text, float pixelX, float pixelY, const glm::vec3& color) {
-    _objs.emplace_back();
-    TextRenderObj* textRenderObj = &_objs.back();
+TextRenderObj* TextRenderer::RegisterText(const std::string& text, float pixelX, float pixelY, const glm::vec3& color) {
+    _objs.push_back(std::make_unique<TextRenderObj>());
+    TextRenderObj* textRenderObj = _objs.back().get();
+    textRenderObj->text = text;
+    textRenderObj->posX = pixelX;
+    textRenderObj->posY = pixelY;
+    textRenderObj->constantBuffer = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextConstants));
+    textRenderObj->textColor = color;
 
-    size_t bufferOffset    = _vertexBufferOffset;
-    size_t quadSizeInBytes = 6 * sizeof(GlyphVertex);
-    assert(bufferOffset + (text.length() * quadSizeInBytes) < _vertexBufferSize);
+    gfx::StateGroupEncoder encoder;
+    encoder.Begin(_base);
+    encoder.BindResource(textRenderObj->constantBuffer->GetBinding(2));
+    textRenderObj->_group = encoder.End();
 
-    uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::Write);
+    assert(_vertexBufferOffset + (text.length() * quadSizeInBytes) < _vertexBufferSize);
+    _vertexBufferOffset += (text.length() * quadSizeInBytes);
+
+    return textRenderObj;
+}
+
+void TextRenderer::SetVertices(TextRenderObj* renderObj) {
+    size_t bufferOffset = renderObj->mesh.vertexOffset * sizeof(GlyphVertex);
+    assert(bufferOffset + (renderObj->text.length() * quadSizeInBytes) < _vertexBufferSize);
+
+    uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);
     assert(mapped);
     GlyphVertex* vertices = reinterpret_cast<GlyphVertex*>(mapped + bufferOffset);
 
-    float penX   = pixelX;
-    float penY   = pixelY;
+    float penX = renderObj->posX;
+    float penY = renderObj->posY;
     uint32_t idx = 0;
-    for (char c : text) {
+
+    for (char c : renderObj->text) {
         if (c == '\n') {
             assert(false || "unsupported");
         }
@@ -193,49 +213,52 @@ RenderObj* TextRenderer::RegisterText(const std::string& text, float pixelX, flo
 
         Glyph& glyph = it->second;
 
-        const float vx      = penX + glyph.xOffset * _scaleX;
-        const float vy      = penY - (glyph.height - glyph.yOffset) * _scaleY;
-        const float quadW   = glyph.width * _scaleX;
-        const float quadH   = glyph.height * _scaleY;
-        const float s       = glyph.region.bl.x;
-        const float t       = glyph.region.bl.y;
+        const float vx = penX + glyph.xOffset * _scaleX;
+        const float vy = penY - (glyph.height - glyph.yOffset) * _scaleY;
+        const float quadW = glyph.width * _scaleX;
+        const float quadH = glyph.height * _scaleY;
+        const float s = glyph.region.bl.x;
+        const float t = glyph.region.bl.y;
         const float regionW = glyph.region.GetWidth();
         const float regionH = glyph.region.GetHeight();
 
-        vertices[idx++] = {{vx, vy}, {s, t}}; // bl
-        vertices[idx++] = {{vx + quadW, vy}, {s + regionW, t}}; // br
-        vertices[idx++] = {{vx + quadW, vy + quadH}, {s + regionW, t + regionH}}; // tr
-        vertices[idx++] = {{vx + quadW, vy + quadH}, {s + regionW, t + regionH}}; // tr
-        vertices[idx++] = {{vx, vy + quadH}, {s, t + regionH}}; // tl
-        vertices[idx++] = {{vx, vy}, {s, t}}; // bl
+        vertices[idx++] = { { vx, vy },{ s, t } }; // bl
+        vertices[idx++] = { { vx + quadW, vy },{ s + regionW, t } }; // br
+        vertices[idx++] = { { vx + quadW, vy + quadH },{ s + regionW, t + regionH } }; // tr
+        vertices[idx++] = { { vx + quadW, vy + quadH },{ s + regionW, t + regionH } }; // tr
+        vertices[idx++] = { { vx, vy + quadH },{ s, t + regionH } }; // tl
+        vertices[idx++] = { { vx, vy },{ s, t } }; // bl
 
         penX += glyph.xAdvance * _scaleX;
         penY += glyph.yAdvance * _scaleY;
     }
 
     GetRenderDevice()->UnmapMemory(_vertexBuffer);
+}
 
-    textRenderObj->mesh.vertexBuffer = _vertexBuffer;
-    textRenderObj->mesh.vertexStride = sizeof(GlyphVertex);
-    textRenderObj->mesh.vertexOffset = _vertexBufferOffset / sizeof(GlyphVertex);
-    textRenderObj->mesh.vertexCount  = 6 * text.length();
-    textRenderObj->constantBuffer    = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextConstants));
-    textRenderObj->textColor = color;
-    _vertexBufferOffset += (text.length() * quadSizeInBytes);
+const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
 
-    gfx::StateGroupEncoder encoder;
-    encoder.Begin(_base);
-    encoder.BindResource(textRenderObj->constantBuffer->GetBinding(2));
-    textRenderObj->_group = encoder.End();
+    // 'loop' around the vertexBuffer, this is currently to fix directx, and as this buffer fills, 
+    //  im sure it's going to break again
+    if ((_vertexBufferOffset + renderObj->text.length())* quadSizeInBytes > _vertexBufferSize) {
+        assert(_vertexBufferOffset != 0);
+        _vertexBufferOffset = 0;
+    }
+
+    renderObj->mesh.vertexBuffer = _vertexBuffer;
+    renderObj->mesh.vertexStride = sizeof(GlyphVertex);
+    renderObj->mesh.vertexOffset = _vertexBufferOffset;
+    renderObj->mesh.vertexCount = 6 * renderObj->text.length();
+
+    SetVertices(renderObj);
+    _vertexBufferOffset += renderObj->mesh.vertexCount;
 
     gfx::DrawCall drawCall;
-    drawCall.type           = gfx::DrawCall::Type::Arrays;
-    drawCall.primitiveCount = textRenderObj->mesh.vertexCount;
-    drawCall.offset         = textRenderObj->mesh.vertexOffset;
+    drawCall.type = gfx::DrawCall::Type::Arrays;
+    drawCall.primitiveCount = renderObj->mesh.vertexCount;
+    drawCall.offset = renderObj->mesh.vertexOffset;
 
-    textRenderObj->_item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &textRenderObj->_group, 1);
-
-    return textRenderObj;
+    return gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &renderObj->_group, 1);
 }
 
 void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
@@ -243,10 +266,10 @@ void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
         glm::ortho(0.0f, view->viewport->width, 0.0f, view->viewport->height); // TODO: this should be set by renderView
     _viewData->Unmap();
 
-    for (const TextRenderObj& text : _objs) {
-        text.constantBuffer->Map<TextConstants>()->textColor = text.textColor;
-        text.constantBuffer->Unmap();
-
-        queue->AddDrawItem(2, text._item); // TODO:: sortkeys based on pass....text needs to be rendered after sky
+    for (auto& text : _objs) {
+        text->constantBuffer->Map<TextConstants>()->textColor = text->textColor;
+        text->constantBuffer->Unmap();
+        const gfx::DrawItem* item = CreateDrawItem(text.get());
+        queue->AddDrawItem(2, item); // TODO:: sortkeys based on pass....text needs to be rendered after sky
     }
 }

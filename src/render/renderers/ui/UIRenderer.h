@@ -140,7 +140,7 @@ public:
         uiRenderObj->drawCall.offset         = _bufferOffset / sizeof(FrameVertex);
 
         // pack all frames into a single buffer
-        uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteInit);
+        uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);
         assert(mapped);
         memcpy(&mapped[_bufferOffset], &vertices, verticesSize);
         GetRenderDevice()->UnmapMemory(_vertexBuffer);

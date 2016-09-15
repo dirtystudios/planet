@@ -12,7 +12,7 @@ EditBox::EditBox(EditBoxDesc editBoxDesc)
     }
 
     if (!editBoxDesc.font.color) {
-        m_color[0] = m_color[1] = m_color[2] = 1.f;
+        m_editBoxDesc.font.color[0] = m_editBoxDesc.font.color[1] = m_editBoxDesc.font.color[2] = 1.f;
     }
 }
 
@@ -26,7 +26,7 @@ EditBox::EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler)
         m_editBoxDesc.blinkSpeed = 530;
     }
     if (!editBoxDesc.font.color) {
-        m_color[0] = m_color[1] = m_color[2] = 1.f;
+        m_editBoxDesc.font.color[0] = m_editBoxDesc.font.color[1] = m_editBoxDesc.font.color[2] = 1.f;
     }
 }
 
@@ -63,12 +63,12 @@ float EditBox::GetBlinkRate() { return m_editBoxDesc.blinkSpeed; }
 void EditBox::SetText(std::string text) { m_contents = text; }
 
 void EditBox::SetColor(float* color) {
-    m_color[0] = color[0];
-    m_color[1] = color[1];
-    m_color[2] = color[2];
+    m_editBoxDesc.font.color[0] = color[0];
+    m_editBoxDesc.font.color[1] = color[1];
+    m_editBoxDesc.font.color[2] = color[2];
 }
 
-float* EditBox::GetColor() { return m_color; }
+float* EditBox::GetColor() { return m_editBoxDesc.font.color; }
 
 void EditBox::AppendText(std::string text) { m_contents += text; }
 

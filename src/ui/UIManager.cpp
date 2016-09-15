@@ -52,11 +52,6 @@ void UIManager::UpdateViewport(Viewport viewport) {
     // TODO: update framescales
 }
 
-bool UIManager::HandleEnterPress(const input::InputContextCallbackArgs& args) {
-    m_enterWasPressed = true;
-    return true;
-}
-
 void UIManager::AddFrameObj(SimObj* frameObj) {
     UI* ui = frameObj->GetComponent<UI>(ComponentType::UI);
     assert(ui);
@@ -65,12 +60,23 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame.get());
 
         FrameScale scaled           = uiFrame->GetScaledSize(m_viewport);
-        
+
         if (uiFrame->GetFrameType() == FrameType::LABEL) {
-            // for now a label is just text, no bg and border. It's also static for now
+            // for now label type is always shown
             Label* label = dynamic_cast<Label*>((uiFrame.get()));
             glm::vec3 color = { label->GetColor()[0], label->GetColor()[1], label->GetColor()[2] };
-            m_textRenderer->RegisterText(label->GetText(), scaled.x, scaled.y, color);
+            auto rawr = m_textRenderer->RegisterText(label->GetText(), scaled.x, scaled.y, color);
+            m_textFrames.emplace(uiFrame.get(), rawr);
+        }
+        else if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
+            EditBox* ebox = dynamic_cast<EditBox*>((uiFrame.get()));
+            glm::vec3 color = { ebox->GetColor()[0], ebox->GetColor()[1], ebox->GetColor()[2] };
+            auto rawr = m_textRenderer->RegisterText(ebox->GetText(), scaled.x, scaled.y, color);
+            m_textFrames.emplace(uiFrame.get(), rawr);
+
+            UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), scaled);
+            m_uiFrames.emplace(uiFrame.get(), renderObj);
+            m_parentFrames.emplace(uiFrame->GetParent());
         }
         else {
             UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), scaled);
@@ -79,21 +85,6 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
         }
     }
 }
-
-// eugene: leaving this here because we need to reorganize text rendering
-
-//    void UIManager::RenderFrame(UIFrame* uiFrame) {
-//        UIFrame::UIFrameDesc* frameDesc = uiFrame->GetFrameDesc();
-//
-//
-//
-//
-//        if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
-//            float *tempColor = ((EditBox*)uiFrame)->GetColor();
-//            glm::vec3 color = { tempColor[0], tempColor[1], tempColor[2] };
-////            m_textRenderer->RenderText(((EditBox*)uiFrame)->GetText(), scaledFrame.x, scaledFrame.y, 1.0, color);
-//        }
-//    }
 
 void UIManager::ProcessFrames() {
     // todo: this probly can be optimized better eventualy
@@ -148,7 +139,7 @@ void UIManager::PreProcess() {
     if (m_focusedEditBox) {
         // if enter pressed, trigger editbox
         // we do it here so that text can reset during the process event
-        if (m_enterWasPressed) {
+        if (m_keyboardManager->HasMessage()) {
             m_focusedEditBox->EnterPressed();
             // text may have changed, so reset capture
             m_keyboardManager->RestartCapture(m_focusedEditBox->GetText(), m_focusedEditBox->GetText().length());
@@ -166,7 +157,6 @@ void UIManager::PreProcess() {
 }
 
 void UIManager::PostProcess(float ms) {
-    m_enterWasPressed = false;
     // Double check focusbox
     if (m_focusedEditBox && !m_focusedEditBox->HasFocus()) {
         m_focusedEditBox = 0;
@@ -206,6 +196,16 @@ void UIManager::DoUpdate(float ms) {
     ProcessFrames();
     for (auto& frame : m_uiFrames) {
         frame.first->DoUpdate(ms);
+    }
+
+    for (auto& eBox : m_textFrames) {
+        if (eBox.first->IsShown()) {
+            if (eBox.first->GetFrameType() == FrameType::LABEL)
+                eBox.second->SetText(((Label*)eBox.first)->GetText());
+            else 
+                eBox.second->SetText(((EditBox*)eBox.first)->GetText());
+        }
+        else eBox.second->SetText("");
     }
 
     PostProcess(ms);

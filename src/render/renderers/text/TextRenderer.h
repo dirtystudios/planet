@@ -12,9 +12,14 @@ struct TextRenderObj : public RenderObj {
     Mesh mesh;
     ConstantBuffer* constantBuffer;
     glm::vec3 textColor;
+    float posX;
+    float posY;
+
+    void SetText(std::string newText) {
+        text = newText;
+    }
 
     const gfx::StateGroup* _group{nullptr};
-    const gfx::DrawItem* _item{nullptr};
 };
 
 class TextRenderer : public Renderer {
@@ -60,14 +65,17 @@ private:
     size_t _vertexBufferSize{0};
     ConstantBuffer* _viewData{nullptr};
 
-    std::vector<TextRenderObj> _objs;
+    std::vector<std::unique_ptr<TextRenderObj>> _objs;
+
+    void SetVertices(TextRenderObj* renderObj);
+    const gfx::DrawItem* CreateDrawItem(TextRenderObj* renderObj);
 
 public:
     TextRenderer(float scaleX = 1.f, float scaleY = 1.f);
     ~TextRenderer();
 
     void OnInit() final;
-    RenderObj* RegisterText(const std::string& text, float pixelX, float pixelY, const glm::vec3& color);
+    TextRenderObj* RegisterText(const std::string& text, float pixelX, float pixelY, const glm::vec3& color);
     RenderObj* Register(SimObj* simObj) final;
     void Unregister(RenderObj* renderObj) final;
     void Submit(RenderQueue* queue, RenderView* view) final;

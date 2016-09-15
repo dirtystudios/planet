@@ -30,7 +30,6 @@ private:
     TextBoxState m_textBoxState;
     HighLightState m_highlightState;
     EditBoxDesc m_editBoxDesc;
-    float m_color[3];
 
 public:
     EditBox(EditBoxDesc editBoxDesc);

@@ -26,6 +26,8 @@ namespace input {
         bool m_isCapturing = false;
         uint32_t m_cursorPos = 0;
         bool m_hasChanged = true;
+
+        bool m_hasMessage = false;
     public:
         KeyboardManager();
         void HandleKeyPress(InputCode inputCode, int pressed, float dt);
@@ -35,6 +37,8 @@ namespace input {
         std::string GetText();
         bool TextHasChanged();
         int GetCursorPosition();
+        // Signals that we have a 'complete' message
+        bool HasMessage();
 
     private:
         bool shouldKeyTrigger(InputCode inputCode, int pressed, float dt);
@@ -42,5 +46,6 @@ namespace input {
         bool handleKeyOutput(InputCode inputCode, const char *keyString, InputCode lowRange, InputCode highRange);
         bool handleCursorKeys(InputCode inputCode);
         bool handleDeleteKeys(InputCode inputCode);
+        bool handleEnterKeys(InputCode inputCode);
     };
 }
