@@ -178,13 +178,16 @@ void UIManager::PostProcess(float ms) {
             UIFrame::UIFrameDesc* temp = m_focusedEditBox->GetFrameDesc();
             std::string text           = m_keyboardManager->GetText();
 
-            // eugene: leaving this here until we fix text rendering
+            auto it = m_textFrames.find(static_cast<UIFrame*>(m_focusedEditBox));
+
+            if (it == m_textFrames.end()) {
+                LOG_D("[UI] Invalid focused edit box?");
+                return;
+            }
 
             // TODO: color?
-            //                FrameScale scaledFrame = GetScaledFrame(temp);
-            //                m_textRenderer->RenderCursor(text,
-            //                    m_keyboardManager->GetCursorPosition(),
-            //                    scaledFrame.x, scaledFrame.y, 1.f, glm::vec3(1.f, 1.f, 1.f));
+            it->second->SetCursorEnabled(true);
+            it->second->SetCursorPos(m_keyboardManager->GetCursorPosition());
         }
     }
 }
@@ -194,6 +197,7 @@ void UIManager::DoUpdate(float ms) {
 
     // Process hide/show/focus and render
     ProcessFrames();
+
     for (auto& frame : m_uiFrames) {
         frame.first->DoUpdate(ms);
     }
@@ -206,6 +210,7 @@ void UIManager::DoUpdate(float ms) {
                 eBox.second->SetText(((EditBox*)eBox.first)->GetText());
         }
         else eBox.second->SetText("");
+        eBox.second->SetCursorEnabled(false);
     }
 
     PostProcess(ms);

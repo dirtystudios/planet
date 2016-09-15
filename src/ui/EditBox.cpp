@@ -35,20 +35,20 @@ void EditBox::SetFocus() {
         return;
 
     // this state means we got focus back before acknowledging it
-    if (m_textBoxState == TextBoxState::WANTSCLEAR)
+    if (m_textBoxState == TextBoxState::PENDINGCLEAR)
         m_textBoxState = TextBoxState::FOCUSED;
 
     // otherwise we still just 'want' focus
     if (m_textBoxState != TextBoxState::FOCUSED)
-        m_textBoxState = TextBoxState::WANTSFOCUS;
+        m_textBoxState = TextBoxState::PENDINGFOCUS;
 }
 
 void EditBox::ClearFocus() {
     switch (m_textBoxState) {
     case TextBoxState::FOCUSED:
-        m_textBoxState = TextBoxState::WANTSCLEAR;
+        m_textBoxState = TextBoxState::PENDINGCLEAR;
         break;
-    case TextBoxState::WANTSFOCUS:
+    case TextBoxState::PENDINGFOCUS:
         m_textBoxState = TextBoxState::UNFOCUSED;
         break;
     default:
@@ -105,11 +105,11 @@ void EditBox::DoUpdate(float ms) {
     if (!m_editBoxDesc.shown)
         m_textBoxState = TextBoxState::UNFOCUSED;
 
-    if (m_textBoxState == TextBoxState::WANTSFOCUS)
+    if (m_textBoxState == TextBoxState::PENDINGFOCUS)
         m_textBoxState = TextBoxState::FOCUSED;
-    if (m_textBoxState == TextBoxState::WANTSCLEAR)
+    if (m_textBoxState == TextBoxState::PENDINGCLEAR)
         m_textBoxState = TextBoxState::UNFOCUSED;
 }
 
-bool EditBox::WantsFocus() { return (m_textBoxState == TextBoxState::WANTSFOCUS); }
+bool EditBox::WantsFocus() { return (m_textBoxState == TextBoxState::PENDINGFOCUS); }
 }

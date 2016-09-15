@@ -23,6 +23,10 @@ struct GlyphVertex {
     glm::vec2 tex;
 };
 
+struct CursorPosVertex {
+    glm::vec3 pos;
+};
+
 #ifdef _WIN32
 static const std::string kFontPath = "C:/Windows/Fonts/Arial.ttf";
 #else
@@ -40,7 +44,7 @@ static constexpr size_t kBufferedQuadsCount = 1024; // Maximum number of charact
 static constexpr size_t kVertexBufferSize   = kBufferedQuadsCount * kVerticesPerQuad * sizeof(GlyphVertex);
 static constexpr size_t quadSizeInBytes = 6 * sizeof(GlyphVertex);
 
-static constexpr size_t kStringBufferSize = 100;
+static constexpr size_t kCursorBufferSize = 2 * sizeof(CursorPosVertex);
 
 TextRenderer::TextRenderer(float scaleX, float scaleY) : _scaleX(scaleX), _scaleY(scaleY) {}
 
@@ -121,6 +125,8 @@ void TextRenderer::OnInit() {
         glyph.yAdvance    = static_cast<float>(g->advance.y >> 6); // 26.6 fractional pixels (1/64th pixels)
         glyph.width       = static_cast<float>(g->bitmap.width);
         glyph.height      = static_cast<float>(g->bitmap.rows);
+
+        _maxGlyphHeight = std::max(_maxGlyphHeight, g->bitmap.rows);
         _currentRowHeight = std::max(_currentRowHeight, regionHeight);
         _xOffset += regionWidth;
         _loadedGlyphs.insert(std::make_pair(c, glyph));
@@ -138,6 +144,10 @@ void TextRenderer::OnInit() {
     gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, _vertexBufferSize);
     _vertexBuffer        = GetRenderDevice()->AllocateBuffer(desc);
     assert(_vertexBuffer);
+
+    gfx::BufferDesc cDesc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kCursorBufferSize);
+    _cursorBuffer = GetRenderDevice()->AllocateBuffer(desc);
+    assert(_cursorBuffer);
 
     _viewData = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
     assert(_viewData);
@@ -159,6 +169,17 @@ void TextRenderer::OnInit() {
     encoder.BindTexture(0, _glyphAtlas, gfx::ShaderStageFlags::AllStages);
     encoder.SetVertexBuffer(_vertexBuffer);
     _base = encoder.End();
+
+    gfx::StateGroupEncoder cursorEncoder;
+    cursorEncoder.Begin();
+    cursorEncoder.SetVertexLayout(GetVertexLayoutCache()->Pos3f());
+    cursorEncoder.SetBlendState(bs);
+    cursorEncoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "cursor"));
+    cursorEncoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "cursor"));
+    cursorEncoder.BindResource(_viewData->GetBinding(1));
+    cursorEncoder.SetVertexBuffer(_cursorBuffer);
+    cursorEncoder.SetPrimitiveType(gfx::PrimitiveType::Lines);
+    _cursorBase = cursorEncoder.End();
 }
 
 TextRenderer::~TextRenderer() {}
@@ -177,11 +198,17 @@ TextRenderObj* TextRenderer::RegisterText(const std::string& text, float pixelX,
     textRenderObj->posY = pixelY;
     textRenderObj->constantBuffer = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextConstants));
     textRenderObj->textColor = color;
+    textRenderObj->cursorPos = 0;
 
     gfx::StateGroupEncoder encoder;
     encoder.Begin(_base);
     encoder.BindResource(textRenderObj->constantBuffer->GetBinding(2));
     textRenderObj->_group = encoder.End();
+
+    gfx::StateGroupEncoder cEncoder;
+    cEncoder.Begin(_cursorBase);
+    cEncoder.BindResource(textRenderObj->constantBuffer->GetBinding(2));
+    textRenderObj->_cursorGroup = cEncoder.End();
 
     assert(_vertexBufferOffset + (text.length() * quadSizeInBytes) < _vertexBufferSize);
     _vertexBufferOffset += (text.length() * quadSizeInBytes);
@@ -200,6 +227,10 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
     float penX = renderObj->posX;
     float penY = renderObj->posY;
     uint32_t idx = 0;
+
+    renderObj->glyphXOffsets.clear();
+    renderObj->glyphXOffsets.reserve(renderObj->text.length());
+    renderObj->glyphXOffsets.emplace_back(penX);
 
     for (char c : renderObj->text) {
         if (c == '\n') {
@@ -231,6 +262,8 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
 
         penX += glyph.xAdvance * _scaleX;
         penY += glyph.yAdvance * _scaleY;
+
+        renderObj->glyphXOffsets.emplace_back(penX);
     }
 
     GetRenderDevice()->UnmapMemory(_vertexBuffer);
@@ -261,15 +294,56 @@ const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
     return gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &renderObj->_group, 1);
 }
 
+const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj) {
+
+    uint32_t cursorPos = renderObj->cursorPos;
+    if (cursorPos > renderObj->text.length()) {
+        LOG_D("[Text] Cursor Pos greater than text length, assuming end of str");
+        cursorPos = renderObj->text.length();
+    }
+
+    renderObj->mesh.vertexBuffer = _cursorBuffer;
+    renderObj->mesh.vertexStride = sizeof(CursorPosVertex);
+    renderObj->mesh.vertexOffset = 0;
+    renderObj->mesh.vertexCount = 2;
+
+    float cursorX = renderObj->glyphXOffsets[cursorPos];
+    float cursorY = renderObj->posY;
+
+    uint8_t* mapped = GetRenderDevice()->MapMemory(_cursorBuffer, gfx::BufferAccess::Write);
+    assert(mapped);
+    CursorPosVertex* vertices = reinterpret_cast<CursorPosVertex*>(mapped);
+
+    vertices[0] = { { cursorX, cursorY, 0.f} };
+    vertices[1] = { { cursorX, cursorY + _maxGlyphHeight, 0.f} };
+
+    GetRenderDevice()->UnmapMemory(_cursorBuffer);
+
+    gfx::DrawCall drawCall;
+    drawCall.type = gfx::DrawCall::Type::Arrays;
+    drawCall.primitiveCount = renderObj->mesh.vertexCount;
+    drawCall.offset = renderObj->mesh.vertexOffset;
+
+    return gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &renderObj->_cursorGroup, 1);
+}
+
 void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
     _viewData->Map<TextViewConstants>()->projection =
         glm::ortho(0.0f, view->viewport->width, 0.0f, view->viewport->height); // TODO: this should be set by renderView
     _viewData->Unmap();
+
+    bool drewCursor = false;
 
     for (auto& text : _objs) {
         text->constantBuffer->Map<TextConstants>()->textColor = text->textColor;
         text->constantBuffer->Unmap();
         const gfx::DrawItem* item = CreateDrawItem(text.get());
         queue->AddDrawItem(2, item); // TODO:: sortkeys based on pass....text needs to be rendered after sky
+        if (text->cursorEnabled) {
+            if (drewCursor)
+                LOG_D("[Text] Multiple Cursors detected and unsupported.");
+            queue->AddDrawItem(1, CreateCursorDrawItem(text.get()));
+            drewCursor = true;
+        }
     }
 }

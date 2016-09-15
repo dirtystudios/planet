@@ -1,4 +1,4 @@
-cbuffer cbPerObject : register(b0) {
+cbuffer cbPerObject : register(b2) {
     float3 textColor : COLOR0;
 }
 
@@ -7,7 +7,7 @@ cbuffer cbConstant : register(b1) {
 }
 
 struct VS_INPUT {
-	float4 vPos : POSITION0;
+	float3 vPos : POSITION0;
 };
 
 struct VS_OUTPUT {

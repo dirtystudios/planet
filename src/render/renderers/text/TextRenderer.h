@@ -1,25 +1,42 @@
 #pragma once
 
 #include "Renderer.h"
-#include <glm/glm.hpp>
-#include <map>
 #include "StateGroup.h"
 #include "DrawItem.h"
+
+#include <glm/glm.hpp>
+
+#include <unordered_map>
+#include <vector>
 
 struct TextRenderObj : public RenderObj {
     TextRenderObj() : RenderObj(RendererType::Text) {}
     std::string text;
     Mesh mesh;
+    Mesh cursorMesh;
+    uint32_t cursorPos{0};
+    bool cursorEnabled{false};
     ConstantBuffer* constantBuffer;
     glm::vec3 textColor;
     float posX;
     float posY;
 
+    std::vector<float> glyphXOffsets;
+
     void SetText(std::string newText) {
         text = newText;
     }
+    
+    void SetCursorPos(uint32_t pos) {
+        cursorPos = pos;
+    }
+
+    void SetCursorEnabled(bool enabled) {
+        cursorEnabled = enabled;
+    }
 
     const gfx::StateGroup* _group{nullptr};
+    const gfx::StateGroup* _cursorGroup{nullptr};
 };
 
 class TextRenderer : public Renderer {
@@ -44,6 +61,7 @@ private:
     };
 
     const gfx::StateGroup* _base;
+    const gfx::StateGroup* _cursorBase;
 
 private:
     // parameters for converting pixel to NDC coordinates
@@ -55,12 +73,15 @@ private:
     uint32_t _yOffset{0};
     uint32_t _currentRowHeight{0};
 
+    uint32_t _maxGlyphHeight{0};
+
     // glyph information
     std::unordered_map<char, Glyph> _loadedGlyphs;
 
     // gfx resources
     gfx::TextureId _glyphAtlas{0};
     gfx::BufferId _vertexBuffer{0};
+    gfx::BufferId _cursorBuffer{0};
     size_t _vertexBufferOffset{0};
     size_t _vertexBufferSize{0};
     ConstantBuffer* _viewData{nullptr};
@@ -69,6 +90,7 @@ private:
 
     void SetVertices(TextRenderObj* renderObj);
     const gfx::DrawItem* CreateDrawItem(TextRenderObj* renderObj);
+    const gfx::DrawItem* CreateCursorDrawItem(TextRenderObj* renderObj);
 
 public:
     TextRenderer(float scaleX = 1.f, float scaleY = 1.f);

@@ -21,8 +21,8 @@ public:
 private:
     enum TextBoxState {
         UNFOCUSED = 0,
-        WANTSCLEAR,
-        WANTSFOCUS,
+        PENDINGCLEAR,
+        PENDINGFOCUS,
         FOCUSED,
     };
     std::string m_contents;
