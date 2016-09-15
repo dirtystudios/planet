@@ -231,6 +231,13 @@ namespace gfx {
     }
 
     PipelineStateId DX11Device::CreatePipelineState(const PipelineStateDesc & desc) {
+
+        size_t descHash = 0;
+        HashCombine(descHash, desc);
+        PipelineStateDX11* pscheck = GetResource(m_pipelineStates, descHash);
+        if (pscheck)
+            return descHash;
+
         PipelineStateDX11 stateDx11;
 
         ShaderDX11* ps = GetResource(m_shaders, desc.pixelShader);
@@ -281,7 +288,7 @@ namespace gfx {
         }
         stateDx11.rasterStateHandle = hash;
 
-        return GenerateHandleEmplaceConstRef<ResourceType::PipelineState>(m_pipelineStates, stateDx11);
+        return UseHandleEmplaceConstRef(m_pipelineStates, descHash, stateDx11);
     }
 
     ID3D11DepthStencilState* DX11Device::CreateDepthState(const DepthState& state) {
