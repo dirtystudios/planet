@@ -1,5 +1,9 @@
 #include "SemanticNameCache.h"
 
+#ifdef _WIN32
+#define strdup _strdup
+#endif
+
 namespace gfx {
     std::vector<std::unique_ptr<const char[]>> SemanticNameCache::m_semanticNameCache = {};
 
@@ -14,7 +18,7 @@ namespace gfx {
 
         // didnt find it
         if (!semanticName) {
-            m_semanticNameCache.emplace_back(_strdup(semName));
+            m_semanticNameCache.emplace_back(strdup(semName));
             semanticName = m_semanticNameCache.at(m_semanticNameCache.size() - 1).get();
         }
         return semanticName;
