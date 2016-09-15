@@ -6,6 +6,7 @@
 #include "RasterState.h"
 #include "BlendState.h"
 #include "DepthState.h"
+#include "PrimitiveType.h"
 
 namespace gfx {
 class StateGroupDecoder {
@@ -51,6 +52,9 @@ public:
     bool ReadVertexBuffer(BufferId* bufferId) {
         return ReadState(StateGroupIndex::VertexBuffer, bufferId);
     }
+    bool ReadPrimitiveType(PrimitiveType* primitiveType) {
+        return ReadState(StateGroupIndex::PrimitiveType, primitiveType);
+    }
     bool ReadBindings(Binding** bindingOut) {
         assert(bindingOut);
         return ReadState(StateGroupIndex::Bindings, *bindingOut, _header.bindingCount);
@@ -69,9 +73,5 @@ private:
             return true;
         }
     }
-    
-    
-    
-    
 };
 }

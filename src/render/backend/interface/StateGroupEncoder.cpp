@@ -15,6 +15,7 @@ size_t GetStateGroupFieldSize(const StateGroupHeader& header, StateGroupIndex in
         case StateGroupIndex::BlendState: return sizeof(BlendState);
         case StateGroupIndex::RasterState: return sizeof(RasterState);
         case StateGroupIndex::DepthState: return sizeof(DepthState);
+        case StateGroupIndex::PrimitiveType: return sizeof(PrimitiveType);
         case StateGroupIndex::Bindings: return header.bindingCount * sizeof(Binding);
         default: assert(false); return 0;
     }
@@ -98,6 +99,7 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
                 LZY(VertexShader)
                 LZY(PixelShader)
                 LZY(DepthState)
+                LZY(PrimitiveType)
                 case StateGroupBit::Bindings: {
 
                     std::vector<Binding> bindings(header.bindingCount);
@@ -142,6 +144,9 @@ void StateGroupEncoder::SetRasterState(const RasterState& rs) {
 }
 void StateGroupEncoder::SetDepthState(const DepthState& ds) {
     WriteState(StateGroupBit::DepthState, StateGroupIndex::DepthState, &ds, sizeof(DepthState));
+}
+void StateGroupEncoder::SetPrimitiveType(PrimitiveType pt) {
+    WriteState(StateGroupBit::PrimitiveType, StateGroupIndex::PrimitiveType, &pt, sizeof(PrimitiveType));
 }
 void StateGroupEncoder::BindTexture(uint32_t slot, TextureId tex, ShaderStageFlags flags) {
     BindResource(slot, Binding::Type::Texture, tex, flags);

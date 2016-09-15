@@ -19,6 +19,7 @@ PipelineStateId GetPipelineState(gfx::RenderDevice* device, StateGroupDecoder& d
     decoder.ReadBlendState(&desc.blendState);
     decoder.ReadRasterState(&desc.rasterState);
     decoder.ReadDepthState(&desc.depthState);
+    decoder.ReadPrimitiveType(&desc.topology);
 
     PipelineStateId psId = device->CreatePipelineState(desc);
     assert(psId);

@@ -7,6 +7,7 @@
 #include "BlendState.h"
 #include "DepthState.h"
 #include "Bytebuffer.h"
+#include "PrimitiveType.h"
 #include "ShaderStageFlags.h"
 
 namespace gfx {
@@ -29,6 +30,7 @@ public:
     void SetVertexLayout(VertexLayoutId vl);
     void SetVertexShader(ShaderId vs);
     void SetPixelShader(ShaderId ps);
+    void SetPrimitiveType(PrimitiveType pt);
     void SetBlendState(const BlendState& bs);
     void SetRasterState(const RasterState& rs);
     void SetDepthState(const DepthState& ds);
