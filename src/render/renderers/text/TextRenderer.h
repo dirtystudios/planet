@@ -1,45 +1,14 @@
 #pragma once
 
-#include "Renderer.h"
-#include "StateGroup.h"
-#include "DrawItem.h"
-
 #include <glm/glm.hpp>
-
 #include <unordered_map>
 #include <vector>
+#include "DrawItem.h"
+#include "Renderer.h"
+#include "StateGroup.h"
+#include "TextRenderObj.h"
 
-struct TextRenderObj : public RenderObj {
-    TextRenderObj() : RenderObj(RendererType::Text) {}
-    std::string text;
-    Mesh mesh;
-    Mesh cursorMesh;
-    uint32_t cursorPos{0};
-    bool cursorEnabled{false};
-    ConstantBuffer* constantBuffer;
-    glm::vec3 textColor;
-    float posX;
-    float posY;
-
-    std::vector<float> glyphXOffsets;
-
-    void SetText(std::string newText) {
-        text = newText;
-    }
-    
-    void SetCursorPos(uint32_t pos) {
-        cursorPos = pos;
-    }
-
-    void SetCursorEnabled(bool enabled) {
-        cursorEnabled = enabled;
-    }
-
-    const gfx::StateGroup* _group{nullptr};
-    const gfx::StateGroup* _cursorGroup{nullptr};
-};
-
-class TextRenderer : public Renderer {
+class TextRenderer : public TypedRenderer<TextRenderObj> {
 private:
     struct Rectangle {
         glm::vec2 bl{0, 0};
@@ -79,14 +48,14 @@ private:
     std::unordered_map<char, Glyph> _loadedGlyphs;
 
     // gfx resources
-    gfx::TextureId _glyphAtlas{0};
-    gfx::BufferId _vertexBuffer{0};
-    gfx::BufferId _cursorBuffer{0};
-    size_t _vertexBufferOffset{0};
-    size_t _vertexBufferSize{0};
+    gfx::TextureId  _glyphAtlas{0};
+    gfx::BufferId   _vertexBuffer{0};
+    gfx::BufferId   _cursorBuffer{0};
+    size_t          _vertexBufferOffset{0};
+    size_t          _vertexBufferSize{0};
     ConstantBuffer* _viewData{nullptr};
 
-    std::vector<std::unique_ptr<TextRenderObj>> _objs;
+    std::vector<TextRenderObj*> _objs;
 
     void SetVertices(TextRenderObj* renderObj);
     const gfx::DrawItem* CreateDrawItem(TextRenderObj* renderObj);
@@ -97,8 +66,9 @@ public:
     ~TextRenderer();
 
     void OnInit() final;
-    TextRenderObj* RegisterText(const std::string& text, float pixelX, float pixelY, const glm::vec3& color);
-    RenderObj* Register(SimObj* simObj) final;
-    void Unregister(RenderObj* renderObj) final;
+
+    void Register(TextRenderObj* textRO);
+    void Unregister(TextRenderObj* textRO);
+
     void Submit(RenderQueue* queue, RenderView* view) final;
 };

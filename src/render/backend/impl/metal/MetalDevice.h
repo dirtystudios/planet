@@ -6,13 +6,12 @@
 #import <QuartzCore/CAMetalLayer.h>
 #include <vector>
 #include "DGAssert.h"
-#include "ResourceManager.h"
 #include "MetalResources.h"
 #include "MetalShaderLibrary.h"
 #import "MetalView.h"
 #include "RenderDelegate.h"
 #include "RenderDevice.h"
-#include "ResourceId.h"
+#include "ResourceManager.h"
 
 namespace gfx {
 struct CreateTextureParams {

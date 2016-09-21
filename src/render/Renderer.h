@@ -4,7 +4,6 @@
 #include "RenderQueue.h"
 #include "RenderServiceLocator.h"
 #include "RenderView.h"
-#include "SimObj.h"
 
 class Renderer : public RenderServiceLocator {
 private:
@@ -33,8 +32,24 @@ public:
     ConstantBufferManager* GetConstantBufferManager() override;
     MaterialCache*         GetMaterialCache() override;
 
-    // Required
-    virtual RenderObj* Register(SimObj* simObj)   = 0;
+    // Populate Renderer related data
+    virtual void Register(RenderObj* renderObj) = 0;
+
     virtual void Unregister(RenderObj* renderObj) = 0;
     virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
+};
+
+template <typename T>
+class TypedRenderer : public Renderer {
+public:
+    TypedRenderer() { static_assert(std::is_base_of<RenderObj, T>::value, "Derived class is not derived from RenderObj"); }
+
+    virtual ~TypedRenderer(){};
+
+    virtual void Register(T* typedRenderObjects)   = 0;
+    virtual void Unregister(T* typedRenderObjects) = 0;
+    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
+
+    void Register(RenderObj* renderObj) final { Register(reinterpret_cast<T*>(renderObj)); }
+    void Unregister(RenderObj* renderObj) final { Unregister(reinterpret_cast<T*>(renderObj)); }
 };

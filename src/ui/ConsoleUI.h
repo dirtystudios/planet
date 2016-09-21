@@ -1,10 +1,10 @@
 #pragma once
 #include <memory>
-#include "UIFrame.h"
-#include "EditBox.h"
-#include "UI.h"
-
 #include "ConsoleCommands.h"
+#include "EditBox.h"
+#include "InputContext.h"
+#include "UI.h"
+#include "UIFrame.h"
 
 // In a perfect world something like this would be described in lua/xml
 
@@ -13,20 +13,19 @@ class ConsoleUI {
 private:
     class ConsoleScriptHandler : public ScriptHandler {
         void OnEnterPressed(EditBox& frame) {
-            config::ConsoleCommands* cc = &config::ConsoleCommands::getInstance();
-            std::string retMessage = cc->ProcessConsoleString(frame.GetText());
+            config::ConsoleCommands* cc         = &config::ConsoleCommands::getInstance();
+            std::string              retMessage = cc->ProcessConsoleString(frame.GetText());
             frame.ClearText();
         }
     };
 
     std::unique_ptr<ConsoleScriptHandler> m_scriptHandler;
-    UIFrame* consoleFrame;
-    EditBox* editBox;
+    UIFrame*                              consoleFrame;
+    EditBox*                              editBox;
 
 public:
     ConsoleUI(UI* uiFrameObj, input::InputContext* inputContext) {
-        inputContext->BindContext<input::ContextBindingType::Action>("ToggleConsole",
-                                                                     BIND_MEM_CB(&ConsoleUI::HandleConsoleKey, this));
+        inputContext->BindContext<input::ContextBindingType::Action>("ToggleConsole", BIND_MEM_CB(&ConsoleUI::HandleConsoleKey, this));
 
         UIFrame::UIFrameDesc consoleFrameDesc;
         consoleFrameDesc.name        = "ConsoleFrame";

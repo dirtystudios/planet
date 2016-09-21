@@ -45,16 +45,6 @@ void MeshRenderer::OnInit() {
     mat  = GetMaterialCache()->Get("roxas/roxas.obj", GetShaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
 }
 
-RenderObj* MeshRenderer::Register(SimObj* simObj) {
-    // cant create drawitem at register time since i will need pass and view specific states in the drawitem
-
-    return nullptr;
-}
-
-void MeshRenderer::Unregister(RenderObj* renderObj) {
-    // TODO: Actually remove it and cleanup
-}
-
 void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     glm::mat4 world = glm::scale(glm::mat4(), glm::vec3(5, 5, 5));
 

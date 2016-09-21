@@ -27,10 +27,18 @@ CommandBuffer* cmdbuf;
 RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
     // _renderers.insert({RendererType::ChunkedTerrain, new
     // ChunkedTerrainRenderer()});
-    _renderers.insert({RendererType::Skybox, new SkyRenderer()});
-    _renderers.insert({RendererType::Mesh, new MeshRenderer()});
-    _renderers.insert({RendererType::Ui, new UIRenderer()});
-    _renderers.insert({RendererType::Text, new TextRenderer()});
+
+    _renderers.sky.reset(new SkyRenderer());
+    _renderers.text.reset(new TextRenderer());
+    _renderers.ui.reset(new UIRenderer());
+    _renderers.mesh.reset(new MeshRenderer());
+    _renderersByType.insert({RendererType::Skybox, _renderers.sky.get()});
+    _renderersByType.insert({RendererType::Mesh, _renderers.mesh.get()});
+    _renderersByType.insert({RendererType::Ui, _renderers.ui.get()});
+    _renderersByType.insert({RendererType::Text, _renderers.text.get()});
+
+    _renderers.mesh->SetActive(false);
+    _renderers.sky->SetActive(false);
 
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     std::string assetDirPath  = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -44,7 +52,7 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants));
     cmdbuf              = _device->CreateCommandBuffer();
-    for (auto p : _renderers) {
+    for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
         p.second->Init(this);
     }
@@ -68,30 +76,10 @@ RenderEngine::~RenderEngine() {
         _pipelineStateCache = nullptr;
     }
 
-    for (auto it : _renderers) {
-        delete it.second;
-    }
-
-    _renderers.clear();
+    _renderersByType.clear();
 
     if (_stateGroupDefaults)
         delete _stateGroupDefaults;
-}
-
-RenderObj* RenderEngine::Register(SimObj* simObj, RendererType rendererType) {
-    Renderer* renderer = GetRenderer(rendererType);
-    assert(renderer);
-
-    RenderObj* renderObj = renderer->Register(simObj);
-    assert(renderObj);
-    return renderObj;
-}
-
-void RenderEngine::Unregister(RenderObj* renderObj) {
-    Renderer* renderer = GetRenderer(renderObj->GetRendererType());
-    assert(renderer);
-
-    renderer->Unregister(renderObj);
 }
 
 void RenderEngine::RenderFrame() {
@@ -107,7 +95,7 @@ void RenderEngine::RenderFrame() {
     viewConstantsBuffer->Unmap();
 
     assert(_view);
-    for (const std::pair<RendererType, Renderer*>& p : _renderers) {
+    for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->IsActive()) {
             p.second->Submit(&queue, _view);
         }
@@ -120,16 +108,9 @@ ShaderCache* RenderEngine::GetShaderCache() { return _shaderCache; }
 
 PipelineStateCache* RenderEngine::GetPipelineStateCache() { return _pipelineStateCache; }
 
-gfx::RenderDevice *RenderEngine::GetRenderDevice() { return _device; }
+gfx::RenderDevice* RenderEngine::GetRenderDevice() { return _device; }
 
-VertexLayoutCache *RenderEngine::GetVertexLayoutCache() {
-  return _vertexLayoutCache;
-}
-MeshCache *RenderEngine::GetMeshCache() { return _meshCache; }
+VertexLayoutCache*     RenderEngine::GetVertexLayoutCache() { return _vertexLayoutCache; }
+MeshCache*             RenderEngine::GetMeshCache() { return _meshCache; }
 ConstantBufferManager* RenderEngine::GetConstantBufferManager() { return _constantBufferManager; }
-MaterialCache* RenderEngine::GetMaterialCache() { return _materialCache; }
-
-Renderer* RenderEngine::GetRenderer(RendererType type) {
-    auto it = _renderers.find(type);
-    return (it == _renderers.end() ? nullptr : it->second);
-}
+MaterialCache*         RenderEngine::GetMaterialCache() { return _materialCache; }

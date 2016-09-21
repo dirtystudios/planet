@@ -1,28 +1,29 @@
-#include "RenderEngine.h"
 #include "App.h"
 #include "Camera.h"
-#include "System.h"
 #include "Helpers.h"
-#include "noise/noise.h"
 #include "Log.h"
+#include "RenderEngine.h"
+#include "System.h"
 #include "glm/glm.hpp"
+#include "noise/noise.h"
 
-#include "InputManager.h"
-#include "UIManager.h"
-#include "PlayerController.h"
-#include "ConsoleUI.h"
-#include "LabelUI.h"
-#include "ChunkedTerrain.h"
-#include "Spatial.h"
-#include "Config.h"
-#include "Simulation.h"
-#include "Skybox.h"
-#include "UI.h"
 #include <glm/gtx/transform.hpp>
+#include "ChunkedTerrain.h"
+#include "Config.h"
+#include "ConsoleUI.h"
+#include "InputManager.h"
+#include "LabelUI.h"
+#include "PlayerController.h"
+#include "Simulation.h"
+#include "SkyRenderer.h"
+#include "Skybox.h"
+#include "Spatial.h"
+#include "UI.h"
+#include "UIManager.h"
 
-uint32_t frame_count     = 0;
-double accumulate        = 0;
-double total_frame_count = 0;
+uint32_t                       frame_count       = 0;
+double                         accumulate        = 0;
+double                         total_frame_count = 0;
 Camera                         cam;
 input::InputManager*           inputManager;
 controllers::PlayerController* playerController;
@@ -33,60 +34,33 @@ Viewport*                      playerViewport;
 ui::UIManager*                 uiManager;
 ui::ConsoleUI*                 consoleUI;
 
-SimObj* CreateSkybox() {
+SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
         LOG_E("Invalid Directory Path given for AssetDirectory.");
     }
-    SimObj* skyObj = simulation.AddSimObj();
-    Skybox* sky    = skyObj->AddComponent<Skybox>(ComponentType::Skybox);
 
-    sky->imagePaths[0] = assetDirPath + "/skybox/TropicalSunnyDayLeft2048.png";
-    sky->imagePaths[1] = assetDirPath + "/skybox/TropicalSunnyDayRight2048.png";
-    sky->imagePaths[2] = assetDirPath + "/skybox/TropicalSunnyDayUp2048.png";
-    sky->imagePaths[3] = assetDirPath + "/skybox/TropicalSunnyDayDown2048.png";
-    sky->imagePaths[4] = assetDirPath + "/skybox/TropicalSunnyDayFront2048.png";
-    sky->imagePaths[5] = assetDirPath + "/skybox/TropicalSunnyDayBack2048.png";
+    std::array<std::string, 6> imagePaths;
 
-    renderEngine->Register(skyObj, RendererType::Skybox);
-    return skyObj;
-}
+    imagePaths[0] = assetDirPath + "/skybox/TropicalSunnyDayLeft2048.png";
+    imagePaths[1] = assetDirPath + "/skybox/TropicalSunnyDayRight2048.png";
+    imagePaths[2] = assetDirPath + "/skybox/TropicalSunnyDayUp2048.png";
+    imagePaths[3] = assetDirPath + "/skybox/TropicalSunnyDayDown2048.png";
+    imagePaths[4] = assetDirPath + "/skybox/TropicalSunnyDayFront2048.png";
+    imagePaths[5] = assetDirPath + "/skybox/TropicalSunnyDayBack2048.png";
 
-SimObj* CreateTerrain(float size, const glm::mat4& rotation, const glm::mat4& translation) {
-    SimObj* terrainChunk = simulation.AddSimObj();
-    ChunkedTerrain* terrain = terrainChunk->AddComponent<ChunkedTerrain>(ComponentType::ChunkedTerrain);
-    terrain->size = size;
-    terrain->translation = translation;
-    terrain->rotation = rotation;
-    terrain->heightmapGenerator = [&](double x, double y, double z) -> double {
-        noise::module::RidgedMulti mountain;
-        mountain.SetSeed(32);
-        mountain.SetFrequency(0.05);
-        mountain.SetOctaveCount(8);
-        return mountain.GetValue(x * 0.01f, y * 0.01f, z * 0.01f);
-    };
-
-    Spatial* spatial   = terrainChunk->AddComponent<Spatial>(ComponentType::Spatial);
-    spatial->pos       = glm::dvec3(0, 0, 0);
-    terrain->renderObj = renderEngine->Register(terrainChunk, RendererType::ChunkedTerrain);
-    assert(terrain->renderObj);
-
-    return terrainChunk;
+    return new SkyboxRenderObj(imagePaths);
 }
 
 void SetupInputBindings() {
 
     // 'hardcoded' mouse x, y and click
-    inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS,
-                                 input::InputManager::AxisConfig(1.0, 0));
-    inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS,
-                                 input::InputManager::AxisConfig(1.0, 0));
-    inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1,
-                                   input::InputManager::ActionConfig(false, false, false));
+    inputManager->AddAxisMapping("MousePosX", input::InputCode::INPUT_MOUSE_XAXIS, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddAxisMapping("MousePosY", input::InputCode::INPUT_MOUSE_YAXIS, input::InputManager::AxisConfig(1.0, 0));
+    inputManager->AddActionMapping("MouseKey1", input::InputCode::INPUT_MOUSE_KEY1, input::InputManager::ActionConfig(false, false, false));
 
     // Console Trigger
-    inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK,
-                                   input::InputManager::ActionConfig(true, true, false));
+    inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK, input::InputManager::ActionConfig(true, true, false));
 
     // Handle Key Mappings
     // Keyboard n mouse for player
@@ -146,14 +120,14 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
     uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
 
-    SimObj* worldFrame = simulation.AddSimObj();
-    UI* ui = worldFrame->AddComponent<UI>(ComponentType::UI);
-    Spatial* spatial = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
+    SimObj*  worldFrame = simulation.AddSimObj();
+    UI*      ui         = worldFrame->AddComponent<UI>(ComponentType::UI);
+    Spatial* spatial    = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
     spatial->pos        = glm::vec3(0.f, 0.f, 1.f);
     spatial->direction  = glm::vec3(0.f, 0.f, 0.f);
 
-    uiManager->SetUIRenderer(static_cast<UIRenderer*>(renderEngine->GetRenderer(RendererType::Ui)));
-    uiManager->SetTextRenderer(static_cast<TextRenderer*>(renderEngine->GetRenderer(RendererType::Text)));
+    uiManager->SetUIRenderer(renderEngine->Renderers().ui.get());
+    uiManager->SetTextRenderer(renderEngine->Renderers().text.get());
 
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);
@@ -180,41 +154,8 @@ void App::OnStart() {
     cam.MoveTo(0, 0, 1000);
     cam.LookAt(0, 0, 0);
 
-    // gogoogog planet
-
-    CreateSkybox();
-
-    //    glm::dvec3 origin(0, 0, 0);
-    //    glm::mat4 rotate;
-    //    glm::mat4 translate;
-    //    float diamater = 2500;
-    //    float radius   = diamater / 2.f;
-    //
-    //    translate = glm::translate(glm::vec3(origin.x, origin.y, origin.z +
-    //    radius));
-    //    CreateTerrain(diamater, glm::mat4(), translate); // front
-    //
-    //    translate = glm::translate(glm::vec3(origin.x, origin.y + radius,
-    //    origin.z));
-    //    rotate = glm::rotate(glm::mat4(), -3.1415f / 2.f,
-    //    glm::normalize(glm::vec3(1, 0, 0)));
-    //    CreateTerrain(diamater, rotate, translate); // top
-    //
-    //    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f,
-    //    glm::normalize(glm::vec3(1, 0, 0)));
-    //    CreateTerrain(diamater, rotate, glm::mat4()); // bottom
-    //
-    //    rotate = glm::rotate(glm::mat4(), 3.1415f/2.f,
-    //    glm::normalize(glm::vec3(0, 1, 0)));
-    //    CreateTerrain(diamater, rotate, glm::mat4()); // right
-    //
-    //    rotate = glm::rotate(glm::mat4(), -3.1415f/2.f,
-    //    glm::normalize(glm::vec3(0, 1, 0)));
-    //    CreateTerrain(diamater, rotate, glm::mat4()); // left
-    //
-    //    rotate = glm::rotate(glm::mat4(), -3.1415f, glm::normalize(glm::vec3(0,
-    //    1, 0)));
-    //    CreateTerrain(diamater, rotate, glm::mat4()); // back
+    SkyboxRenderObj* skybox = CreateSkybox();
+    renderEngine->Renderers().sky->Register(skybox);
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {

@@ -1,19 +1,29 @@
 #pragma once
 
+#include "ConstantBuffer.h"
+#include "DrawItem.h"
 #include "RenderObj.h"
 #include "RendererType.h"
 #include "ResourceTypes.h"
-#include "ConstantBuffer.h"
 #include "StateGroup.h"
-#include "DrawItem.h"
 
-struct SkyboxRenderObj : public RenderObj {
-    SkyboxRenderObj() : RenderObj(RendererType::Skybox) {}
+class SkyRenderer;
 
-    gfx::TextureId textureCubeId{0};
-    gfx::BufferId vertexBuffer{0};
-    ConstantBuffer* constantBuffer{0};
+class SkyboxRenderObj : public RenderObj {
+private:
+    friend SkyRenderer;
 
-    const gfx::StateGroup* group{nullptr};
-    const gfx::DrawItem* item{nullptr};
+public:
+    SkyboxRenderObj(const std::array<std::string, 6>& imagePaths) : RenderObj(RendererType::Skybox), _imagePaths(imagePaths) {}
+    ~SkyboxRenderObj() {}
+
+private:
+    gfx::TextureId  _textureCubeId{0};
+    gfx::BufferId   _vertexBuffer{0};
+    ConstantBuffer* _constantBuffer{0};
+
+    const gfx::StateGroup* _group{nullptr};
+    const gfx::DrawItem*   _item{nullptr};
+
+    std::array<std::string, 6> _imagePaths;
 };

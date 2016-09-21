@@ -59,27 +59,29 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
     for (auto& uiFrame : ui->frames) {
         m_frameTree.emplace(uiFrame->GetParent(), uiFrame.get());
 
-        FrameScale scaled           = uiFrame->GetScaledSize(m_viewport);
+        FrameScale scaled = uiFrame->GetScaledSize(m_viewport);
 
         if (uiFrame->GetFrameType() == FrameType::LABEL) {
             // for now label type is always shown
-            Label* label = dynamic_cast<Label*>((uiFrame.get()));
-            glm::vec3 color = { label->GetColor()[0], label->GetColor()[1], label->GetColor()[2] };
-            auto rawr = m_textRenderer->RegisterText(label->GetText(), scaled.x, scaled.y, color);
+            Label*    label = dynamic_cast<Label*>((uiFrame.get()));
+            glm::vec3 color = {label->GetColor()[0], label->GetColor()[1], label->GetColor()[2]};
+            auto      rawr  = new TextRenderObj(label->GetText(), scaled.x, scaled.y, color);
+            m_textRenderer->Register(rawr);
             m_textFrames.emplace(uiFrame.get(), rawr);
-        }
-        else if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
-            EditBox* ebox = dynamic_cast<EditBox*>((uiFrame.get()));
-            glm::vec3 color = { ebox->GetColor()[0], ebox->GetColor()[1], ebox->GetColor()[2] };
-            auto rawr = m_textRenderer->RegisterText(ebox->GetText(), scaled.x, scaled.y, color);
+        } else if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
+            EditBox*  ebox  = dynamic_cast<EditBox*>((uiFrame.get()));
+            glm::vec3 color = {ebox->GetColor()[0], ebox->GetColor()[1], ebox->GetColor()[2]};
+            auto      rawr  = new TextRenderObj(ebox->GetText(), scaled.x, scaled.y, color);
+            m_textRenderer->Register(rawr);
             m_textFrames.emplace(uiFrame.get(), rawr);
 
-            UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), scaled);
+            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.width, scaled.height, true);
+            m_uiRenderer->Register(renderObj);
             m_uiFrames.emplace(uiFrame.get(), renderObj);
             m_parentFrames.emplace(uiFrame->GetParent());
-        }
-        else {
-            UIFrameRenderObj* renderObj = m_uiRenderer->RegisterFrame(uiFrame.get(), scaled);
+        } else {
+            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.width, scaled.height, true);
+            m_uiRenderer->Register(renderObj);
             m_uiFrames.emplace(uiFrame.get(), renderObj);
             m_parentFrames.emplace(uiFrame->GetParent());
         }
@@ -161,8 +163,14 @@ void UIManager::PostProcess(float ms) {
     if (m_focusedEditBox && !m_focusedEditBox->HasFocus()) {
         m_focusedEditBox = 0;
         m_cursorBlink    = 0;
-        m_drawCaret = false;
+        m_drawCaret      = false;
         m_keyboardManager->StopCapture();
+    }
+
+    // update renderObjects
+    for (std::pair<UIFrame*, UIFrameRenderObj*> p : m_uiFrames) {
+        p.second->isShown(p.first->IsShown());
+        // dont think frame size can dynamically change, so no need to push FrameScale
     }
 
     if (m_cursorBlink > 0)
@@ -176,7 +184,7 @@ void UIManager::PostProcess(float ms) {
         }
         if (m_drawCaret) {
             UIFrame::UIFrameDesc* temp = m_focusedEditBox->GetFrameDesc();
-            std::string text           = m_keyboardManager->GetText();
+            std::string           text = m_keyboardManager->GetText();
 
             auto it = m_textFrames.find(static_cast<UIFrame*>(m_focusedEditBox));
 
@@ -186,8 +194,8 @@ void UIManager::PostProcess(float ms) {
             }
 
             // TODO: color?
-            it->second->SetCursorEnabled(true);
-            it->second->SetCursorPos(m_keyboardManager->GetCursorPosition());
+            it->second->cursorEnabled(true);
+            it->second->cursorPos(m_keyboardManager->GetCursorPosition());
         }
     }
 }
@@ -205,12 +213,12 @@ void UIManager::DoUpdate(float ms) {
     for (auto& eBox : m_textFrames) {
         if (eBox.first->IsShown()) {
             if (eBox.first->GetFrameType() == FrameType::LABEL)
-                eBox.second->SetText(((Label*)eBox.first)->GetText());
-            else 
-                eBox.second->SetText(((EditBox*)eBox.first)->GetText());
-        }
-        else eBox.second->SetText("");
-        eBox.second->SetCursorEnabled(false);
+                eBox.second->text(((Label*)eBox.first)->GetText());
+            else
+                eBox.second->text(((EditBox*)eBox.first)->GetText());
+        } else
+            eBox.second->text("");
+        eBox.second->cursorEnabled(false);
     }
 
     PostProcess(ms);

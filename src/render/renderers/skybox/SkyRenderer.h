@@ -3,16 +3,18 @@
 #include "Renderer.h"
 #include "SkyboxRenderObj.h"
 #include "StateGroup.h"
-class SkyRenderer : public Renderer {
+
+class SkyRenderer : public TypedRenderer<SkyboxRenderObj> {
 private:
     std::vector<SkyboxRenderObj*> _objs;
-    const gfx::StateGroup* _base;
+    const gfx::StateGroup*        _base;
 
 public:
-    ~SkyRenderer();
+    virtual ~SkyRenderer() final;
+
+    void Register(SkyboxRenderObj* skyRO) final;
+    void Unregister(SkyboxRenderObj* skyRO) final;
 
     void OnInit() override;
-    RenderObj* Register(SimObj* simObj) final;
-    void Unregister(RenderObj* renderObj) final;
     void Submit(RenderQueue* renderQueue, RenderView* renderView) final;
 };
