@@ -8,11 +8,11 @@ struct UIFrameConstants {
     glm::vec4 bgColor;
     glm::vec4 borderColor;
     glm::vec2 borderSize;
-    float     pad[2];
 };
 
 struct FrameVertex {
     glm::vec4 position;
+    glm::vec2 texcoords;
 };
 
 static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 48;
@@ -43,13 +43,17 @@ void UIRenderer::OnInit() {
     encoder.Begin();
     encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "ui"));
     encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "ui"));
-    gfx::VertexLayoutDesc vld = {{{gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float}}};
+    gfx::VertexLayoutDesc vld = {{
+        {gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
+        {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float}
+    }};
     encoder.SetVertexLayout(GetVertexLayoutCache()->Get(vld));
     encoder.SetBlendState(blendState);
     encoder.SetDepthState(depthState);
     encoder.SetRasterState(rasterState);
     encoder.BindResource(_viewData->GetBinding(1));
     encoder.SetVertexBuffer(_vertexBuffer);
+    encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
     _base = encoder.End();
     assert(_vertexBuffer);
     assert(_viewData);
@@ -60,16 +64,22 @@ UIRenderer::~UIRenderer() {
 }
 
 void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
-    dg_assert_nm(uiRenderObj);
+    dg_assert_nm(uiRenderObj != nullptr);
     dg_assert(std::find(begin(_objs), end(_objs), uiRenderObj) == end(_objs), "UIFrameRenderObj already registered");
 
     float xpos = uiRenderObj->x();
     float ypos = uiRenderObj->y();
+    float zpos = uiRenderObj->z();
     float w    = uiRenderObj->width();
     float h    = uiRenderObj->height();
 
-    FrameVertex vertices[6] = {{{xpos, ypos, 0.0, 0.0}},         {{xpos + w, ypos, 1.0, 0.0}}, {{xpos + w, ypos + h, 1.0, 1.0}},
-                               {{xpos + w, ypos + h, 1.0, 1.0}}, {{xpos, ypos + h, 0.0, 1.0}}, {{xpos, ypos, 0.0, 0.0}}};
+    FrameVertex vertices[6] = {{{xpos, ypos, zpos, 1.f}, {0.0, 0.0}},
+                               {{xpos + w, ypos, zpos, 1.f}, {1.0, 0.0}},
+                               {{xpos + w, ypos + h, zpos, 1.f},{1.0, 1.0}},
+                               {{xpos + w, ypos + h, zpos, 1.f }, {1.0, 1.0}},
+                               {{xpos, ypos + h, zpos, 1.f},{0.0, 1.0}},
+                               {{xpos, ypos, zpos, 1.f },{0.0, 0.0}}
+    };
 
     size_t verticesSize = sizeof(vertices);
     assert(_bufferOffset + verticesSize < _bufferSize);

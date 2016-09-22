@@ -537,6 +537,9 @@
     <ClInclude Include="..\src\render\renderers\text\TextRenderObj.h">
       <Filter>render\renderers\text</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\render\Rectangle.h">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">

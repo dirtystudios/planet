@@ -20,6 +20,7 @@ private:
     ConstantBuffer*    _constantBuffer{nullptr};
     float              _posX;
     float              _posY;
+    float              _posZ;
     glm::vec3          _textColor;
     std::vector<float> _glyphXOffsets;
 
@@ -27,8 +28,8 @@ private:
     const gfx::StateGroup* _cursorGroup{nullptr};
 
 public:
-    TextRenderObj(const std::string& text, float pixelX, float pixelY, const glm::vec3& color)
-        : RenderObj(RendererType::Text), _text(text), _posX(pixelX), _posY(pixelY), _textColor(color) {}
+    TextRenderObj(const std::string& text, float pixelX, float pixelY, float pixelZ, const glm::vec3& color)
+        : RenderObj(RendererType::Text), _text(text), _posX(pixelX), _posY(pixelY), _posZ(pixelZ), _textColor(color) {}
 
     const std::string& text() const { return _text; }
 

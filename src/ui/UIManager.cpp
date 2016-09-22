@@ -65,22 +65,22 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
             // for now label type is always shown
             Label*    label = dynamic_cast<Label*>((uiFrame.get()));
             glm::vec3 color = {label->GetColor()[0], label->GetColor()[1], label->GetColor()[2]};
-            auto      rawr  = new TextRenderObj(label->GetText(), scaled.x, scaled.y, color);
-            m_textRenderer->Register(rawr);
-            m_textFrames.emplace(uiFrame.get(), rawr);
+            auto      textRO  = new TextRenderObj(label->GetText(), scaled.x, scaled.y, scaled.z, color);
+            m_textRenderer->Register(textRO);
+            m_textFrames.emplace(uiFrame.get(), textRO);
         } else if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
             EditBox*  ebox  = dynamic_cast<EditBox*>((uiFrame.get()));
             glm::vec3 color = {ebox->GetColor()[0], ebox->GetColor()[1], ebox->GetColor()[2]};
-            auto      rawr  = new TextRenderObj(ebox->GetText(), scaled.x, scaled.y, color);
-            m_textRenderer->Register(rawr);
-            m_textFrames.emplace(uiFrame.get(), rawr);
+            auto      textRO  = new TextRenderObj(ebox->GetText(), scaled.x, scaled.y, scaled.z, color);
+            m_textRenderer->Register(textRO);
+            m_textFrames.emplace(uiFrame.get(), textRO);
 
-            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.width, scaled.height, true);
+            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, true);
             m_uiRenderer->Register(renderObj);
             m_uiFrames.emplace(uiFrame.get(), renderObj);
             m_parentFrames.emplace(uiFrame->GetParent());
         } else {
-            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.width, scaled.height, true);
+            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, true);
             m_uiRenderer->Register(renderObj);
             m_uiFrames.emplace(uiFrame.get(), renderObj);
             m_parentFrames.emplace(uiFrame->GetParent());

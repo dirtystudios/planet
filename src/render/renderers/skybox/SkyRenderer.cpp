@@ -35,7 +35,7 @@ void SkyRenderer::OnInit() {
 }
 
 void SkyRenderer::Register(SkyboxRenderObj* skybox) {
-    dg_assert_nm(skybox);
+    dg_assert_nm(skybox != nullptr);
 
     Image skyboxImages[6];
     for (uint32_t idx = 0; idx < 6; ++idx) {

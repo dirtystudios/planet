@@ -1,7 +1,3 @@
-cbuffer cbPerObject : register(b0) {
-	float4x4 rotation;
-}
-
 cbuffer cbConstant : register(b1) {
     float4x4 projection : PROJECTION;
 }
@@ -14,6 +10,7 @@ cbuffer cbPerObject : register(b2) {
 
 struct VS_INPUT {
 	float4 vPos : POSITION0;
+    float2 vTexCoords : TEXCOORD0;
 };
 
 struct VS_OUTPUT {
@@ -26,8 +23,8 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
 	/*float4x4 tmp = mul (projection, rotation);
     output.vPosition = mul(tmp, Input.vPos);
     output.vTexCoords = Input.vTex;*/
-	output.vPosition = mul(projection, float4(Input.vPos.xy, 0.0, 1.0));
-	output.vTexCoords = Input.vPos.zw;
+	output.vPosition = mul(projection, float4(Input.vPos.xyz, 1.0));
+	output.vTexCoords = Input.vTexCoords;
     return output;
 }
 

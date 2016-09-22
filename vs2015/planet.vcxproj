@@ -157,6 +157,7 @@
     <ClInclude Include="..\src\render\MeshGeneration.h" />
     <ClInclude Include="..\src\render\MeshImporter.h" />
     <ClInclude Include="..\src\render\PipelineStateCache.h" />
+    <ClInclude Include="..\src\render\Rectangle.h" />
     <ClInclude Include="..\src\render\RenderEngine.h" />
     <ClInclude Include="..\src\render\Renderer.h" />
     <ClInclude Include="..\src\render\renderers\chunkedterrain\ChunkedTerrainNode.h" />

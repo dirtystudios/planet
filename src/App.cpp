@@ -119,11 +119,11 @@ void SetupInputBindings() {
 void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
     uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
-
+    
     SimObj*  worldFrame = simulation.AddSimObj();
     UI*      ui         = worldFrame->AddComponent<UI>(ComponentType::UI);
     Spatial* spatial    = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
-    spatial->pos        = glm::vec3(0.f, 0.f, 1.f);
+    spatial->pos        = glm::vec3(0.f, 0.f, 0.f);
     spatial->direction  = glm::vec3(0.f, 0.f, 0.f);
 
     uiManager->SetUIRenderer(renderEngine->Renderers().ui.get());

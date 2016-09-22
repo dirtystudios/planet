@@ -16,7 +16,7 @@ struct VS_OUTPUT {
 
 VS_OUTPUT VSMain( VS_INPUT Input ) {  
     VS_OUTPUT output;
-    output.vPosition = mul(projection, float4(Input.vPos.xy, 0.0, 1.0));
+    output.vPosition = mul(projection, float4(Input.vPos, 1.0));
     return output;
 }
 

@@ -5,20 +5,12 @@
 #include <vector>
 #include "DrawItem.h"
 #include "Renderer.h"
+#include "Rectangle.h"
 #include "StateGroup.h"
 #include "TextRenderObj.h"
 
 class TextRenderer : public TypedRenderer<TextRenderObj> {
 private:
-    struct Rectangle {
-        glm::vec2 bl{0, 0};
-        glm::vec2 tr{0, 0};
-
-        float GetWidth() { return tr.x - bl.x; }
-
-        float GetHeight() { return tr.y - bl.y; }
-    };
-
     struct Glyph {
         Rectangle region;
         float xAdvance{0};

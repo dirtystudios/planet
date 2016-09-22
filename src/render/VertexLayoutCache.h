@@ -50,4 +50,11 @@ public:
 
         return Get(layout);
     }
+
+    gfx::VertexLayoutId GetPos3fTex2f() {
+        static gfx::VertexLayoutDesc layout{{{gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
+                                             {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float}
+        }};
+        return Get(layout);
+    }
 };

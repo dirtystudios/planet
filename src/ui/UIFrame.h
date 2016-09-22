@@ -22,17 +22,25 @@ const uint32_t INTERNAL_UI_RESOLUTION_WIDTH{ 800 };
 struct FrameScale {
     float x;
     float y;
+    float z;
     uint32_t width, height;
 };
 
 class UIFrame {
 public:
     struct UIFrameDesc {
-        UIFrameDesc() : name(""), x(0), y(0), width(0), height(0), shown(true), acceptMouse(false), parent(0) {}
+        UIFrameDesc() : name(""), x(0), y(0), z(0), yaw(0.f), pitch(0.f), roll(0.f),
+            width(0), height(0), shown(true), acceptMouse(false), parent(0) {}
 
         std::string name;
         float x;
         float y;
+        float z;
+        
+        float yaw;
+        float pitch;
+        float roll;
+
         uint32_t width;
         uint32_t height;
         bool shown;
@@ -73,6 +81,7 @@ public:
 
         scaledFrame.x = (m_frameDesc.x / INTERNAL_UI_RESOLUTION_WIDTH) * viewport.width;
         scaledFrame.y = (m_frameDesc.y / INTERNAL_UI_RESOLUTION_HEIGHT) * viewport.height;
+        scaledFrame.z = (m_frameDesc.z);
         return scaledFrame;
     }
 

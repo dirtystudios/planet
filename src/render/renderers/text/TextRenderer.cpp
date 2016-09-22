@@ -19,7 +19,7 @@ struct TextConstants {
 };
 
 struct GlyphVertex {
-    glm::vec2 pos;
+    glm::vec3 pos;
     glm::vec2 tex;
 };
 
@@ -161,13 +161,14 @@ void TextRenderer::OnInit() {
 
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
-    encoder.SetVertexLayout(GetVertexLayoutCache()->GetPos2fTex2f());
+    encoder.SetVertexLayout(GetVertexLayoutCache()->GetPos3fTex2f());
     encoder.SetBlendState(bs);
     encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "text"));
     encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "text"));
     encoder.BindResource(_viewData->GetBinding(1));
     encoder.BindTexture(0, _glyphAtlas, gfx::ShaderStageFlags::AllStages);
     encoder.SetVertexBuffer(_vertexBuffer);
+    encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
     _base = encoder.End();
 
     gfx::StateGroupEncoder cursorEncoder;
@@ -217,6 +218,7 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
 
     float    penX = renderObj->_posX;
     float    penY = renderObj->_posY;
+    float    penZ = renderObj->_posZ;
     uint32_t idx  = 0;
 
     renderObj->_glyphXOffsets.clear();
@@ -244,12 +246,12 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
         const float regionW = glyph.region.GetWidth();
         const float regionH = glyph.region.GetHeight();
 
-        vertices[idx++] = {{vx, vy}, {s, t}};                                     // bl
-        vertices[idx++] = {{vx + quadW, vy}, {s + regionW, t}};                   // br
-        vertices[idx++] = {{vx + quadW, vy + quadH}, {s + regionW, t + regionH}}; // tr
-        vertices[idx++] = {{vx + quadW, vy + quadH}, {s + regionW, t + regionH}}; // tr
-        vertices[idx++] = {{vx, vy + quadH}, {s, t + regionH}};                   // tl
-        vertices[idx++] = {{vx, vy}, {s, t}};                                     // bl
+        vertices[idx++] = {{vx, vy, penZ}, {s, t}}; // bl
+        vertices[idx++] = {{vx + quadW, vy, penZ }, {s + regionW, t}}; // br
+        vertices[idx++] = {{vx + quadW, vy + quadH, penZ }, {s + regionW, t + regionH}}; // tr
+        vertices[idx++] = {{vx + quadW, vy + quadH, penZ }, {s + regionW, t + regionH}}; // tr
+        vertices[idx++] = {{vx, vy + quadH, penZ }, {s, t + regionH}}; // tl
+        vertices[idx++] = {{vx, vy, penZ}, {s, t}}; // bl
 
         penX += glyph.xAdvance * _scaleX;
         penY += glyph.yAdvance * _scaleY;
