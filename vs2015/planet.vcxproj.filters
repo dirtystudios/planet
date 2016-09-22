@@ -109,6 +109,12 @@
     <ClCompile Include="..\src\ui\Label.cpp">
       <Filter>ui</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\render\renderers\ui\UIRenderer.cpp">
+      <Filter>render\renderers\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\ui\UIRenderObj.cpp">
+      <Filter>render\renderers\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -524,6 +530,12 @@
     </ClInclude>
     <ClInclude Include="..\src\ui\LabelUI.h">
       <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\ui\UIRenderObj.h">
+      <Filter>render\renderers\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\text\TextRenderObj.h">
+      <Filter>render\renderers\text</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

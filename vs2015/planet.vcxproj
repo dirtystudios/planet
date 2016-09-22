@@ -50,6 +50,8 @@
     <ClCompile Include="..\src\render\renderers\MeshRenderer.cpp" />
     <ClCompile Include="..\src\render\renderers\skybox\SkyRenderer.cpp" />
     <ClCompile Include="..\src\render\renderers\text\TextRenderer.cpp" />
+    <ClCompile Include="..\src\render\renderers\ui\UIRenderer.cpp" />
+    <ClCompile Include="..\src\render\renderers\ui\UIRenderObj.cpp" />
     <ClCompile Include="..\src\ui\EditBox.cpp" />
     <ClCompile Include="..\src\ui\Label.cpp" />
     <ClCompile Include="..\src\ui\UIManager.cpp" />
@@ -170,7 +172,9 @@
     <ClInclude Include="..\src\render\renderers\skybox\SkyboxVertex.h" />
     <ClInclude Include="..\src\render\renderers\skybox\SkyRenderer.h" />
     <ClInclude Include="..\src\render\renderers\text\TextRenderer.h" />
+    <ClInclude Include="..\src\render\renderers\text\TextRenderObj.h" />
     <ClInclude Include="..\src\render\renderers\ui\UIRenderer.h" />
+    <ClInclude Include="..\src\render\renderers\ui\UIRenderObj.h" />
     <ClInclude Include="..\src\render\RendererType.h" />
     <ClInclude Include="..\src\render\RenderObj.h" />
     <ClInclude Include="..\src\render\RenderQueue.h" />
