@@ -4,15 +4,17 @@
 #include <unordered_map>
 #include <vector>
 #include "DrawItem.h"
-#include "Renderer.h"
 #include "Rectangle.h"
+#include "Renderer.h"
 #include "StateGroup.h"
 #include "TextRenderObj.h"
 
 class TextRenderer : public TypedRenderer<TextRenderObj> {
 private:
     struct Glyph {
-        Rectangle region;
+        Glyph(const Rect2Df& region) : region(region) {}
+        
+        const Rect2Df region;
         float xAdvance{0};
         float yAdvance{0};
         float xOffset{0};

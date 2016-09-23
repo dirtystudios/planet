@@ -28,10 +28,13 @@ PipelineStateId GetPipelineState(gfx::RenderDevice* device, StateGroupDecoder& d
     return psId;
 }
 
-const DrawItem* DrawItemEncoder::Encode(gfx::RenderDevice* device, const DrawCall& drawCall,
-                                        const StateGroup* const* stateGroups, uint32_t count) {
-    const StateGroup* stateGroup = nullptr;
-    bool shouldCleanUp           = false;
+const DrawItem* DrawItemEncoder::Encode(RenderDevice* device, const DrawCall& drawCall, const std::vector<const StateGroup*>& stateGroups) {
+    return Encode(device, drawCall, stateGroups.data(), stateGroups.size());
+}
+
+const DrawItem* DrawItemEncoder::Encode(gfx::RenderDevice* device, const DrawCall& drawCall, const StateGroup* const* stateGroups, uint32_t count) {
+    const StateGroup* stateGroup    = nullptr;
+    bool              shouldCleanUp = false;
 
     if (count > 1) {
         // merge into temporary buffer

@@ -51,17 +51,19 @@ void StateGroupEncoder::Begin(const StateGroup* inherit) {
         _groupStagingBuffer.Write(inherit->data() + sizeof(StateGroupHeader), bytesToCopy);
     }
 }
-    
+
+const StateGroup* StateGroupEncoder::Merge(const std::vector<const StateGroup*>& stateGroups) { return StateGroupEncoder::Merge(stateGroups.data(), stateGroups.size()); }
+
 const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups, uint32_t count) {
     assert(stateGroups && stateGroups[0]);
-    if(count == 1) {
+    if (count == 1) {
         return stateGroups[0];
     }
-    
+
     StateGroupEncoder encoder;
     const StateGroup* primarySG = stateGroups[0];
     StateGroupDecoder primaryDecoder(primarySG);
-    
+
     encoder.Begin(primarySG);
     
     uint16_t openStates = ~(primaryDecoder.GetStateBitfield());

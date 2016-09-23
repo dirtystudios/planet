@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include "ConstantBufferManager.h"
+#include "DebugDrawInterface.h"
 #include "MeshCache.h"
 #include "PipelineStateCache.h"
 #include "RenderDevice.h"
@@ -14,7 +15,6 @@
 #include "SimObj.h"
 #include "StateGroup.h"
 #include "VertexLayoutCache.h"
-
 //
 // struct RenderScene {
 //    using RenderObjIdx = uint32_t;
@@ -24,6 +24,35 @@
 //    std::vector<RenderObj*> _visibleObjects;
 //};
 //
+
+// enum class RenderLayerType : uint8_t {
+//    World,
+//    HUD
+//};
+//
+// constexpr uint32_t kRenderLayerCount = 2;
+//
+//// RenderViews support RenderStages
+//// Renderers support RenderViews
+//// RenderObjects are registered with RenderStages
+//
+//
+// class RenderSceneManager {
+// public:
+//    std::array<std::vector<RenderObj*>, kRenderLayerCount> _objsByLayer;
+// public:
+//    void Register(RenderObj* renderObj, RenderLayerType layer);
+//    void Unregister(RenderObj* renderObj);
+//
+//    void Render() {
+//
+//    }
+//};
+//
+// struct RenderViews {
+//    std::unique_ptr<PlayerRenderView> player;
+//    std::unique_ptr<HUDRenderView> hud;
+//};
 
 class SkyRenderer;
 class TextRenderer;
@@ -70,6 +99,8 @@ public:
     MeshCache*             GetMeshCache() override;
     ConstantBufferManager* GetConstantBufferManager() override;
     MaterialCache*         GetMaterialCache() override;
+
+    DebugDrawInterface* debugDraw();
 
 private:
 };

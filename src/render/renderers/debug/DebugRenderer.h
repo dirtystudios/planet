@@ -1,35 +1,65 @@
 #pragma once
 
-#include "Renderer.h"
-#include "Rectangle.h"
-#include "DebugRenderObj.h"
+#include <memory>
+#include <vector>
+#include "DebugDrawInterface.h"
 #include "DrawItem.h"
+#include "Rectangle.h"
+#include "Rectangle.h"
+#include "Renderer.h"
 #include "Renderer.h"
 #include "StateGroup.h"
 
-#include <memory>
-#include <vector>
+struct DebugVertex {
+    glm::vec3 position;
+    glm::vec2 uv;
+    glm::vec3 color;
 
-class DebugRenderer : public TypedRenderer<DebugRenderObj> {
+    static const gfx::VertexLayoutDesc vertexLayoutDesc() {
+        static gfx::VertexLayoutDesc vld = {{
+            {gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
+            {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float},
+            {gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Color0, gfx::VertexAttributeStorage::Float},
+        }};
+        return vld;
+    }
+};
+
+struct DebugViewConstants {
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
+class DebugRenderer : public Renderer, public DebugDrawInterface {
 private:
-    gfx::BufferId _rectVertexBuffer;
-    size_t _rectBufferOffset;
+    using DebugVertexVec = std::vector<DebugVertex>;
+    struct {
+        DebugVertexVec wireframe2D;
+        DebugVertexVec wireframe3D;
+        DebugVertexVec filled2D;
+        DebugVertexVec filled3D;
+    } _buffers;
 
-    ConstantBuffer* _viewData{ nullptr };
+    ConstantBuffer*        _3DviewConstants{nullptr};
+    ConstantBuffer*        _2DviewConstants{nullptr};
+    gfx::BufferId          _vertexBuffer{0};
+    const gfx::StateGroup* _2DwireframeSG{nullptr};
+    const gfx::StateGroup* _2DfilledSG{nullptr};
+    const gfx::StateGroup* _3DwireframeSG{nullptr};
+    const gfx::StateGroup* _3DfilledSG{nullptr};
 
-    std::vector<DebugRenderObj*> _objs;
-    const gfx::StateGroup* _base{ nullptr };
+    std::vector<const gfx::DrawItem*> _drawItems;
 
-    void SetRect2DVertices(DebugRect2DRenderObj*);
-    const gfx::DrawItem* CreateRect2DDrawItem(DebugRect2DRenderObj* renderObj);
-
-    void RegisterRect2D(DebugRect2DRenderObj* rect);
 public:
+    DebugRenderer();
 
-    void OnInit() final;
-    
-    void Register(DebugRenderObj* debugRO);
-    void Unregister(DebugRenderObj* debugRO);
+    virtual void AddLine2D(const glm::vec2& start, const glm::vec2& end, glm::vec3 color) final;
+    virtual void AddRect2D(const Rect2Df& rect, const glm::vec3& color, bool filled = false) final;
 
-    void Submit(RenderQueue* renderQueue, RenderView* renderView) final;
+    virtual void AddLine3D(const glm::vec3& start, const glm::vec3& end, glm::vec3 color) final;
+    virtual void AddRect3D(const Rect3Df& rect, const glm::vec3& color, bool filled = false) final;
+
+private:
+    virtual void OnInit() final;
+    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) final;
 };

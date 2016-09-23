@@ -380,7 +380,7 @@ void MetalDevice::SubmitToGPU() {
 
             [encoder setFrontFacingWinding:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.windingOrder)];
             [encoder setCullMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.cullMode)];
-
+            [encoder setTriangleFillMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.fillMode)];
             // TODO: actually use vertex streams
             MetalBuffer* vertexBuffer = _resourceManager.GetResource<MetalBuffer>(streamPtr[0].vertexBuffer);
             [encoder setVertexBuffer:vertexBuffer->mtlBuffer offset:0 atIndex:0];

@@ -1,21 +1,21 @@
 #pragma once
-#include "InputManager.h"
-#include "UIFrame.h"
+#include "DebugDrawInterface.h"
 #include "EditBox.h"
+#include "InputManager.h"
+#include "KeyboardManager.h"
 #include "Label.h"
 #include "RenderDevice.h"
 #include "RenderEngine.h"
-#include "UIRenderer.h"
 #include "TextRenderer.h"
-#include "DebugRenderer.h"
-#include "KeyboardManager.h"
-#include "Viewport.h"
 #include "UI.h"
+#include "UIFrame.h"
+#include "UIRenderer.h"
+#include "Viewport.h"
 
-#include <unordered_map>
 #include <memory>
-#include <vector>
 #include <set>
+#include <unordered_map>
+#include <vector>
 
 namespace ui {
 class UIManager {
@@ -26,22 +26,20 @@ private:
     std::unordered_multimap<UIFrame*, UIFrame*> m_frameTree;
     std::set<UIFrame*> m_parentFrames;
     std::unordered_multimap<UIFrame*, UIFrameRenderObj*> m_uiFrames;
-    std::unordered_multimap<UIFrame*, TextRenderObj*> m_textFrames;
+    std::unordered_multimap<UIFrame*, TextRenderObj*>    m_textFrames;
 
-    std::unique_ptr<DebugRect2DRenderObj> m_debugROFocused;
-
-    UIRenderer* m_uiRenderer;
-    TextRenderer* m_textRenderer;
-    DebugRenderer* m_debugRenderer;
-    Viewport m_viewport;
+    UIRenderer*         m_uiRenderer;
+    TextRenderer*       m_textRenderer;
+    DebugDrawInterface* m_debugRenderer;
+    Viewport            m_viewport;
     // only 1 thing should have focus at a time, so these can go here
-    float m_cursorBlink       = 0;
-    bool m_drawCaret          = false;
-    EditBox* m_focusedEditBox = 0;
+    float                   m_cursorBlink    = 0;
+    bool                    m_drawCaret      = false;
+    EditBox*                m_focusedEditBox = 0;
     input::KeyboardManager* m_keyboardManager;
-    input::InputContext* m_uiInputContext;
-    bool m_mouseDown = false;
-    float m_mouseX = 0.f, m_mouseY = 0.f;
+    input::InputContext*    m_uiInputContext;
+    bool                    m_mouseDown = false;
+    float                   m_mouseX = 0.f, m_mouseY = 0.f;
 
 public:
     UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, Viewport viewport)
@@ -64,7 +62,7 @@ public:
     // hackish for now
     void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
     void SetUIRenderer(UIRenderer* uiRenderer) { m_uiRenderer = uiRenderer; };
-    void SetDebugRenderer(DebugRenderer* debugRenderer) { m_debugRenderer = debugRenderer; };
+    void SetDebugRenderer(DebugDrawInterface* debug) { m_debugRenderer = debug; };
 
     // Callbacks from inputmanager
 

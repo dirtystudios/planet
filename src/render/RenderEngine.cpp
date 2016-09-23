@@ -1,20 +1,21 @@
 #include "RenderEngine.h"
 #include <cassert>
-#include "Config.h"
 #include "ChunkedTerrainRenderer.h"
-#include "SkyRenderer.h"
-#include "MeshRenderer.h"
-#include "TextRenderer.h"
-#include "DebugRenderer.h"
+#include "Config.h"
 #include "ConstantBuffer.h"
-#include "UIRenderer.h"
+#include "DebugDrawInterface.h"
+#include "DebugRenderer.h"
+#include "MeshRenderer.h"
+#include "SkyRenderer.h"
 #include "StateGroupEncoder.h"
+#include "TextRenderer.h"
+#include "UIRenderer.h"
 
 using namespace gfx;
 
 struct ViewConstants {
     glm::vec3 eye;
-    float padding0;
+    float     padding0;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -117,3 +118,4 @@ VertexLayoutCache*     RenderEngine::GetVertexLayoutCache() { return _vertexLayo
 MeshCache*             RenderEngine::GetMeshCache() { return _meshCache; }
 ConstantBufferManager* RenderEngine::GetConstantBufferManager() { return _constantBufferManager; }
 MaterialCache*         RenderEngine::GetMaterialCache() { return _materialCache; }
+DebugDrawInterface*    RenderEngine::debugDraw() { return _renderers.debug.get(); }

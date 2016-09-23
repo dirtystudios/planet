@@ -89,8 +89,6 @@ void TextRenderer::OnInit() {
             continue;
         }
 
-        Glyph glyph = {};
-
         // get and update texture region
         uint32_t regionWidth  = g->bitmap.width;
         uint32_t regionHeight = g->bitmap.rows;
@@ -105,17 +103,17 @@ void TextRenderer::OnInit() {
             _currentRowHeight = 0;
         }
 
-        glyph.region.bl = glm::vec2((float)_xOffset / kAtlasWidth, (float)_yOffset / kAtlasHeight);
-        glyph.region.tr =
-            glyph.region.bl + glm::vec2((float)regionWidth / kAtlasWidth, (float)regionHeight / kAtlasHeight);
+        glm::vec2 bl = glm::vec2((float)_xOffset / kAtlasWidth, (float)_yOffset / kAtlasHeight);
+        glm::vec2 tr = bl + glm::vec2((float)regionWidth / kAtlasWidth, (float)regionHeight / kAtlasHeight);
+
+        Glyph glyph({bl, tr});
 
         // copy to temporary texture buffer
         for (uint32_t row = 0; row < g->bitmap.rows; ++row) {
             uint8_t* offsetBufferPtr = buffer + (kAtlasWidth * (_yOffset + row)) + (_xOffset);
 
             // glyphs are upside down, need to flip them
-            memcpy(offsetBufferPtr, g->bitmap.buffer + (((g->bitmap.rows - 1) - row) * g->bitmap.pitch),
-                   sizeof(uint8_t) * g->bitmap.pitch);
+            memcpy(offsetBufferPtr, g->bitmap.buffer + (((g->bitmap.rows - 1) - row) * g->bitmap.pitch), sizeof(uint8_t) * g->bitmap.pitch);
         }
 
         // set glyph parameters
@@ -237,21 +235,21 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
 
         Glyph& glyph = it->second;
 
-        const float vx = penX + glyph.xOffset * _scaleX;
-        const float vy = penY - (glyph.height - glyph.yOffset) * _scaleY;
-        const float quadW = glyph.width * _scaleX;
-        const float quadH = glyph.height * _scaleY;
-        const float s = glyph.region.bl.x;
-        const float t = glyph.region.bl.y;
-        const float regionW = glyph.region.GetWidth();
-        const float regionH = glyph.region.GetHeight();
+        const float vx      = penX + glyph.xOffset * _scaleX;
+        const float vy      = penY - (glyph.height - glyph.yOffset) * _scaleY;
+        const float quadW   = glyph.width * _scaleX;
+        const float quadH   = glyph.height * _scaleY;
+        const float s       = glyph.region.bl().x;
+        const float t       = glyph.region.bl().y;
+        const float regionW = glyph.region.width();
+        const float regionH = glyph.region.height();
 
-        vertices[idx++] = {{vx, vy, penZ}, {s, t}}; // bl
-        vertices[idx++] = {{vx + quadW, vy, penZ }, {s + regionW, t}}; // br
-        vertices[idx++] = {{vx + quadW, vy + quadH, penZ }, {s + regionW, t + regionH}}; // tr
-        vertices[idx++] = {{vx + quadW, vy + quadH, penZ }, {s + regionW, t + regionH}}; // tr
-        vertices[idx++] = {{vx, vy + quadH, penZ }, {s, t + regionH}}; // tl
-        vertices[idx++] = {{vx, vy, penZ}, {s, t}}; // bl
+        vertices[idx++] = {{vx, vy, penZ}, {s, t}};                                     // bl
+        vertices[idx++] = {{vx + quadW, vy, penZ}, {s + regionW, t}};                   // br
+        vertices[idx++] = {{vx + quadW, vy + quadH, penZ}, {s + regionW, t + regionH}}; // tr
+        vertices[idx++] = {{vx + quadW, vy + quadH, penZ}, {s + regionW, t + regionH}}; // tr
+        vertices[idx++] = {{vx, vy + quadH, penZ}, {s, t + regionH}};                   // tl
+        vertices[idx++] = {{vx, vy, penZ}, {s, t}};                                     // bl
 
         penX += glyph.xAdvance * _scaleX;
         penY += glyph.yAdvance * _scaleY;

@@ -15,12 +15,13 @@ class StateGroupEncoder {
 private:
     static constexpr size_t kStagingBufferSize = 256;
 
-    StateGroupHeader _currentHeader;
-    ByteBuffer _groupStagingBuffer;
+    StateGroupHeader     _currentHeader;
+    ByteBuffer           _groupStagingBuffer;
     std::vector<Binding> _bindingStagingBuffer;
 
 public:
     static const StateGroup* Merge(const StateGroup* const* stateGroups, uint32_t count);
+    static const StateGroup* Merge(const std::vector<const StateGroup*>& stateGroups);
 
     void Begin(const StateGroup* inherit = nullptr);
     const StateGroup* End();

@@ -119,7 +119,7 @@ void SetupInputBindings() {
 void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
     uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
-    
+
     SimObj*  worldFrame = simulation.AddSimObj();
     UI*      ui         = worldFrame->AddComponent<UI>(ComponentType::UI);
     Spatial* spatial    = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
@@ -128,7 +128,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 
     uiManager->SetUIRenderer(renderEngine->Renderers().ui.get());
     uiManager->SetTextRenderer(renderEngine->Renderers().text.get());
-    uiManager->SetDebugRenderer(renderEngine->Renderers().debug.get());
+    uiManager->SetDebugRenderer(renderEngine->debugDraw());
 
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);
@@ -179,6 +179,8 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     uiManager->DoUpdate(dt * 1000);
     simulation.Update(dt);
 
+    //    renderEngine->DebugDraw()->AddRect3D({{glm::vec2(-100, -100), glm::vec2(200, 200)},
+    //        glm::rotate(2.f/2.f, glm::vec3(0, 1, 0)) * glm::rotate(3.f/2.f, glm::vec3(1, 0, 0))}, glm::vec3(1.f, 0.f, 0.f), false);
     // render
     renderEngine->RenderFrame();
 

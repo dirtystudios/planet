@@ -6,6 +6,7 @@
 #include "CullMode.h"
 #include "DGAssert.h"
 #include "DepthFunc.h"
+#include "FillMode.h"
 #include "PixelFormat.h"
 #include "PrimitiveType.h"
 #include "ShaderType.h"
@@ -207,6 +208,19 @@ public:
         }
         dg_assert_fail_nm();
         return MTLWindingCounterClockwise;
+    }
+
+    static MTLTriangleFillMode toMTL(FillMode mode) {
+        switch (mode) {
+            case FillMode::Solid:
+                return MTLTriangleFillModeFill;
+            case FillMode::Wireframe:
+                return MTLTriangleFillModeLines;
+            default:
+                dg_assert_fail_nm();
+        }
+        dg_assert_fail_nm();
+        return MTLTriangleFillModeFill;
     }
 
     static MTLCompareFunction toMTL(DepthFunc func) {

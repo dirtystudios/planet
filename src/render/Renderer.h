@@ -5,23 +5,22 @@
 #include "RenderServiceLocator.h"
 #include "RenderView.h"
 
+class RenderEngine;
+
 class Renderer : public RenderServiceLocator {
 private:
-    RenderServiceLocator* _renderServiceLocator{nullptr};
+    friend RenderEngine;
 
-protected:
-    bool _isActive{true};
+private:
+    RenderServiceLocator* _renderServiceLocator{nullptr};
+    bool                  _isActive{true};
 
 public:
     Renderer();
     virtual ~Renderer();
-    virtual void OnInit();
-    virtual void OnDestroy();
 
-    void Init(RenderServiceLocator* serviceLocator);
-
-    void SetActive(bool isActive) { _isActive = isActive; }
-    bool                IsActive() const { return _isActive; }
+    virtual void SetActive(bool isActive) { _isActive = isActive; }
+    virtual bool IsActive() const { return _isActive; }
 
     // RenderServiceLocation impl
     ShaderCache*           GetShaderCache() override;
@@ -32,10 +31,12 @@ public:
     ConstantBufferManager* GetConstantBufferManager() override;
     MaterialCache*         GetMaterialCache() override;
 
-    // Populate Renderer related data
-    virtual void Register(RenderObj* renderObj) = 0;
+protected:
+    virtual void OnInit();
+    virtual void OnDestroy();
 
-    virtual void Unregister(RenderObj* renderObj) = 0;
+private:
+    void Init(RenderServiceLocator* serviceLocator);
     virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
 };
 
@@ -48,8 +49,7 @@ public:
 
     virtual void Register(T* typedRenderObjects)   = 0;
     virtual void Unregister(T* typedRenderObjects) = 0;
-    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
 
-    void Register(RenderObj* renderObj) final { Register(reinterpret_cast<T*>(renderObj)); }
-    void Unregister(RenderObj* renderObj) final { Unregister(reinterpret_cast<T*>(renderObj)); }
+private:
+    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
 };
