@@ -21,13 +21,13 @@ private:
     const gfx::StateGroup* _base{ nullptr };
 
     void SetRect2DVertices(DebugRect2DRenderObj*);
-    const gfx::DrawItem* DebugRenderer::CreateRect2DDrawItem(DebugRect2DRenderObj* renderObj);
+    const gfx::DrawItem* CreateRect2DDrawItem(DebugRect2DRenderObj* renderObj);
 
     void RegisterRect2D(DebugRect2DRenderObj* rect);
 public:
 
     void OnInit() final;
-
+    
     void Register(DebugRenderObj* debugRO);
     void Unregister(DebugRenderObj* debugRO);
 

@@ -56,6 +56,10 @@ FILE(GLOB RENDERERS_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/*.cpp)
 FILE(GLOB RENDERERS_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/*.h)
 FILE(GLOB RENDERERS_CHUNKED_TERRAIN_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/*.cpp)
 FILE(GLOB RENDERERS_CHUNKED_TERRAIN_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/*.h)
+FILE(GLOB RENDERERS_DEBUG_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/debug/*.cpp)
+FILE(GLOB RENDERERS_DEBUG_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/debug/*.h)
+FILE(GLOB RENDERERS_TERRAIN_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/terrain/*.cpp)
+FILE(GLOB RENDERERS_TERRAIN_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/terrain/*.h)
 FILE(GLOB RENDERERS_TEXT_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/text/*.cpp)
 FILE(GLOB RENDERERS_TEXT_HEADERS ${SOURCE_DIR_ROOT}/render/renderers/text/*.h)
 FILE(GLOB RENDERERS_SKYBOX_SOURCES ${SOURCE_DIR_ROOT}/render/renderers/skybox/*.cpp)
@@ -123,6 +127,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/
     ${SOURCE_DIR_ROOT}/render/renderers/ui/
     ${SOURCE_DIR_ROOT}/render/renderers/skybox/
+    ${SOURCE_DIR_ROOT}/render/renderers/debug/
     ${SOURCE_DIR_ROOT}/render/renderers/text/
     ${SOURCE_DIR_ROOT}/render/backend/
     ${SOURCE_DIR_ROOT}/render/backend/interface
@@ -174,6 +179,8 @@ add_executable(dg
     ${RENDERERS_SOURCES}
     ${COMPONENT_SOURCES}
     ${RENDERERS_CHUNKED_TERRAIN_SOURCES}
+    ${RENDERERS_TERRAIN_SOURCES}
+    ${RENDERERS_DEBUG_SOURCES}
     ${RENDERERS_SKYBOX_SOURCES}
     ${RENDERERS_UI_SOURCES}
     ${RENDERERS_TEXT_SOURCES}
