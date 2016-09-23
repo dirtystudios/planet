@@ -120,7 +120,10 @@ public:
 
     static GLenum Convert(PrimitiveType enumIn) {
         assert(enumIn != PrimitiveType::Count);
-        static std::map<PrimitiveType, GLenum> primitiveTypeMapping = {{PrimitiveType::Triangles, GL_TRIANGLES}, {PrimitiveType::Lines, GL_LINES}};
+        static std::map<PrimitiveType, GLenum> primitiveTypeMapping = 
+            { {PrimitiveType::Triangles, GL_TRIANGLES},
+              {PrimitiveType::Lines, GL_LINES},
+              {PrimitiveType::LineStrip, GL_LINE_STRIP}};
 
         return primitiveTypeMapping[enumIn];
     }

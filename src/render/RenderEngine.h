@@ -29,12 +29,14 @@ class SkyRenderer;
 class TextRenderer;
 class MeshRenderer;
 class UIRenderer;
+class DebugRenderer;
 
 struct Renderers {
-    std::unique_ptr<SkyRenderer>  sky;
-    std::unique_ptr<TextRenderer> text;
-    std::unique_ptr<MeshRenderer> mesh;
-    std::unique_ptr<UIRenderer>   ui;
+    std::unique_ptr<SkyRenderer>   sky;
+    std::unique_ptr<TextRenderer>  text;
+    std::unique_ptr<MeshRenderer>  mesh;
+    std::unique_ptr<UIRenderer>    ui;
+    std::unique_ptr<DebugRenderer> debug;
 };
 
 class RenderEngine : public RenderServiceLocator {

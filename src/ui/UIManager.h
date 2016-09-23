@@ -7,11 +7,13 @@
 #include "RenderEngine.h"
 #include "UIRenderer.h"
 #include "TextRenderer.h"
+#include "DebugRenderer.h"
 #include "KeyboardManager.h"
 #include "Viewport.h"
 #include "UI.h"
 
 #include <unordered_map>
+#include <memory>
 #include <vector>
 #include <set>
 
@@ -26,8 +28,11 @@ private:
     std::unordered_multimap<UIFrame*, UIFrameRenderObj*> m_uiFrames;
     std::unordered_multimap<UIFrame*, TextRenderObj*> m_textFrames;
 
+    std::unique_ptr<DebugRect2DRenderObj> m_debugROFocused;
+
     UIRenderer* m_uiRenderer;
     TextRenderer* m_textRenderer;
+    DebugRenderer* m_debugRenderer;
     Viewport m_viewport;
     // only 1 thing should have focus at a time, so these can go here
     float m_cursorBlink       = 0;
@@ -59,6 +64,7 @@ public:
     // hackish for now
     void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
     void SetUIRenderer(UIRenderer* uiRenderer) { m_uiRenderer = uiRenderer; };
+    void SetDebugRenderer(DebugRenderer* debugRenderer) { m_debugRenderer = debugRenderer; };
 
     // Callbacks from inputmanager
 

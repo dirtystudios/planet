@@ -47,11 +47,11 @@
     <ClCompile Include="..\src\render\RenderEngine.cpp" />
     <ClCompile Include="..\src\render\Renderer.cpp" />
     <ClCompile Include="..\src\render\renderers\chunkedterrain\ChunkedTerrainRenderer.cpp" />
+    <ClCompile Include="..\src\render\renderers\debug\DebugRenderer.cpp" />
     <ClCompile Include="..\src\render\renderers\MeshRenderer.cpp" />
     <ClCompile Include="..\src\render\renderers\skybox\SkyRenderer.cpp" />
     <ClCompile Include="..\src\render\renderers\text\TextRenderer.cpp" />
     <ClCompile Include="..\src\render\renderers\ui\UIRenderer.cpp" />
-    <ClCompile Include="..\src\render\renderers\ui\UIRenderObj.cpp" />
     <ClCompile Include="..\src\ui\EditBox.cpp" />
     <ClCompile Include="..\src\ui\Label.cpp" />
     <ClCompile Include="..\src\ui\UIManager.cpp" />
@@ -168,6 +168,8 @@
     <ClInclude Include="..\src\render\renderers\chunkedterrain\GPUTile.h" />
     <ClInclude Include="..\src\render\renderers\chunkedterrain\LRUTileCache.h" />
     <ClInclude Include="..\src\render\renderers\chunkedterrain\Tile.h" />
+    <ClInclude Include="..\src\render\renderers\debug\DebugRenderer.h" />
+    <ClInclude Include="..\src\render\renderers\debug\DebugRenderObj.h" />
     <ClInclude Include="..\src\render\renderers\MeshRenderer.h" />
     <ClInclude Include="..\src\render\renderers\skybox\SkyboxRenderObj.h" />
     <ClInclude Include="..\src\render\renderers\skybox\SkyboxVertex.h" />
@@ -258,24 +260,24 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\debug;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\external\winlibs\x86;assimp-build\x86\contrib\zlib\Debug;libnoise-build\x86\src\Debug;freetype-build\x86\Debug;xxhash-build\x86\Debug;assimp-build\x86\code\Debug;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>$(ProjectName)-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)-dbg</TargetName>
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\debug;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\external\winlibs\x64;assimp-build\x64\contrib\zlib\Debug;libnoise-build\x64\src\Debug;freetype-build\x64\Debug;xxhash-build\x64\Debug;assimp-build\x64\code\Debug;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\debug;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\external\winlibs\x86;assimp-build\x86\contrib\zlib\Release;libnoise-build\x86\src\Release;freetype-build\x86\Release;xxhash-build\x86\Release;assimp-build\x86\code\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\src\components;..\src\ext;..\src\input;..\src\platform;..\src\platform\sdl;..\src\ui;..\src\utilities;..\src\render;..\src\render\backend\interface;..\src\render\backend\interface\enums;..\src\render\backend\interface\tasks;..\src\render\backend\impl\common;..\src\render\backend\impl\gl;..\src\render\backend\impl\dx11;..\src\render\renderers;..\src\render\renderers\chunkedterrain;..\src\render\renderers\debug;..\src\render\renderers\skybox;..\src\render\renderers\text;..\src\render\renderers\ui;..\external\assimp\include;..\external\include;..\external\libnoise\src;..\external\freetype2\include;..\external\xxhash;..\external\include\enum-flags\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\external\winlibs\x64;assimp-build\x64\contrib\zlib\Release;libnoise-build\x64\src\Release;freetype-build\x64\Release;xxhash-build\x64\Release;assimp-build\x64\code\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>

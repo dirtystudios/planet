@@ -5,6 +5,7 @@
 #include "SkyRenderer.h"
 #include "MeshRenderer.h"
 #include "TextRenderer.h"
+#include "DebugRenderer.h"
 #include "ConstantBuffer.h"
 #include "UIRenderer.h"
 #include "StateGroupEncoder.h"
@@ -32,10 +33,12 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _renderers.text.reset(new TextRenderer());
     _renderers.ui.reset(new UIRenderer());
     _renderers.mesh.reset(new MeshRenderer());
+    _renderers.debug.reset(new DebugRenderer());
     _renderersByType.insert({RendererType::Skybox, _renderers.sky.get()});
     _renderersByType.insert({RendererType::Mesh, _renderers.mesh.get()});
     _renderersByType.insert({RendererType::Ui, _renderers.ui.get()});
     _renderersByType.insert({RendererType::Text, _renderers.text.get()});
+    _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
 
     _renderers.mesh->SetActive(false);
     _renderers.sky->SetActive(false);

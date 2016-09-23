@@ -112,8 +112,8 @@
     <ClCompile Include="..\src\render\renderers\ui\UIRenderer.cpp">
       <Filter>render\renderers\ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\renderers\ui\UIRenderObj.cpp">
-      <Filter>render\renderers\ui</Filter>
+    <ClCompile Include="..\src\render\renderers\debug\DebugRenderer.cpp">
+      <Filter>render\renderers\debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -537,8 +537,14 @@
     <ClInclude Include="..\src\render\renderers\text\TextRenderObj.h">
       <Filter>render\renderers\text</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\render\renderers\debug\DebugRenderer.h">
+      <Filter>render\renderers\debug</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\render\Rectangle.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\debug\DebugRenderObj.h">
+      <Filter>render\renderers\debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -607,6 +613,9 @@
     </Filter>
     <Filter Include="utilities\common">
       <UniqueIdentifier>{b36b4333-4a05-47ad-ad13-4073f17783ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\renderers\debug">
+      <UniqueIdentifier>{59529369-c2f2-48b8-9fc5-d7dbad579c80}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

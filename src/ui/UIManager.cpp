@@ -176,14 +176,25 @@ void UIManager::PostProcess(float ms) {
     if (m_cursorBlink > 0)
         m_cursorBlink -= ms;
 
-    // Draw Caret if necessary
     if (m_focusedEditBox) {
+        FrameScale scaled = m_focusedEditBox->GetScaledSize(m_viewport);
+        // debug show focused editbox
+        Rectangle rect;
+        rect.bl = { scaled.x, scaled.y };
+        rect.tr = { scaled.x + scaled.width, scaled.y + scaled.height };
+        if (m_debugROFocused.get() != nullptr)
+            m_debugROFocused->rect(rect);
+        else {
+            m_debugROFocused.reset(new DebugRect2DRenderObj(rect, { 1.f, 0.f, 0.f }));
+            m_debugRenderer->Register(m_debugROFocused.get());
+        }
+
+        // set caret if necessary
         if (m_cursorBlink <= 0) {
             m_drawCaret   = !m_drawCaret;
             m_cursorBlink = m_focusedEditBox->GetBlinkRate();
         }
         if (m_drawCaret) {
-            UIFrame::UIFrameDesc* temp = m_focusedEditBox->GetFrameDesc();
             std::string           text = m_keyboardManager->GetText();
 
             auto it = m_textFrames.find(static_cast<UIFrame*>(m_focusedEditBox));
@@ -196,6 +207,12 @@ void UIManager::PostProcess(float ms) {
             // TODO: color?
             it->second->cursorEnabled(true);
             it->second->cursorPos(m_keyboardManager->GetCursorPosition());
+        }
+    }
+    else {
+        if (m_debugROFocused.get()) {
+            m_debugRenderer->Unregister(m_debugROFocused.get());
+            m_debugROFocused.reset();
         }
     }
 }

@@ -128,6 +128,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 
     uiManager->SetUIRenderer(renderEngine->Renderers().ui.get());
     uiManager->SetTextRenderer(renderEngine->Renderers().text.get());
+    uiManager->SetDebugRenderer(renderEngine->Renderers().debug.get());
 
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);

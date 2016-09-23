@@ -9,6 +9,7 @@ enum class RendererType : uint8_t {
     Ui,
     Text,
     Mesh,
+    Debug,
 };
 
 namespace std {
