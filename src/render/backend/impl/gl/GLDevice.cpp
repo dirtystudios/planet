@@ -67,7 +67,15 @@ BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialDat
     buffer->type = GLEnumAdapter::Convert(desc.usageFlags);
 
     if (desc.size != 0) {
-        _context.WriteBufferData(buffer, initialData, desc.size);
+        uint32_t buffSize = desc.size;
+        if (buffer->type == GL_UNIFORM_BUFFER){
+            // length must be multiple of 16
+            uint32_t sizeCheck = buffSize % 16;
+            if (sizeCheck != 0) {
+                buffSize += (16 - sizeCheck);
+            }
+        }
+        _context.WriteBufferData(buffer, initialData, buffSize);
     }
     
     return _resourceManager.AddResource(buffer);
