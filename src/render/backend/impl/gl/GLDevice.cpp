@@ -520,7 +520,7 @@ void GLDevice::BindResource(const Binding& binding) {
         }
         case Binding::Type::Texture: {
             GLTexture* texture = _resourceManager.GetResource<GLTexture>(binding.resource);
-            dg_assert_nm(texture);
+            dg_assert_nm(texture != 0);
             _context.BindTextureAsShaderResource(texture, binding.slot);
             break;
         }

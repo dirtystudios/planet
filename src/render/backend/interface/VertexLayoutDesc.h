@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include "DGAssert.h"
 #include "Hash.h"
 #include "ParamType.h"
 
@@ -68,7 +69,7 @@ static size_t GetByteCount(VertexAttributeType type, VertexAttributeStorage stor
             break;
         }
         default:
-            assert(false);
+            dg_assert_fail_nm();
     }
 
     switch (type) {
@@ -81,7 +82,7 @@ static size_t GetByteCount(VertexAttributeType type, VertexAttributeStorage stor
         case VertexAttributeType::Float4:
             return bytes * 4;
         default:
-            assert(false);
+            dg_assert_fail_nm();
     }
 }
 

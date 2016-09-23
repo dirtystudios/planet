@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include "Mesh.h"
 #include "RenderObj.h"
 #include "StateGroup.h"
@@ -26,6 +27,8 @@ private:
 
     const gfx::StateGroup* _group{nullptr};
     const gfx::StateGroup* _cursorGroup{nullptr};
+    std::unique_ptr<const gfx::DrawItem> _drawItem;
+    std::unique_ptr<const gfx::DrawItem> _cursorDrawItem;
 
 public:
     TextRenderObj(const std::string& text, float pixelX, float pixelY, float pixelZ, const glm::vec3& color)

@@ -20,6 +20,7 @@
 #include "DepthFunc.h"
 #include "DepthState.h"
 #include "DepthWriteMask.h"
+#include "DGAssert.h"
 #include "FillMode.h"
 #include "GLStructs.h"
 #include "GLTextureFormatDesc.h"
@@ -42,7 +43,7 @@ public:
         else if (flags & BufferUsageFlags::ConstantBufferBit)
             return GL_UNIFORM_BUFFER;
         else
-            assert(false);
+            dg_assert_fail_nm();
     }
 
     static BufferType ConvertBufferType(GLenum enumIn) {
@@ -54,7 +55,7 @@ public:
             case GL_UNIFORM_BUFFER:
                 return BufferType::ConstantBuffer;
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -69,7 +70,7 @@ public:
             case BufferAccess::ReadWrite:
                 return GL_READ_WRITE;
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -82,7 +83,7 @@ public:
             case BufferType::ConstantBuffer:
                 return GL_UNIFORM_BUFFER;
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -103,7 +104,7 @@ public:
             case ShaderType::PixelShader:
                 return GL_FRAGMENT_SHADER;
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -114,7 +115,7 @@ public:
             case GL_FRAGMENT_SHADER:
                 return ShaderType::PixelShader;
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -146,7 +147,7 @@ public:
             case ParamType::Float4x4:
                 return GL_FLOAT_MAT4;
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -167,7 +168,7 @@ public:
             case GL_FLOAT_MAT4:
                 return ParamType::Float4x4;
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -186,7 +187,7 @@ public:
             case PixelFormat::RGBA8Unorm:
                 return {GL_RGBA, GL_UNSIGNED_BYTE, GL_RGBA};
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -257,7 +258,7 @@ public:
             case VertexAttributeType::Float:
                 return {GL_FLOAT, 1};
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 
@@ -273,7 +274,7 @@ public:
             case GL_FLOAT_VEC4:
                 return {GL_FLOAT, 4};
             default:
-                assert(false);
+                dg_assert_fail_nm();
         }
     }
 

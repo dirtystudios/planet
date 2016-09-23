@@ -53,6 +53,7 @@ public:
         }
     }
 
+    [[noreturn]]
     static void assertFail(const char* file, int line, const char* fmt, ...) {
         static char _formatBuffer[1024];
         snprintf(_formatBuffer, sizeof(_formatBuffer), "file:%s, line:%d, msg:%s", file, line, fmt);
@@ -65,6 +66,7 @@ public:
         assert(false);
     }
 
+    [[noreturn]]
     static void assertFail(const char* file, int line) {
         fprintf(stderr, "file:%s, line:%d", file, line);
 

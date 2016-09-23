@@ -266,7 +266,7 @@ const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
 
     // 'loop' around the vertexBuffer, this is currently to fix directx, and as this buffer fills,
     //  im sure it's going to break again
-    if ((_vertexBufferOffset + renderObj->_text.length()) * quadSizeInBytes > _vertexBufferSize) {
+    if ((_vertexBufferOffset + renderObj->_text.length()) * quadSizeInBytes >= _vertexBufferSize) {
         assert(_vertexBufferOffset != 0);
         _vertexBufferOffset = 0;
     }
@@ -329,12 +329,14 @@ void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
     for (auto& text : _objs) {
         text->_constantBuffer->Map<TextConstants>()->textColor = text->_textColor;
         text->_constantBuffer->Unmap();
-        const gfx::DrawItem* item = CreateDrawItem(text);
-        queue->AddDrawItem(2, item); // TODO:: sortkeys based on pass....text needs to be rendered after sky
+
+        text->_drawItem.reset(CreateDrawItem(text));
+        queue->AddDrawItem(2, text->_drawItem.get()); // TODO:: sortkeys based on pass....text needs to be rendered after sky
         if (text->_cursorEnabled) {
             if (drewCursor)
                 LOG_D("[Text] Multiple Cursors detected and unsupported.");
-            queue->AddDrawItem(1, CreateCursorDrawItem(text));
+            text->_cursorDrawItem.reset(CreateCursorDrawItem(text));
+            queue->AddDrawItem(1, text->_cursorDrawItem.get());
             drewCursor = true;
         }
     }
