@@ -208,9 +208,11 @@ void StateGroupEncoder::WriteState(StateGroupBit bit, StateGroupIndex idx, const
     if (!(_currentHeader.stateBitfield & static_cast<uint16_t>(bit))) {
         _currentHeader.stateBitfield |= static_cast<uint16_t>(bit);
         *offset = _groupStagingBuffer.WritePos();
+        _groupStagingBuffer.Write((uint8_t*)data, len);
+    } else {
+        //why are we using bytebuffer anyway, its a piece of shit
+        memcpy(_groupStagingBuffer.GetDataPtr() + *offset, data, len);
     }
-    
-    _groupStagingBuffer.Write(data, len);
 }
 
 bool StateGroupEncoder::HasBinding(const Binding& binding) {
