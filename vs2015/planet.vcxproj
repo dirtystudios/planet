@@ -39,6 +39,7 @@
     <ClCompile Include="..\src\render\backend\interface\RenderDeviceApi.cpp" />
     <ClCompile Include="..\src\render\backend\interface\StateGroupEncoder.cpp" />
     <ClCompile Include="..\src\render\Camera.cpp" />
+    <ClCompile Include="..\src\render\DebugDrawInterface.cpp" />
     <ClCompile Include="..\src\render\Frustum.cpp" />
     <ClCompile Include="..\src\render\MaterialCache.cpp" />
     <ClCompile Include="..\src\render\MeshCache.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="..\src\render\Camera.h" />
     <ClInclude Include="..\src\render\ConstantBuffer.h" />
     <ClInclude Include="..\src\render\ConstantBufferManager.h" />
+    <ClInclude Include="..\src\render\DebugDrawInterface.h" />
     <ClInclude Include="..\src\render\Frustum.h" />
     <ClInclude Include="..\src\render\IndexedMeshData.h" />
     <ClInclude Include="..\src\render\Material.h" />
@@ -169,7 +171,6 @@
     <ClInclude Include="..\src\render\renderers\chunkedterrain\LRUTileCache.h" />
     <ClInclude Include="..\src\render\renderers\chunkedterrain\Tile.h" />
     <ClInclude Include="..\src\render\renderers\debug\DebugRenderer.h" />
-    <ClInclude Include="..\src\render\renderers\debug\DebugRenderObj.h" />
     <ClInclude Include="..\src\render\renderers\MeshRenderer.h" />
     <ClInclude Include="..\src\render\renderers\skybox\SkyboxRenderObj.h" />
     <ClInclude Include="..\src\render\renderers\skybox\SkyboxVertex.h" />

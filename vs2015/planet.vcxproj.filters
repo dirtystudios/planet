@@ -115,6 +115,9 @@
     <ClCompile Include="..\src\render\renderers\debug\DebugRenderer.cpp">
       <Filter>render\renderers\debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\render\DebugDrawInterface.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -543,8 +546,8 @@
     <ClInclude Include="..\src\render\Rectangle.h">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\renderers\debug\DebugRenderObj.h">
-      <Filter>render\renderers\debug</Filter>
+    <ClInclude Include="..\src\render\DebugDrawInterface.h">
+      <Filter>render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
