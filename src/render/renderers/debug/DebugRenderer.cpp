@@ -47,13 +47,14 @@ void DebugRenderer::OnInit() {
     encoder.SetBlendState(blendState);
     encoder.SetDepthState(depthState);
     encoder.SetRasterState(rasterState);
-    encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
+    encoder.SetPrimitiveType(gfx::PrimitiveType::Lines);
     encoder.SetVertexBuffer(_vertexBuffer);
     const gfx::StateGroup* wireframeSG = encoder.End();
 
     encoder.Begin(wireframeSG);
     rasterState.fillMode = gfx::FillMode::Solid;
     encoder.SetRasterState(rasterState);
+    encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
     const gfx::StateGroup* filledSG = encoder.End();
 
     _2DfilledSG    = gfx::StateGroupEncoder::Merge({bind2D, filledSG});
@@ -73,14 +74,28 @@ void DebugRenderer::AddLine2D(const glm::vec2& start, const glm::vec2& end, glm:
 
 void DebugRenderer::AddRect2D(const Rect2Df& rect, const glm::vec3& color, bool filled) {
     DebugVertexVec& buffer = filled ? _buffers.filled2D : _buffers.wireframe2D;
+    if (filled) {
+        buffer.push_back({ to3(rect.bl()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.br()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.tr()),{ 0, 0 }, color });
 
-    buffer.push_back({to3(rect.bl()), {0, 0}, color});
-    buffer.push_back({to3(rect.br()), {0, 0}, color});
-    buffer.push_back({to3(rect.tr()), {0, 0}, color});
+        buffer.push_back({ to3(rect.tr()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.tl()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.bl()),{ 0, 0 }, color });
+    }
+    else {
+        buffer.push_back({ to3(rect.bl()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.br()),{ 0, 0 }, color });
 
-    buffer.push_back({to3(rect.tr()), {0, 0}, color});
-    buffer.push_back({to3(rect.tl()), {0, 0}, color});
-    buffer.push_back({to3(rect.bl()), {0, 0}, color});
+        buffer.push_back({ to3(rect.br()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.tr()),{ 0, 0 }, color });
+
+        buffer.push_back({ to3(rect.tr()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.tl()),{ 0, 0 }, color });
+
+        buffer.push_back({ to3(rect.tl()),{ 0, 0 }, color });
+        buffer.push_back({ to3(rect.bl()),{ 0, 0 }, color });
+    }
 }
 
 void DebugRenderer::AddLine3D(const glm::vec3& start, const glm::vec3& end, glm::vec3 color) {
@@ -90,13 +105,27 @@ void DebugRenderer::AddLine3D(const glm::vec3& start, const glm::vec3& end, glm:
 void DebugRenderer::AddRect3D(const Rect3Df& rect, const glm::vec3& color, bool filled) {
     DebugVertexVec& buffer = filled ? _buffers.filled3D : _buffers.wireframe3D;
 
-    buffer.push_back({rect.bl(), {0, 0}, color});
-    buffer.push_back({rect.br(), {0, 0}, color});
-    buffer.push_back({rect.tr(), {0, 0}, color});
-
-    buffer.push_back({rect.tr(), {0, 0}, color});
-    buffer.push_back({rect.tl(), {0, 0}, color});
-    buffer.push_back({rect.bl(), {0, 0}, color});
+    if(filled) {
+        buffer.push_back({rect.bl(), {0, 0}, color});
+        buffer.push_back({rect.br(), {0, 0}, color});
+        buffer.push_back({rect.tr(), {0, 0}, color});
+        
+        buffer.push_back({rect.tr(), {0, 0}, color});
+        buffer.push_back({rect.tl(), {0, 0}, color});
+        buffer.push_back({rect.bl(), {0, 0}, color});
+    } else {
+        buffer.push_back({rect.bl(), {0, 0}, color});
+        buffer.push_back({rect.br(), {0, 0}, color});
+        
+        buffer.push_back({rect.br(), {0, 0}, color});
+        buffer.push_back({rect.tr(), {0, 0}, color});
+        
+        buffer.push_back({rect.tr(), {0, 0}, color});
+        buffer.push_back({rect.tl(), {0, 0}, color});
+        
+        buffer.push_back({rect.tl(), {0, 0}, color});
+        buffer.push_back({rect.bl(), {0, 0}, color});
+    }
 }
 
 void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
