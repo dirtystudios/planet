@@ -3,24 +3,18 @@
 #include "Helpers.h"
 #include "glm/gtx/rotate_vector.hpp"
 
-Camera::Camera(float fov_degrees/* = 45.f*/, float aspect_ratio/* = 4.f / 3.f*/, float znear/* = 0.001f*/, float zfar/* = 10000.f*/)
-        : fov_degrees(fov_degrees), zfar(zfar), znear(znear), aspect_ratio(aspect_ratio) {
-    pos = glm::vec3(0, 0, 0);
-    up = glm::vec3(0, 1, 0);
+Camera::Camera(float fov_degrees /* = 45.f*/, float aspect_ratio /* = 4.f / 3.f*/, float znear /* = 0.001f*/, float zfar /* = 10000.f*/)
+    : fov_degrees(fov_degrees), zfar(zfar), znear(znear), aspect_ratio(aspect_ratio) {
+    pos   = glm::vec3(0, 0, 0);
+    up    = glm::vec3(0, 1, 0);
     right = glm::vec3(1, 0, 0);
-    look = glm::vec3(0, 0, 1);    
+    look  = glm::vec3(0, 0, 1);
 }
 
-void Camera::Translate(glm::vec3 translation) {
-    pos += (right * translation.x) + (up * translation.y) + (look * translation.z);
-}
-void Camera::MoveTo(glm::vec3 new_pos) {
-    pos = new_pos;
-}
+void Camera::Translate(glm::vec3 translation) { pos += (right * translation.x) + (up * translation.y) + (look * translation.z); }
+void Camera::MoveTo(glm::vec3 new_pos) { pos = new_pos; }
 
-void Camera::Translate(float x, float y, float z) {
-    Translate(glm::vec3(x, y, z));
-}
+void Camera::Translate(float x, float y, float z) { Translate(glm::vec3(x, y, z)); }
 
 void Camera::MoveTo(float x, float y, float z) {
     MoveTo(glm::vec3(x, y, z));

@@ -78,6 +78,8 @@ namespace gfx {
             ComPtr<ID3D11ShaderResourceView> shaderResourceView;
             DXGI_FORMAT format;
             PixelFormat requestedFormat;
+            uint32_t width;
+            uint32_t height;
         };
 
         struct ShaderDX11 {
@@ -131,6 +133,7 @@ namespace gfx {
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
         CommandBuffer* CreateCommandBuffer();
+        void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData);
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
 
         uint8_t* MapMemory(BufferId buffer, BufferAccess);

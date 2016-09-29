@@ -63,6 +63,8 @@ public:
     virtual uint8_t* MapMemory(BufferId buffer, BufferAccess) = 0;
     virtual void UnmapMemory(BufferId buffer) = 0;
 
+    virtual void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) = 0;
+
     virtual void RenderFrame() = 0;
 };
 }

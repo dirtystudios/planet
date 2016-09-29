@@ -71,7 +71,7 @@
     MTLRenderPassColorAttachmentDescriptor* colorAttachment = _renderPassDescriptor.colorAttachments[0];
     colorAttachment.texture                                 = texture;
     colorAttachment.loadAction                              = MTLLoadActionClear;
-    colorAttachment.clearColor                              = MTLClearColorMake(0.65f, 0.65f, 0.65f, 1.0f);
+    colorAttachment.clearColor                              = MTLClearColorMake(0.15f, 0.15f, 0.15f, 1.0f);
 
     // if sample count is greater than 1, render into using MSAA, then resolve
     // into our color texture

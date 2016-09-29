@@ -471,6 +471,8 @@ namespace gfx {
         textureDX11.shaderResourceView.Swap(shaderResourceView);
         textureDX11.format = tdesc.Format;
         textureDX11.requestedFormat = format;
+        textureDX11.width = width;
+        textureDX11.height = height;
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
@@ -578,10 +580,32 @@ namespace gfx {
     }
 
     CommandBuffer* DX11Device::CreateCommandBuffer() {
-        CommandBuffer* cmdBuffer = m_commandBufferPool.Get();
+        CommandBuffer* cmdBuffer = m_commandBufferPool.construct();
         assert(cmdBuffer);
         cmdBuffer->Reset();
         return cmdBuffer;
+    }
+
+    void DX11Device::UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) {
+        TextureDX11* texDX11 = GetResource(m_textures, textureId);
+
+        D3D11_BOX box = { 0 };
+        box.back = 1;
+        box.right = texDX11->width;
+        box.bottom = texDX11->height;
+
+        int formatByteSize = GetFormatByteSize(texDX11->format);
+        assert(formatByteSize!=0);
+        if (formatByteSize == 0) {
+            LOG_E("DX11Device: got 0 for formatbytesize");
+            return;
+        }
+        if (texDX11->requestedFormat == PixelFormat::RGB8Unorm) {
+            LOG_E("DX11Device: unsupported pixelFormat update");
+        }
+
+        m_context->UpdateSubResource(texDX11->texture.Get(), slice, box, srcData, formatByteSize * texDX11->width, formatByteSize * texDX11->height * texDX11->width);
+
     }
 
     uint8_t* DX11Device::MapMemory(BufferId buffer, BufferAccess access) {

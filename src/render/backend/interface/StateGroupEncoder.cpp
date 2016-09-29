@@ -210,7 +210,7 @@ void StateGroupEncoder::WriteState(StateGroupBit bit, StateGroupIndex idx, const
         *offset = _groupStagingBuffer.WritePos();
         _groupStagingBuffer.Write((uint8_t*)data, len);
     } else {
-        //why are we using bytebuffer anyway, its a piece of shit
+        // why are we using bytebuffer anyway, its a piece of shit
         memcpy(_groupStagingBuffer.GetDataPtr() + *offset, data, len);
     }
 }
@@ -220,7 +220,7 @@ bool StateGroupEncoder::HasBinding(const Binding& binding) {
         return false;
     }
 
-    for(const Binding& activeBinding : _bindingStagingBuffer) {
+    for (const Binding& activeBinding : _bindingStagingBuffer) {
         if (memcmp(&binding, &activeBinding, sizeof(Binding)) == 0) {
             return true;
         }

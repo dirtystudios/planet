@@ -125,6 +125,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/render/
     ${SOURCE_DIR_ROOT}/render/renderers/
     ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/
+    ${SOURCE_DIR_ROOT}/render/renderers/terrain/
     ${SOURCE_DIR_ROOT}/render/renderers/ui/
     ${SOURCE_DIR_ROOT}/render/renderers/skybox/
     ${SOURCE_DIR_ROOT}/render/renderers/debug/

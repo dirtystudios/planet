@@ -49,7 +49,7 @@ struct MetalPipelineState : public Resource {
     MTLRenderPipelineReflection* reflection;
 };
 
-struct MetalTexture :public Resource {
+struct MetalTexture : public Resource {
     ~MetalTexture() {
         [mtlTexture release];
         [mtlSamplerState release];
@@ -58,5 +58,7 @@ struct MetalTexture :public Resource {
     id<MTLTexture>      mtlTexture;
     id<MTLSamplerState> mtlSamplerState;
     PixelFormat         externalFormat;
+    uint32_t            bytesPerRow;
+    uint32_t            bytesPerImage;
 };
 }

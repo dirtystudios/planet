@@ -179,12 +179,10 @@ namespace input {
         return m_hasChanged;
     }
 
-    void KeyboardManager::StopCapture() {
-        m_isCapturing = false;
-    }
+    void KeyboardManager::StopCapture() { m_isCapturing = false; }
 
     std::string KeyboardManager::GetText() {
         m_hasChanged = false;
         return m_contents;
     }
-}
+    }

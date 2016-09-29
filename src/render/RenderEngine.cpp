@@ -3,11 +3,14 @@
 #include "ChunkedTerrainRenderer.h"
 #include "Config.h"
 #include "ConstantBuffer.h"
+#include "ConstantBuffer.h"
 #include "DebugDrawInterface.h"
+#include "DebugRenderer.h"
 #include "DebugRenderer.h"
 #include "MeshRenderer.h"
 #include "SkyRenderer.h"
 #include "StateGroupEncoder.h"
+#include "TerrainRenderer.h"
 #include "TextRenderer.h"
 #include "UIRenderer.h"
 
@@ -27,19 +30,19 @@ ConstantBuffer* viewConstantsBuffer;
 CommandBuffer* cmdbuf;
 
 RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
-    // _renderers.insert({RendererType::ChunkedTerrain, new
-    // ChunkedTerrainRenderer()});
-
     _renderers.sky.reset(new SkyRenderer());
     _renderers.text.reset(new TextRenderer());
     _renderers.ui.reset(new UIRenderer());
     _renderers.mesh.reset(new MeshRenderer());
     _renderers.debug.reset(new DebugRenderer());
+    _renderers.terrain.reset(new TerrainRenderer());
+
     _renderersByType.insert({RendererType::Skybox, _renderers.sky.get()});
     _renderersByType.insert({RendererType::Mesh, _renderers.mesh.get()});
     _renderersByType.insert({RendererType::Ui, _renderers.ui.get()});
     _renderersByType.insert({RendererType::Text, _renderers.text.get()});
     _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
+    _renderersByType.insert({RendererType::ChunkedTerrain, _renderers.terrain.get()});
 
     _renderers.mesh->SetActive(false);
     _renderers.sky->SetActive(false);
@@ -58,7 +61,7 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     cmdbuf              = _device->CreateCommandBuffer();
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
-        p.second->Init(this);
+        p.second->Init(_device, this);
     }
 
     StateGroupEncoder encoder;
@@ -104,18 +107,15 @@ void RenderEngine::RenderFrame() {
             p.second->Submit(&queue, _view);
         }
     }
+
     queue.Submit(_device);
     _device->RenderFrame();
 }
 
-ShaderCache* RenderEngine::GetShaderCache() { return _shaderCache; }
-
-PipelineStateCache* RenderEngine::GetPipelineStateCache() { return _pipelineStateCache; }
-
-gfx::RenderDevice* RenderEngine::GetRenderDevice() { return _device; }
-
-VertexLayoutCache*     RenderEngine::GetVertexLayoutCache() { return _vertexLayoutCache; }
-MeshCache*             RenderEngine::GetMeshCache() { return _meshCache; }
-ConstantBufferManager* RenderEngine::GetConstantBufferManager() { return _constantBufferManager; }
-MaterialCache*         RenderEngine::GetMaterialCache() { return _materialCache; }
+ShaderCache*           RenderEngine::shaderCache() { return _shaderCache; }
+PipelineStateCache*    RenderEngine::pipelineStateCache() { return _pipelineStateCache; }
+VertexLayoutCache*     RenderEngine::vertexLayoutCache() { return _vertexLayoutCache; }
+MeshCache*             RenderEngine::meshCache() { return _meshCache; }
+ConstantBufferManager* RenderEngine::constantBufferManager() { return _constantBufferManager; }
+MaterialCache*         RenderEngine::materialCache() { return _materialCache; }
 DebugDrawInterface*    RenderEngine::debugDraw() { return _renderers.debug.get(); }

@@ -82,7 +82,7 @@ BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initial
 
     dg_assert(!desc.isDynamic, "not implemented");
 
-    // TODO:: right now we just treat transient buffers as persistent.
+    // TODO right now we just treat transient buffers as persistent.
     // just check exact configurations for now
     if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
         options = MTLResourceOptionCPUCacheModeWriteCombined;
@@ -237,12 +237,12 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
     texture->mtlSamplerState = GetDefaultSampler(_device);
     texture->externalFormat  = params.format;
 
-    void* const* srcDatas = params.srcData;
-    uint32_t     width    = params.width;
-    uint32_t     height   = params.height;
+    void* const* srcDatas      = params.srcData;
+    uint32_t     width         = params.width;
+    uint32_t     height        = params.height;
+    uint32_t     bytesPerRow   = ComputeBytesPerRow(mtlPixelFormat, width);
+    uint32_t     bytesPerImage = bytesPerRow * height;
     if (srcDatas) {
-        uint32_t bytesPerRow   = ComputeBytesPerRow(mtlPixelFormat, width);
-        uint32_t bytesPerImage = bytesPerRow * height;
         dg_assert_nm(bytesPerRow != 0);
 
         const uint8_t* srcData = nullptr;
@@ -264,6 +264,8 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
             delete[] srcData;
         }
     }
+    texture->bytesPerRow   = bytesPerRow;
+    texture->bytesPerImage = bytesPerImage;
 
     [desc release];
     return _resourceManager.AddResource(texture);
@@ -307,6 +309,15 @@ TextureId MetalDevice::CreateTextureCube(PixelFormat format, uint32_t width, uin
     return CreateTexture(params);
 }
 
+void MetalDevice::UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) {
+    dg_assert_nm(slice >= 0 && srcData != nullptr);
+    MetalTexture* texture = _resourceManager.GetResource<MetalTexture>(textureId);
+    dg_assert_nm(texture);
+
+    MTLRegion region = MTLRegionMake2D(0, 0, texture->mtlTexture.width, texture->mtlTexture.height);
+    [texture->mtlTexture replaceRegion:region mipmapLevel:0 slice:slice withBytes:srcData bytesPerRow:texture->bytesPerRow bytesPerImage:texture->bytesPerImage];
+}
+
 uint8_t* MetalDevice::MapMemory(BufferId bufferId, BufferAccess access) {
     MetalBuffer* buffer = _resourceManager.GetResource<MetalBuffer>(bufferId);
     if (!(buffer->desc.accessFlags & BufferAccessFlags::CpuWriteBit)) {
@@ -324,6 +335,8 @@ void                                                        MetalDevice::RenderF
     [_view display];
     _commandBuffers.clear();
 }
+
+#pragma mark - Rawr
 
 void MetalDevice::SubmitToGPU() {
     dispatch_semaphore_wait(_inflightSemaphore, DISPATCH_TIME_FOREVER);
@@ -381,7 +394,8 @@ void MetalDevice::SubmitToGPU() {
             [encoder setFrontFacingWinding:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.windingOrder)];
             [encoder setCullMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.cullMode)];
             [encoder setTriangleFillMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.fillMode)];
-            // TODO: actually use vertex streams
+
+            // TODO actually use vertex streams
             MetalBuffer* vertexBuffer = _resourceManager.GetResource<MetalBuffer>(streamPtr[0].vertexBuffer);
             [encoder setVertexBuffer:vertexBuffer->mtlBuffer offset:0 atIndex:0];
 

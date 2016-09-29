@@ -13,11 +13,11 @@
 class RenderServiceLocator {
 public:
     virtual ~RenderServiceLocator() {}
-    virtual MaterialCache*         GetMaterialCache()         = 0;
-    virtual MeshCache*             GetMeshCache()             = 0;
-    virtual ShaderCache*           GetShaderCache()           = 0;
-    virtual VertexLayoutCache*     GetVertexLayoutCache()     = 0;
-    virtual PipelineStateCache*    GetPipelineStateCache()    = 0;
-    virtual gfx::RenderDevice*     GetRenderDevice()          = 0;
-    virtual ConstantBufferManager* GetConstantBufferManager() = 0;
+    virtual MaterialCache*         materialCache()         = 0;
+    virtual MeshCache*             meshCache()             = 0;
+    virtual ShaderCache*           shaderCache()           = 0;
+    virtual VertexLayoutCache*     vertexLayoutCache()     = 0;
+    virtual PipelineStateCache*    pipelineStateCache()    = 0;
+    virtual ConstantBufferManager* constantBufferManager() = 0;
+    virtual DebugDrawInterface*    debugDraw()             = 0;
 };

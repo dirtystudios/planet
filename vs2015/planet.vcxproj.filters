@@ -123,6 +123,26 @@
     </ClCompile>
     <ClCompile Include="..\src\ui\UIDomTree.cpp">
       <Filter>ui</Filter>
+    <ClCompile Include="..\src\render\renderers\terrain\GPUTileBuffer.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\TerrainElevationLayerRenderer.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\TerrainElevationTileProducer.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\TerrainNodeKey.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\TerrainQuadNode.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\TerrainQuadTree.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\TerrainRenderer.cpp">
+      <Filter>render\renderers\terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -554,6 +574,50 @@
     </ClInclude>
     <ClInclude Include="..\src\ui\UIDomTree.h">
       <Filter>ui</Filter>
+    <ClInclude Include="..\src\render\renderers\terrain\GPUTileBuffer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\GPUTileCache.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainElevationLayerRenderer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainElevationTile.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainElevationTileProducer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainLayerRenderer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainLayerType.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainNodeKey.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainQuadNode.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainQuadNodeSelector.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainQuadTree.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainRenderer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainTile.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainTileProducer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\BlockingQueue.h">
+      <Filter>utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -628,6 +692,8 @@
     </Filter>
     <Filter Include="ui\frametypes">
       <UniqueIdentifier>{f775d85d-2263-43bc-add7-084cb66bd891}</UniqueIdentifier>
+    <Filter Include="render\renderers\terrain">
+      <UniqueIdentifier>{1556d870-e17c-4816-8d17-53791598c267}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

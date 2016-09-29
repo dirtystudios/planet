@@ -43,6 +43,7 @@ namespace gfx {
         void* MapBufferPointer(ID3D11Buffer* buffer, D3D11_MAP usage);
         void UnMapBufferPointer(ID3D11Buffer* buffer);
         void UpdateBufferData(ID3D11Buffer* buffer, void* data, size_t len);
+        void UpdateSubResource(ID3D11Resource* tex, uint32_t subresource, const D3D11_BOX& box, const void* data, uint32_t rowPitch, uint32_t rowDepth);
         void SetVertexCBuffer(size_t handle, uint32_t slot, ID3D11Buffer* buffer);
         void SetPixelCBuffer(size_t handle, uint32_t slot, ID3D11Buffer* buffer);
 

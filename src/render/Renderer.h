@@ -7,36 +7,32 @@
 
 class RenderEngine;
 
-class Renderer : public RenderServiceLocator {
+class Renderer {
 private:
     friend RenderEngine;
 
 private:
+    gfx::RenderDevice*    _device{};
     RenderServiceLocator* _renderServiceLocator{nullptr};
     bool                  _isActive{true};
 
+protected:
 public:
     Renderer();
     virtual ~Renderer();
 
     virtual void SetActive(bool isActive) { _isActive = isActive; }
-    virtual bool IsActive() const { return _isActive; }
+    virtual bool                IsActive() const { return _isActive; }
 
-    // RenderServiceLocation impl
-    ShaderCache*           GetShaderCache() override;
-    PipelineStateCache*    GetPipelineStateCache() override;
-    gfx::RenderDevice*     GetRenderDevice() override;
-    VertexLayoutCache*     GetVertexLayoutCache() override;
-    MeshCache*             GetMeshCache() override;
-    ConstantBufferManager* GetConstantBufferManager() override;
-    MaterialCache*         GetMaterialCache() override;
+    gfx::RenderDevice*    device() { return _device; }
+    RenderServiceLocator* services() { return _renderServiceLocator; };
 
 protected:
     virtual void OnInit();
     virtual void OnDestroy();
 
 private:
-    void Init(RenderServiceLocator* serviceLocator);
+    void Init(gfx::RenderDevice* device, RenderServiceLocator* serviceLocator);
     virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
 };
 

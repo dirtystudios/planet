@@ -124,13 +124,13 @@ void TextRenderer::OnInit() {
         glyph.width       = static_cast<float>(g->bitmap.width);
         glyph.height      = static_cast<float>(g->bitmap.rows);
 
-        _maxGlyphHeight = std::max(_maxGlyphHeight, g->bitmap.rows);
+        _maxGlyphHeight   = std::max(_maxGlyphHeight, g->bitmap.rows);
         _currentRowHeight = std::max(_currentRowHeight, regionHeight);
         _xOffset += regionWidth;
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
-    _glyphAtlas = GetRenderDevice()->CreateTexture2D(gfx::PixelFormat::R8Unorm, kAtlasWidth, kAtlasHeight, buffer);
+    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, kAtlasWidth, kAtlasHeight, buffer);
     assert(_glyphAtlas || "Failed to create glyph atlas");
 
     delete[] buffer;
@@ -140,14 +140,14 @@ void TextRenderer::OnInit() {
     _vertexBufferSize    = kVertexBufferSize;
     _vertexBufferOffset  = 0;
     gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, _vertexBufferSize);
-    _vertexBuffer        = GetRenderDevice()->AllocateBuffer(desc);
+    _vertexBuffer        = device()->AllocateBuffer(desc);
     assert(_vertexBuffer);
 
     gfx::BufferDesc cDesc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kCursorBufferSize);
-    _cursorBuffer = GetRenderDevice()->AllocateBuffer(desc);
+    _cursorBuffer         = device()->AllocateBuffer(desc);
     assert(_cursorBuffer);
 
-    _viewData = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
+    _viewData = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
     assert(_viewData);
 
     gfx::BlendState bs;
@@ -159,10 +159,10 @@ void TextRenderer::OnInit() {
 
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
-    encoder.SetVertexLayout(GetVertexLayoutCache()->GetPos3fTex2f());
+    encoder.SetVertexLayout(services()->vertexLayoutCache()->GetPos3fTex2f());
     encoder.SetBlendState(bs);
-    encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "text"));
-    encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "text"));
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "text"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "text"));
     encoder.BindResource(_viewData->GetBinding(1));
     encoder.BindTexture(0, _glyphAtlas, gfx::ShaderStageFlags::AllStages);
     encoder.SetVertexBuffer(_vertexBuffer);
@@ -171,10 +171,10 @@ void TextRenderer::OnInit() {
 
     gfx::StateGroupEncoder cursorEncoder;
     cursorEncoder.Begin();
-    cursorEncoder.SetVertexLayout(GetVertexLayoutCache()->Pos3f());
+    cursorEncoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
     cursorEncoder.SetBlendState(bs);
-    cursorEncoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "cursor"));
-    cursorEncoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "cursor"));
+    cursorEncoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "cursor"));
+    cursorEncoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "cursor"));
     cursorEncoder.BindResource(_viewData->GetBinding(1));
     cursorEncoder.SetVertexBuffer(_cursorBuffer);
     cursorEncoder.SetPrimitiveType(gfx::PrimitiveType::Lines);
@@ -186,7 +186,7 @@ TextRenderer::~TextRenderer() {}
 void TextRenderer::Unregister(TextRenderObj* renderObj) { assert(false); }
 
 void TextRenderer::Register(TextRenderObj* textRenderObj) {
-    textRenderObj->_constantBuffer = GetConstantBufferManager()->GetConstantBuffer(sizeof(TextConstants));
+    textRenderObj->_constantBuffer = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextConstants));
     textRenderObj->_cursorPos      = 0;
 
     gfx::StateGroupEncoder encoder;
@@ -210,7 +210,7 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
     size_t bufferOffset = renderObj->_mesh.vertexOffset * sizeof(GlyphVertex);
     assert(bufferOffset + (renderObj->_text.length() * quadSizeInBytes) < _vertexBufferSize);
 
-    uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);
+    uint8_t* mapped = device()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);
     assert(mapped);
     GlyphVertex* vertices = reinterpret_cast<GlyphVertex*>(mapped + bufferOffset);
 
@@ -257,7 +257,7 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
         renderObj->_glyphXOffsets.emplace_back(penX);
     }
 
-    GetRenderDevice()->UnmapMemory(_vertexBuffer);
+    device()->UnmapMemory(_vertexBuffer);
 }
 
 const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
@@ -282,7 +282,7 @@ const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
     drawCall.primitiveCount = renderObj->_mesh.vertexCount;
     drawCall.offset         = renderObj->_mesh.vertexOffset;
 
-    return gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &renderObj->_group, 1);
+    return gfx::DrawItemEncoder::Encode(device(), drawCall, &renderObj->_group, 1);
 }
 
 const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj) {
@@ -301,21 +301,21 @@ const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj
     float cursorX = renderObj->_glyphXOffsets[cursorPos];
     float cursorY = renderObj->_posY;
 
-    uint8_t* mapped = GetRenderDevice()->MapMemory(_cursorBuffer, gfx::BufferAccess::Write);
+    uint8_t* mapped = device()->MapMemory(_cursorBuffer, gfx::BufferAccess::Write);
     assert(mapped);
     CursorPosVertex* vertices = reinterpret_cast<CursorPosVertex*>(mapped);
 
     vertices[0] = {{cursorX, cursorY, 0.f}};
     vertices[1] = {{cursorX, cursorY + _maxGlyphHeight, 0.f}};
 
-    GetRenderDevice()->UnmapMemory(_cursorBuffer);
+    device()->UnmapMemory(_cursorBuffer);
 
     gfx::DrawCall drawCall;
     drawCall.type           = gfx::DrawCall::Type::Arrays;
     drawCall.primitiveCount = renderObj->_mesh.vertexCount;
     drawCall.offset         = renderObj->_mesh.vertexOffset;
 
-    return gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, &renderObj->_cursorGroup, 1);
+    return gfx::DrawItemEncoder::Encode(device(), drawCall, &renderObj->_cursorGroup, 1);
 }
 
 void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {

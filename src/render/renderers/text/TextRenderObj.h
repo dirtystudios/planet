@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-#include <memory>
 #include <glm/glm.hpp>
+#include <memory>
+#include <string>
 #include "ConstantBuffer.h"
 #include "Mesh.h"
 #include "RenderObj.h"

@@ -52,10 +52,10 @@ public:
     DebugRenderer();
 
     virtual void AddLine2D(const glm::vec2& start, const glm::vec2& end, glm::vec3 color) final;
-    virtual void AddRect2D(const Rect2Df& rect, const glm::vec3& color, bool filled = false) final;
+    virtual void AddRect2D(const dm::Rect2Df& rect, const glm::vec3& color, bool filled = false) final;
 
     virtual void AddLine3D(const glm::vec3& start, const glm::vec3& end, glm::vec3 color) final;
-    virtual void AddRect3D(const Rect3Df& rect, const glm::vec3& color, bool filled = false) final;
+    virtual void AddRect3D(const dm::Rect3Df& rect, const glm::vec3& color, bool filled = false) final;
 
 private:
     virtual void OnInit() final;

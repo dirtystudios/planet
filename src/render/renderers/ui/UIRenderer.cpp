@@ -20,9 +20,9 @@ struct FrameVertex {
 static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 48;
 
 void UIRenderer::OnInit() {
-    _viewData            = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
+    _viewData            = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
     gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize);
-    _vertexBuffer        = GetRenderDevice()->AllocateBuffer(desc);
+    _vertexBuffer        = device()->AllocateBuffer(desc);
     _bufferOffset        = 0;
     _bufferSize          = kDefaultVertexBufferSize;
 
@@ -43,13 +43,11 @@ void UIRenderer::OnInit() {
 
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
-    encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "ui"));
-    encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "ui"));
-    gfx::VertexLayoutDesc vld = {{
-        {gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
-        {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float}
-    }};
-    encoder.SetVertexLayout(GetVertexLayoutCache()->Get(vld));
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "ui"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "ui"));
+    gfx::VertexLayoutDesc vld = {{{gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
+                                  {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float}}};
+    encoder.SetVertexLayout(services()->vertexLayoutCache()->Get(vld));
     encoder.SetBlendState(blendState);
     encoder.SetDepthState(depthState);
     encoder.SetRasterState(rasterState);
@@ -100,20 +98,20 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     uiRenderObj->_drawCall.offset         = _bufferOffset / sizeof(FrameVertex);
 
     // pack all frames into a single buffer
-    uint8_t* mapped = GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);
+    uint8_t* mapped = device()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);
     assert(mapped);
     memcpy(&mapped[_bufferOffset], &vertices, verticesSize);
-    GetRenderDevice()->UnmapMemory(_vertexBuffer);
+    device()->UnmapMemory(_vertexBuffer);
     _bufferOffset += verticesSize;
 
-    uiRenderObj->_frameData = GetConstantBufferManager()->GetConstantBuffer(sizeof(UIFrameConstants));
+    uiRenderObj->_frameData = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIFrameConstants));
 
     gfx::StateGroupEncoder encoder;
     encoder.Begin(_base);
     encoder.BindResource(uiRenderObj->_frameData->GetBinding(2));
     uiRenderObj->_group = encoder.End();
 
-    uiRenderObj->_item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), uiRenderObj->_drawCall, &uiRenderObj->_group, 1);
+    uiRenderObj->_item = gfx::DrawItemEncoder::Encode(device(), uiRenderObj->_drawCall, &uiRenderObj->_group, 1);
 
     _objs.push_back(uiRenderObj);
 }

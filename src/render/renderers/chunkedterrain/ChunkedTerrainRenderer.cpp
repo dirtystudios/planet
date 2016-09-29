@@ -1,11 +1,11 @@
 #include "ChunkedTerrainRenderer.h"
+#include <glm/gtx/transform.hpp>
 #include "ChunkedTerrain.h"
-#include "Spatial.h"
-#include "MeshGeneration.h"
 #include "ChunkedTerrainVertex.h"
 #include "GPUTextureArrayBuffer.h"
 #include "Log.h"
-#include <glm/gtx/transform.hpp>
+#include "MeshGeneration.h"
+#include "Spatial.h"
 
 ChunkedTerrainRenderer::~ChunkedTerrainRenderer() {
     // TODO: Cleanup renderObjs
@@ -13,11 +13,11 @@ ChunkedTerrainRenderer::~ChunkedTerrainRenderer() {
 
 void ChunkedTerrainRenderer::OnInit() {
     gfx::PipelineStateDesc psd;
-    psd.vertexShader = GetShaderCache()->Get(gfx::ShaderType::VertexShader, "diffuse");
-    psd.pixelShader  = GetShaderCache()->Get(gfx::ShaderType::PixelShader, "diffuse");
-    psd.vertexLayout = GetVertexLayoutCache()->Get(ChunkedTerrainVertex::GetVertexLayoutDesc());
+    psd.vertexShader = services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "diffuse");
+    psd.pixelShader  = services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "diffuse");
+    psd.vertexLayout = services()->vertexLayoutCache()->Get(ChunkedTerrainVertex::GetVertexLayoutDesc());
     psd.topology     = gfx::PrimitiveType::Triangles;
-    _defaultPS       = GetPipelineStateCache()->Get(psd);
+    _defaultPS       = services()->pipelineStateCache()->Get(psd);
     assert(_defaultPS);
 }
 

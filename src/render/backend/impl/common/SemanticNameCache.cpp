@@ -23,4 +23,4 @@ namespace gfx {
         }
         return semanticName;
     }
-}
+    }

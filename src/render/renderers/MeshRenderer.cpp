@@ -24,9 +24,9 @@ struct MaterialConstants {
     glm::vec3 ke;
     float ns;
 };
-Material* mat;
+Material*              mat;
 const gfx::StateGroup* _base;
-const gfx::DrawItem* _item{nullptr};
+const gfx::DrawItem*   _item{nullptr};
 MeshRenderer::~MeshRenderer() {
     // TODO: Cleanup renderObjs
 }
@@ -34,15 +34,15 @@ MeshRenderer::~MeshRenderer() {
 void MeshRenderer::OnInit() {
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
-    encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "blinn"));
-    encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
-    encoder.SetVertexLayout(GetVertexLayoutCache()->Pos3fNormal3fTex2f());
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "blinn"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
+    encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3fNormal3fTex2f());
     _base = encoder.End();
 
-    cb1  = GetConstantBufferManager()->GetConstantBuffer(sizeof(MeshConstants));
-    cb2  = GetConstantBufferManager()->GetConstantBuffer(sizeof(MaterialConstants));
-    mesh = GetMeshCache()->Get("roxas/roxas.obj");
-    mat  = GetMaterialCache()->Get("roxas/roxas.obj", GetShaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
+    cb1  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants));
+    cb2  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MaterialConstants));
+    mesh = services()->meshCache()->Get("roxas/roxas.obj");
+    mat  = services()->materialCache()->Get("roxas/roxas.obj", services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
 }
 
 void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
@@ -65,7 +65,7 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
 
         std::vector<const gfx::StateGroup*> groups = {sg, renderQueue->defaults};
 
-        _item = gfx::DrawItemEncoder::Encode(GetRenderDevice(), drawCall, groups.data(), groups.size());
+        _item = gfx::DrawItemEncoder::Encode(device(), drawCall, groups.data(), groups.size());
         delete sg;
     }
 

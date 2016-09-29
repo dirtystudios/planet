@@ -34,11 +34,11 @@ GLDevice::GLDevice() {
     this->DeviceConfig.ShaderExtension    = ".glsl";
     this->DeviceConfig.DeviceAbbreviation = "GL";
     this->DeviceConfig.ShaderDir          = "GL";
+
+    _commandBufferPool.reset(new Pool<CommandBuffer>(32));
 }
 
-RenderDeviceApi GLDevice::GetDeviceApi() {
-    return RenderDeviceApi::OpenGL;
-}
+RenderDeviceApi GLDevice::GetDeviceApi() { return RenderDeviceApi::OpenGL; }
 GLDevice::~GLDevice() {}
 
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
@@ -500,7 +500,7 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
 }
 
 CommandBuffer* GLDevice::CreateCommandBuffer() {
-    CommandBuffer* cmdBuffer = _commandBufferPool.Get();
+    CommandBuffer* cmdBuffer = _commandBufferPool->construct();
     assert(cmdBuffer);
     cmdBuffer->Reset();
     return cmdBuffer;

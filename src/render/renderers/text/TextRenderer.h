@@ -12,15 +12,15 @@
 class TextRenderer : public TypedRenderer<TextRenderObj> {
 private:
     struct Glyph {
-        Glyph(const Rect2Df& region) : region(region) {}
-        
-        const Rect2Df region;
-        float xAdvance{0};
-        float yAdvance{0};
-        float xOffset{0};
-        float yOffset{0};
-        float width{0};
-        float height{0};
+        Glyph(const dm::Rect2Df& region) : region(region) {}
+
+        const dm::Rect2Df region;
+        float             xAdvance{0};
+        float             yAdvance{0};
+        float             xOffset{0};
+        float             yOffset{0};
+        float             width{0};
+        float             height{0};
     };
 
     const gfx::StateGroup* _base;

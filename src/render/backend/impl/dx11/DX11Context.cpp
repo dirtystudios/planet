@@ -85,6 +85,10 @@ namespace gfx {
         m_devcon->Unmap(buffer, 0);
     }
 
+    void DX11Context::UpdateSubResource(ID3D11Resource* tex, uint32_t subresource, const D3D11_BOX& box, const void* data, uint32_t rowPitch, uint32_t rowDepth) {
+        m_devcon->UpdateSubresource(tex, subresource, &box, data, rowPitch, rowDepth);
+    }
+
     void DX11Context::SetVertexCBuffer(size_t handle, uint32_t slot, ID3D11Buffer* buffer) {
         auto it = m_currentState.vsCBuffers.find(slot);
         if (it == m_currentState.vsCBuffers.end()) {

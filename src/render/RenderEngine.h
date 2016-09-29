@@ -14,6 +14,7 @@
 #include "ShaderCache.h"
 #include "SimObj.h"
 #include "StateGroup.h"
+#include "TerrainRenderer.h"
 #include "VertexLayoutCache.h"
 //
 // struct RenderScene {
@@ -59,13 +60,15 @@ class TextRenderer;
 class MeshRenderer;
 class UIRenderer;
 class DebugRenderer;
+class TerrainRenderer;
 
 struct Renderers {
-    std::unique_ptr<SkyRenderer>   sky;
-    std::unique_ptr<TextRenderer>  text;
-    std::unique_ptr<MeshRenderer>  mesh;
-    std::unique_ptr<UIRenderer>    ui;
-    std::unique_ptr<DebugRenderer> debug;
+    std::unique_ptr<SkyRenderer>     sky;
+    std::unique_ptr<TextRenderer>    text;
+    std::unique_ptr<MeshRenderer>    mesh;
+    std::unique_ptr<UIRenderer>      ui;
+    std::unique_ptr<DebugRenderer>   debug;
+    std::unique_ptr<TerrainRenderer> terrain;
 };
 
 class RenderEngine : public RenderServiceLocator {
@@ -92,15 +95,13 @@ public:
     Renderers& Renderers() { return _renderers; }
     void       RenderFrame();
 
-    ShaderCache*           GetShaderCache() override;
-    PipelineStateCache*    GetPipelineStateCache() override;
-    gfx::RenderDevice*     GetRenderDevice() override;
-    VertexLayoutCache*     GetVertexLayoutCache() override;
-    MeshCache*             GetMeshCache() override;
-    ConstantBufferManager* GetConstantBufferManager() override;
-    MaterialCache*         GetMaterialCache() override;
-
-    DebugDrawInterface* debugDraw();
+    ShaderCache*           shaderCache() override;
+    PipelineStateCache*    pipelineStateCache() override;
+    VertexLayoutCache*     vertexLayoutCache() override;
+    MeshCache*             meshCache() override;
+    ConstantBufferManager* constantBufferManager() override;
+    MaterialCache*         materialCache() override;
+    DebugDrawInterface*    debugDraw() override;
 
 private:
 };

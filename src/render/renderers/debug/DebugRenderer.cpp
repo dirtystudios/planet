@@ -1,11 +1,14 @@
 #include "DebugRenderer.h"
 #include "DrawItemEncoder.h"
+#include "StateGroupDecoder.h"
 #include "StateGroupEncoder.h"
 #include "glm/gtc/matrix_transform.hpp"
 
+using namespace dm;
+
 constexpr float  kLineWidth               = 1.f;
 constexpr float  kHalfLineWidth           = kLineWidth / 2.f;
-constexpr size_t kDefaultVertexBufferSize = 1024;
+constexpr size_t kDefaultVertexBufferSize = sizeof(DebugVertex) * 4096;
 
 static glm::vec3 to3(const glm::vec2& v) { return {v.x, v.y, 0}; }
 
@@ -13,11 +16,11 @@ DebugRenderer::DebugRenderer() {}
 
 void DebugRenderer::OnInit() {
 
-    _3DviewConstants = GetConstantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
-    _2DviewConstants = GetConstantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
+    _3DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
+    _2DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
 
     gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize);
-    _vertexBuffer        = GetRenderDevice()->AllocateBuffer(desc);
+    _vertexBuffer        = device()->AllocateBuffer(desc);
 
     gfx::BlendState blendState;
     blendState.enable = false;
@@ -41,9 +44,9 @@ void DebugRenderer::OnInit() {
     const gfx::StateGroup* bind3D = encoder.End();
 
     encoder.Begin();
-    encoder.SetVertexShader(GetShaderCache()->Get(gfx::ShaderType::VertexShader, "debug"));
-    encoder.SetPixelShader(GetShaderCache()->Get(gfx::ShaderType::PixelShader, "debug"));
-    encoder.SetVertexLayout(GetVertexLayoutCache()->Get(DebugVertex::vertexLayoutDesc()));
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "debug"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "debug"));
+    encoder.SetVertexLayout(services()->vertexLayoutCache()->Get(DebugVertex::vertexLayoutDesc()));
     encoder.SetBlendState(blendState);
     encoder.SetDepthState(depthState);
     encoder.SetRasterState(rasterState);
@@ -62,6 +65,8 @@ void DebugRenderer::OnInit() {
     _3DfilledSG    = gfx::StateGroupEncoder::Merge({bind3D, filledSG});
     _3DwireframeSG = gfx::StateGroupEncoder::Merge({bind3D, wireframeSG});
 
+    gfx::StateGroupDecoder decoder(filledSG);
+    decoder.ReadRasterState(&rasterState);
     delete filledSG;
     delete wireframeSG;
     delete bind2D;
@@ -104,25 +109,24 @@ void DebugRenderer::AddLine3D(const glm::vec3& start, const glm::vec3& end, glm:
 }
 void DebugRenderer::AddRect3D(const Rect3Df& rect, const glm::vec3& color, bool filled) {
     DebugVertexVec& buffer = filled ? _buffers.filled3D : _buffers.wireframe3D;
-
-    if(filled) {
+    
+    if (filled) {
         buffer.push_back({rect.bl(), {0, 0}, color});
         buffer.push_back({rect.br(), {0, 0}, color});
         buffer.push_back({rect.tr(), {0, 0}, color});
-        
         buffer.push_back({rect.tr(), {0, 0}, color});
         buffer.push_back({rect.tl(), {0, 0}, color});
         buffer.push_back({rect.bl(), {0, 0}, color});
     } else {
         buffer.push_back({rect.bl(), {0, 0}, color});
         buffer.push_back({rect.br(), {0, 0}, color});
-        
+
         buffer.push_back({rect.br(), {0, 0}, color});
         buffer.push_back({rect.tr(), {0, 0}, color});
-        
+
         buffer.push_back({rect.tr(), {0, 0}, color});
         buffer.push_back({rect.tl(), {0, 0}, color});
-        
+
         buffer.push_back({rect.tl(), {0, 0}, color});
         buffer.push_back({rect.bl(), {0, 0}, color});
     }
@@ -153,7 +157,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
         _3DviewConstants->Unmap();
     }
 
-    DebugVertex* ptr = reinterpret_cast<DebugVertex*>(GetRenderDevice()->MapMemory(_vertexBuffer, gfx::BufferAccess::Write));
+    DebugVertex* ptr = reinterpret_cast<DebugVertex*>(device()->MapMemory(_vertexBuffer, gfx::BufferAccess::Write));
     dg_assert_nm(ptr != nullptr);
     {
         if (_buffers.filled2D.size() > 0) {
@@ -161,7 +165,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
 
             memcpy(ptr + drawCall.offset, _buffers.filled2D.data(), sizeof(DebugVertex) * _buffers.filled2D.size());
 
-            _drawItems.push_back(encoder.Encode(GetRenderDevice(), drawCall, {_2DfilledSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DfilledSG}));
             drawCall.offset += _buffers.filled2D.size();
             _buffers.filled2D.clear();
         }
@@ -171,7 +175,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
 
             memcpy(ptr + drawCall.offset, _buffers.wireframe2D.data(), sizeof(DebugVertex) * _buffers.wireframe2D.size());
 
-            _drawItems.push_back(encoder.Encode(GetRenderDevice(), drawCall, {_2DwireframeSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DwireframeSG}));
             drawCall.offset += _buffers.wireframe2D.size();
             _buffers.wireframe2D.clear();
         }
@@ -181,7 +185,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
 
             memcpy(ptr + drawCall.offset, _buffers.filled3D.data(), sizeof(DebugVertex) * _buffers.filled3D.size());
 
-            _drawItems.push_back(encoder.Encode(GetRenderDevice(), drawCall, {_3DfilledSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DfilledSG}));
             drawCall.offset += _buffers.filled3D.size();
             _buffers.filled3D.clear();
         }
@@ -191,12 +195,12 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
 
             memcpy(ptr + drawCall.offset, _buffers.wireframe3D.data(), sizeof(DebugVertex) * _buffers.wireframe3D.size());
 
-            _drawItems.push_back(encoder.Encode(GetRenderDevice(), drawCall, {_3DwireframeSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DwireframeSG}));
             drawCall.offset += _buffers.wireframe3D.size();
             _buffers.wireframe3D.clear();
         }
     }
-    GetRenderDevice()->UnmapMemory(_vertexBuffer);
+    device()->UnmapMemory(_vertexBuffer);
 
     for (const gfx::DrawItem* item : _drawItems) {
         renderQueue->AddDrawItem(24, item);

@@ -1,6 +1,11 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <sstream>
+#include <string>
+#include "Helpers.h"
+
+namespace dm {
 
 template <typename T>
 class Rect2D {
@@ -48,3 +53,10 @@ public:
 };
 
 using Rect3Df = Rect3D<float>;
+
+static std::string ToString(const Rect3D<float>& rect) {
+    std::stringstream ss;
+    ss << "Rect[bl:" << rect.bl() << " br:" << rect.br() << " tr:" << rect.tr() << " tr:" << rect.tr() << "]";
+    return ss.str();
+}
+}

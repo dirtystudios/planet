@@ -51,13 +51,16 @@ namespace input {
             }
         }
 
-        template<ContextBindingType T>
+        template <ContextBindingType T>
         ContextBinding* GetContextBinding(int index) {
             switch (T) {
-            case ContextBindingType::Action: return &contextActionBindings[index];
-            case ContextBindingType::Axis: return &contextAxisBindings[index];
-            default: return 0;
+                case ContextBindingType::Action:
+                    return &contextActionBindings[index];
+                case ContextBindingType::Axis:
+                    return &contextAxisBindings[index];
+                default:
+                    return 0;
             }
         }
     };
-}
+    }

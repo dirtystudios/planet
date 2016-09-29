@@ -26,12 +26,13 @@ private:
 
     SimpleShaderLibrary _lib;
 
-    std::vector<CommandBuffer*> _submittedBuffers;
-    std::vector<ShaderLibrary*> _libraries;
-    Pool<CommandBuffer, 1> _commandBufferPool;
+    std::vector<CommandBuffer*>          _submittedBuffers;
+    std::vector<ShaderLibrary*>          _libraries;
+    std::unique_ptr<Pool<CommandBuffer>> _commandBufferPool;
 
-    GLVaoCache _vaoCache;
+    GLVaoCache      _vaoCache;
     ResourceManager _resourceManager;
+
 public:
     GLDevice();
     ~GLDevice();
@@ -51,7 +52,7 @@ public:
     TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
     TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data);
     VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& desc);
-
+    void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) { return; }
     void DestroyResource(ResourceId resourceId);
 
     CommandBuffer* CreateCommandBuffer();

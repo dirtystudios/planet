@@ -60,12 +60,14 @@ public:
     TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
     TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
     TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data);
-    void          PrintDisplayAdapterInfo() {}
+    void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData);
+    void PrintDisplayAdapterInfo() {}
     void DestroyResource(ResourceId resourceId) {}
     void UnmapMemory(BufferId bufferId) {}
 
     // RenderDelegate Interface
     void SubmitToGPU();
+
 private:
     TextureId CreateTexture(const CreateTextureParams& params);
 };
