@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Log.h"
-#include "Callback.h"
+#include <functional>
 #include <string>
 #include <cstring>
 #include <sstream>
@@ -13,7 +13,7 @@ namespace config {
     // The string vector contains the 'args' of the function
     // the function will have to parse and verify the args as it see's fit
     // The return is displayed in the console...maybe
-    typedef Callback<std::string(const std::vector<std::string> &)> ConsoleCommandCallback;
+    typedef std::function<std::string(const std::vector<std::string>&)> ConsoleCommandCallback;
 
     // Yey more singletons
     class ConsoleCommands {

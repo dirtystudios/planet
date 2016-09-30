@@ -118,7 +118,7 @@ void SetupInputBindings() {
 
 void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
-    uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, *viewport);
+    uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport);
 
     SimObj*  worldFrame = simulation.AddSimObj();
     UI*      ui         = worldFrame->AddComponent<UI>(ComponentType::UI);

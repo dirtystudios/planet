@@ -65,13 +65,13 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
             // for now label type is always shown
             Label*    label = dynamic_cast<Label*>((uiFrame.get()));
             glm::vec3 color = {label->GetColor()[0], label->GetColor()[1], label->GetColor()[2]};
-            auto      textRO  = new TextRenderObj(label->GetText(), scaled.x, scaled.y, scaled.z, color);
+            auto      textRO  = new TextRenderObj(label->GetText(), scaled.x+2, scaled.y+2, scaled.z, color);
             m_textRenderer->Register(textRO);
             m_textFrames.emplace(uiFrame.get(), textRO);
         } else if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
             EditBox*  ebox  = dynamic_cast<EditBox*>((uiFrame.get()));
             glm::vec3 color = {ebox->GetColor()[0], ebox->GetColor()[1], ebox->GetColor()[2]};
-            auto      textRO  = new TextRenderObj(ebox->GetText(), scaled.x, scaled.y, scaled.z, color);
+            auto      textRO  = new TextRenderObj(ebox->GetText(), scaled.x+2, scaled.y+2, scaled.z, color);
             m_textRenderer->Register(textRO);
             m_textFrames.emplace(uiFrame.get(), textRO);
 
@@ -180,8 +180,10 @@ void UIManager::PostProcess(float ms) {
         FrameScale scaled = m_focusedEditBox->GetScaledSize(m_viewport);
 
         // debug show focused editbox
-        Rect2Df rect({scaled.x, scaled.y}, {scaled.x + scaled.width, scaled.y + scaled.height});
-        m_debugRenderer->AddRect2D(rect, {1.f, 0.f, 0.f});
+        if (m_debugDrawFocus) {
+            Rect2Df rect({ scaled.x, scaled.y }, { scaled.x + scaled.width, scaled.y + scaled.height });
+            m_debugRenderer->AddRect2D(rect, { 1.f, 0.f, 0.f });
+        }
 
         // set caret if necessary
         if (m_cursorBlink <= 0) {

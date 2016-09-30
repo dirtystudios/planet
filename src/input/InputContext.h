@@ -1,8 +1,8 @@
 #pragma once
-#include "Callback.h"
+
+#include <functional>
 #include <string>
 #include <vector>
-
 
 namespace input {
     struct InputContextCallbackArgs {
@@ -13,7 +13,7 @@ namespace input {
     };
 
     // return true if input was handled in function and should 'eat' the key
-    typedef Callback<bool(const InputContextCallbackArgs&)> InputContextCallback;
+    typedef std::function<bool(const InputContextCallbackArgs&)> InputContextCallback;
 
     struct ContextBinding {
         std::string mappingName;

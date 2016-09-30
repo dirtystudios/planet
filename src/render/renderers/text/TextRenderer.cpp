@@ -329,12 +329,12 @@ void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
         text->_constantBuffer->Unmap();
 
         text->_drawItem.reset(CreateDrawItem(text));
-        queue->AddDrawItem(2, text->_drawItem.get()); // TODO:: sortkeys based on pass....text needs to be rendered after sky
+        queue->AddDrawItem(3, text->_drawItem.get()); // TODO:: sortkeys based on pass....text needs to be rendered after sky
         if (text->_cursorEnabled) {
             if (drewCursor)
                 LOG_D("[Text] Multiple Cursors detected and unsupported.");
             text->_cursorDrawItem.reset(CreateCursorDrawItem(text));
-            queue->AddDrawItem(1, text->_cursorDrawItem.get());
+            queue->AddDrawItem(2, text->_cursorDrawItem.get());
             drewCursor = true;
         }
     }

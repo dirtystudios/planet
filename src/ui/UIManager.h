@@ -1,6 +1,7 @@
 #pragma once
 #include "DebugDrawInterface.h"
 #include "EditBox.h"
+#include "ConsoleCommands.h"
 #include "InputManager.h"
 #include "KeyboardManager.h"
 #include "Label.h"
@@ -35,22 +36,24 @@ private:
     // only 1 thing should have focus at a time, so these can go here
     float                   m_cursorBlink    = 0;
     bool                    m_drawCaret      = false;
+    bool                    m_debugDrawFocus = true;
     EditBox*                m_focusedEditBox = 0;
     input::KeyboardManager* m_keyboardManager;
     input::InputContext*    m_uiInputContext;
+    input::InputContext*    m_debugContext;
     bool                    m_mouseDown = false;
     float                   m_mouseX = 0.f, m_mouseY = 0.f;
 
 public:
-    UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, Viewport viewport)
-        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext) {
+    UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, input::InputContext* debugContext, Viewport viewport)
+        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext) {
 
-        m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX",
-                                                                       BIND_MEM_CB(&UIManager::HandleMouseX, this));
-        m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY",
-                                                                       BIND_MEM_CB(&UIManager::HandleMouseY, this));
-        m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1",
-                                                                         BIND_MEM_CB(&UIManager::HandleMouse1, this));
+        m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", std::bind(&UIManager::HandleMouseX, this, std::placeholders::_1));
+        m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", std::bind(&UIManager::HandleMouseY, this, std::placeholders::_1));
+        m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1", std::bind(&UIManager::HandleMouse1, this, std::placeholders::_1));
+        
+        m_debugContext->BindContext<input::ContextBindingType::Action>("debug5", std::bind(&UIManager::ToggleDebugDraw, this, std::placeholders::_1));
+        config::ConsoleCommands::getInstance().RegisterCommand("toggleFocusDebug", std::bind(&UIManager::ToggleDebugDrawConsole, this, std::placeholders::_1));
     };
     ~UIManager() {}
 
@@ -69,6 +72,9 @@ public:
     bool HandleMouseX(const input::InputContextCallbackArgs& args);
     bool HandleMouseY(const input::InputContextCallbackArgs& args);
     bool HandleMouse1(const input::InputContextCallbackArgs& args);
+
+    bool ToggleDebugDraw(const input::InputContextCallbackArgs& args) { m_debugDrawFocus = !m_debugDrawFocus; return false; }
+    std::string ToggleDebugDrawConsole(const std::vector<std::string>&) { m_debugDrawFocus = !m_debugDrawFocus; return ""; }
 
 private:
     void PreProcess();

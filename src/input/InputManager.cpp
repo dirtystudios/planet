@@ -7,6 +7,16 @@ namespace input {
         for (int x = 0; x < (uint32_t)InputCode::COUNT; ++x) {
             actionCache.emplace_back(0);
         }
+
+        // todo: debug stuff could be disabled eventually
+        auto it = contextMappings.insert(std::make_pair((uint32_t)ContextPriority::CONTEXT_DEBUG, std::make_unique<InputContext>()));
+
+        for (uint32_t x = 0; x < static_cast<uint32_t>(InputCode::COUNT); ++x) {
+            std::string mapName = "debug";
+            mapName += ('0' + x);
+            AddActionMapping(mapName, static_cast<InputCode>(x), ActionConfig(true, true, false));
+            AddAxisMapping(mapName, static_cast<InputCode>(x), AxisConfig(1.f, 0.f));
+        }
     }
 
     bool InputManager::ShouldShowCursor() {
@@ -30,27 +40,35 @@ namespace input {
     }
 
     InputContext* InputManager::CreateNewContext(ContextPriority priority) {
-        InputContext* inputContext = new InputContext;
-        contextMappings.insert(std::make_pair((uint32_t)priority, inputContext));
-        return inputContext;
+        if (priority == ContextPriority::CONTEXT_DEBUG) {
+            LOG(Log::Level::Error, "Input", "dont create debug context euge");
+            return 0;
+        }
+        auto it = contextMappings.insert(std::make_pair((uint32_t)priority, std::make_unique<InputContext>()));
+        return it->second.get();
+    }
+
+    InputContext* InputManager::GetDebugContext() {
+        auto it = contextMappings.find((uint32_t)ContextPriority::CONTEXT_DEBUG);
+        return it->second.get();
     }
 
     KeyboardManager* InputManager::GetKeyboardManager() {
         return &m_keyboardManager;
     }
 
-    bool InputManager::ShouldSendActionEvent(float newValue, float prevValue, ActionConfig* actionConfig) {
+    bool InputManager::ShouldSendActionEvent(float newValue, float prevValue, const ActionConfig& actionConfig) {
         // this is hurting my head, so this is the logic broken down
         // we only send 'held' events if flagged, otherwise we only care about changes
         if (newValue != prevValue) {
             if (newValue > 0.f) {
                 return true;
             }
-            else if (!actionConfig->ignoreRelease) {
+            else if (!actionConfig.ignoreRelease) {
                 return true;
             }
         }
-        else if (newValue > 0.f && !actionConfig->ignoreHeld) {
+        else if (newValue > 0.f && !actionConfig.ignoreHeld) {
             return true;
         }
         return false;
@@ -114,7 +132,7 @@ namespace input {
                         if (std::find(inputHandled.begin(), inputHandled.end(), inputCode) == inputHandled.end()) {
                             float prevValue = actionCache[inputCode];
                             float newValue = inputValues[inputCode];
-                            ActionConfig* actionConfig = &mapConfig->actionConfig;
+                            const ActionConfig& actionConfig = mapConfig->actionConfig;
 
                             // pass the key/input only if binding wants event and tag it as handled.
                             if (ShouldSendActionEvent(newValue, prevValue, actionConfig)) {
@@ -122,7 +140,7 @@ namespace input {
                                 if (contextBinding->boundDelegate(InputContextCallbackArgs(newValue, mapConfig->inputFromController))) {
                                     inputHandled.emplace_back(inputCode);
 
-                                    if (actionConfig->hideCursor) m_showCursor = newValue > 0 ? false : true;
+                                    if (actionConfig.hideCursor) m_showCursor = newValue > 0 ? false : true;
                                 }
                             }
                         }

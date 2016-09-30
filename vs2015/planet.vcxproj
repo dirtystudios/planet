@@ -198,7 +198,6 @@
     <ClInclude Include="..\src\ui\UIFrame.h" />
     <ClInclude Include="..\src\ui\UIManager.h" />
     <ClInclude Include="..\src\utilities\Bytebuffer.h" />
-    <ClInclude Include="..\src\utilities\Callback.h" />
     <ClInclude Include="..\src\utilities\Config.h" />
     <ClInclude Include="..\src\utilities\ConsoleCommands.h" />
     <ClInclude Include="..\src\utilities\CpuId.h" />

@@ -25,7 +25,7 @@ private:
 
 public:
     ConsoleUI(UI* uiFrameObj, input::InputContext* inputContext) {
-        inputContext->BindContext<input::ContextBindingType::Action>("ToggleConsole", BIND_MEM_CB(&ConsoleUI::HandleConsoleKey, this));
+        inputContext->BindContext<input::ContextBindingType::Action>("ToggleConsole", std::bind(&ConsoleUI::HandleConsoleKey, this, std::placeholders::_1));
 
         UIFrame::UIFrameDesc consoleFrameDesc;
         consoleFrameDesc.name        = "ConsoleFrame";

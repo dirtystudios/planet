@@ -173,9 +173,6 @@
     <ClInclude Include="..\src\components\Skybox.h">
       <Filter>components</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\utilities\Callback.h">
-      <Filter>utilities</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\utilities\Config.h">
       <Filter>utilities</Filter>
     </ClInclude>
