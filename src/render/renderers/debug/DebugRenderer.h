@@ -5,8 +5,6 @@
 #include "DebugDrawInterface.h"
 #include "DrawItem.h"
 #include "Rectangle.h"
-#include "Rectangle.h"
-#include "Renderer.h"
 #include "Renderer.h"
 #include "StateGroup.h"
 

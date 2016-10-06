@@ -6,6 +6,7 @@ layout(std140) uniform _b2_frameConstants {
     vec4 b2_bgColor;  
     vec4 b2_borderColor;
     vec2 b2_borderSize;
+    vec3 b2_position;
 };
 
 layout (location = 0) in vec2 i_texCoords;

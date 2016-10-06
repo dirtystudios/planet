@@ -18,8 +18,10 @@ namespace ui {
         Label(LabelDesc labelDesc);
         Label(LabelDesc labelDesc, ScriptHandler* scriptHandler);
 
+        FontDesc GetFontDesc() const;
+
         std::string GetText() const;
-        float* GetColor();
+        glm::vec3 GetColor() const;
 
         // Called by UIManager
         void DoUpdate(float ms) {};

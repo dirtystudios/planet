@@ -13,22 +13,24 @@ private:
     friend UIRenderer;
 
 public:
-    UIFrameRenderObj(float x, float y, float z, float width, float height, bool isShown) : RenderObj(RendererType::Ui), _x(x), _y(y), _z(z), _w(width), _h(height), _isShown(isShown) {}
+    UIFrameRenderObj(float x, float y, float z, float width, float height, glm::vec3 rot, bool isRendered) : RenderObj(RendererType::Ui), _x(x), _y(y), _z(z), _w(width), _h(height), _isRendered(isRendered) {}
     ~UIFrameRenderObj() {}
 
     float x() const { return _x; };
     float y() const { return _y; };
     float z() const { return _z; };
+    glm::vec3 rot() const { return _rot; };
     float width() const { return _w; }
     float height() const { return _h; }
-    bool  isShown() const { return _isShown; }
+    bool  isRendered() const { return _isRendered; }
 
     void x(float x) { _x = x; }
     void y(float y) { _y = y; }
     void z(float z) { _z = z; }
+    void rot(const glm::vec3& rot) { _rot = rot; };
     void width(float w) { _w = w; }
     void height(float h) { _h = h; }
-    void isShown(bool isShown) { _isShown = isShown; }
+    void isRendered(bool isRendered) { _isRendered = isRendered; }
 
     void* operator new(size_t i) {
         return _mm_malloc(i, 16);
@@ -44,7 +46,8 @@ private:
     float _z{0.f};
     float _w{0.f};
     float _h{0.f};
-    bool  _isShown{true};
+    glm::vec3 _rot{ 0.f, 0.f, 0.f };
+    bool  _isRendered{true};
 
     gfx::DrawCall     _drawCall;
     gfx::VertexStream _stream;

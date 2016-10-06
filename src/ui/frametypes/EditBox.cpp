@@ -10,10 +10,6 @@ EditBox::EditBox(EditBoxDesc editBoxDesc)
     if (editBoxDesc.blinkSpeed <= 0.0f) {
         m_editBoxDesc.blinkSpeed = 530;
     }
-
-    if (!editBoxDesc.font.color) {
-        m_editBoxDesc.font.color[0] = m_editBoxDesc.font.color[1] = m_editBoxDesc.font.color[2] = 1.f;
-    }
 }
 
 EditBox::EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler)
@@ -25,13 +21,10 @@ EditBox::EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler)
     if (editBoxDesc.blinkSpeed <= 0.0f) {
         m_editBoxDesc.blinkSpeed = 530;
     }
-    if (!editBoxDesc.font.color) {
-        m_editBoxDesc.font.color[0] = m_editBoxDesc.font.color[1] = m_editBoxDesc.font.color[2] = 1.f;
-    }
 }
 
 void EditBox::SetFocus() {
-    if (!m_editBoxDesc.shown)
+    if (!m_editBoxDesc.show)
         return;
 
     // this state means we got focus back before acknowledging it
@@ -56,6 +49,8 @@ void EditBox::ClearFocus() {
     }
 }
 
+FontDesc EditBox::GetFontDesc() const { return m_editBoxDesc.font; };
+
 std::string EditBox::GetText() const { return m_contents; }
 
 float EditBox::GetBlinkRate() { return m_editBoxDesc.blinkSpeed; }
@@ -68,7 +63,7 @@ void EditBox::SetColor(float* color) {
     m_editBoxDesc.font.color[2] = color[2];
 }
 
-float* EditBox::GetColor() { return m_editBoxDesc.font.color; }
+glm::vec3 EditBox::GetColor() const { return m_editBoxDesc.font.color; }
 
 void EditBox::AppendText(std::string text) { m_contents += text; }
 
@@ -85,9 +80,18 @@ void EditBox::ClearText() {
     m_contents.clear();
 }
 
-void EditBox::SetCursor(uint32_t pos) { m_cursorPos = pos; }
+void EditBox::SetCursor(uint32_t pos) { 
+    if (pos > m_contents.length())
+        m_cursorPos = m_contents.length();
+    else 
+        m_cursorPos = pos; 
+}
 
-uint32_t EditBox::GetCursor() { return m_cursorPos; }
+uint32_t EditBox::GetCursor() {
+    if (m_cursorPos > m_contents.length())
+        m_cursorPos = m_contents.length();
+    return m_cursorPos; 
+}
 
 bool EditBox::HasFocus() { return (m_textBoxState == TextBoxState::FOCUSED); }
 
@@ -102,7 +106,7 @@ void EditBox::EnterPressed() {
 }
 
 void EditBox::DoUpdate(float ms) {
-    if (!m_editBoxDesc.shown)
+    if (!m_editBoxDesc.show)
         m_textBoxState = TextBoxState::UNFOCUSED;
 
     if (m_textBoxState == TextBoxState::PENDINGFOCUS)

@@ -34,7 +34,7 @@ public:
         consoleFrameDesc.width       = 800;
         consoleFrameDesc.x           = 0.f;
         consoleFrameDesc.y           = 400.f;
-        consoleFrameDesc.shown       = false;
+        consoleFrameDesc.show        = false;
         consoleFrameDesc.acceptMouse = true;
         uiFrameObj->frames.push_back(std::make_unique<UIFrame>(consoleFrameDesc));
 
@@ -48,10 +48,10 @@ public:
         editBoxDesc.height        = 40;
         editBoxDesc.width         = 780;
         editBoxDesc.x             = 10.f;
-        editBoxDesc.y             = 410;
+        editBoxDesc.y             = 10.f;
         editBoxDesc.font.textSize = 12.f;
         editBoxDesc.blinkSpeed    = 0.f;
-        editBoxDesc.shown         = true;
+        editBoxDesc.show          = true;
         editBoxDesc.acceptMouse   = true;
         uiFrameObj->frames.push_back(std::make_unique<EditBox>(editBoxDesc, m_scriptHandler.get()));
 

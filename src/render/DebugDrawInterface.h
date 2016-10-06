@@ -1,8 +1,6 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <string>
-#include <vector>
 #include "Rectangle.h"
 
 class DebugDrawInterface {

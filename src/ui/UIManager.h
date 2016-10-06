@@ -12,6 +12,7 @@
 #include "UIFrame.h"
 #include "UIRenderer.h"
 #include "Viewport.h"
+#include "UIDomTree.h"
 
 #include <memory>
 #include <set>
@@ -21,13 +22,8 @@
 namespace ui {
 class UIManager {
 private:
-    //        TextRenderer* m_textRenderer;
-    // should probly use a tree for this, oops
-    // This stores <Parent, Child>
-    std::unordered_multimap<UIFrame*, UIFrame*> m_frameTree;
-    std::set<UIFrame*> m_parentFrames;
-    std::unordered_multimap<UIFrame*, UIFrameRenderObj*> m_uiFrames;
-    std::unordered_multimap<UIFrame*, TextRenderObj*>    m_textFrames;
+    std::vector<std::unique_ptr<UIDomTree>> m_domTrees;
+    std::vector<UIFrame*> m_uiFrames;
 
     UIRenderer*         m_uiRenderer;
     TextRenderer*       m_textRenderer;

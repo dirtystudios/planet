@@ -40,7 +40,9 @@ public:
     float GetBlinkRate();
 
     void SetColor(float* color);
-    float* GetColor();
+    glm::vec3 GetColor() const;
+
+    FontDesc GetFontDesc() const;
 
     std::string GetText() const;
     void SetText(std::string text);

@@ -17,7 +17,11 @@ namespace ui {
         return m_contents;
     }
     
-    float* Label::GetColor() {
+    FontDesc Label::GetFontDesc() const {
+        return m_labelDesc.font;
+    }
+
+    glm::vec3 Label::GetColor() const {
         return m_labelDesc.font.color;
     }
 }

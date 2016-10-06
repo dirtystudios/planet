@@ -24,21 +24,13 @@ bool UIManager::HandleMouse1(const input::InputContextCallbackArgs& args) {
         if (m_focusedEditBox)
             m_focusedEditBox->ClearFocus();
 
-        // ok.... we 'clicked', check if its within a frame and something we care about
-        // todo: handle/add layers and parent child relations
-        for (auto& uiFrame : m_uiFrames) {
-            if (!uiFrame.first->IsShown())
-                continue;
-            if (uiFrame.first->GetFrameDesc()->acceptMouse) {
-                // k this is a potential candidate, lets figure out its 'scaled' pos
-                UIFrame::UIFrameDesc* frameDesc = uiFrame.first->GetFrameDesc();
-                FrameScale scaledFrame = uiFrame.first->GetScaledSize(m_viewport);
-                if (m_mouseX > scaledFrame.x && m_mouseX < (scaledFrame.x + scaledFrame.width) &&
-                    m_mouseY > scaledFrame.y && m_mouseY < (scaledFrame.y + scaledFrame.height)) {
-
-                    uiFrame.first->OnClick();
-                    m_mouseDown = true;
-                }
+        // todo: handle/add layers
+        for (auto& tree : m_domTrees) {
+            UIFrame* frame = tree->HitTest(m_mouseX, m_mouseY);
+            if (frame) {
+                frame->OnClick();
+                m_mouseDown = true;
+                break;
             }
         }
         return m_mouseDown;
@@ -56,81 +48,40 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
     UI* ui = frameObj->GetComponent<UI>(ComponentType::UI);
     assert(ui);
 
-    for (auto& uiFrame : ui->frames) {
-        m_frameTree.emplace(uiFrame->GetParent(), uiFrame.get());
+    for (auto& uiFrameUP : ui->frames) {
+        UIFrame* uiFrame = uiFrameUP.get();
 
-        FrameScale scaled = uiFrame->GetScaledSize(m_viewport);
-
-        if (uiFrame->GetFrameType() == FrameType::LABEL) {
-            // for now label type is always shown
-            Label*    label = dynamic_cast<Label*>((uiFrame.get()));
-            glm::vec3 color = {label->GetColor()[0], label->GetColor()[1], label->GetColor()[2]};
-            auto      textRO  = new TextRenderObj(label->GetText(), scaled.x+2, scaled.y+2, scaled.z, color);
-            m_textRenderer->Register(textRO);
-            m_textFrames.emplace(uiFrame.get(), textRO);
-        } else if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
-            EditBox*  ebox  = dynamic_cast<EditBox*>((uiFrame.get()));
-            glm::vec3 color = {ebox->GetColor()[0], ebox->GetColor()[1], ebox->GetColor()[2]};
-            auto      textRO  = new TextRenderObj(ebox->GetText(), scaled.x+2, scaled.y+2, scaled.z, color);
-            m_textRenderer->Register(textRO);
-            m_textFrames.emplace(uiFrame.get(), textRO);
-
-            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, true);
-            m_uiRenderer->Register(renderObj);
-            m_uiFrames.emplace(uiFrame.get(), renderObj);
-            m_parentFrames.emplace(uiFrame->GetParent());
-        } else {
-            UIFrameRenderObj* renderObj = new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, true);
-            m_uiRenderer->Register(renderObj);
-            m_uiFrames.emplace(uiFrame.get(), renderObj);
-            m_parentFrames.emplace(uiFrame->GetParent());
+        if (uiFrame->GetParent()) {
+            m_domTrees.back().get()->InsertFrame(uiFrame);
         }
+        else {
+            m_domTrees.push_back(std::make_unique<UIDomTree>(m_textRenderer, m_uiRenderer, m_viewport));
+            m_domTrees.back().get()->SetRoot(uiFrame);
+        }
+        m_uiFrames.emplace_back(uiFrame);
     }
 }
 
 void UIManager::ProcessFrames() {
-    // todo: this probly can be optimized better eventualy
-    // yea, this whole thing should be burned in a fiery blaze
-
-    // K weed out frames not set to shown and any children
-    auto m_shownFramesTree = m_frameTree;
-
-    for (auto parentFrame : m_parentFrames) {
-        // this *should* loop through just unique keys
-        // Remove any keys from tempTree that arent shown, and any children, and their children....etc
-        if (parentFrame == 0)
-            continue;
-
-        // Handle parent and any children
-        if (!parentFrame->GetFrameDesc()->shown) {
-            RemoveChildren(parentFrame, m_shownFramesTree);
-            m_shownFramesTree.erase(parentFrame);
-        }
-    }
 
     // Dumb way to handle edit box focus', oldest frame gets it first
     // If we ignore a 'wantsfocus' it will assume it has it after we call 'doupdate'
     bool wantsFocus = false;
-    for (auto it = m_shownFramesTree.begin(); it != m_shownFramesTree.end(); ++it) {
-        if (it->first == 0)
-            continue;
-        if (it->second->GetFrameType() == FrameType::EDITBOX) {
-            if (!wantsFocus && ((EditBox*)it->second)->WantsFocus()) {
+    for (auto& uiFrame : m_uiFrames) {
+        if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
+            if (!wantsFocus && ((EditBox*)uiFrame)->WantsFocus()) {
                 wantsFocus       = true;
-                m_focusedEditBox = (EditBox*)it->second;
+                m_focusedEditBox = (EditBox*)uiFrame;
                 m_drawCaret      = true;
-                // todo: where should cursor start? should save state?
-                m_keyboardManager->RestartCapture(m_focusedEditBox->GetText(), 0);
+                m_keyboardManager->RestartCapture(m_focusedEditBox->GetText(), m_focusedEditBox->GetCursor());
                 m_cursorBlink = m_focusedEditBox->GetBlinkRate();
             }
         }
     }
     if (wantsFocus) {
-        for (auto it = m_shownFramesTree.begin(); it != m_shownFramesTree.end(); ++it) {
-            if (it->first == 0)
-                continue;
-            if (it->second->GetFrameType() == FrameType::EDITBOX && it->second != m_focusedEditBox) {
-                ((EditBox*)it->second)->ClearFocus();
+        for (auto& uiFrame : m_uiFrames) {
+            if (uiFrame->GetFrameType() == FrameType::EDITBOX && uiFrame != m_focusedEditBox) {
+                ((EditBox*)uiFrame)->ClearFocus();
             }
         }
     }
@@ -167,43 +118,22 @@ void UIManager::PostProcess(float ms) {
         m_keyboardManager->StopCapture();
     }
 
-    // update renderObjects
-    for (std::pair<UIFrame*, UIFrameRenderObj*> p : m_uiFrames) {
-        p.second->isShown(p.first->IsShown());
-        // dont think frame size can dynamically change, so no need to push FrameScale
-    }
-
     if (m_cursorBlink > 0)
         m_cursorBlink -= ms;
 
     if (m_focusedEditBox) {
-        FrameScale scaled = m_focusedEditBox->GetScaledSize(m_viewport);
-
-        // debug show focused editbox
-        if (m_debugDrawFocus) {
-            Rect2Df rect({ scaled.x, scaled.y }, { scaled.x + scaled.width, scaled.y + scaled.height });
-            m_debugRenderer->AddRect2D(rect, { 1.f, 0.f, 0.f });
-        }
-
+        m_focusedEditBox->SetText(m_keyboardManager->GetText());
+        m_focusedEditBox->SetCursor(m_keyboardManager->GetCursorPosition());
         // set caret if necessary
         if (m_cursorBlink <= 0) {
-            m_drawCaret   = !m_drawCaret;
+            m_drawCaret = !m_drawCaret;
             m_cursorBlink = m_focusedEditBox->GetBlinkRate();
         }
-        if (m_drawCaret) {
-            std::string text = m_keyboardManager->GetText();
+    }
 
-            auto it = m_textFrames.find(static_cast<UIFrame*>(m_focusedEditBox));
-
-            if (it == m_textFrames.end()) {
-                LOG_D("[UI] Invalid focused edit box?");
-                return;
-            }
-
-            // TODO: color?
-            it->second->cursorEnabled(true);
-            it->second->cursorPos(m_keyboardManager->GetCursorPosition());
-        }
+    for (auto& tree : m_domTrees) {
+        tree->SetFocus(m_focusedEditBox);
+        tree->RenderTree({ 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, m_drawCaret);
     }
 }
 
@@ -213,19 +143,8 @@ void UIManager::DoUpdate(float ms) {
     // Process hide/show/focus and render
     ProcessFrames();
 
-    for (auto& frame : m_uiFrames) {
-        frame.first->DoUpdate(ms);
-    }
-
-    for (auto& eBox : m_textFrames) {
-        if (eBox.first->IsShown()) {
-            if (eBox.first->GetFrameType() == FrameType::LABEL)
-                eBox.second->text(((Label*)eBox.first)->GetText());
-            else
-                eBox.second->text(((EditBox*)eBox.first)->GetText());
-        } else
-            eBox.second->text("");
-        eBox.second->cursorEnabled(false);
+    for (auto& uiFrame : m_uiFrames) {
+        uiFrame->DoUpdate(ms);
     }
 
     PostProcess(ms);

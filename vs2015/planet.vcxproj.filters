@@ -73,9 +73,6 @@
     <ClCompile Include="..\src\ui\UIManager.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ui\EditBox.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\render\backend\interface\DrawItemEncoder.cpp">
       <Filter>render\backend\interface</Filter>
     </ClCompile>
@@ -106,9 +103,6 @@
     <ClCompile Include="..\src\render\backend\impl\common\SemanticNameCache.cpp">
       <Filter>render\backend\impl\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ui\Label.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\render\renderers\ui\UIRenderer.cpp">
       <Filter>render\renderers\ui</Filter>
     </ClCompile>
@@ -117,6 +111,18 @@
     </ClCompile>
     <ClCompile Include="..\src\render\DebugDrawInterface.cpp">
       <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\DomManager.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\frametypes\EditBox.cpp">
+      <Filter>ui\frametypes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\frametypes\Label.cpp">
+      <Filter>ui\frametypes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\UIDomTree.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -327,12 +333,6 @@
     <ClInclude Include="..\src\render\Viewport.h">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ui\EditBox.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\UIFrame.h">
-      <Filter>ui</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\ui\UIManager.h">
       <Filter>ui</Filter>
     </ClInclude>
@@ -522,12 +522,6 @@
     <ClInclude Include="..\src\utilities\StringUtil.h">
       <Filter>utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ui\Label.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\FontDesc.h">
-      <Filter>ui</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\ui\LabelUI.h">
       <Filter>ui</Filter>
     </ClInclude>
@@ -545,6 +539,21 @@
     </ClInclude>
     <ClInclude Include="..\src\render\DebugDrawInterface.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\frametypes\EditBox.h">
+      <Filter>ui\frametypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\frametypes\FontDesc.h">
+      <Filter>ui\frametypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\frametypes\Label.h">
+      <Filter>ui\frametypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\frametypes\UIFrame.h">
+      <Filter>ui\frametypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\UIDomTree.h">
+      <Filter>ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -616,6 +625,9 @@
     </Filter>
     <Filter Include="render\renderers\debug">
       <UniqueIdentifier>{59529369-c2f2-48b8-9fc5-d7dbad579c80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\frametypes">
+      <UniqueIdentifier>{f775d85d-2263-43bc-add7-084cb66bd891}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

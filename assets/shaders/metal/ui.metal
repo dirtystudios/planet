@@ -4,7 +4,8 @@
 using namespace metal;
 
 struct VertexIn {
-    float4 positionAndTex[[attribute(0)]];
+    float4 position[[attribute(0)]];
+    float2 tex;
 };
 
 struct VertexOut {
@@ -20,12 +21,14 @@ struct ObjConstants {
     float4 bgColor;
     float4 borderColor;
     float2 borderSize;
+    float3 position;
 };
 
-vertex VertexOut ui_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(2)]]) {
+vertex VertexOut ui_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(2)]], constant ObjConstants& obj[[buffer(3)]]) {
     VertexOut outputValue;
-    outputValue.position = view.proj * float4(attributes.positionAndTex.x, attributes.positionAndTex.y, 0, 1);
-    outputValue.texture  = float2(attributes.positionAndTex.z, attributes.positionAndTex.w);
+    float3 pos = obj.position + attributes.position.xyz;
+    outputValue.position = view.proj * float4(pos, 1);
+    outputValue.texture  = attributes.tex;
     return outputValue;
 }
 

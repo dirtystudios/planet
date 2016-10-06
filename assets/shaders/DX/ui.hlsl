@@ -6,6 +6,7 @@ cbuffer cbPerObject : register(b2) {
     float4 bgColor : COLOR0;
     float4 borderColor : COLOR1;
     float2 borderSize;
+    float3 position;
 }
 
 struct VS_INPUT {
@@ -23,7 +24,7 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
 	/*float4x4 tmp = mul (projection, rotation);
     output.vPosition = mul(tmp, Input.vPos);
     output.vTexCoords = Input.vTex;*/
-	output.vPosition = mul(projection, float4(Input.vPos.xyz, 1.0));
+    output.vPosition = mul(projection, float4(position + Input.vPos.xyz, 1.0));
 	output.vTexCoords = Input.vTexCoords;
     return output;
 }

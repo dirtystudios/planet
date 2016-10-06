@@ -8,6 +8,8 @@ struct UIFrameConstants {
     glm::vec4 bgColor;
     glm::vec4 borderColor;
     glm::vec2 borderSize;
+    glm::vec2 pad;
+    glm::vec3 position;
 };
 
 struct FrameVertex {
@@ -67,9 +69,9 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     dg_assert_nm(uiRenderObj != nullptr);
     dg_assert(std::find(begin(_objs), end(_objs), uiRenderObj) == end(_objs), "UIFrameRenderObj already registered");
 
-    float xpos = uiRenderObj->x();
-    float ypos = uiRenderObj->y();
-    float zpos = uiRenderObj->z();
+    float xpos = 0.f;//uiRenderObj->x();
+    float ypos = 0.f;// uiRenderObj->y();
+    float zpos = 0.f;// uiRenderObj->z();
     float w    = uiRenderObj->width();
     float h    = uiRenderObj->height();
 
@@ -133,7 +135,7 @@ void UIRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     _viewData->Unmap();
 
     for (UIFrameRenderObj* uiRenderObj : _objs) {
-        if (!uiRenderObj->isShown()) {
+        if (!uiRenderObj->isRendered()) {
             continue;
         }
 
@@ -141,6 +143,7 @@ void UIRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
         frameConstants->bgColor          = uiRenderObj->_bgColor;
         frameConstants->borderColor      = uiRenderObj->_borderColor;
         frameConstants->borderSize       = uiRenderObj->_borderSize;
+        frameConstants->position         = { uiRenderObj->_x, uiRenderObj->_y, uiRenderObj->_z};
         uiRenderObj->_frameData->Unmap();
 
         renderQueue->AddDrawItem(1, uiRenderObj->_item);

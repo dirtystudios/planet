@@ -2,6 +2,8 @@
 
 #include <string>
 #include <memory>
+#include <glm/glm.hpp>
+#include "ConstantBuffer.h"
 #include "Mesh.h"
 #include "RenderObj.h"
 #include "StateGroup.h"
@@ -35,6 +37,14 @@ public:
         : RenderObj(RendererType::Text), _text(text), _posX(pixelX), _posY(pixelY), _posZ(pixelZ), _textColor(color) {}
 
     const std::string& text() const { return _text; }
+
+    float x() { return _posX; }
+    float y() { return _posY; }
+    float z() { return _posZ; }
+
+    void x(float x) { _posX = x; }
+    void y(float y) { _posY = y; }
+    void z(float z) { _posZ = z; }
 
     void text(const std::string& text) { _text = text; }
     void cursorPos(uint32_t pos) { _cursorPos = pos; }

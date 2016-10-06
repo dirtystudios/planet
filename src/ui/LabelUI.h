@@ -19,7 +19,7 @@ namespace ui {
             labelFrameDesc.width = 100;
             labelFrameDesc.x = 5.f;
             labelFrameDesc.y = 5.f;
-            labelFrameDesc.shown = true;
+            labelFrameDesc.show = true;
             labelFrameDesc.acceptMouse = false;
             uiFrameObj->frames.push_back(std::make_unique<UIFrame>(labelFrameDesc));
 
@@ -29,10 +29,10 @@ namespace ui {
             // height and width is ignored for text for now
             labelDesc.height = 0;
             labelDesc.width = 0;
-            labelDesc.x = 10.f;
-            labelDesc.y = 10.f;
+            labelDesc.x = 5.f;
+            labelDesc.y = 5.f;
             labelDesc.font.textSize = 12.f;
-            labelDesc.shown = true;
+            labelDesc.show = true;
             labelDesc.acceptMouse = false;
             labelDesc.text = "hey look im a label";
             uiFrameObj->frames.push_back(std::make_unique<Label>(labelDesc));
