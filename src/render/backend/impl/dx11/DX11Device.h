@@ -3,7 +3,6 @@
 #include "DX11Context.h"
 #include "CommandBuffer.h"
 #include "SimpleShaderLibrary.h"
-#include "Pool.h"
 #include "DMath.h"
 #include "ByteBuffer.h"
 #include "ResourceManager.h"
@@ -105,9 +104,6 @@ namespace gfx {
 
         ResourceManager m_resourceManager;
         SimpleShaderLibrary m_shaderLibrary;
-        Pool<CommandBuffer, 1> m_commandBufferPool;
-
-        ByteBuffer m_drawItemByteBuffer;
 
     public:
         DX11Device() {};

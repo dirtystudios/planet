@@ -112,9 +112,6 @@
     <ClCompile Include="..\src\render\DebugDrawInterface.cpp">
       <Filter>render</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ui\DomManager.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ui\frametypes\EditBox.cpp">
       <Filter>ui\frametypes</Filter>
     </ClCompile>
@@ -123,6 +120,10 @@
     </ClCompile>
     <ClCompile Include="..\src\ui\UIDomTree.cpp">
       <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\CPUTileBuffer.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\render\renderers\terrain\GPUTileBuffer.cpp">
       <Filter>render\renderers\terrain</Filter>
     </ClCompile>
@@ -132,9 +133,6 @@
     <ClCompile Include="..\src\render\renderers\terrain\TerrainElevationTileProducer.cpp">
       <Filter>render\renderers\terrain</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\render\renderers\terrain\TerrainNodeKey.cpp">
-      <Filter>render\renderers\terrain</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\render\renderers\terrain\TerrainQuadNode.cpp">
       <Filter>render\renderers\terrain</Filter>
     </ClCompile>
@@ -142,6 +140,9 @@
       <Filter>render\renderers\terrain</Filter>
     </ClCompile>
     <ClCompile Include="..\src\render\renderers\terrain\TerrainRenderer.cpp">
+      <Filter>render\renderers\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\render\renderers\terrain\TerrainTileKey.cpp">
       <Filter>render\renderers\terrain</Filter>
     </ClCompile>
   </ItemGroup>
@@ -574,10 +575,20 @@
     </ClInclude>
     <ClInclude Include="..\src\ui\UIDomTree.h">
       <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\BlockingQueue.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utilities\LRUCache.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\CPUTileBuffer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\render\renderers\terrain\GPUTileBuffer.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\renderers\terrain\GPUTileCache.h">
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainDataTile.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\renderers\terrain\TerrainElevationLayerRenderer.h">
@@ -595,9 +606,6 @@
     <ClInclude Include="..\src\render\renderers\terrain\TerrainLayerType.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\renderers\terrain\TerrainNodeKey.h">
-      <Filter>render\renderers\terrain</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\render\renderers\terrain\TerrainQuadNode.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
@@ -610,14 +618,17 @@
     <ClInclude Include="..\src\render\renderers\terrain\TerrainRenderer.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\render\renderers\terrain\TerrainTile.h">
+    <ClInclude Include="..\src\render\renderers\terrain\TerrainTileKey.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\renderers\terrain\TerrainTileProducer.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\utilities\BlockingQueue.h">
-      <Filter>utilities</Filter>
+    <ClInclude Include="..\src\render\renderers\terrain\TileBuffer.h">
+      <Filter>render\renderers\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\renderers\terrain\TileCache.h">
+      <Filter>render\renderers\terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -692,6 +703,7 @@
     </Filter>
     <Filter Include="ui\frametypes">
       <UniqueIdentifier>{f775d85d-2263-43bc-add7-084cb66bd891}</UniqueIdentifier>
+    </Filter>
     <Filter Include="render\renderers\terrain">
       <UniqueIdentifier>{1556d870-e17c-4816-8d17-53791598c267}</UniqueIdentifier>
     </Filter>

@@ -76,7 +76,7 @@ namespace ui {
         // make new rect to represent current frame
         FrameScale scaledFrame = node->frame->GetScaledSize(m_viewport);
         glm::vec2 bl = glm::vec2(parentRect.bl().x + scaledFrame.x, parentRect.bl().y + scaledFrame.y);
-        Rect2Df curRect = Rect2Df(bl, glm::vec2(bl.x + scaledFrame.width, bl.y + scaledFrame.y));
+        Rect2Df curRect = Rect2Df(bl, glm::vec2(bl.x + scaledFrame.width, bl.y + scaledFrame.height));
 
         // is it inside current frame?
         if (x > curRect.bl().x && x < curRect.tr().x &&
@@ -93,6 +93,33 @@ namespace ui {
             // no children want it? k take it if we can
             if (node->frame->GetFrameDesc().acceptMouse)
                 return node->frame;
+        }
+        return nullptr;
+    }
+
+    dm::Rect2Df UIDomTree::GetRenderedSize(UIFrame* frame) {
+        UIDomNode* node = GetNode(root, frame);
+        if (node) {
+            UIFrameRenderObj* ro = node->frameRO.get();
+            if (ro) {
+                FrameScale scaled = node->frame->GetScaledSize(m_viewport);
+                glm::vec2 bl = glm::vec2(ro->x(), ro->y());
+                Rect2Df curRect = Rect2Df(bl, glm::vec2(bl.x + scaled.width, bl.y + scaled.height));
+                return curRect;
+            }
+        }
+        return Rect2Df(glm::vec2(0.f, 0.f), glm::vec2(0.f, 0.f));
+    }
+
+    UIDomTree::UIDomNode* UIDomTree::GetNode(UIDomNode* node, UIFrame* frame) {
+        if (node->frame == frame)
+            return node;
+        else {
+            for (UIDomNode* child : node->children) {
+                UIDomNode* test = GetNode(child, frame);
+                if (test)
+                    return test;
+            }       
         }
         return nullptr;
     }

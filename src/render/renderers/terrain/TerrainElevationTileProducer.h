@@ -154,7 +154,7 @@ public:
                 _pendingKeys.insert(node->key);
                 jobsToQueue.push_back(job);
             } else {
-                dg_assert_nm(tile);
+                dg_assert_nm(tile > 0);
                 outputVector->push_back(tile);
             }
         }

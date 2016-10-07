@@ -221,7 +221,7 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj) {
 
     renderObj->_glyphXOffsets.clear();
     renderObj->_glyphXOffsets.reserve(renderObj->_text.length());
-    renderObj->_glyphXOffsets.emplace_back(penX);
+    renderObj->_glyphXOffsets.emplace_back(penX + 1);
 
     for (char c : renderObj->_text) {
         if (c == '\n') {

@@ -31,7 +31,7 @@ public:
 
     void SelectQuadNodes(const Camera& camera, std::vector<const TerrainQuadNode*>* outputVector) {
         srand(seed);
-        dg_assert_nm(outputVector);
+        dg_assert_nm(outputVector > 0);
         outputVector->clear();
 
         std::queue<TerrainQuadNode*> q;
@@ -58,7 +58,7 @@ public:
 
         // for debugging
         std::sort(begin(*outputVector), end(*outputVector), [](const TerrainQuadNode* lhs, const TerrainQuadNode* rhs) {
-            return (lhs->key.lod < rhs->key.lod || lhs->key.tx + lhs->key.ty * pow(2, lhs->key.lod) < rhs->key.tx + rhs->key.ty * pow(2, rhs->key.lod)) ? true : false;
+            return (lhs->key.tx + lhs->key.ty * pow(2, lhs->key.lod) < rhs->key.tx + rhs->key.ty * pow(2, rhs->key.lod));
         });
     }
 

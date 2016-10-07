@@ -70,6 +70,8 @@ struct GLTexture : public Resource {
     GLuint id{0};
     GLenum type;
     GLTextureFormatDesc format;
+    uint32_t width;
+    uint32_t height;
 };
 
 struct GLPipelineState;

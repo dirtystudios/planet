@@ -580,10 +580,7 @@ namespace gfx {
     }
 
     CommandBuffer* DX11Device::CreateCommandBuffer() {
-        CommandBuffer* cmdBuffer = m_commandBufferPool.construct();
-        assert(cmdBuffer);
-        cmdBuffer->Reset();
-        return cmdBuffer;
+        return new CommandBuffer();
     }
 
     void DX11Device::UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) {
@@ -732,7 +729,6 @@ namespace gfx {
         DX11_CHECK(m_swapchain->Present(1, 0));
 
         m_submittedBuffers.clear();
-        m_drawItemByteBuffer.Reset();
     }
 
     void DX11Device::ResetDepthStencilTexture() {
@@ -907,8 +903,6 @@ namespace gfx {
 
         // todo: deal with this?
         CreateSetDefaultSampler();
-
-        m_drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
 
         return 1;
     }

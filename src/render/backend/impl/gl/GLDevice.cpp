@@ -34,8 +34,6 @@ GLDevice::GLDevice() {
     this->DeviceConfig.ShaderExtension    = ".glsl";
     this->DeviceConfig.DeviceAbbreviation = "GL";
     this->DeviceConfig.ShaderDir          = "GL";
-
-    _commandBufferPool.reset(new Pool<CommandBuffer>(32));
 }
 
 RenderDeviceApi GLDevice::GetDeviceApi() { return RenderDeviceApi::OpenGL; }
@@ -359,6 +357,8 @@ TextureId GLDevice::CreateTexture2D(PixelFormat texFormat, uint32_t width, uint3
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_2D;
+    texture->height = height;
+    texture->width = width;
 
     GL_CHECK(glGenTextures(1, &texture->id));
     _context.BindTexture(0, texture);
@@ -383,6 +383,8 @@ TextureId GLDevice::CreateTextureArray(PixelFormat texFormat, uint32_t levels, u
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_2D_ARRAY;
+    texture->height = height;
+    texture->width = width;
 
     GL_CHECK(glGenTextures(1, &texture->id));
     _context.BindTexture(0, texture);
@@ -402,6 +404,8 @@ TextureId GLDevice::CreateTextureCube(PixelFormat texFormat, uint32_t width, uin
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_CUBE_MAP;
     assert(width == height);
+    texture->height = height;
+    texture->width = width;
 
     GL_CHECK(glGenTextures(1, &texture->id));
     _context.BindTexture(0, texture);
@@ -499,11 +503,14 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
     return vao;
 }
 
+void GLDevice::UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) {
+    GLTexture* tex = _resourceManager.GetResource<GLTexture>(texture);
+    dg_assert_nm(texture != 0);
+    _context.WriteTextureData(tex, srcData, slice);
+}
+
 CommandBuffer* GLDevice::CreateCommandBuffer() {
-    CommandBuffer* cmdBuffer = _commandBufferPool->construct();
-    assert(cmdBuffer);
-    cmdBuffer->Reset();
-    return cmdBuffer;
+    return new CommandBuffer();
 }
 void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) { _submittedBuffers.insert(end(_submittedBuffers), begin(cmdBuffers), end(cmdBuffers)); }
 

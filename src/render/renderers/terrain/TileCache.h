@@ -45,12 +45,12 @@ public:
             }
 
             slot = _tileBuffer->getFreeSlot();
-            dg_assert_nm(slot);
+            dg_assert_nm(slot > 0);
             _cache->put(key, slot);
             matchesKey = false;
         }
 
-        dg_assert_nm(slot);
+        dg_assert_nm(slot > 0);
         return {matchesKey, slot};
     }
 

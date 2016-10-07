@@ -1,4 +1,5 @@
 #include "UIManager.h"
+#include "Rectangle.h"
 
 namespace ui {
 
@@ -36,6 +37,22 @@ bool UIManager::HandleMouse1(const input::InputContextCallbackArgs& args) {
         return m_mouseDown;
     }
     m_mouseDown = false;
+    return false;
+}
+
+bool UIManager::HandleMouse2(const input::InputContextCallbackArgs& args) {
+    // just need to block mouse if its over ui
+    if (args.value > 0) {
+        for (auto& tree : m_domTrees) {
+            UIFrame* frame = tree->HitTest(m_mouseX, m_mouseY);
+            if (frame) {
+                m_mouse2Down = true;
+                break;
+            }
+        }
+        return m_mouse2Down;
+    }
+    m_mouse2Down = false;
     return false;
 }
 
@@ -134,6 +151,12 @@ void UIManager::PostProcess(float ms) {
     for (auto& tree : m_domTrees) {
         tree->SetFocus(m_focusedEditBox);
         tree->RenderTree({ 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, m_drawCaret);
+        if (m_debugDrawFocus && m_focusedEditBox) {
+            dm::Rect2Df rect = tree->GetRenderedSize(m_focusedEditBox);
+            if (rect.bl() != rect.tr()) {
+                m_debugRenderer->AddRect2D(rect, { 1.f, 0.f, 0.f });
+            }
+        }
     }
 }
 

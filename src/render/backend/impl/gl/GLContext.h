@@ -42,7 +42,7 @@ public:
     ~GLContext();
 
     void WriteBufferData(GLBuffer* buffer, const void* data, size_t size);
-    void WriteTextureData(GLTexture* texture, void* data, size_t size);
+    void WriteTextureData(GLTexture* texture, const void* data, uint32_t slice);
     void ForceBindBuffer(GLBuffer* buffer);
     void BindBuffer(GLBuffer* buffer, bool force = false);
     void BindTexture(uint32_t slot, GLTexture* texture);

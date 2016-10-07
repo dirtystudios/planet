@@ -38,6 +38,7 @@ private:
     input::InputContext*    m_uiInputContext;
     input::InputContext*    m_debugContext;
     bool                    m_mouseDown = false;
+    bool                    m_mouse2Down = false;
     float                   m_mouseX = 0.f, m_mouseY = 0.f;
 
 public:
@@ -47,6 +48,7 @@ public:
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", std::bind(&UIManager::HandleMouseX, this, std::placeholders::_1));
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", std::bind(&UIManager::HandleMouseY, this, std::placeholders::_1));
         m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1", std::bind(&UIManager::HandleMouse1, this, std::placeholders::_1));
+        m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey2", std::bind(&UIManager::HandleMouse2, this, std::placeholders::_1));
         
         m_debugContext->BindContext<input::ContextBindingType::Action>("debug5", std::bind(&UIManager::ToggleDebugDraw, this, std::placeholders::_1));
         config::ConsoleCommands::getInstance().RegisterCommand("toggleFocusDebug", std::bind(&UIManager::ToggleDebugDrawConsole, this, std::placeholders::_1));
@@ -68,6 +70,7 @@ public:
     bool HandleMouseX(const input::InputContextCallbackArgs& args);
     bool HandleMouseY(const input::InputContextCallbackArgs& args);
     bool HandleMouse1(const input::InputContextCallbackArgs& args);
+    bool HandleMouse2(const input::InputContextCallbackArgs& args);
 
     bool ToggleDebugDraw(const input::InputContextCallbackArgs& args) { m_debugDrawFocus = !m_debugDrawFocus; return false; }
     std::string ToggleDebugDrawConsole(const std::vector<std::string>&) { m_debugDrawFocus = !m_debugDrawFocus; return ""; }
