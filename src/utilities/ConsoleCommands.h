@@ -8,7 +8,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "Callback.h"
 #include "Log.h"
 
 namespace config {

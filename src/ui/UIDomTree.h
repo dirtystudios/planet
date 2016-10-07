@@ -58,7 +58,7 @@ namespace ui {
         void SetFocus(UIFrame* frame) { m_focused = frame; }
         void RenderTree(const glm::vec3& anch, const glm::vec3& rot, bool renderCursor);
     private:
-        UIFrame* HitTestNode(UIDomNode* node, float x, float y, const Rect2Df& parentRect);
+        UIFrame* HitTestNode(UIDomNode* node, float x, float y, const dm::Rect2Df& parentRect);
         UIDomNode* CreateNode(UIFrame* frame);
         void RenderNodes(UIDomNode* node, const glm::vec3& anch, const glm::vec3& rot, bool shown, bool renderCursor);
     };

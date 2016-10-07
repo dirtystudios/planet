@@ -99,6 +99,8 @@ FILE(GLOB EXT_HEADERS ${SOURCE_DIR_ROOT}/ext/*.h)
 
 FILE(GLOB UI_SOURCES ${SOURCE_DIR_ROOT}/ui/*.cpp)
 FILE(GLOB UI_HEADERS ${SOURCE_DIR_ROOT}/ui/*.h)
+FILE(GLOB UI_FRAMETYPES_SOURCES ${SOURCE_DIR_ROOT}/ui/frametypes/*.cpp)
+FILE(GLOB UI_FRAMETYPES_HEADERS ${SOURCE_DIR_ROOT}/ui/frametypes/*.h)
 
 FILE(GLOB PLATFORM_SOURCES ${SOURCE_DIR_ROOT}/platform/*.cpp)
 FILE(GLOB PLATFORM_HEADERS ${SOURCE_DIR_ROOT}/platform/*.h)
@@ -126,7 +128,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/render/renderers/
     ${SOURCE_DIR_ROOT}/render/renderers/chunkedterrain/
     ${SOURCE_DIR_ROOT}/render/renderers/terrain/
-    ${SOURCE_DIR_ROOT}/render/renderers/ui/
+    ${SOURCE_DIR_ROOT}/render/renderers/ui/    
     ${SOURCE_DIR_ROOT}/render/renderers/skybox/
     ${SOURCE_DIR_ROOT}/render/renderers/debug/
     ${SOURCE_DIR_ROOT}/render/renderers/text/
@@ -146,6 +148,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/components
     ${SOURCE_DIR_ROOT}/input/
     ${SOURCE_DIR_ROOT}/ui/
+    ${SOURCE_DIR_ROOT}/ui/frametypes/
     ${SOURCE_DIR_ROOT}/ext/
     /usr/local/include
     ${LIBNOISE_INCLUDE_DIRS} 
@@ -192,6 +195,7 @@ add_executable(dg
     ${PLATFORM_SOURCES}
     ${PLATFORM_SDL_SOURCES}
     ${UI_SOURCES}
+    ${UI_FRAMETYPES_SOURCES}
     ${ALL_H} #need to have ALL_H files in this otherwise they wont be added to sourcegroups
      ${METAL_SHADERS_DIR_ROOT}/blinn.metal)
 

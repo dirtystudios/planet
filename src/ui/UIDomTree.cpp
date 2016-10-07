@@ -1,5 +1,7 @@
 #include "UIDomTree.h"
 
+using namespace dm;
+
 namespace ui {
     void UIDomTree::SetRoot(UIFrame* frame) {
         // dont call this more than once

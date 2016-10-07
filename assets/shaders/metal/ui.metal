@@ -5,7 +5,7 @@ using namespace metal;
 
 struct VertexIn {
     float4 position[[attribute(0)]];
-    float2 tex;
+    float2 tex[[attribute(1)]];
 };
 
 struct VertexOut {
