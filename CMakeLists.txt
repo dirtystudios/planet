@@ -45,6 +45,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(ASSETS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 set(SHADERS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders)
 set(METAL_SHADERS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/metal)
+set(GLSL_SHADERS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/GL)
+set(HLSL_SHADERS_DIR_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/DX)
 
 FILE(GLOB GFX_SOURCES ${SOURCE_DIR_ROOT}/render/*.cpp)
 FILE(GLOB GFX_HEADERS ${SOURCE_DIR_ROOT}/render/*.h)
@@ -171,6 +173,8 @@ link_directories(/usr/local/lib)
 # create application
 FILE(GLOB_RECURSE ALL_H RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE_DIR_ROOT}/*.h)
 FILE(GLOB_RECURSE ALL_METAL RELATIVE ${SHADERS_DIR_ROOT} ${METAL_SHADERS_DIR_ROOT}/*.metal)
+FILE(GLOB_RECURSE ALL_GLSL RELATIVE ${SHADERS_DIR_ROOT} ${GLSL_SHADERS_DIR_ROOT}/*.glsl)
+FILE(GLOB_RECURSE ALL_HLSL RELATIVE ${SHADERS_DIR_ROOT} ${HLSL_SHADERS_DIR_ROOT}/*.hlsl)
 
 add_executable(dg 
     ${SOURCE_DIR_ROOT}/main.cpp
@@ -197,7 +201,9 @@ add_executable(dg
     ${UI_SOURCES}
     ${UI_FRAMETYPES_SOURCES}
     ${ALL_H} #need to have ALL_H files in this otherwise they wont be added to sourcegroups
-     ${METAL_SHADERS_DIR_ROOT}/blinn.metal)
+    ${METAL_SHADERS_DIR_ROOT}
+    ${GLSL_SHADERS_DIR_ROOT}
+    ${HLSL_SHADERS_DIR_ROOT})
 
 set_source_files_properties( ${METAL_SHADERS_DIR_ROOT}/blinn.metal PROPERTIES HEADER_FILE_ONLY TRUE)
 target_link_libraries(dg ${LIBS})
