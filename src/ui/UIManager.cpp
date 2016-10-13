@@ -1,5 +1,6 @@
 #include "UIManager.h"
 #include "Rectangle.h"
+#include "Spatial.h"
 
 namespace ui {
 
@@ -63,7 +64,9 @@ void UIManager::UpdateViewport(Viewport viewport) {
 
 void UIManager::AddFrameObj(SimObj* frameObj) {
     UI* ui = frameObj->GetComponent<UI>(ComponentType::UI);
+    Spatial* spatial = frameObj->GetComponent<Spatial>(ComponentType::Spatial);
     assert(ui);
+    assert(spatial);
 
     for (auto& uiFrameUP : ui->frames) {
         UIFrame* uiFrame = uiFrameUP.get();
@@ -72,8 +75,9 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
             m_domTrees.back().get()->InsertFrame(uiFrame);
         }
         else {
-            m_domTrees.push_back(std::make_unique<UIDomTree>(m_textRenderer, m_uiRenderer, m_viewport));
+            m_domTrees.push_back(std::make_unique<UIDomTree>(m_textRenderer, m_uiRenderer, m_viewport, ui->isWorldFrame));
             m_domTrees.back().get()->SetRoot(uiFrame);
+            m_domTrees.back().get()->SetPos(spatial->pos, spatial->direction);
         }
         m_uiFrames.emplace_back(uiFrame);
     }
@@ -150,7 +154,7 @@ void UIManager::PostProcess(float ms) {
 
     for (auto& tree : m_domTrees) {
         tree->SetFocus(m_focusedEditBox);
-        tree->RenderTree({ 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, m_drawCaret);
+        tree->RenderTree(m_drawCaret);
         if (m_debugDrawFocus && m_focusedEditBox) {
             dm::Rect2Df rect = tree->GetRenderedSize(m_focusedEditBox);
             if (rect.bl() != rect.tr()) {

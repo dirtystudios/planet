@@ -3,6 +3,8 @@
 #include "Label.h"
 #include "UI.h"
 
+#include <string>
+
 // In a perfect world something like this would be described in lua/xml
 
 namespace ui {
@@ -11,7 +13,7 @@ namespace ui {
         LabelUI();
 
     public:
-        static void AttachLabel(UI* uiFrameObj) {
+        static void AttachLabel(UI* uiFrameObj, std::string text) {
             UIFrame::UIFrameDesc labelFrameDesc;
             labelFrameDesc.name = "LabelFrame";
             labelFrameDesc.parent = 0;
@@ -34,7 +36,7 @@ namespace ui {
             labelDesc.font.textSize = 12.f;
             labelDesc.show = true;
             labelDesc.acceptMouse = false;
-            labelDesc.text = "hey look im a label";
+            labelDesc.text = text;
             uiFrameObj->frames.push_back(std::make_unique<Label>(labelDesc));
         }
     };

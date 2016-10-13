@@ -123,6 +123,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 
     SimObj*  worldFrame = simulation.AddSimObj();
     UI*      ui         = worldFrame->AddComponent<UI>(ComponentType::UI);
+    ui->isWorldFrame = true;
     Spatial* spatial    = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
     spatial->pos        = glm::vec3(0.f, 0.f, 0.f);
     spatial->direction  = glm::vec3(0.f, 0.f, 0.f);
@@ -135,9 +136,22 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     consoleUI = new ui::ConsoleUI(ui, uiContext);
 
     // Show/Hide sample text test with this call
-    ui::LabelUI::AttachLabel(ui);
+    ui::LabelUI::AttachLabel(ui, "hey look im a label");
 
     uiManager->AddFrameObj(worldFrame);
+}
+
+void AddWorldText() {
+    // Attempt to add 3d world space text
+    SimObj* worldText = simulation.AddSimObj();
+    UI* ui = worldText->AddComponent<UI>(ComponentType::UI);
+    Spatial* spatial = worldText->AddComponent<Spatial>(ComponentType::Spatial);
+    spatial->pos = glm::vec3(100.f, 0.f, 0.f);
+    spatial->direction = glm::vec3(0.f, 0.f, 0.f);
+
+    ui::LabelUI::AttachLabel(ui, "Roxas");
+
+    uiManager->AddFrameObj(worldText);
 }
 
 void App::OnStart() {
@@ -149,6 +163,7 @@ void App::OnStart() {
     renderEngine                  = new RenderEngine(renderDevice, playerView);
     inputManager                  = new input::InputManager();
     SetupUI(renderDevice, playerViewport);
+    AddWorldText();
 
     SetupInputBindings();
 

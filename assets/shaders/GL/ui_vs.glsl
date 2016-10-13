@@ -8,6 +8,7 @@ layout (location = 1) in vec2 texcoord;
 // constant buffers
 layout(std140) uniform _b1_viewConstants {  	
     mat4 b1_projection;  
+    mat4 b1_view;
 };
 
 // constant buffers
@@ -26,6 +27,6 @@ out gl_PerVertex {
 
 void main()
 {
-    gl_Position = b1_projection * vec4(vertex.xyz + b2_position, 1.0);
+    gl_Position = b1_projection * b1_view * vec4(vertex.xyz + b2_position, 1.0);
     o_texCoords = texcoord;
 }

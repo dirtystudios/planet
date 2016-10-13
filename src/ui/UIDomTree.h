@@ -33,18 +33,19 @@ namespace ui {
         UIDomNode* lastInserted;
 
         // anchor pos
-        glm::vec3 anchor{0.f, 0.f, 0.f};
-        glm::vec3 rotation{0.f, 0.f, 0.f};
+        glm::vec3 m_anchor{0.f, 0.f, 0.f};
+        glm::vec3 m_rotation{0.f, 0.f, 0.f};
 
         TextRenderer* m_textRenderer;
         UIRenderer* m_uiRenderer;
         Viewport m_viewport;
         UIFrame* m_focused;
+        bool m_worldFrame{ false };
 
     public:
         // note: i dislike sending renderers to this
-        UIDomTree(TextRenderer* text, UIRenderer* ui, Viewport viewport) 
-            : m_textRenderer(text), m_uiRenderer(ui), m_viewport(viewport) {}
+        UIDomTree(TextRenderer* text, UIRenderer* ui, Viewport viewport, bool worldFrame = false) 
+            : m_textRenderer(text), m_uiRenderer(ui), m_viewport(viewport), m_worldFrame(worldFrame) {}
 
         void SetRoot(UIFrame* frame);
 
@@ -56,9 +57,11 @@ namespace ui {
         UIFrame* HitTest(float x, float y);
 
         void SetFocus(UIFrame* frame) { m_focused = frame; }
+
         dm::Rect2Df GetRenderedSize(UIFrame* frame);
 
-        void RenderTree(const glm::vec3& anch, const glm::vec3& rot, bool renderCursor);
+        void SetPos(const glm::vec3& anch, const glm::vec3& rot) { m_anchor = anch; m_rotation = rot; }
+        void RenderTree(bool renderCursor);
     private:
         UIFrame* HitTestNode(UIDomNode* node, float x, float y, const dm::Rect2Df& parentRect);
         UIDomNode* CreateNode(UIFrame* frame);

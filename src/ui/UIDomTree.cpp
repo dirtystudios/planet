@@ -34,10 +34,10 @@ namespace ui {
         switch (type) {
         case FrameType::EDITBOX: {
             EditBox*  ebox = dynamic_cast<EditBox*>(frame);
-            node->textRO.reset(new TextRenderObj(ebox->GetText(), scaled.x, scaled.y, scaled.z, ebox->GetColor()));
+            node->textRO.reset(new TextRenderObj(ebox->GetText(), scaled.x, scaled.y, scaled.z, ebox->GetColor(), !m_worldFrame));
             m_textRenderer->Register(node->textRO.get());
             node->frameRO.reset(
-                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->GetFrameDesc().show));
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->GetFrameDesc().show, !m_worldFrame));
             m_uiRenderer->Register(node->frameRO.get());
             break;
 
@@ -45,13 +45,13 @@ namespace ui {
         case FrameType::LABEL: {
             // for now label type is always shown
             Label*    label = dynamic_cast<Label*>(frame);
-            node->textRO.reset(new TextRenderObj(label->GetText(), scaled.x, scaled.y, scaled.z, label->GetColor()));
+            node->textRO.reset(new TextRenderObj(label->GetText(), scaled.x, scaled.y, scaled.z, label->GetColor(), !m_worldFrame));
             m_textRenderer->Register(node->textRO.get());
             break;
         }
         default:
             node->frameRO.reset(
-                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->GetFrameDesc().show));
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->GetFrameDesc().show, !m_worldFrame));
             m_uiRenderer->Register(node->frameRO.get());
             break;
         }
@@ -60,7 +60,7 @@ namespace ui {
     }
 
     UIFrame* UIDomTree::HitTest(float x, float y) {
-        if (anchor != glm::vec3(0.f, 0.f, 0.f) || rotation != glm::vec3(0.f, 0.f, 0.f))
+        if (m_anchor != glm::vec3(0.f, 0.f, 0.f) || m_rotation != glm::vec3(0.f, 0.f, 0.f))
             return nullptr;
 
         FrameScale scaledFrame = root->frame->GetScaledSize(m_viewport);
@@ -124,8 +124,8 @@ namespace ui {
         return nullptr;
     }
 
-    void UIDomTree::RenderTree(const glm::vec3& anch, const glm::vec3& rot, bool renderCursor) {
-        RenderNodes(root, anch, rot, true, renderCursor);
+    void UIDomTree::RenderTree(bool renderCursor) {
+        RenderNodes(root, m_anchor, m_rotation, true, renderCursor);
     }
 
     void UIDomTree::RenderNodes(UIDomNode* node, const glm::vec3& anch, const glm::vec3& rot, bool shown, bool renderCursor) {

@@ -2,6 +2,7 @@
 
 struct UIViewConstants {
     glm::mat4 projection;
+    glm::mat4 view;
 };
 
 struct UIFrameConstants {
@@ -21,6 +22,7 @@ static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 48;
 
 void UIRenderer::OnInit() {
     _viewData            = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
+    _viewData3D          = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
     gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize);
     _vertexBuffer        = device()->AllocateBuffer(desc);
     _bufferOffset        = 0;
@@ -42,6 +44,15 @@ void UIRenderer::OnInit() {
     depthState.enable = false;
 
     gfx::StateGroupEncoder encoder;
+
+    encoder.Begin();
+    encoder.BindResource(_viewData->GetBinding(1));
+    const gfx::StateGroup* bind2D = encoder.End();
+
+    encoder.Begin();
+    encoder.BindResource(_viewData3D->GetBinding(1));
+    const gfx::StateGroup* bind3D = encoder.End();
+
     encoder.Begin();
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "ui"));
     encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "ui"));
@@ -51,12 +62,19 @@ void UIRenderer::OnInit() {
     encoder.SetBlendState(blendState);
     encoder.SetDepthState(depthState);
     encoder.SetRasterState(rasterState);
-    encoder.BindResource(_viewData->GetBinding(1));
     encoder.SetVertexBuffer(_vertexBuffer);
     encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
-    _base = encoder.End();
+    const gfx::StateGroup* baseBind = encoder.End();
+
+    _base = gfx::StateGroupEncoder::Merge({ bind2D, baseBind });
+    _base3D = gfx::StateGroupEncoder::Merge({ bind3D, baseBind });
+
     assert(_vertexBuffer);
     assert(_viewData);
+
+    delete bind2D;
+    delete bind3D;
+    delete baseBind;
 }
 
 UIRenderer::~UIRenderer() {
@@ -107,7 +125,10 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     uiRenderObj->_frameData = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIFrameConstants));
 
     gfx::StateGroupEncoder encoder;
-    encoder.Begin(_base);
+    if (uiRenderObj->_usePerspective)
+        encoder.Begin(_base3D);
+    else
+        encoder.Begin(_base);
     encoder.BindResource(uiRenderObj->_frameData->GetBinding(2));
     uiRenderObj->_group = encoder.End();
 
@@ -129,8 +150,15 @@ void UIRenderer::Unregister(UIFrameRenderObj* renderObj) {
 void UIRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     glm::mat4 projection = glm::ortho(0.0f, renderView->viewport->width, 0.0f, renderView->viewport->height);
 
-    _viewData->Map<UIViewConstants>()->projection = projection;
+    UIViewConstants* viewConstants2d = _viewData->Map<UIViewConstants>();
+    viewConstants2d->projection = projection;
+    viewConstants2d->view = glm::mat4();
     _viewData->Unmap();
+
+    UIViewConstants* viewConstants3d = _viewData3D->Map<UIViewConstants>();
+    viewConstants3d->view = renderView->camera->BuildView();
+    viewConstants3d->projection = renderView->camera->BuildProjection();
+    _viewData3D->Unmap();
 
     for (UIFrameRenderObj* uiRenderObj : _objs) {
         if (!uiRenderObj->isRendered()) {

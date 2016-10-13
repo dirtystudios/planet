@@ -12,6 +12,7 @@
 
 struct TextViewConstants {
     glm::mat4 projection;
+    glm::mat4 view;
 };
 
 struct TextConstants {
@@ -149,6 +150,8 @@ void TextRenderer::OnInit() {
 
     _viewData = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
     assert(_viewData);
+    _viewData3D = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
+    assert(_viewData3D);
 
     gfx::BlendState bs;
     bs.enable       = true;
@@ -157,28 +160,50 @@ void TextRenderer::OnInit() {
     bs.srcAlphaFunc = gfx::BlendFunc::One;
     bs.dstAlphaFunc = gfx::BlendFunc::Zero;
 
+    gfx::DepthState depthState;
+    depthState.enable = false;
+
     gfx::StateGroupEncoder encoder;
+
+    encoder.Begin();
+    encoder.BindResource(_viewData->GetBinding(1));
+    const gfx::StateGroup* bind2D = encoder.End();
+
+    encoder.Begin();
+    encoder.BindResource(_viewData3D->GetBinding(1));
+    const gfx::StateGroup* bind3D = encoder.End();
+
     encoder.Begin();
     encoder.SetVertexLayout(services()->vertexLayoutCache()->GetPos3fTex2f());
     encoder.SetBlendState(bs);
+    encoder.SetDepthState(depthState);
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "text"));
     encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "text"));
-    encoder.BindResource(_viewData->GetBinding(1));
     encoder.BindTexture(0, _glyphAtlas, gfx::ShaderStageFlags::AllStages);
     encoder.SetVertexBuffer(_vertexBuffer);
     encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
-    _base = encoder.End();
+    const gfx::StateGroup* baseBind = encoder.End();
 
-    gfx::StateGroupEncoder cursorEncoder;
-    cursorEncoder.Begin();
-    cursorEncoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
-    cursorEncoder.SetBlendState(bs);
-    cursorEncoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "cursor"));
-    cursorEncoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "cursor"));
-    cursorEncoder.BindResource(_viewData->GetBinding(1));
-    cursorEncoder.SetVertexBuffer(_cursorBuffer);
-    cursorEncoder.SetPrimitiveType(gfx::PrimitiveType::Lines);
-    _cursorBase = cursorEncoder.End();
+    encoder.Begin();
+    encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
+    encoder.SetBlendState(bs);
+    encoder.SetDepthState(depthState);
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "cursor"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "cursor"));
+    encoder.SetVertexBuffer(_cursorBuffer);
+    encoder.SetPrimitiveType(gfx::PrimitiveType::Lines);
+    const gfx::StateGroup* cursorBaseBind = encoder.End();
+
+    _base = gfx::StateGroupEncoder::Merge({ bind2D , baseBind });
+    _base3D = gfx::StateGroupEncoder::Merge({ bind3D, baseBind });
+
+    _cursorBase = gfx::StateGroupEncoder::Merge({ bind2D, cursorBaseBind });
+    _cursorBase3D = gfx::StateGroupEncoder::Merge({ bind3D, cursorBaseBind });
+
+    delete baseBind;
+    delete cursorBaseBind;
+    delete bind2D;
+    delete bind3D;
 }
 
 TextRenderer::~TextRenderer() {}
@@ -190,12 +215,18 @@ void TextRenderer::Register(TextRenderObj* textRenderObj) {
     textRenderObj->_cursorPos      = 0;
 
     gfx::StateGroupEncoder encoder;
-    encoder.Begin(_base);
+    if (textRenderObj->_usePerspective)
+        encoder.Begin(_base3D);
+    else 
+        encoder.Begin(_base);
     encoder.BindResource(textRenderObj->_constantBuffer->GetBinding(2));
     textRenderObj->_group = encoder.End();
 
     gfx::StateGroupEncoder cEncoder;
-    cEncoder.Begin(_cursorBase);
+    if (textRenderObj->_usePerspective)
+        encoder.Begin(_cursorBase3D);
+    else
+        cEncoder.Begin(_cursorBase);
     cEncoder.BindResource(textRenderObj->_constantBuffer->GetBinding(2));
     textRenderObj->_cursorGroup = cEncoder.End();
 
@@ -319,8 +350,15 @@ const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj
 }
 
 void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
-    _viewData->Map<TextViewConstants>()->projection = glm::ortho(0.0f, view->viewport->width, 0.0f, view->viewport->height); // TODO: this should be set by renderView
+    TextViewConstants* viewConstants = _viewData->Map<TextViewConstants>();
+    viewConstants->projection = glm::ortho(0.0f, view->viewport->width, 0.0f, view->viewport->height); // TODO: this should be set by renderView
+    viewConstants->view = glm::mat4();
     _viewData->Unmap();
+
+    TextViewConstants* viewConstants3d = _viewData3D->Map<TextViewConstants>();
+    viewConstants3d->view = view->camera->BuildView();
+    viewConstants3d->projection = view->camera->BuildProjection();
+    _viewData3D->Unmap();
 
     bool drewCursor = false;
 

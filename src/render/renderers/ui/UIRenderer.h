@@ -14,8 +14,10 @@ private:
     size_t                         _bufferOffset;
     size_t                         _bufferSize;
     ConstantBuffer*                _viewData{nullptr};
+    ConstantBuffer*                _viewData3D{ nullptr };
     std::vector<UIFrameRenderObj*> _objs; // TODO: Renderers shouldnt store their objs
     const gfx::StateGroup*         _base{nullptr};
+    const gfx::StateGroup*         _base3D{ nullptr };
 
 public:
     ~UIRenderer();

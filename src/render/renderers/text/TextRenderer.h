@@ -24,7 +24,9 @@ private:
     };
 
     const gfx::StateGroup* _base;
+    const gfx::StateGroup* _base3D;
     const gfx::StateGroup* _cursorBase;
+    const gfx::StateGroup* _cursorBase3D;
 
 private:
     // parameters for converting pixel to NDC coordinates
@@ -48,6 +50,7 @@ private:
     size_t          _vertexBufferOffset{0};
     size_t          _vertexBufferSize{0};
     ConstantBuffer* _viewData{nullptr};
+    ConstantBuffer* _viewData3D{ nullptr };
 
     std::vector<TextRenderObj*> _objs;
 

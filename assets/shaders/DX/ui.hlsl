@@ -1,5 +1,6 @@
 cbuffer cbConstant : register(b1) {
     float4x4 projection : PROJECTION;
+    float4x4 viewCbConstant;
 }
 
 cbuffer cbPerObject : register(b2) {
@@ -24,7 +25,7 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
 	/*float4x4 tmp = mul (projection, rotation);
     output.vPosition = mul(tmp, Input.vPos);
     output.vTexCoords = Input.vTex;*/
-    output.vPosition = mul(projection, float4(position + Input.vPos.xyz, 1.0));
+    output.vPosition = mul(mul(projection, viewCbConstant), float4(position + Input.vPos.xyz, 1.0));
 	output.vTexCoords = Input.vTexCoords;
     return output;
 }

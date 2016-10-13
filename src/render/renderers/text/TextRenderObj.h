@@ -26,6 +26,7 @@ private:
     float              _posZ;
     glm::vec3          _textColor;
     std::vector<float> _glyphXOffsets;
+    bool               _usePerspective{false};
 
     const gfx::StateGroup* _group{nullptr};
     const gfx::StateGroup* _cursorGroup{nullptr};
@@ -33,14 +34,15 @@ private:
     std::unique_ptr<const gfx::DrawItem> _cursorDrawItem;
 
 public:
-    TextRenderObj(const std::string& text, float pixelX, float pixelY, float pixelZ, const glm::vec3& color)
-        : RenderObj(RendererType::Text), _text(text), _posX(pixelX), _posY(pixelY), _posZ(pixelZ), _textColor(color) {}
+    TextRenderObj(const std::string& text, float pixelX, float pixelY, float pixelZ, const glm::vec3& color, bool usePerspective)
+        : RenderObj(RendererType::Text), _text(text), _posX(pixelX), _posY(pixelY), _posZ(pixelZ), _textColor(color), _usePerspective(usePerspective) {}
 
     const std::string& text() const { return _text; }
 
     float x() { return _posX; }
     float y() { return _posY; }
     float z() { return _posZ; }
+    bool usePerspective(){ return _usePerspective; }
 
     void x(float x) { _posX = x; }
     void y(float y) { _posY = y; }

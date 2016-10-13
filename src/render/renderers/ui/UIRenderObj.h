@@ -13,7 +13,8 @@ private:
     friend UIRenderer;
 
 public:
-    UIFrameRenderObj(float x, float y, float z, float width, float height, glm::vec3 rot, bool isRendered) : RenderObj(RendererType::Ui), _x(x), _y(y), _z(z), _w(width), _h(height), _isRendered(isRendered) {}
+    UIFrameRenderObj(float x, float y, float z, float width, float height, glm::vec3 rot, bool isRendered, bool usePerspective)
+        : RenderObj(RendererType::Ui), _x(x), _y(y), _z(z), _w(width), _h(height), _isRendered(isRendered), _usePerspective(usePerspective) {}
     ~UIFrameRenderObj() {}
 
     float x() const { return _x; };
@@ -48,6 +49,7 @@ private:
     float _h{0.f};
     glm::vec3 _rot{ 0.f, 0.f, 0.f };
     bool  _isRendered{true};
+    bool _usePerspective{ false };
 
     gfx::DrawCall     _drawCall;
     gfx::VertexStream _stream;

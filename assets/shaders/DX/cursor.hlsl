@@ -4,6 +4,7 @@ cbuffer cbPerObject : register(b2) {
 
 cbuffer cbConstant : register(b1) {
     float4x4 projection : PROJECTION;
+    float4x4 viewCbConstant;
 }
 
 struct VS_INPUT {
