@@ -97,6 +97,9 @@ FILE(GLOB APP_HEADERS ${SOURCE_DIR_ROOT}/*.h)
 FILE(GLOB COMPONENT_HEADERS ${SOURCE_DIR_ROOT}/components/*.h)
 FILE(GLOB COMPONENT_SOURCES ${SOURCE_DIR_ROOT}/components/*.cpp)
 
+FILE(GLOB SCHEDULER_HEADERS ${SOURCE_DIR_ROOT}/scheduler/*.h)
+FILE(GLOB SCHEDULER_SOURCES ${SOURCE_DIR_ROOT}/scheduler/*.cpp)
+
 FILE(GLOB EXT_HEADERS ${SOURCE_DIR_ROOT}/ext/*.h)
 
 FILE(GLOB UI_SOURCES ${SOURCE_DIR_ROOT}/ui/*.cpp)
@@ -142,6 +145,7 @@ include_directories(
     ${SOURCE_DIR_ROOT}/render/backend/impl/gl
     ${SOURCE_DIR_ROOT}/render/backend/impl/common
     ${SOURCE_DIR_ROOT}/render/
+    ${SOURCE_DIR_ROOT}/scheduler/
     ${SOURCE_DIR_ROOT}/utilities/
     ${SOURCE_DIR_ROOT}/utilities/win32
     ${SOURCE_DIR_ROOT}/utilities/osx
@@ -193,6 +197,7 @@ add_executable(dg
     ${RENDERERS_UI_SOURCES}
     ${RENDERERS_TEXT_SOURCES}
     ${INPUT_SOURCES}
+    ${SCHEDULER_SOURCES}
     ${UTILITIES_SOURCES}
     ${UTILITIES_OSX_SOURCES}
     ${APP_SOURCES}

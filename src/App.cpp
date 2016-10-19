@@ -18,11 +18,12 @@
 #include "SkyRenderer.h"
 #include "Skybox.h"
 #include "Spatial.h"
+#include "TaskScheduler.h"
 #include "UI.h"
 #include "UIManager.h"
 
 uint32_t                       frame_count       = 0;
-double                         accumulate        = 0;
+double                         taccumulate       = 0;
 double                         total_frame_count = 0;
 Camera                         cam;
 input::InputManager*           inputManager;
@@ -201,21 +202,19 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     renderEngine->RenderFrame();
 
     // timers
-    accumulate += dt;
+    taccumulate += dt;
     ++frame_count;
     ++total_frame_count;
 
-    if (accumulate > 1.0) {
+    if (taccumulate > 1.0) {
         std::stringstream ss;
         ss << "gfx Device: " << renderDevice->DeviceConfig.DeviceAbbreviation;
         ss << " | FPS: " << frame_count << " | Frame: " << total_frame_count;
         ss << " | Pos: " << cam.pos;
         sys::SetWindowTitle(ss.str().c_str());
         frame_count = 0;
-        accumulate  = 0.0;
+        taccumulate = 0.0;
     }
 }
 
-void App::OnShutdown() {
-
-}
+void App::OnShutdown() {}
