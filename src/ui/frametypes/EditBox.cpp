@@ -12,10 +12,11 @@ EditBox::EditBox(EditBoxDesc editBoxDesc)
     }
 }
 
-EditBox::EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler)
+EditBox::EditBox(EditBoxDesc editBoxDesc, EditBoxScriptHandler* scriptHandler)
     : UIFrame(editBoxDesc, scriptHandler), m_cursorPos(0), m_textBoxState(TextBoxState::UNFOCUSED), 
       m_editBoxDesc(editBoxDesc) {
 
+    m_editScriptHandler = scriptHandler;
     m_frameType = FrameType::EDITBOX;
     m_contents = editBoxDesc.intialText;
     if (editBoxDesc.blinkSpeed <= 0.0f) {
@@ -100,8 +101,8 @@ void EditBox::OnClick() { SetFocus(); }
 // Called by UIManager
 
 void EditBox::EnterPressed() {
-    if (m_scriptHandler) {
-        m_scriptHandler->OnEnterPressed(*this);
+    if (m_editScriptHandler) {
+        m_editScriptHandler->OnEnterPressed(*this);
     }
 }
 

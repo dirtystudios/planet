@@ -8,11 +8,14 @@
 #include "Viewport.h"
 
 namespace ui {
+class ScriptApi;
+
 
 enum class FrameType : uint32_t {
     UIFRAME = 0,
     EDITBOX,
     LABEL,
+    TEXTLIST,
     COUNT,
 };
 
@@ -51,17 +54,18 @@ public:
 protected:
     UIFrameDesc m_frameDesc;
     FrameType m_frameType;
-    ScriptHandler* m_scriptHandler;
+    BaseScriptHandler* m_scriptHandler;
 
 public:
     UIFrame(UIFrameDesc frameDesc) : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME) {}
-    UIFrame(UIFrameDesc frameDesc, ScriptHandler* scriptHandler)
+    UIFrame(UIFrameDesc frameDesc, BaseScriptHandler* scriptHandler)
         : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME), m_scriptHandler(scriptHandler) {}
     const UIFrameDesc& GetFrameDesc() const { return m_frameDesc; }
     FrameType GetFrameType() const { return m_frameType; }
     void Show() { m_frameDesc.show = true; }
     void Hide() { m_frameDesc.show = false; }
     bool IsShown() const { return m_frameDesc.show; }
+    std::string GetFrameName() const { return m_frameDesc.name; }
     // Returns true if wants to be shown and all parent's are
     bool IsVisible() const {
         if (!m_frameDesc.show)
@@ -88,7 +92,13 @@ public:
     }
 
     UIFrame* GetParent() const { return m_frameDesc.parent; }
-	virtual void OnClick() {}
+    void InitializeScriptHandler(ScriptApi* scriptApi) {
+        if (m_scriptHandler) {
+            m_scriptHandler->Initialize(scriptApi);
+            m_scriptHandler->OnLoad(*this);
+        }
+    }
+    virtual void OnClick() {}
     virtual void DoUpdate(float ms) {}
 };
 }

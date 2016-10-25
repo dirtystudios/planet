@@ -2,10 +2,6 @@
 #include "TextRenderer.h"
 #include "UIRenderer.h"
 #include "UIFrame.h"
-#include "EditBox.h"
-#include "Label.h"
-#include "FontDesc.h"
-#include "Rectangle.h"
 
 #include <glm/glm.hpp>
 
@@ -20,14 +16,14 @@ namespace ui {
         public:
             UIFrame* frame{nullptr};
 
-            std::unique_ptr<TextRenderObj> textRO;
+            std::vector<std::unique_ptr<TextRenderObj>> textROs;
             std::unique_ptr<UIFrameRenderObj> frameRO;
 
             UIDomNode* parentNode{nullptr};
             // not using a vector would be better probly
             std::vector<UIDomNode*> children;
         };
-        UIDomNode* root;
+        UIDomNode* root{ nullptr };
 
         // this is *def* not a nasty hack spawned out of lazines
         UIDomNode* lastInserted;

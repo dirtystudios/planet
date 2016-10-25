@@ -4,6 +4,12 @@
 #include <string>
 
 namespace ui {
+class EditBox;
+
+class EditBoxScriptHandler : public BaseScriptHandler {
+public:
+    virtual void OnEnterPressed(EditBox& frame) = 0;
+};
 
 class EditBox : public UIFrame {
 public:
@@ -30,10 +36,11 @@ private:
     TextBoxState m_textBoxState;
     HighLightState m_highlightState;
     EditBoxDesc m_editBoxDesc;
+    EditBoxScriptHandler* m_editScriptHandler;
 
 public:
     EditBox(EditBoxDesc editBoxDesc);
-    EditBox(EditBoxDesc editBoxDesc, ScriptHandler* scriptHandler);
+    EditBox(EditBoxDesc editBoxDesc, EditBoxScriptHandler* scriptHandler);
     void SetFocus();
     void ClearFocus();
     bool HasFocus();

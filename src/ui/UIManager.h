@@ -40,10 +40,11 @@ private:
     bool                    m_mouseDown = false;
     bool                    m_mouse2Down = false;
     float                   m_mouseX = 0.f, m_mouseY = 0.f;
+    ScriptApi               m_scriptApi;
 
 public:
     UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, input::InputContext* debugContext, Viewport viewport)
-        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext) {
+        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext), m_scriptApi(this) {
 
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", std::bind(&UIManager::HandleMouseX, this, std::placeholders::_1));
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", std::bind(&UIManager::HandleMouseY, this, std::placeholders::_1));
@@ -60,6 +61,8 @@ public:
     void AddFrameObj(SimObj* uiFrame);
     void DoUpdate(float ms);
 
+    UIFrame* GetFrame(std::string name);
+
     // hackish for now
     void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
     void SetUIRenderer(UIRenderer* uiRenderer) { m_uiRenderer = uiRenderer; };
@@ -73,7 +76,7 @@ public:
     bool HandleMouse2(const input::InputContextCallbackArgs& args);
 
     bool ToggleDebugDraw(const input::InputContextCallbackArgs& args) { m_debugDrawFocus = !m_debugDrawFocus; return false; }
-    std::string ToggleDebugDrawConsole(const std::vector<std::string>&) { m_debugDrawFocus = !m_debugDrawFocus; return ""; }
+    std::string ToggleDebugDrawConsole(const std::vector<std::string>&) { m_debugDrawFocus = !m_debugDrawFocus; return "Editbox Focus debug " + m_debugDrawFocus ? "on" : "off"; }
 
 private:
     void PreProcess();

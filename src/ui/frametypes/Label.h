@@ -16,7 +16,7 @@ namespace ui {
         std::string m_contents;
     public:
         Label(LabelDesc labelDesc);
-        Label(LabelDesc labelDesc, ScriptHandler* scriptHandler);
+        Label(LabelDesc labelDesc, BaseScriptHandler* scriptHandler);
 
         FontDesc GetFontDesc() const;
 

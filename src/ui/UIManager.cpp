@@ -80,6 +80,7 @@ void UIManager::AddFrameObj(SimObj* frameObj) {
             m_domTrees.back().get()->SetPos(spatial->pos, spatial->direction);
         }
         m_uiFrames.emplace_back(uiFrame);
+        uiFrame->InitializeScriptHandler(&m_scriptApi);
     }
 }
 
@@ -106,6 +107,17 @@ void UIManager::ProcessFrames() {
             }
         }
     }
+}
+
+// This returns first frame with given name
+// todo: deal with multiple somehow, or don't do this
+UIFrame* UIManager::GetFrame(std::string name) {
+    for (auto& uiFrame : m_uiFrames) {
+        if (uiFrame->GetFrameName() == name) {
+            return uiFrame;
+        }
+    }
+    return nullptr;
 }
 
 void UIManager::PreProcess() {

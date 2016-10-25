@@ -145,6 +145,12 @@
     <ClCompile Include="..\src\render\renderers\terrain\TerrainTileKey.cpp">
       <Filter>render\renderers\terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ui\frametypes\TextList.cpp">
+      <Filter>ui\frametypes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\ScriptApi.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\App.h" />
@@ -630,6 +636,19 @@
     <ClInclude Include="..\src\render\renderers\terrain\TileCache.h">
       <Filter>render\renderers\terrain</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ui\frametypes\TextList.h">
+      <Filter>ui\frametypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\ScriptApi.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Task.h" />
+    <ClInclude Include="..\src\scheduler\TaskQueue.h">
+      <Filter>scheduler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scheduler\TaskScheduler.h">
+      <Filter>scheduler</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">
@@ -706,6 +725,9 @@
     </Filter>
     <Filter Include="render\renderers\terrain">
       <UniqueIdentifier>{1556d870-e17c-4816-8d17-53791598c267}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scheduler">
+      <UniqueIdentifier>{7ed15aec-62de-4ade-a784-f1c40d0e410e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

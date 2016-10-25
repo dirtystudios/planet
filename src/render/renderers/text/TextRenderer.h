@@ -48,6 +48,7 @@ private:
     gfx::BufferId   _vertexBuffer{0};
     gfx::BufferId   _cursorBuffer{0};
     size_t          _vertexBufferOffset{0};
+    size_t          _vertexBufferOffsetCheck{0};
     size_t          _vertexBufferSize{0};
     ConstantBuffer* _viewData{nullptr};
     ConstantBuffer* _viewData3D{ nullptr };

@@ -41,7 +41,7 @@ static constexpr FT_UInt kDpi               = 96;
 static constexpr uint32_t kAtlasWidth       = 128;
 static constexpr uint32_t kAtlasHeight      = 128;
 static constexpr size_t kVerticesPerQuad    = 6;
-static constexpr size_t kBufferedQuadsCount = 1024; // Maximum number of characters to buffer.
+static constexpr size_t kBufferedQuadsCount = 4096; // Maximum number of characters to buffer.
 static constexpr size_t kVertexBufferSize   = kBufferedQuadsCount * kVerticesPerQuad * sizeof(GlyphVertex);
 static constexpr size_t quadSizeInBytes = 6 * sizeof(GlyphVertex);
 
@@ -295,6 +295,8 @@ const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
 
     // 'loop' around the vertexBuffer, this is currently to fix directx, and as this buffer fills,
     //  im sure it's going to break again
+    bool wasLessThan = _vertexBufferOffsetCheck > _vertexBufferOffset;
+
     if ((_vertexBufferOffset + renderObj->_text.length()) * quadSizeInBytes >= _vertexBufferSize) {
         assert(_vertexBufferOffset != 0);
         _vertexBufferOffset = 0;
@@ -307,6 +309,11 @@ const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
 
     SetVertices(renderObj);
     _vertexBufferOffset += renderObj->_mesh.vertexCount;
+
+    if (wasLessThan && _vertexBufferOffset > _vertexBufferOffsetCheck) {
+        assert(false);
+        LOG_E("TextBuffer overwriting itself");
+    }
 
     gfx::DrawCall drawCall;
     drawCall.type           = gfx::DrawCall::Type::Arrays;
@@ -361,6 +368,7 @@ void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
     _viewData3D->Unmap();
 
     bool drewCursor = false;
+    _vertexBufferOffsetCheck = _vertexBufferOffset;
 
     for (auto& text : _objs) {
         text->_constantBuffer->Map<TextConstants>()->textColor = text->_textColor;

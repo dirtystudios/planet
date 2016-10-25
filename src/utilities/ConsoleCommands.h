@@ -32,11 +32,12 @@ public:
     void RegisterCommand(const std::string& command, ConsoleCommandCallback callback) { m_commandMap.emplace(command, callback); }
 
     std::string ProcessConsoleString(const std::string& command) {
+        std::string unknownCmd = "Unknown Command.";
         if (command.length() <= 1) {
-            return "";
+            return unknownCmd;
         }
         if (command[0] != '/') {
-            return "";
+            return unknownCmd;
         }
 
         std::istringstream       iss(command);
@@ -52,7 +53,7 @@ public:
             }
         }
         
-        return "Unknown Command.";
+        return unknownCmd;
     }
 
 private:

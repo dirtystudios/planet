@@ -21,11 +21,11 @@ public:
     TerrainQuadNodeSelector(TerrainQuadTreePtr quadTree) : _quadTree(quadTree) {
         config::ConsoleCommands::getInstance().RegisterCommand("up", [&](const std::vector<std::string>& s) -> std::string {
             seed++;
-            return "";
+            return "QuadTree up";
         });
         config::ConsoleCommands::getInstance().RegisterCommand("down", [&](const std::vector<std::string>& s) -> std::string {
             seed--;
-            return "";
+            return "QuadTree down";
         });
     }
 

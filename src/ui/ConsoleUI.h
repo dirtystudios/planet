@@ -5,22 +5,36 @@
 #include "InputContext.h"
 #include "UI.h"
 #include "UIFrame.h"
+#include "TextList.h"
 
 // In a perfect world something like this would be described in lua/xml
 
 namespace ui {
 class ConsoleUI {
 private:
-    class ConsoleScriptHandler : public ScriptHandler {
+    class ConsoleScriptHandler : public EditBoxScriptHandler {
+    private:
+        TextList* consoleFrame{ nullptr };
+        
+    public:
+        void OnLoad(UIFrame& frame) {
+            consoleFrame = static_cast<TextList*>(GetFrame("ConsoleTextList"));
+        }
+
         void OnEnterPressed(EditBox& frame) {
+            if (frame.GetText() == "")
+                return;
             config::ConsoleCommands* cc         = &config::ConsoleCommands::getInstance();
             std::string              retMessage = cc->ProcessConsoleString(frame.GetText());
+
+            consoleFrame->InsertTextLine(retMessage);
             frame.ClearText();
         }
     };
 
     std::unique_ptr<ConsoleScriptHandler> m_scriptHandler;
     UIFrame*                              consoleFrame;
+    TextList*							  textList;
     EditBox*                              editBox;
 
 public:
@@ -41,6 +55,16 @@ public:
         m_scriptHandler.reset(new ConsoleScriptHandler());
 
         consoleFrame = uiFrameObj->frames.back().get();
+
+        TextList::TextListDesc textListDesc;
+        textListDesc.name = "ConsoleTextList";
+        textListDesc.parent = consoleFrame;
+        textListDesc.height = 130;
+        textListDesc.width = 780;
+        textListDesc.x = 10.f;
+        textListDesc.y = 60.f;
+        textListDesc.show = true;
+        uiFrameObj->frames.push_back(std::make_unique<TextList>(textListDesc));
 
         EditBox::EditBoxDesc editBoxDesc;
         editBoxDesc.name          = "ConsoleEditBox";

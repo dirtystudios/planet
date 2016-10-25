@@ -7,7 +7,7 @@ namespace ui {
         m_contents = labelDesc.text;
     }
 
-    Label::Label(LabelDesc labelDesc, ScriptHandler* scriptHandler) 
+    Label::Label(LabelDesc labelDesc, BaseScriptHandler* scriptHandler)
         : UIFrame(labelDesc, scriptHandler), m_labelDesc(labelDesc) {
         m_frameType = FrameType::LABEL;
         m_contents = labelDesc.text;

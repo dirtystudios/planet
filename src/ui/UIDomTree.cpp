@@ -1,12 +1,21 @@
 #include "UIDomTree.h"
 
+#include "EditBox.h"
+#include "TextList.h"
+#include "Label.h"
+#include "Rectangle.h"
+
 using namespace dm;
+
+static const std::string uiDomTreeChannel = "UIDomTree";
+#define DomTreeLogE(fmt, ...) LOG(Log::Level::Error, uiDomTreeChannel, fmt, ##__VA_ARGS__)
 
 namespace ui {
     void UIDomTree::SetRoot(UIFrame* frame) {
         // dont call this more than once
         if (root) {
-            LOG_E("[UIDomTree] - dont call setroot multiple times");
+            assert(root != 0);
+            DomTreeLogE("dont call setroot multiple times");
             return;
         }
         root = CreateNode(frame);
@@ -15,8 +24,12 @@ namespace ui {
 
     void UIDomTree::InsertFrame(UIFrame* frame) {
         if (frame->GetParent() != lastInserted->frame) {
-            LOG_E("[UIDomTree] - you didn't say the magic word");
-            return;
+            lastInserted = GetNode(root, frame->GetParent());
+            if (lastInserted == nullptr) {
+                assert(lastInserted != 0);
+                DomTreeLogE("Couldn't find parent node for insertFrame");
+                return;
+            }
         }
         UIDomNode* node = CreateNode(frame);
 
@@ -34,24 +47,36 @@ namespace ui {
         switch (type) {
         case FrameType::EDITBOX: {
             EditBox*  ebox = dynamic_cast<EditBox*>(frame);
-            node->textRO.reset(new TextRenderObj(ebox->GetText(), scaled.x, scaled.y, scaled.z, ebox->GetColor(), !m_worldFrame));
-            m_textRenderer->Register(node->textRO.get());
+            node->textROs.push_back(std::make_unique<TextRenderObj>(ebox->GetText(), scaled.x, scaled.y, scaled.z, ebox->GetColor(), !m_worldFrame));
+            m_textRenderer->Register(node->textROs[0].get());
             node->frameRO.reset(
-                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->GetFrameDesc().show, !m_worldFrame));
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
             m_uiRenderer->Register(node->frameRO.get());
             break;
 
         }
+        case FrameType::TEXTLIST: {
+            TextList* textList = dynamic_cast<TextList*>(frame);
+            int maxLines = textList->GetMaxLines();
+            for (int x = 0; x < maxLines; ++x) {
+                node->textROs.push_back(std::make_unique<TextRenderObj>("", scaled.x, scaled.y, scaled.z, textList->GetColor(), !m_worldFrame));
+                m_textRenderer->Register(node->textROs.back().get());
+            }
+            node->frameRO.reset(
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
+            m_uiRenderer->Register(node->frameRO.get());
+            break;
+        }
         case FrameType::LABEL: {
             // for now label type is always shown
             Label*    label = dynamic_cast<Label*>(frame);
-            node->textRO.reset(new TextRenderObj(label->GetText(), scaled.x, scaled.y, scaled.z, label->GetColor(), !m_worldFrame));
-            m_textRenderer->Register(node->textRO.get());
+            node->textROs.push_back(std::make_unique<TextRenderObj>(label->GetText(), scaled.x, scaled.y, scaled.z, label->GetColor(), !m_worldFrame));
+            m_textRenderer->Register(node->textROs[0].get());
             break;
         }
         default:
             node->frameRO.reset(
-                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->GetFrameDesc().show, !m_worldFrame));
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
             m_uiRenderer->Register(node->frameRO.get());
             break;
         }
@@ -146,34 +171,60 @@ namespace ui {
                 node->frameRO.get()->z(newPos.z);
                 node->frameRO.get()->rot(newRot);
             }
-            if (node->textRO.get()) {
-                node->textRO.get()->x(newPos.x);
-                node->textRO.get()->y(newPos.y);
-                node->textRO.get()->z(newPos.z);
+
+            float y = newPos.y;
+            for (auto& textRO : node->textROs) {
+                if (textRO.get()) {
+                    textRO.get()->x(newPos.x);
+                    textRO.get()->y(y);
+                    textRO.get()->z(newPos.z);
+                    // todo, get lineheight....
+                    y += 12.f;
+                }
             }
         }
 
         if (node->frameRO.get())
             node->frameRO.get()->isRendered(shouldRender);
-        if (node->textRO.get()) {
-            node->textRO.get()->cursorEnabled(false);
-            if (!shouldRender)
-                node->textRO.get()->text("");
-            else {
-                if (node->frame->GetFrameType() == FrameType::LABEL)
-                    node->textRO.get()->text(((Label*)node->frame)->GetText());
-                else
-                    node->textRO.get()->text(((EditBox*)node->frame)->GetText());
+
+        // this needs to be reorganized
+        if (node->textROs.size() > 0) {
+            if (node->textROs[0].get()) {
+                node->textROs[0].get()->cursorEnabled(false);
+                if (!shouldRender)
+                    node->textROs[0].get()->text("");
+                else {
+                    if (node->frame->GetFrameType() == FrameType::LABEL)
+                        node->textROs[0].get()->text(((Label*)node->frame)->GetText());
+                    else if (node->frame->GetFrameType() == FrameType::EDITBOX)
+                        node->textROs[0].get()->text(((EditBox*)node->frame)->GetText());
+                    else if (node->frame->GetFrameType() == FrameType::TEXTLIST) {
+                        TextList* textList = (TextList*)node->frame;
+                        int x = 0;
+                        assert(textList->GetMaxLines() == node->textROs.size());
+                        for (auto text : textList->GetTextList()) {
+                            if (node->textROs[x].get()) {
+                                node->textROs[x].get()->text(text);
+                            }
+                            else
+                                assert(false);
+                            ++x;
+                        }
+                    }
+                    else {
+                        DomTreeLogE("Unknown frametype that has a textRO");
+                        assert(false);
+                    }
+                }
+            }
+
+            if (node->frame == m_focused) {
+                if (node->frame->GetFrameType() == FrameType::EDITBOX) {
+                    node->textROs[0].get()->cursorPos(((EditBox*)node->frame)->GetCursor());
+                    node->textROs[0].get()->cursorEnabled(renderCursor);
+                }
             }
         }
-
-        if (node->frame == m_focused) {
-            if (node->frame->GetFrameType() == FrameType::EDITBOX) {
-                node->textRO.get()->cursorPos(((EditBox*)node->frame)->GetCursor());
-                node->textRO.get()->cursorEnabled(renderCursor);
-            }
-        }
-
         for (auto& child : node->children) {
             RenderNodes(child, newPos, newRot, shouldRender, renderCursor);
         }
