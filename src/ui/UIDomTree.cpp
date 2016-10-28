@@ -187,34 +187,35 @@ namespace ui {
         if (node->frameRO.get())
             node->frameRO.get()->isRendered(shouldRender);
 
-        // this needs to be reorganized
-        if (node->textROs.size() > 0) {
-            if (node->textROs[0].get()) {
-                node->textROs[0].get()->cursorEnabled(false);
-                if (!shouldRender)
-                    node->textROs[0].get()->text("");
-                else {
-                    if (node->frame->GetFrameType() == FrameType::LABEL)
-                        node->textROs[0].get()->text(((Label*)node->frame)->GetText());
-                    else if (node->frame->GetFrameType() == FrameType::EDITBOX)
-                        node->textROs[0].get()->text(((EditBox*)node->frame)->GetText());
-                    else if (node->frame->GetFrameType() == FrameType::TEXTLIST) {
-                        TextList* textList = (TextList*)node->frame;
-                        int x = 0;
-                        assert(textList->GetMaxLines() == node->textROs.size());
-                        for (auto text : textList->GetTextList()) {
-                            if (node->textROs[x].get()) {
-                                node->textROs[x].get()->text(text);
-                            }
-                            else
-                                assert(false);
-                            ++x;
+        if (!shouldRender) {
+            for (auto& textRO : node->textROs) {
+                textRO.get()->text("");
+                textRO.get()->cursorEnabled(false);
+            }
+        }
+
+        else {
+            if (node->textROs.size() > 0) {
+                if (node->frame->GetFrameType() == FrameType::LABEL)
+                    node->textROs[0].get()->text(((Label*)node->frame)->GetText());
+                else if (node->frame->GetFrameType() == FrameType::EDITBOX)
+                    node->textROs[0].get()->text(((EditBox*)node->frame)->GetText());
+                else if (node->frame->GetFrameType() == FrameType::TEXTLIST) {
+                    TextList* textList = (TextList*)node->frame;
+                    int x = 0;
+                    assert(textList->GetMaxLines() == node->textROs.size());
+                    for (auto text : textList->GetTextList()) {
+                        if (node->textROs[x].get()) {
+                            node->textROs[x].get()->text(text);
                         }
+                        else
+                            assert(false);
+                        ++x;
                     }
-                    else {
-                        DomTreeLogE("Unknown frametype that has a textRO");
-                        assert(false);
-                    }
+                }
+                else {
+                    DomTreeLogE("Unknown frametype that has a textRO");
+                    assert(false);
                 }
             }
 
