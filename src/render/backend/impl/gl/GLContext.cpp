@@ -27,7 +27,12 @@ void GLContext::WriteBufferData(GLBuffer* buffer, const void* data, size_t size)
 
 void GLContext::WriteTextureData(GLTexture* texture, const void* data, uint32_t slice) { 
     BindTexture(0, texture);
-    GL_CHECK(glTexSubImage2D(texture->type, slice, 0, 0, texture->width, texture->height, texture->format.internalFormat, texture->format.dataType, data));
+    if (texture->type == GL_TEXTURE_2D)
+        GL_CHECK(glTexSubImage2D(texture->type, slice, 0, 0, texture->width, texture->height, texture->format.dataFormat, texture->format.dataType, data));
+    else if (texture->type == GL_TEXTURE_2D_ARRAY)
+        GL_CHECK(glTexSubImage3D(texture->type, 0, 0, 0, slice, texture->width, texture->height, 1, texture->format.dataFormat, texture->format.dataType, data));
+    else
+        LOG_E("%s", "Unsupported WriteTextureData texture type");
 }
 
 void GLContext::BindVertexArrayObject(GLVertexArrayObject* vao) {

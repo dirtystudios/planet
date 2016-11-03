@@ -83,6 +83,7 @@
     <ClInclude Include="..\src\components\Spatial.h" />
     <ClInclude Include="..\src\components\UI.h" />
     <ClInclude Include="..\src\ext\stb_image.h" />
+    <ClInclude Include="..\src\ext\stb_image_write.h" />
     <ClInclude Include="..\src\Helpers.h" />
     <ClInclude Include="..\src\IdObj.h" />
     <ClInclude Include="..\src\Image.h" />
@@ -168,6 +169,8 @@
     <ClInclude Include="..\src\render\Mesh.h" />
     <ClInclude Include="..\src\render\MeshCache.h" />
     <ClInclude Include="..\src\render\MeshGeneration.h" />
+    <ClInclude Include="..\src\render\MeshGeometry.h" />
+    <ClInclude Include="..\src\render\MeshGeometryData.h" />
     <ClInclude Include="..\src\render\MeshImporter.h" />
     <ClInclude Include="..\src\render\PipelineStateCache.h" />
     <ClInclude Include="..\src\render\Rectangle.h" />
@@ -325,7 +328,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;NOISE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;NOISE_STATIC;_CRT_SECURE_NO_WARNINGS;_DEBUG%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

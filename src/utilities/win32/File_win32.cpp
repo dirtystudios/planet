@@ -3,6 +3,7 @@
 #include "File.h"
 #include "Log.h"
 
+#include "StringUtil.h"
 #include <Windows.h>
 #include <Shlwapi.h>
 
@@ -43,5 +44,31 @@ namespace fs {
         //Close the handle after use or memory/resource leak
         FindClose(handle);
         return files;
+    }
+
+    bool exists(const std::string& path) {
+        return PathFileExists(path.c_str()) == TRUE;
+    }
+
+    bool mkdir(const std::string& path) {
+        BOOL rtn = CreateDirectory(path.c_str(), NULL);
+        return (rtn == 0 || rtn == ERROR_ALREADY_EXISTS);
+    }
+
+    // this could get moved
+    bool mkdirs(const std::string& path) {
+        if (exists(path))
+            return true;
+
+        std::vector<std::string> splits = dutil::Split(path, '/');
+
+        std::string currentPath = "";
+        for (std::string& split : splits) {
+            currentPath += "/" + split;
+            if (!fs::mkdir(currentPath)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -514,6 +514,8 @@ namespace gfx {
         textureDX11.shaderResourceView.Swap(shaderResourceView);
         textureDX11.format = tdesc.Format;
         textureDX11.requestedFormat = format;
+        textureDX11.width = width;
+        textureDX11.height = height;
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
@@ -564,6 +566,8 @@ namespace gfx {
         textureDX11.shaderResourceView.Swap(shaderResourceView);
         textureDX11.format = tdesc.Format;
         textureDX11.requestedFormat = format;
+        textureDX11.width = width;
+        textureDX11.height = height;
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 

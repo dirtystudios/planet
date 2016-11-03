@@ -649,6 +649,15 @@
     <ClInclude Include="..\src\scheduler\TaskScheduler.h">
       <Filter>scheduler</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ext\stb_image_write.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\MeshGeometry.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\render\MeshGeometryData.h">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="input">

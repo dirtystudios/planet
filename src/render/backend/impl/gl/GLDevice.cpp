@@ -302,7 +302,7 @@ bool isVertexLayoutValidWithShader(const GLVertexLayout& layout, const GLShaderP
         // Vertex shader's have limited types of attributes that can be.        
         const GLVertexElement& attributeAsElement = GLEnumAdapter::Convert(attribute);
 
-        LOG_D("idx(%d): %s -> %s", idx, element.ToString().c_str(), attributeAsElement.ToString().c_str());
+        //LOG_D("idx(%d): %s -> %s", idx, element.ToString().c_str(), attributeAsElement.ToString().c_str());
 
         if (attribute.location != idx) {
             LOG_W("Attribute location mismatch with VertexLayout");
@@ -539,7 +539,7 @@ void GLDevice::BindResource(const Binding& binding) {
 void GLDevice::Execute(CommandBuffer* cmdBuffer) {
     const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
     for (const DrawItem* item : *items) {
-        LOG_D("%s", "DrawItem");
+        //LOG_D("%s", "DrawItem");
 
         DrawItemDecoder decoder(item);
 
@@ -610,7 +610,7 @@ void GLDevice::UnmapMemory(BufferId bufferId) {
 }
 
 void GLDevice::RenderFrame() {
-    LOG_D("%s", "RenderFrame");
+    //LOG_D("%s", "RenderFrame");
     GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     for (uint32_t idx = 0; idx < _submittedBuffers.size(); ++idx) {
