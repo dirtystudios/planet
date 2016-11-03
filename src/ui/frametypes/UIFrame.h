@@ -54,7 +54,7 @@ public:
 protected:
     UIFrameDesc m_frameDesc;
     FrameType m_frameType;
-    BaseScriptHandler* m_scriptHandler;
+    BaseScriptHandler* m_scriptHandler{nullptr};
 
 public:
     UIFrame(UIFrameDesc frameDesc) : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME) {}
