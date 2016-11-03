@@ -1,45 +1,36 @@
 #include "TerrainQuadNode.h"
 #include "TerrainQuadTree.h"
-
+#
 using namespace dm;
+
+TerrainQuadNode::TerrainQuadNode(TerrainQuadTree* terrain, const TerrainTileKey& key, const dm::Rect3Dd& local, const dm::Rect3Dd& sampleSpace, double size)
+    : terrain(terrain), key(key), size(size), localRect(local), sampleRect(sampleSpace) {}
+
+glm::mat4 TerrainQuadNode::worldMatrix() const {
+    dm::Transform transform;
+    transform.translate(localRect.center());
+    // dont scale Z because thats the direction we displace for NoDeformation
+    //                transform.scale(glm::vec3(1.f/dm::pow(2.f, node->key.lod), 1.f/dm::pow(2.f, node->key.lod), 1.f));
+    transform.scale(glm::vec3(size / 2.f, size / 2.f, 1.f));
+
+    return terrain->transform() * transform.matrix();
+}
+
+glm::dvec3 TerrainQuadNode::deformedPosition() const { return terrain->localToDeformed(localRect.center()); }
+
+dm::Rect3Dd TerrainQuadNode::worldRect() const { return terrain->worldRectForKey(key); }
 
 void TerrainQuadNode::SubdivideIfNecessary() {
     if (children.size() > 0) {
         return;
     }
 
-    double childSize      = size / 2.0;
-    double halfChildSize  = childSize / 2.0;
-    double childPos[4][2] = {
-        {local.x - halfChildSize, local.y + halfChildSize},
-        {local.x + halfChildSize, local.y + halfChildSize},
-        {local.x - halfChildSize, local.y - halfChildSize},
-        {local.x + halfChildSize, local.y - halfChildSize},
-    };
+    std::array<Rect3Dd, 4>        childrenRects       = localRect.subdivide();
+    std::array<Rect3Dd, 4>        childrenSampleRects = sampleRect.subdivide();
+    std::array<TerrainTileKey, 4> childrenKeys        = key.subdivide();
 
     children.reserve(4);
     for (uint32_t i = 0; i < 4; ++i) {
-        glm::dvec3     childLocal;
-        TerrainTileKey childKey;
-
-        childLocal.x = childPos[i][0];
-        childLocal.y = childPos[i][1];
-        childLocal.z = 0;
-        childKey.tid = key.tid;
-        childKey.lod = key.lod + 1;
-        childKey.tx  = key.tx * 2 + (i % 2 == 0 ? 0 : 1);
-        childKey.ty  = key.ty * 2 + (i < 2 ? 1 : 0);
-        //                    child->bbox.max = glm::vec3(child->pcoords.x + half_child_size, child->y + half_child_size, 0);
-        //                    child->bbox.min = glm::vec3(child->pcoords.x - half_child_size, child->y - half_child_size, 0);
-
-        children.emplace_back(this->terrain, childKey, childLocal, childSize);
+        children.emplace_back(this->terrain, childrenKeys[i], childrenRects[i], childrenSampleRects[i], size / 2.0);
     }
-}
-
-Rect3Df TerrainQuadNode::worldRect() const { return Rect3Df(localRect(), terrain->transform()); }
-
-Rect2Df TerrainQuadNode::localRect() const {
-    glm::vec2 bl(local.x - size / 2.f, local.y - size / 2.f);
-    glm::vec2 tr(local.x + size / 2.f, local.y + size / 2.f);
-    return Rect2Df(bl, tr);
 }

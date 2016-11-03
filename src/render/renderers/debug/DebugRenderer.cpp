@@ -1,5 +1,7 @@
 #include "DebugRenderer.h"
+#include "DMath.h"
 #include "DrawItemEncoder.h"
+#include "MeshGeneration.h"
 #include "StateGroupDecoder.h"
 #include "StateGroupEncoder.h"
 #include "glm/gtc/matrix_transform.hpp"
@@ -11,11 +13,16 @@ constexpr float  kHalfLineWidth           = kLineWidth / 2.f;
 constexpr size_t kDefaultVertexBufferSize = sizeof(DebugVertex) * 4096;
 
 static glm::vec3 to3(const glm::vec2& v) { return {v.x, v.y, 0}; }
+static glm::vec4 to4(const glm::vec3& v) { return {v.x, v.y, v.z, 1}; }
 
 DebugRenderer::DebugRenderer() {}
 
 void DebugRenderer::OnInit() {
+    MeshGeometryData geometryData;
+    dgen::GenerateIcoSphere(3, &geometryData);
+    _sphereGeometry = new MeshGeometry(device(), geometryData);
 
+    _sphereCache.reset(new SphereVertexCache(16, [&](const size_t& key, std::vector<DebugVertex>*& value) { delete value; }));
     _3DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
     _2DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
 
@@ -60,10 +67,11 @@ void DebugRenderer::OnInit() {
     encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
     const gfx::StateGroup* filledSG = encoder.End();
 
-    _2DfilledSG    = gfx::StateGroupEncoder::Merge({bind2D, filledSG});
-    _2DwireframeSG = gfx::StateGroupEncoder::Merge({bind2D, wireframeSG});
-    _3DfilledSG    = gfx::StateGroupEncoder::Merge({bind3D, filledSG});
-    _3DwireframeSG = gfx::StateGroupEncoder::Merge({bind3D, wireframeSG});
+    _2DfilledSG          = gfx::StateGroupEncoder::Merge({bind2D, filledSG});
+    _2DwireframeSG       = gfx::StateGroupEncoder::Merge({bind2D, wireframeSG});
+    _3DfilledSG          = gfx::StateGroupEncoder::Merge({bind3D, filledSG});
+    _3DwireframeSG       = gfx::StateGroupEncoder::Merge({bind3D, wireframeSG});
+    _3DwireframeSphereSG = gfx::StateGroupEncoder::Merge({bind3D, wireframeSG, _sphereGeometry->stateGroup()});
 
     gfx::StateGroupDecoder decoder(filledSG);
     decoder.ReadRasterState(&rasterState);
@@ -73,20 +81,32 @@ void DebugRenderer::OnInit() {
     delete bind3D;
 }
 
+DebugRenderer::~DebugRenderer() {
+    // cleanup spheremesh
+}
+
 void DebugRenderer::AddLine2D(const glm::vec2& start, const glm::vec2& end, glm::vec3 color) {
     AddRect2D({{start.x - kHalfLineWidth, start.y}, {end.x + kHalfLineWidth, end.y}}, color, true);
+}
+
+void DebugRenderer::AddSphere3D(const glm::vec3& origin, float radius) {
+    //    gfx::BufferId transientBuffer = device()->AllocateBuffer(gfx::BufferDesc::defaultTransient(gfx::BufferUsageFlags::ConstantBufferBit, sizeof(DebugViewConstants)));
+    //    dm::Transform transform;
+    //    transform.scale(radius);
+    //    transform.translate(origin);
+    //    _3DwireframeSpheres.emplace_back(transform.matrix(), transientBuffer);
 }
 
 void DebugRenderer::AddRect2D(const Rect2Df& rect, const glm::vec3& color, bool filled) {
     DebugVertexVec& buffer = filled ? _buffers.filled2D : _buffers.wireframe2D;
     if (filled) {
-        buffer.push_back({ to3(rect.bl()),{ 0, 0 }, color });
-        buffer.push_back({ to3(rect.br()),{ 0, 0 }, color });
-        buffer.push_back({ to3(rect.tr()),{ 0, 0 }, color });
+        buffer.push_back({to3(rect.bl()), {0, 0}, color});
+        buffer.push_back({to3(rect.br()), {0, 0}, color});
+        buffer.push_back({to3(rect.tr()), {0, 0}, color});
 
-        buffer.push_back({ to3(rect.tr()),{ 0, 0 }, color });
-        buffer.push_back({ to3(rect.tl()),{ 0, 0 }, color });
-        buffer.push_back({ to3(rect.bl()),{ 0, 0 }, color });
+        buffer.push_back({to3(rect.tr()), {0, 0}, color});
+        buffer.push_back({to3(rect.tl()), {0, 0}, color});
+        buffer.push_back({to3(rect.bl()), {0, 0}, color});
     }
     else {
         buffer.push_back({ to3(rect.bl()),{ 0, 0 }, color });
@@ -201,6 +221,19 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
         }
     }
     device()->UnmapMemory(_vertexBuffer);
+
+    //    // TODO: instancing instead of this monstrosity
+    //    for(std::pair<glm::mat4, gfx::BufferId>& sphereParams : _3DwireframeSpheres) {
+    //        DebugViewConstants* viewConstants = reinterpret_cast<DebugViewConstants*>(device()->MapMemory(sphereParams.second, gfx::BufferAccess::Write));
+    //        viewConstants->view               = renderView->camera->BuildView() * sphereParams.first; // nice hack bro
+    //        viewConstants->proj               = renderView->camera->BuildProjection();
+    //        device()->UnmapMemory(sphereParams.second);
+    //
+    //        _drawItems.push_bacwsk(encoder.Encode(device(), _sphereGeometry->drawCall(), {_3DwireframeSphereSG}));
+    //
+    //    }
+
+    // TODODODODODO; recycle and clean up transient buffers for spheres
 
     for (const gfx::DrawItem* item : _drawItems) {
         renderQueue->AddDrawItem(24, item);

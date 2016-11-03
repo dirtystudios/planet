@@ -23,7 +23,8 @@ public:
     virtual ~TileBuffer() {}
 
     T* getFreeSlot() {
-        T* slot                                           = _slotPool->construct();
+        T* slot = _slotPool->construct();
+        dg_assert_nm(slot != nullptr);
         dynamic_cast<TileBufferSlot*>(slot)->tileBufferId = _id;
         onGetSlot(slot);
         return slot;

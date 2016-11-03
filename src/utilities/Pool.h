@@ -18,6 +18,8 @@ public:
     template <class... Args>
     T* construct(Args&&... args) {
         T* ret = nullptr;
+        if (_items.size() == _capacity - 1)
+            (void)1;
         if (_items.size() < _capacity) {
             _items.emplace_back(std::forward<Args>(args)...);
             ret = &_items.back();

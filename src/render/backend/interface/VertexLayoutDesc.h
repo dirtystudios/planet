@@ -49,10 +49,6 @@ struct VertexLayoutElement {
     VertexAttributeStorage storage{VertexAttributeStorage::Float};
 };
 
-struct VertexLayoutDesc {
-    std::vector<VertexLayoutElement> elements;
-};
-
 static size_t GetByteCount(VertexAttributeType type, VertexAttributeStorage storage) {
     size_t bytes = 0;
     switch (storage) {
@@ -87,6 +83,18 @@ static size_t GetByteCount(VertexAttributeType type, VertexAttributeStorage stor
 }
 
 static size_t GetByteCount(const VertexLayoutElement& attribute) { return GetByteCount(attribute.type, attribute.storage); }
+
+struct VertexLayoutDesc {
+    std::vector<VertexLayoutElement> elements;
+    size_t                           stride() {
+        size_t vertexStride = 0;
+        for (VertexLayoutElement& element : elements) {
+            vertexStride += GetByteCount(element);
+        }
+        return vertexStride;
+    }
+};
+
 } // namespace
 
 namespace std {

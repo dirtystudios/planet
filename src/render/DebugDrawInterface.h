@@ -10,4 +10,6 @@ public:
 
     virtual void AddLine3D(const glm::vec3& start, const glm::vec3& end, glm::vec3 color) = 0;
     virtual void AddRect3D(const dm::Rect3Df& rect, const glm::vec3& color, bool filled = false) = 0;
+
+    virtual void AddSphere3D(const glm::vec3& origin, float radius) = 0;
 };

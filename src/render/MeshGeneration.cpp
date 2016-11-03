@@ -1,49 +1,51 @@
 #include "MeshGeneration.h"
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
-
-namespace meshGen {
+namespace dgen {
 
 // Thanks bro...http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
-IndexedMeshData CreateIcoSphere(uint32_t recursionLevel) {                
-    IndexedMeshData meshData;
+void GenerateIcoSphere(uint32_t recursionLevel, MeshGeometryData* geometry) {
+    assert(geometry);
+    assert(recursionLevel > 0 && recursionLevel < 8); // 8 is alot
     int32_t index = 0;
     std::unordered_map<uint64_t, int32_t> middlePointIndexCache;
 
     // add vertex to mesh, fix position to be on unit sphere, return index
-    auto addVertex = [&](const glm::vec3& p) -> int32_t{
-        meshData.positions.push_back(glm::normalize(p));
-        meshData.normals.push_back(glm::normalize(p));
+    auto addVertex = [&geometry, &index](const glm::vec3& p) -> int32_t {
+        glm::vec3 pos  = glm::normalize(p);
+        glm::vec3 norm = pos;
+        glm::vec2 tex  = glm::vec2(norm.x / 2.f + 0.5f, norm.x / 2.f + 0.5f);
+
+        geometry->positions.push_back(pos);
+        geometry->normals.push_back(norm);
+        geometry->texcoords.push_back(tex);
         return index++;
     };
 
     // return index of point in the middle of p1 and p2
     auto getMiddlePoint = [&](int32_t p1, int32_t p2) -> int32_t {
         // first check if we have it already
-        bool firstIsSmaller = p1 < p2;
-        uint64_t smallerIndex = firstIsSmaller ? p1 : p2;
-        uint64_t greaterIndex = firstIsSmaller ? p2 : p1;
-        uint64_t key = (smallerIndex << 32) + greaterIndex;
+        bool     firstIsSmaller = p1 < p2;
+        uint64_t smallerIndex   = firstIsSmaller ? p1 : p2;
+        uint64_t greaterIndex   = firstIsSmaller ? p2 : p1;
+        uint64_t key            = (smallerIndex << 32) + greaterIndex;
 
         auto ret = middlePointIndexCache.find(key);
-        if(ret != middlePointIndexCache.end()) {
+        if (ret != middlePointIndexCache.end()) {
             return ret->second;
         }
-        
+
         // not in cache, calculate it
-        glm::vec3 point1 = meshData.positions[p1];
-        glm::vec3 point2 = meshData.positions[p2];
-        glm::vec3 middle = glm::vec3(
-            (point1.x + point2.x) / 2.f, 
-            (point1.y + point2.y) / 2.f, 
-            (point1.z + point2.z) / 2.f);
+        glm::vec3 point1 = geometry->positions[p1];
+        glm::vec3 point2 = geometry->positions[p2];
+        glm::vec3 middle = glm::vec3((point1.x + point2.x) / 2.f, (point1.y + point2.y) / 2.f, (point1.z + point2.z) / 2.f);
 
         // push_back vertex makes sure point is on unit sphere
-        int i = addVertex(middle); 
+        int i = addVertex(middle);
 
         // store it, return index
-        middlePointIndexCache.insert(std::make_pair(key, i));        
+        middlePointIndexCache.insert(std::make_pair(key, i));
         return i;
     };
 
@@ -116,30 +118,31 @@ IndexedMeshData CreateIcoSphere(uint32_t recursionLevel) {
     }
 
     // done, now push_back triangles to mesh
-    for(const glm::ivec3& tri : faces)
-    {
-        meshData.indices.push_back(tri.x);
-        meshData.indices.push_back(tri.y);
-        meshData.indices.push_back(tri.z);
+    for (const glm::ivec3& tri : faces) {
+        geometry->indices.push_back(tri.x);
+        geometry->indices.push_back(tri.y);
+        geometry->indices.push_back(tri.z);
     }
-
-    return meshData;        
 }
 
-void GenerateGrid(float centerX, float centerY, float centerZ, float sizeX, float sizeY, uint32_t resolutionX, uint32_t resolutionY, VertexDelegate delegate) {
+void GenerateGrid(float centerX, float centerY, float centerZ, float sizeX, float sizeY, uint32_t resolutionX, uint32_t resolutionY, MeshGeometryData* geometryData) {
+
     float half_sizeX = sizeX / 2.f;
     float half_sizeY = sizeY / 2.f;
 
     float dx = sizeX / static_cast<float>(resolutionX - 1);
     float dy = sizeY / static_cast<float>(resolutionY - 1);
 
+    // start in topLeft
     auto generateVertex = [&](uint32_t i, uint32_t j) {
-        float x         = centerX - half_sizeX + (j * dx);
-        float y         = centerY + half_sizeY - (i * dy);
-        float z         = centerZ;
-        float u         = j * dx / sizeX;
-        float v = i * dy / sizeY;
-        delegate(x, y, z, u, v);
+        float x = centerX - half_sizeX + (i * dx);
+        float y = centerY - half_sizeY + (j * dy);
+        float z = centerZ;
+        float u = i * dx / sizeX;
+        float v = j * dy / sizeY;
+        geometryData->positions.emplace_back(x, y, z);
+        geometryData->texcoords.emplace_back(u, v);
+        geometryData->normals.emplace_back(0, 1, 0);
     };
 
     for (uint32_t i = 0; i < resolutionY - 1; ++i) {
@@ -154,53 +157,23 @@ void GenerateGrid(float centerX, float centerY, float centerZ, float sizeX, floa
     }
 }
 
-void GenerateGrid(const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution, VertexDelegate delegate) {
-    GenerateGrid(center.x, center.y, center.z, size.x, size.y, resolution.x, resolution.y, delegate);
+void GenerateGrid(const glm::vec3& center, const glm::vec2& size, const glm::uvec2& resolution, MeshGeometryData* geometryData) {
+    GenerateGrid(center.x, center.y, center.z, size.x, size.y, resolution.x, resolution.y, geometryData);
 }
 
 void GenerateCube(VertexDelegate delegate, float originX, float originY, float originZ, float scale, bool flip) {
     static float positions[6][6][3] = {
-        {{-0.5, -0.5, 0.5},
-         {0.5, -0.5, 0.5},
-         {0.5, 0.5, 0.5},
-         {0.5, 0.5, 0.5},
-         {-0.5, 0.5, 0.5},
-         {-0.5, -0.5, 0.5}}, // front
+        {{-0.5, -0.5, 0.5}, {0.5, -0.5, 0.5}, {0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {-0.5, 0.5, 0.5}, {-0.5, -0.5, 0.5}}, // front
 
-        {{0.5, -0.5, -0.5},
-         {-0.5, -0.5, -0.5},
-         {-0.5, 0.5, -0.5},
-         {-0.5, 0.5, -0.5},
-         {0.5, 0.5, -0.5},
-         {0.5, -0.5, -0.5}}, // back
+        {{0.5, -0.5, -0.5}, {-0.5, -0.5, -0.5}, {-0.5, 0.5, -0.5}, {-0.5, 0.5, -0.5}, {0.5, 0.5, -0.5}, {0.5, -0.5, -0.5}}, // back
 
-        {{-0.5, -0.5, -0.5},
-         {-0.5, -0.5, 0.5},
-         {-0.5, 0.5, 0.5},
-         {-0.5, 0.5, 0.5},
-         {-0.5, 0.5, -0.5},
-         {-0.5, -0.5, -0.5}}, // left
+        {{-0.5, -0.5, -0.5}, {-0.5, -0.5, 0.5}, {-0.5, 0.5, 0.5}, {-0.5, 0.5, 0.5}, {-0.5, 0.5, -0.5}, {-0.5, -0.5, -0.5}}, // left
 
-        {{0.5, -0.5, 0.5},
-         {0.5, -0.5, -0.5},
-         {0.5, 0.5, -0.5},
-         {0.5, 0.5, -0.5},
-         {0.5, 0.5, 0.5},
-         {0.5, -0.5, 0.5}}, // right
+        {{0.5, -0.5, 0.5}, {0.5, -0.5, -0.5}, {0.5, 0.5, -0.5}, {0.5, 0.5, -0.5}, {0.5, 0.5, 0.5}, {0.5, -0.5, 0.5}}, // right
 
-        {{-0.5, 0.5, 0.5},
-         {0.5, 0.5, 0.5},
-         {0.5, 0.5, -0.5},
-         {0.5, 0.5, -0.5},
-         {-0.5, 0.5, -0.5},
-         {-0.5, 0.5, 0.5}}, // top
+        {{-0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {0.5, 0.5, -0.5}, {0.5, 0.5, -0.5}, {-0.5, 0.5, -0.5}, {-0.5, 0.5, 0.5}}, // top
 
-        {{0.5, -0.5, 0.5},
-         {-0.5, -0.5, 0.5},
-         {-0.5, -0.5, -0.5},
-         {-0.5, -0.5, -0.5},
-         {0.5, -0.5, -0.5},
-         {0.5, -0.5, 0.5}} // bottom
+        {{0.5, -0.5, 0.5}, {-0.5, -0.5, 0.5}, {-0.5, -0.5, -0.5}, {-0.5, -0.5, -0.5}, {0.5, -0.5, -0.5}, {0.5, -0.5, 0.5}} // bottom
     };
 
     static float texCoords[6][2] = {
@@ -212,13 +185,10 @@ void GenerateCube(VertexDelegate delegate, float originX, float originY, float o
         {0.f, 0.f }  //bl
     };
 
-    for (uint32_t f = 0; f < 6; ++f) { // for each face
+    for (uint32_t f = 0; f < 6; ++f) {     // for each face
         for (uint32_t v = 0; v < 6; ++v) { // for each vertex
-            delegate(scale * positions[f][flip ? 5 - v : v][0] + originX, 
-                     scale * positions[f][flip ? 5 - v : v][1] + originY,
-                     scale * positions[f][flip ? 5 - v : v][2] + originZ,
-                     texCoords[v][0],
-                     texCoords[v][1]);            
+            delegate(scale * positions[f][flip ? 5 - v : v][0] + originX, scale * positions[f][flip ? 5 - v : v][1] + originY,
+                     scale * positions[f][flip ? 5 - v : v][2] + originZ, texCoords[v][0], texCoords[v][1]);
         }
     }
 }

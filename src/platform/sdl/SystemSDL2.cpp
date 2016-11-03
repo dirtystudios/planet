@@ -132,8 +132,8 @@ int sys::Run(app::Application* app) {
 
     uint32_t sdlCreateAdditionalFlags = deviceApi == gfx::RenderDeviceApi::OpenGL ? SDL_WINDOW_OPENGL : 0;
 
-    _window = SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width,
-                               _window_height, sdlCreateAdditionalFlags | SDL_WINDOW_RESIZABLE);
+    _window =
+        SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width, _window_height, sdlCreateAdditionalFlags | SDL_WINDOW_RESIZABLE);
 
     if (_window == NULL) {
         LOG_E("SDL could not create window: %s", SDL_GetError());

@@ -13,20 +13,20 @@ using LocalCoords = glm::dvec2;
 
 class TerrainQuadNode {
 public:
-    TerrainQuadNode(TerrainQuadTree* terrain, const TerrainTileKey& key, const glm::dvec3& local, float size) : terrain(terrain), key(key), local(local), size(size) {}
+    TerrainQuadNode(TerrainQuadTree* terrain, const TerrainTileKey& key, const dm::Rect3Dd& local, const dm::Rect3Dd& sampleSpace, double size);
 
     TerrainQuadTree*             terrain{nullptr};
-    TerrainTileKey               key;
-    LocalCoords                  local;
-    float                        size;
     std::vector<TerrainQuadNode> children;
+    const TerrainTileKey         key;
+    const double                 size;
+    const dm::Rect3Dd            localRect;
+    const dm::Rect3Dd            sampleRect;
 
-    bool HasChildren() const { return children.size() == 4; }
-    void SubdivideIfNecessary();
+    glm::dvec3  deformedPosition() const;
+    dm::Rect3Dd worldRect() const;
+    glm::mat4   worldMatrix() const;
+    bool        HasChildren() const { return children.size() == 4; }
+    void        SubdivideIfNecessary();
 
-    glm::dvec3 worldCoordinates() const;
-
-    // these dont need to be functions
-    dm::Rect3Df worldRect() const;
-    dm::Rect2Df localRect() const;
+private:
 };

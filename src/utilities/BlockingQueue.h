@@ -23,6 +23,7 @@ public:
             return;
         std::lock_guard<std::mutex> lk(_lock);
         std::move(begin(items), end(items), std::back_inserter(_data));
+        _cond.notify_one();
     }
 
     void enqueue(T item) {

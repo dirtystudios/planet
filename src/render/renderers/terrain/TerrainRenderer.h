@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 #include "Renderer.h"
 #include "TerrainLayerRenderer.h"
 #include "TerrainQuadNodeSelector.h"
@@ -20,18 +21,27 @@ struct Layers {
     Layer<TerrainElevationTileProducer, TerrainElevationLayerRenderer> elevation;
 };
 
+class TerrainRenderObj {
+public:
+};
+
 class TerrainRenderer : public Renderer {
 private:
     Layers _layers;
 
-    std::shared_ptr<TerrainQuadTree> _tree;
+    std::shared_ptr<TerrainQuadTree> _bottomTree;
+    std::shared_ptr<TerrainQuadTree> _topTree;
+    std::shared_ptr<TerrainQuadTree> _frontTree;
+    std::shared_ptr<TerrainQuadTree> _backTree;
+    std::shared_ptr<TerrainQuadTree> _leftTree;
+    std::shared_ptr<TerrainQuadTree> _rightTree;
 
-    std::unique_ptr<TerrainQuadNodeSelector> _selector;
-    std::vector<TerrainTileProducer*>        _tileProducers;
-    std::vector<TerrainLayerRenderer*>       _layerRenderers;
+    std::vector<TerrainQuadTreePtr>                       _terrains;
+    std::vector<std::unique_ptr<TerrainQuadNodeSelector>> _selectors;
+    std::vector<TerrainTileProducer*>                     _tileProducers;
+    std::vector<TerrainLayerRenderer*>                    _layerRenderers;
 
-    std::vector<const TerrainQuadNode*> _selectedQuadNodes;
-    std::array<std::vector<TerrainDataTile*>, kTerrainLayerTypeCount> _selectedTilesByLayer;
+    std::vector<const TerrainQuadNode*> _nodesInScene;
 
 public:
     TerrainRenderer();

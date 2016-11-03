@@ -97,12 +97,13 @@ void GLDevice::AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) {
                 continue;
             if (!nameStart)
                 nameStart = ptr;
-            else if(*ptr == '_') typeStart = ptr+1;
+            else if (*ptr == '_')
+                typeStart = ptr + 1;
         }
 
         std::string name(nameStart, typeStart - 1);
         std::string type(typeStart, ptr - 1);
-        type = StringUtil::TrimRight(type);
+        type = dutil::TrimRight(type);
 
         dg_assert_nm(type == "vertex" || type == "pixel");
 

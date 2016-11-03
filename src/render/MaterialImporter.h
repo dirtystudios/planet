@@ -62,13 +62,12 @@ namespace materialImport {
 
         std::string imagePath = fpath.substr(0, fpath.find_last_of("/")) + "/" + path.C_Str();
 
-        matData.diffuseTexture.reset(new Image);
-        LoadImageFromFile(imagePath.c_str(), matData.diffuseTexture.get());
+        matData.diffuseTexture.reset(new dimg::Image);
+        dimg::LoadImageFromFile(imagePath.c_str(), matData.diffuseTexture.get());
 
-
-            //break;
+        // break;
         //}
 
         return matData;
     }
-}
+    }

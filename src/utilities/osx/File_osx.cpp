@@ -1,13 +1,13 @@
 #include "File.h"
-#include "util.h"
+#include <cassert>
 #include <dirent.h>
+#include <fstream>
 #include <iostream>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <cassert>
-#include <fstream>
 #include "Log.h"
+#include "StringUtil.h"
 #include "WatchDirManager.h"
 
 std::string fs::GetProcessDirectory() {
@@ -17,7 +17,7 @@ std::string fs::GetProcessDirectory() {
         assert(false);
     }
 
-    return std::string(current_path);
+    return std::string(current_path) + "/";
 }
 
 // Untested -- jake
@@ -32,6 +32,44 @@ bool fs::IsPathDirectory(std::string path) {
     return S_ISDIR(fileAtt.st_mode);
 }
 
+bool fs::mkdir(const std::string& path) {
+    struct stat st;
+    int         status = 0;
+
+    if (stat(path.c_str(), &st) != 0) {
+        /* Directory does not exist. EEXIST for race condition */
+        if (::mkdir(path.c_str(), 0777) != 0 && errno != EEXIST) {
+            return false;
+        }
+    } else if (!S_ISDIR(st.st_mode)) {
+        errno = ENOTDIR;
+        return false;
+    }
+
+    return true;
+}
+
+bool fs::mkdirs(const std::string& path) {
+    if (exists(path))
+        return true;
+
+    std::vector<std::string> splits = dutil::Split(path, '/');
+
+    std::string currentPath = "";
+    for (std::string& split : splits) {
+        currentPath += "/" + split;
+        if (!fs::mkdir(currentPath)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool fs::exists(const std::string& path) {
+    struct stat st;
+    return stat(path.c_str(), &st) == 0;
+}
+
 std::string fs::AppendPathProcessDir(const std::string& path) {
     std::string currentDir = fs::GetProcessDirectory();
     currentDir.append(path);
@@ -40,9 +78,8 @@ std::string fs::AppendPathProcessDir(const std::string& path) {
 
 std::vector<std::string> fs::ListFilesInDirectory(const std::string& path) {
     std::vector<std::string> fnames;
-    DIR* dirFile = opendir( path.c_str() );
-    if ( dirFile )
-    {
+    DIR*                     dirFile = opendir(path.c_str());
+    if (dirFile) {
         struct dirent* hFile;
         
         while (( hFile = readdir( dirFile )) != NULL )

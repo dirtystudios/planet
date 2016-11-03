@@ -22,8 +22,8 @@ id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device) {
         sd.sAddressMode          = MTLSamplerAddressModeClampToEdge;
         sd.tAddressMode          = MTLSamplerAddressModeClampToEdge;
         sd.rAddressMode          = MTLSamplerAddressModeClampToEdge;
-        sd.minFilter             = MTLSamplerMinMagFilterLinear;
-        sd.magFilter             = MTLSamplerMinMagFilterLinear;
+        sd.minFilter             = MTLSamplerMinMagFilterNearest;
+        sd.magFilter             = MTLSamplerMinMagFilterNearest;
         sd.mipFilter             = MTLSamplerMipFilterNotMipmapped;
         sd.maxAnisotropy         = 1;
         sd.normalizedCoordinates = YES;

@@ -37,7 +37,7 @@ void SkyRenderer::OnInit() {
 void SkyRenderer::Register(SkyboxRenderObj* skybox) {
     dg_assert_nm(skybox != nullptr);
 
-    Image skyboxImages[6];
+    dimg::Image skyboxImages[6];
     for (uint32_t idx = 0; idx < 6; ++idx) {
         if (!LoadImageFromFile(skybox->_imagePaths[idx].c_str(), &skyboxImages[idx])) {
             LOG_E("Failed to load image: %s", skybox->_imagePaths[idx].c_str());
@@ -62,7 +62,7 @@ void SkyRenderer::Register(SkyboxRenderObj* skybox) {
     assert(mapped);
 
     uint32_t mappedVertices = 0;
-    meshGen::GenerateCube(
+    dgen::GenerateCube(
         [&](float x, float y, float z, float u, float v) {
             mapped->x = x;
             mapped->y = y;

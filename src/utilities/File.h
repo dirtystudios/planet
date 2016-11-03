@@ -30,4 +30,8 @@ bool IsPathDirectory(std::string path);
 bool ReadFileContents(const std::string& fpath, std::string* output);
 
 std::string GetParentDir(const std::string& fpath);
+
+bool exists(const std::string& path);
+bool mkdir(const std::string& path);
+bool mkdirs(const std::string& path);
 }

@@ -2,15 +2,31 @@
 
 #include <stdint.h>
 
-enum PixelFormat { GREY, GREY_ALPHA, RGB, RGBA };
+namespace dimg {
+
+enum class PixelFormat : uint8_t {
+    R8Unorm = 0,
+    RGB8Unorm,
+    RGBA8Unorm,
+
+    R8Uint,
+
+    R32Float,
+    RGB32Float,
+    RGBA32Float,
+
+    Count,
+};
 
 struct Image {
-    int32_t     width;
-    int32_t     height;
-    PixelFormat pixel_format;
-    uint8_t*    data;
+    uint32_t    width{0};
+    uint32_t    height{0};
+    PixelFormat pixelFormat{PixelFormat::R8Unorm};
+    void*       data{nullptr};
 
     ~Image();
 };
 
 bool LoadImageFromFile(const char* fpath, Image* image);
+bool WriteImageToFile(const char* fpath, uint32_t width, uint32_t height, PixelFormat format, void* data);
+}

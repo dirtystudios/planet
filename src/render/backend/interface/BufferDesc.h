@@ -23,6 +23,10 @@ struct BufferDesc {
         return bd;
     }
 
+    static BufferDesc vbPersistent(size_t size) { return defaultPersistent(BufferUsageFlags::VertexBufferBit, size); }
+
+    static BufferDesc ibPersistent(size_t size) { return defaultPersistent(BufferUsageFlags::IndexBufferBit, size); }
+
     static BufferDesc defaultPersistent(BufferUsageFlags usageFlags, size_t size) {
         BufferDesc bd;
         bd.usageFlags  = usageFlags;

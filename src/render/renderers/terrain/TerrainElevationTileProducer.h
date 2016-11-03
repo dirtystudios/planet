@@ -5,23 +5,97 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <noise/noise.h>
-#include <queue>
 #include <thread>
 #include <unordered_set>
 #include <vector>
 #include "BlockingQueue.h"
+#include "ConsoleCommands.h"
 #include "DGAssert.h"
+#include "DMath.h"
+#include "File.h"
 #include "GPUTileBuffer.h"
+#include "Image.h"
 #include "Log.h"
+#include "MeshGeneration.h"
 #include "Pool.h"
 #include "RenderDevice.h"
+#include "TaskScheduler.h"
 #include "TerrainDataTile.h"
 #include "TerrainElevationTile.h"
 #include "TerrainQuadTree.h"
 #include "TerrainTileProducer.h"
 #include "TileCache.h"
 
-class TerrainElevationTileProducer : public TerrainTileProducer {
+class GenerateHeightmapTaskResults {
+public:
+    GenerateHeightmapTaskResults(const TerrainTileKey& key) : key(key) {}
+
+    TerrainTileKey     key;
+    double             min{std::numeric_limits<double>::max()};
+    double             max{std::numeric_limits<double>::min()};
+    std::vector<float> data;
+};
+
+class GenerateHeightmapTask : public Task {
+private:
+    GenerateHeightmapTaskResults _results;
+
+    const dm::Rect3Dd                _region;
+    const glm::uvec2                 _resolution;
+    const noise::module::RidgedMulti _mountain;
+
+    BlockingQueue<GenerateHeightmapTaskResults>* _outputQueue{nullptr};
+
+public:
+    GenerateHeightmapTask(const TerrainTileKey& key, const dm::Rect3Dd& region, const glm::uvec2& resolution, BlockingQueue<GenerateHeightmapTaskResults>* outputQueue)
+        : _results({key}), _region(region), _resolution(resolution), _outputQueue(outputQueue) {
+        noise::module::RidgedMulti mountain;
+        mountain.SetSeed(32);
+        mountain.SetFrequency(0.05);
+        mountain.SetOctaveCount(8);
+    }
+
+    virtual void execute() final {
+        double dx = _region.width() / (double)(_resolution.x - 1);
+        double dy = _region.height() / (double)(_resolution.y - 1);
+
+        for (uint32_t i = 0; i < _resolution.y; ++i) {
+            double     t1       = dy * i / _region.height();
+            glm::dvec3 rowStart = dm::lerp(_region.bl(), _region.tl(), t1);
+            glm::dvec3 rowEnd   = dm::lerp(_region.br(), _region.tr(), t1);
+
+            for (uint32_t j = 0; j < _resolution.x; ++j) {
+                double     t2     = dx * j / _region.width();
+                glm::dvec3 sample = dm::lerp(rowStart, rowEnd, t2);
+                sample *= 0.01f;
+                double val = dm::clamp(_mountain.GetValue(sample.x, sample.y, sample.z), -1.0, 1.0);
+
+                if (val > _results.max) {
+                    _results.max = val;
+                } else if (val < _results.min) {
+                    _results.min = val;
+                }
+
+                _results.data.push_back(val);
+            }
+        }
+        _outputQueue->enqueue(_results);
+    }
+};
+
+class ElevationDataTile : public TerrainDataTile {
+public:
+    ElevationDataTile(const TerrainTileKey& key) : TerrainDataTile(key, TerrainLayerType::Heightmap) {}
+
+    CPUTileSlot<float>*                      cpuData{nullptr};
+    GPUTileSlot<gfx::PixelFormat::R32Float>* gpuData{nullptr};
+    MeshGeometry*                            geometry{nullptr};
+    ConstantBuffer*                          perTileConstants{nullptr};
+    std::unique_ptr<const gfx::StateGroup>   stateGroup;
+    gfx::DrawItemPtr                         drawItem;
+};
+
+class TerrainElevationTileProducer : public TerrainTileProducer, public DataTileSampler<ElevationDataTile> {
 private:
     using HeightmapGPUTileBuffer = GPUTileBuffer<gfx::PixelFormat::R32Float>;
     using HeightmapGPUTileCache  = GPUTileCache<TerrainTileKey, gfx::PixelFormat::R32Float>;
@@ -31,152 +105,126 @@ private:
     using HeightmapCPUTileCache  = CPUTileCache<TerrainTileKey, float>;
     using HeightmapCPUTileSlot   = HeightmapCPUTileBuffer::Slot;
 
-    using TerrainElevationTileCache = LRUCache<TerrainTileKey, TerrainElevationTile*>;
-
-    struct Job {
-        Job(const TerrainQuadNode* node) : node(node) {}
-
-        const TerrainQuadNode* const node; // (TODO) should extract what is needed off node instead of using ptr
-        TerrainElevationTile*        tile{nullptr};
-        bool                         isGpuSlotUnused{true};
-    };
-
 private:
     gfx::RenderDevice* _device{nullptr};
 
-    std::unordered_set<TerrainTileKey> _pendingKeys;
-    BlockingQueue<Job*>                _pendingJobs;
-    BlockingQueue<Job*>                _completedJobs;
+    std::unordered_map<TerrainTileKey, TaskPtr> _pendingTasks;
 
-    std::thread       _worker;
-    std::atomic<bool> _backgroundThreadActive{true};
+    std::unique_ptr<BlockingQueue<GenerateHeightmapTaskResults>> _generateHeightmapTaskOutput;
 
-    std::unique_ptr<Pool<Job>>                  _jobPool;
-    std::unique_ptr<Pool<TerrainElevationTile>> _terrainElevationTilePool;
-    std::unique_ptr<TerrainElevationTileCache>  _TerrainDataTileCache;
-
+    std::map<TerrainTileKey, ElevationDataTile*> _dataTiles;
     std::unique_ptr<HeightmapGPUTileBuffer> _gpuTileBuffer;
     std::unique_ptr<HeightmapGPUTileCache>  _gpuTileCache;
     std::unique_ptr<HeightmapCPUTileBuffer> _cpuTileBuffer;
     std::unique_ptr<HeightmapCPUTileCache>  _cpuTileCache;
 
-    const glm::uvec2 _tileResolution;
+    const glm::uvec2              _tileResolution;
+    std::unique_ptr<MeshGeometry> _tileGeometry;
 
 public:
     TerrainElevationTileProducer(gfx::RenderDevice* device, const glm::uvec2& tileResolution)
         : TerrainTileProducer(TerrainLayerType::Heightmap), _device(device), _tileResolution(tileResolution) {
-        _jobPool.reset(new Pool<Job>(32));
-        _terrainElevationTilePool.reset(new Pool<TerrainElevationTile>(256));
-        _TerrainDataTileCache.reset(
-            new TerrainElevationTileCache(256, [&](const TerrainTileKey& key, TerrainElevationTile* tile) { _terrainElevationTilePool->release(tile); }));
 
-        _gpuTileBuffer.reset(new HeightmapGPUTileBuffer(_device, _tileResolution.x, _tileResolution.y, 32));
-        _gpuTileCache.reset(
-            new HeightmapGPUTileCache(_gpuTileBuffer.get(), [&](const TerrainTileKey& key, const HeightmapGPUTileSlot* slot) { _TerrainDataTileCache->evict(key); }));
-        _cpuTileBuffer.reset(new HeightmapCPUTileBuffer(_tileResolution.x, _tileResolution.y, _gpuTileBuffer->capacity() * 2));
-        _cpuTileCache.reset(
-            new HeightmapCPUTileCache(_cpuTileBuffer.get(), [&](const TerrainTileKey& key, const HeightmapCPUTileSlot* slot) { _TerrainDataTileCache->evict(key); }));
-        _worker = std::thread([&]() {
-            Job* job = nullptr;
-            while (_backgroundThreadActive) {
-                _pendingJobs.dequeue(&job);
-
-                const TerrainQuadNode* node    = job->node;
-                TerrainQuadTree*       terrain = node->terrain;
-
-                TerrainElevationTile* tile = _terrainElevationTilePool->construct(node->key);
-                dg_assert_nm(tile != nullptr);
-                tile->transform = glm::translate(terrain->transform(), terrain->localToWorld(node->local));
-
-                // first, check if we have the tile data cached
-                tile->gpuSlot = _gpuTileCache->find(node->key);
-                tile->cpuSlot = _cpuTileCache->find(node->key);
-
-                // record whether the gpuSlot will have valid or invalid/no data
-                job->isGpuSlotUnused = tile->gpuSlot == nullptr;
-
-                // get a gpuSlot to use
-                std::pair<bool, HeightmapGPUTileSlot*> gpuResultPair = _gpuTileCache->get(node->key);
-                dg_assert_nm(gpuResultPair.first == false && gpuResultPair.second != nullptr);
-                tile->gpuSlot = gpuResultPair.second;
-
-                if (job->isGpuSlotUnused && !tile->cpuSlot) {
-                    // if we have no data cached for this key, need to generate
-                    std::pair<bool, HeightmapCPUTileSlot*> cpuResultPair = _cpuTileCache->get(node->key);
-                    dg_assert_nm(cpuResultPair.first == false && cpuResultPair.second != nullptr);
-                    tile->cpuSlot = cpuResultPair.second;
-
-                    auto getHeightForLocalCoord = [&terrain](float localX, float localY) {
-                        glm::dvec3                 world = terrain->localToWorld({localX, localY});
-                        noise::module::RidgedMulti mountain;
-                        mountain.SetSeed(32);
-                        mountain.SetFrequency(0.05);
-                        mountain.SetOctaveCount(8);
-                        return mountain.GetValue(world.x * 0.01f, world.y * 0.01f, world.z * 0.01f);
-                    };
-
-                    glm::vec2  regionCenter = {node->local.x, node->local.y};
-                    glm::vec2  regionSize   = {node->size, node->size};
-                    glm::uvec2 resolution   = {256, 256};
-
-                    float max = 0, min = 0;
-                    tile->cpuSlot->data.clear();
-                    GenerateHeightmapRegion(regionCenter, regionSize, resolution, getHeightForLocalCoord, &tile->cpuSlot->data, &max, &min);
-                }
-
-                job->tile = tile;
-                _completedJobs.enqueue(job);
-            }
+        config::ConsoleCommands::getInstance().RegisterCommand("dumphm", [&](const std::vector<std::string>& params) -> std::string {
+            this->dumpCachedHeightmapsToDisk();
+            return "success";
         });
+
+        _gpuTileBuffer.reset(new HeightmapGPUTileBuffer(_device, _tileResolution.x, _tileResolution.y, 128));
+        _gpuTileCache.reset(new HeightmapGPUTileCache(_gpuTileBuffer.get(), [&](const TerrainTileKey& key, const HeightmapGPUTileSlot* slot) {
+            auto it = _dataTiles.find(key);
+            if (it != end(_dataTiles)) {
+                ElevationDataTile* tile = it->second;
+                _dataTiles.erase(key);
+                delete tile;
+            }
+
+        }));
+        _cpuTileBuffer.reset(new HeightmapCPUTileBuffer(_tileResolution.x, _tileResolution.y, _gpuTileBuffer->capacity() * 2));
+        _cpuTileCache.reset(new HeightmapCPUTileCache(_cpuTileBuffer.get(), [&](const TerrainTileKey& key, const HeightmapCPUTileSlot* slot) {
+            auto it = _dataTiles.find(key);
+            if (it != end(_dataTiles)) {
+                ElevationDataTile* tile = it->second;
+                tile->cpuData           = nullptr;
+            }
+
+        }));
+        _generateHeightmapTaskOutput.reset(new BlockingQueue<GenerateHeightmapTaskResults>());
+
+        MeshGeometryData geometryData;
+        dgen::GenerateGrid(glm::vec3(0, 0, 0), {2, 2}, _tileResolution, &geometryData);
+        _tileGeometry.reset(new MeshGeometry(_device, geometryData));
     }
 
-    ~TerrainElevationTileProducer() {
-        _backgroundThreadActive = false;
-        _worker.join();
-    }
+    ~TerrainElevationTileProducer() {}
 
-    TerrainDataTile* GetTile(const TerrainQuadNode& node) { return FindTile(node.key); }
+    ElevationDataTile* GetTile(const TerrainQuadNode& node) { return FindTile(node.key); }
 
-    bool GetTiles(const std::vector<const TerrainQuadNode*>& nodes, std::vector<TerrainDataTile*>* outputVector) {
-        std::vector<Job*> jobsToQueue;
-        for (const TerrainQuadNode* node : nodes) {
+    virtual void Update(const std::vector<const TerrainQuadNode*>& nodesInScene) {
+        // process arrivals
+        std::vector<GenerateHeightmapTaskResults> completed;
+        _generateHeightmapTaskOutput->flush(&completed);
+
+        for (const GenerateHeightmapTaskResults& results : completed) {
+            dg_assert_nm(_dataTiles.find(results.key) == _dataTiles.end());
+
+            ElevationDataTile* elevationDataTile = new ElevationDataTile(results.key);
+
+            dg_assert_nm(_cpuTileCache->get(results.key, &elevationDataTile->cpuData) == false);
+            dg_assert_nm(_gpuTileCache->get(results.key, &elevationDataTile->gpuData) == false);
+            dg_assert_nm(elevationDataTile->cpuData && elevationDataTile->gpuData);
+
+            elevationDataTile->cpuData->data = results.data;
+            _device->UpdateTexture(elevationDataTile->gpuData->texture, elevationDataTile->gpuData->slotIndex, elevationDataTile->cpuData->data.data());
+
+            elevationDataTile->geometry = _tileGeometry.get();
+
+            _dataTiles.insert({results.key, elevationDataTile});
+            _pendingTasks.erase(results.key);
+        }
+
+        // push tasks
+        std::vector<TaskPtr> tasksToQueue;
+
+        for (const TerrainQuadNode* node : nodesInScene) {
             TerrainDataTile* tile = GetTile(*node);
-            if (!tile) {
-                if (_pendingKeys.count(node->key) > 0)
-                    continue;
-
-                // tile is not cached and no jobs for current key
-                Job* job = _jobPool->construct(node);
-                if (job == nullptr) {
+            // todo: touch cached data to lru it up
+            if (tile == nullptr) {
+                if (_pendingTasks.find(node->key) != end(_pendingTasks)) {
                     continue;
                 }
 
-                _pendingKeys.insert(node->key);
-                jobsToQueue.push_back(job);
-            } else {
-                dg_assert_nm(tile > 0);
-                outputVector->push_back(tile);
+                HeightmapGPUTileSlot* gpuSlot = _gpuTileCache->find(node->key);
+                HeightmapCPUTileSlot* cpuSlot = _cpuTileCache->find(node->key);
+                if (!gpuSlot && !cpuSlot) {
+                    TaskPtr task = std::make_shared<GenerateHeightmapTask>(node->key, node->sampleRect, _tileResolution, _generateHeightmapTaskOutput.get());
+                    _pendingTasks.emplace(node->key, task);
+                    tasksToQueue.push_back(task);
+                } else {
+                    if (cpuSlot) {
+                        // TODO make some tiles
+                        dg_assert_nm(_dataTiles.find(node->key) == _dataTiles.end());
+
+                        ElevationDataTile* elevationDataTile = new ElevationDataTile(node->key);
+                        elevationDataTile->cpuData           = cpuSlot;
+                        dg_assert_nm(_gpuTileCache->get(node->key, &elevationDataTile->gpuData) == false);
+                        dg_assert_nm(elevationDataTile->cpuData && elevationDataTile->gpuData);
+
+                        _device->UpdateTexture(elevationDataTile->gpuData->texture, elevationDataTile->gpuData->slotIndex, elevationDataTile->cpuData->data.data());
+
+                        elevationDataTile->geometry = _tileGeometry.get();
+
+                        _dataTiles.insert({node->key, elevationDataTile});
+
+                    } else {
+                        // dont do anything, unless we come up with a reason to need to cpuData as well
+                    }
+                }
             }
         }
 
-        _pendingJobs.enqueueAll(jobsToQueue);
-        return true;
-    }
-
-    virtual void Update() {
-        std::vector<Job*> completed;
-        _completedJobs.flush(&completed);
-
-        for (Job* job : completed) {
-            const TerrainQuadNode* node = job->node;
-            TerrainElevationTile*  tile = job->tile;
-            dg_assert_nm(tile->gpuSlot && tile->cpuSlot);
-            if (job->isGpuSlotUnused) {
-                _device->UpdateTexture(tile->gpuSlot->texture, tile->gpuSlot->slotIndex, tile->cpuSlot->data.data());
-            }
-            _TerrainDataTileCache->put(node->key, tile);
-            _jobPool->release(job);
-            _pendingKeys.erase(node->key);
+        if (tasksToQueue.size() > 0) {
+            scheduler()->queue()->enqueueAll(tasksToQueue);
         }
     }
 
@@ -218,9 +266,36 @@ private:
         }
     }
 
-    TerrainDataTile* FindTile(const TerrainTileKey& key) {
-        TerrainElevationTile* tile = nullptr;
-        _TerrainDataTileCache->get(key, &tile);
-        return tile;
+    ElevationDataTile* FindTile(const TerrainTileKey& key) {
+        TerrainTileKey k  = key;
+        auto           it = _dataTiles.find(k);
+        //        while(k.lod != 0 && it == end(_dataTiles)) {
+        //            k = getParentKey(k);
+        //            it = _dataTiles.find(k);
+        //        }
+
+        return it == _dataTiles.end() ? nullptr : it->second;
+    }
+
+    void dumpCachedHeightmapsToDisk() {
+        // copy cache
+        std::vector<HeightmapCPUTileCache::CacheEntry> cacheSnapshot;
+        _cpuTileCache->copyContents(cacheSnapshot);
+
+        std::string          rootDir = fs::GetProcessDirectory();
+        std::vector<uint8_t> data;
+        data.reserve(_tileResolution.x * _tileResolution.y);
+        for (const HeightmapCPUTileCache::CacheEntry& cacheEntry : cacheSnapshot) {
+            data.clear();
+
+            TerrainTileKey        key     = cacheEntry.first;
+            HeightmapCPUTileSlot* cpuSlot = cacheEntry.second;
+            TerrainTileKey        parent  = getParentKey(key);
+            std::string           dirPath = rootDir + "heightmap_dump/terrain_" + std::to_string(key.tid) + "/lod_" + std::to_string(key.lod) + "/" + asFilename(parent);
+            std::string           fpath   = dirPath + "/" + asFilename(key) + ".png";
+            dg_assert_nm(fs::mkdirs(dirPath));
+            std::transform(begin(cpuSlot->data), end(cpuSlot->data), std::back_inserter(data), [&](float d) { return static_cast<uint8_t>((d + 1.0) * 127.5f); });
+            dg_assert_nm(dimg::WriteImageToFile(fpath.c_str(), _tileResolution.x, _tileResolution.y, dimg::PixelFormat::R8Unorm, data.data()));
+        }
     }
 };

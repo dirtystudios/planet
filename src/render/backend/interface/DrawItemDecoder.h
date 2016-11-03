@@ -10,26 +10,25 @@
 #include <cassert>
 
 namespace gfx {
-    
+
 class DrawItemDecoder {
 private:
     const DrawItem* _drawItem{nullptr};
-    uint8_t _streamCount{0};
-    uint8_t _bindingCount{0};
+    uint8_t         _streamCount{0};
+    uint8_t         _bindingCount{0};
+
 public:
     DrawItemDecoder(const DrawItem* item) : _drawItem(item) {
+        dg_assert_nm(item != nullptr);
+        dg_assert_nm(item->size() != 0 && item->size() != 1024); // shoudnt be bigger than 1k. even thats a massive stretch
         ReadState(DrawItemField::StreamCount, &_streamCount);
         ReadState(DrawItemField::BindingCount, &_bindingCount);
     }
-    
-    size_t GetStreamCount() {
-        return _streamCount;
-    }
-    
-    size_t GetBindingCount() {
-        return _bindingCount;
-    }
-    
+
+    size_t GetStreamCount() { return _streamCount; }
+
+    size_t GetBindingCount() { return _bindingCount; }
+
     bool ReadDrawCall(DrawCall* drawCall) {
         return ReadState(DrawItemField::DrawCall, drawCall);
     }

@@ -9,11 +9,13 @@ public:
     using EvictionDelegate = std::function<void(const K&, V&)>;
     using LoadingDelegate  = std::function<bool(K, V*)>;
 
-private:
     struct CacheEntry {
         K first;
         V second;
     };
+    using CacheEntryIterator = typename std::list<CacheEntry>::iterator;
+
+private:
     using CacheList = std::list<CacheEntry>;
     using CacheMap  = std::unordered_map<K, typename CacheList::iterator>;
 
@@ -24,7 +26,6 @@ private:
 
 public:
     LRUCache(uint32_t maxSize, EvictionDelegate evictionDelegate = EvictionDelegate()) : _maxSize(maxSize), _evictionDelegate(evictionDelegate) {}
-
     ~LRUCache() {
         // for now
         for (CacheEntry& entry : _cacheList) {
@@ -72,7 +73,7 @@ public:
 
     bool evict(const K& key) {
         auto it = _cacheMap.find(key);
-        if (it == end(_cacheMap))
+        if (it == std::end(_cacheMap))
             return false;
 
         _evictionDelegate(it->second->first, it->second->second);
@@ -104,4 +105,8 @@ public:
     }
 
     uint32_t size() const { return _cacheMap.size(); }
+
+    CacheEntryIterator begin() { return std::begin(_cacheList); }
+    CacheEntryIterator end() { return std::end(_cacheList); }
+    void copyContents(std::vector<CacheEntry>& outputVector) { outputVector.insert(std::end(outputVector), std::begin(_cacheList), std::end(_cacheList)); }
 };
