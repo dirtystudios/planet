@@ -22,7 +22,6 @@
 *.tlog
 *.idb
 *.pdb
-vs2015/*/*.obj
 *.ilk
 *.pch
 
@@ -46,12 +45,6 @@ ipch/
 *.enc
 *.stackdump
 *.vcxprojResolveAssemblyReference.cache
-/vs2015/*/*.lib
-/vs2015/*/x86/*
-/vs2015/*/x64/*
-/vs2015/prebuiltDX11Maker/*
-/vs2015/x86/*
-/vs2015/x64/*
 
 # Visual Studio Profiler Files
 *.vspx

@@ -4,9 +4,6 @@
 [submodule "external/libnoise"]
 	path = external/libnoise
 	url = https://github.com/qknight/libnoise
-[submodule "external/xxhash"]
-	path = external/xxhash
-	url = https://github.com/Cyan4973/xxHash
 [submodule "external/assimp"]
 	path = external/assimp
 	url = https://github.com/assimp/assimp.git
@@ -14,3 +11,6 @@
 [submodule "external/include/enum-flags"]
 	path = external/include/enum-flags
 url=https://bitbucket.org/dirtystudios/enum-flags.git
+[submodule "external/SDL-mirror"]
+	path = external/SDL-mirror
+	url = https://github.com/spurious/SDL-mirror
