@@ -343,9 +343,6 @@ void MetalDevice::SubmitToGPU() {
     id<MTLCommandBuffer> mtlCmdBuff     = [_queue commandBuffer];
     id<MTLRenderCommandEncoder> encoder = [mtlCmdBuff renderCommandEncoderWithDescriptor:_view.renderPassDescriptor];
     [encoder pushDebugGroup:@"BeginFrame"];
-    struct {
-        id<MTLRenderPipelineState> pipelineState;
-    } context;
 
     std::vector<VertexStream> streams;
     std::vector<Binding>      bindings;
@@ -386,11 +383,8 @@ void MetalDevice::SubmitToGPU() {
                 indexBuffer = _resourceManager.GetResource<MetalBuffer>(indexBufferId);
             }
 
-            if (context.pipelineState != pipelineState->mtlPipelineState) {
-                [encoder setRenderPipelineState:pipelineState->mtlPipelineState];
-                [encoder setDepthStencilState:pipelineState->mtlDepthStencilState];
-            }
-
+            [encoder setRenderPipelineState:pipelineState->mtlPipelineState];
+            [encoder setDepthStencilState:pipelineState->mtlDepthStencilState];
             [encoder setFrontFacingWinding:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.windingOrder)];
             [encoder setCullMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.cullMode)];
             [encoder setTriangleFillMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.fillMode)];

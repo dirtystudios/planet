@@ -31,8 +31,9 @@ workspace "planet"
     -- this should fix xcode till premake alpha11
     xcodebuildsettings {['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++14'}
 
-    -- we crash in MetalDevice with optimizations turned on. definitely a compiler issue, nothing wrong with the code.
-    xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
+    -- optimization levels in debug running debug stepping
+    filter { "configurations:debug", "system:macosx" }
+        xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
 
     flags { 
         "C++14",-- this should take care of gcc / clang
