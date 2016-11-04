@@ -14,7 +14,8 @@ private:
 private:
     void workerThreadFunc() {
         while (!_interruptWorkers) {
-            TaskPtr task = _queue->dequeue();
+            TaskPtr task;
+            if (_queue->dequeue(&task) == false) continue;
             dg_assert_nm(task != nullptr);
             task->execute();
         }
@@ -28,6 +29,7 @@ public:
 
     ~TaskScheduler() {
         _interruptWorkers = true;
+        _queue.reset();
         _worker.join();
     }
 

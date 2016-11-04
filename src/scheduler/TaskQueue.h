@@ -10,6 +10,9 @@ private:
     BlockingQueue<TaskPtr> _queue;
 
 public:
+    ~TaskQueue() {
+        _queue.shutdown();
+    }
     void enqueue(TaskPtr task) { _queue.enqueue(task); }
 
     void enqueueAll(const std::vector<TaskPtr>& tasks) { _queue.enqueueAll(tasks); }
@@ -23,9 +26,7 @@ public:
 private:
     friend TaskScheduler;
 
-    TaskPtr dequeue() {
-        TaskPtr task = nullptr;
-        _queue.dequeue(&task);
-        return task;
+    bool dequeue(TaskPtr* task) {        
+        return _queue.dequeue(task);        
     }
 };
