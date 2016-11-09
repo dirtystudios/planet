@@ -85,7 +85,7 @@ BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initial
     // TODO right now we just treat transient buffers as persistent.
     // just check exact configurations for now
     if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits)) {
-        options = MTLResourceOptionCPUCacheModeWriteCombined;
+        options = MTLResourceStorageModeManaged; // currently all buffers are managed for simplicity. not a good idea in the long run
     } else if (desc.accessFlags == (desc.accessFlags & BufferAccessFlags::GpuReadBit)) {
         options = MTLResourceStorageModePrivate;
     } else {
@@ -95,6 +95,7 @@ BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initial
     dg_assert(!(initialData && options == MTLResourceStorageModePrivate), "not implemented");
 
     size_t bufferSize = std::max<size_t>(256, desc.size);
+    bufferSize += (bufferSize % 16 != 0) ? 16 - (bufferSize % 16) : 0;
 
     if (initialData) {
         mtlBuffer = [_device newBufferWithBytes:initialData length:bufferSize options:options];
@@ -104,6 +105,7 @@ BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initial
 
     MetalBuffer* buffer = new MetalBuffer();
     buffer->desc        = desc;
+    buffer->desc.size   = bufferSize;
     buffer->mtlBuffer   = mtlBuffer;
 
     return _resourceManager.AddResource(buffer);
@@ -135,7 +137,14 @@ VertexLayoutId MetalDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
     return _resourceManager.AddResource(vertLayout);
 }
 
-PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) {        
+PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) {
+    static std::unordered_map<size_t, PipelineStateId> cache; // hobo cache
+
+    size_t h  = std::hash<PipelineStateDesc>()(desc);
+    auto   it = cache.find(h);
+    if (it != end(cache))
+        return it->second;
+
     MTLRenderPipelineDescriptor* rpd = [[MTLRenderPipelineDescriptor alloc] init];
 
     MetalVertexLayout* vertexLayout             = _resourceManager.GetResource<MetalVertexLayout>(desc.vertexLayout);
@@ -170,11 +179,14 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     pipelineState->mtlDepthStencilState = mtlDepthStencilState;
     pipelineState->pipelineStateDesc    = desc;
     pipelineState->reflection           = reflection;
-    
+
     [rpd release];
     [dsd release];
-    
-    return _resourceManager.AddResource(pipelineState);
+
+    PipelineStateId pipelineStateId = _resourceManager.AddResource(pipelineState);
+    cache.insert({h, pipelineStateId});
+
+    return pipelineStateId;
 }
 ShaderId MetalDevice::GetShader(ShaderType type, const std::string& functionName) { return _library->GetShader(type, functionName); }
 
@@ -327,6 +339,16 @@ uint8_t* MetalDevice::MapMemory(BufferId bufferId, BufferAccess access) {
     void* ptr = [buffer->mtlBuffer contents];
     dg_assert_nm(ptr);
     return reinterpret_cast<uint8_t*>(ptr);
+}
+
+void MetalDevice::UnmapMemory(BufferId bufferId) {
+    MetalBuffer* buffer = _resourceManager.GetResource<MetalBuffer>(bufferId);
+    if (!buffer) {
+        return;
+    }
+    // currently all buffers are managed so we need to invalidate on update
+    NSRange range = NSMakeRange(0, buffer->desc.size);
+    [buffer->mtlBuffer didModifyRange:range];
 }
 
 CommandBuffer* MetalDevice::CreateCommandBuffer() { return new CommandBuffer(); }

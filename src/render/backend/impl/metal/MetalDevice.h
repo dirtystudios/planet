@@ -63,7 +63,7 @@ public:
     void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData);
     void PrintDisplayAdapterInfo() {}
     void DestroyResource(ResourceId resourceId) {}
-    void UnmapMemory(BufferId bufferId) {}
+    void UnmapMemory(BufferId bufferId);
 
     // RenderDelegate Interface
     void SubmitToGPU();
