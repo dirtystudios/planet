@@ -29,7 +29,7 @@ public:
         });
     }
 
-    void SelectQuadNodes(const Camera& camera, std::vector<const TerrainQuadNode*>* outputVector) {
+    void SelectQuadNodes(const FrameView* view, std::vector<const TerrainQuadNode*>* outputVector) {
         srand(seed);
 
         std::queue<TerrainQuadNode*> q;
@@ -39,11 +39,11 @@ public:
             TerrainQuadNode* node = q.front();
             q.pop();
 
-            if (!IsNodeInView(camera, node)) {
+            if (!IsNodeInView(view, node)) {
                 continue;
             }
 
-            if (ShouldSplitNode(camera, node)) {
+            if (ShouldSplitNode(view, node)) {
                 node->SubdivideIfNecessary();
 
                 for (TerrainQuadNode& child : node->children) {
@@ -56,10 +56,12 @@ public:
     }
 
 private:
-    bool IsNodeInView(const Camera& camera, const TerrainQuadNode* node) { return true; }
-    bool ShouldSplitNode(const Camera& camera, const TerrainQuadNode* node) {
+    bool IsNodeInView(const FrameView* view, const TerrainQuadNode* node) {
+        return true;
+    }
+    bool ShouldSplitNode(const FrameView* view, const TerrainQuadNode* node) {
         glm::dvec3 world = node->deformedPosition();
-        glm::dvec3 eye   = camera.pos;
+        glm::dvec3 eye   = view->eyePos;
         float      d     = glm::distance(world, eye);
         if (d < 1.5f * node->size) {
             return true;

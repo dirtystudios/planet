@@ -152,7 +152,7 @@ void DebugRenderer::AddRect3D(const Rect3Df& rect, const glm::vec3& color, bool 
     }
 }
 
-void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
+void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     for (const gfx::DrawItem* item : _drawItems) {
         delete item;
     }
@@ -166,14 +166,14 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     if (_buffers.filled2D.size() + _buffers.wireframe2D.size() > 0) {
         DebugViewConstants* viewConstants = _2DviewConstants->Map<DebugViewConstants>();
         viewConstants->view               = glm::mat4();
-        viewConstants->proj               = glm::ortho(0.0f, renderView->viewport->width, 0.0f, renderView->viewport->height); // TODO: this should be set by renderView
+        viewConstants->proj               = view->ortho; // TODO: this should be set by renderView
         _2DviewConstants->Unmap();
     }
 
     if (_buffers.filled3D.size() + _buffers.wireframe3D.size() > 0) {
         DebugViewConstants* viewConstants = _3DviewConstants->Map<DebugViewConstants>();
-        viewConstants->view               = renderView->camera->BuildView();
-        viewConstants->proj               = renderView->camera->BuildProjection();
+        viewConstants->view               = view->view;
+        viewConstants->proj               = view->projection;;
         _3DviewConstants->Unmap();
     }
 

@@ -18,5 +18,5 @@ public:
     ~ChunkedTerrainRenderer();
 
     void OnInit() override;
-    void Submit(RenderQueue* renderQueue, RenderView* renderView) final;
+    void Submit(RenderQueue* renderQueue, const FrameView* view) final;
 };

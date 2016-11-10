@@ -45,7 +45,7 @@ void MeshRenderer::OnInit() {
     mat  = services()->materialCache()->Get("roxas/roxas.obj", services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
 }
 
-void MeshRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
+void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     glm::mat4 world = glm::scale(glm::mat4(), glm::vec3(5, 5, 5));
 
     if (!_item) {

@@ -27,5 +27,5 @@ public:
 
     // Renderer Interface
     void OnInit() final;
-    void Submit(RenderQueue* renderQueue, RenderView* renderView) final;
+    void Submit(RenderQueue* renderQueue, const FrameView* view) final;
 };

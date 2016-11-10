@@ -6,10 +6,10 @@
 struct Frustum {
     Frustum(const glm::mat4& projection, const glm::mat4& view);
 
-    glm::vec4 frustum_planes[6];
+    glm::dvec4 frustum_planes[6];
 
-    bool IsPointInFrustum(const glm::vec3& p);    
-    bool IsBoxInFrustum(const BoundingBox& bbox);
+    bool IsPointInFrustum(const glm::dvec3& p) const;
+    bool IsBoxInFrustum(const BoundingBox& bbox) const;
 };
 
 

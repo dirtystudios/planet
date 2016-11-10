@@ -33,7 +33,7 @@ protected:
 
 private:
     void Init(gfx::RenderDevice* device, RenderServiceLocator* serviceLocator);
-    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
+    virtual void Submit(RenderQueue* renderQueue, const FrameView* view) = 0;
 };
 
 template <typename T>
@@ -47,5 +47,5 @@ public:
     virtual void Unregister(T* typedRenderObjects) = 0;
 
 private:
-    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) = 0;
+    virtual void Submit(RenderQueue* renderQueue, const FrameView* view) = 0;
 };

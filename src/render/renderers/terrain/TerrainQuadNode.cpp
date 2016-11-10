@@ -8,10 +8,8 @@ TerrainQuadNode::TerrainQuadNode(TerrainQuadTree* terrain, const TerrainTileKey&
 
 glm::mat4 TerrainQuadNode::worldMatrix() const {
     dm::Transform transform;
-    transform.translate(localRect.center());
-    // dont scale Z because thats the direction we displace for NoDeformation
-    //                transform.scale(glm::vec3(1.f/dm::pow(2.f, node->key.lod), 1.f/dm::pow(2.f, node->key.lod), 1.f));
-    transform.scale(glm::vec3(size / 2.f, size / 2.f, 1.f));
+    transform.translate(localRect.center());    
+    transform.scale(glm::vec3(size / 2.f, size / 2.f, 1.f)); // dont scale Z because thats the direction we displace for NoDeformation
 
     return terrain->transform() * transform.matrix();
 }

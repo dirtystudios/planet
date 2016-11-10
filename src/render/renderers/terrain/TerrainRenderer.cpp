@@ -75,14 +75,14 @@ void TerrainRenderer::OnInit() {
     }
 }
 
-void TerrainRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
+void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     _nodesInScene.clear();
 
     //    _bottomTree->transform() = glm::rotate(_bottomTree->transform(), 0.01f, glm::vec3(0, 0, 1));
     //    _frontTree->transform() = glm::rotate(_frontTree->transform(), 0.01f, glm::vec3(0, 0, 1));
 
     for (std::unique_ptr<TerrainQuadNodeSelector>& selector : _selectors) {
-        selector->SelectQuadNodes(*renderView->camera, &_nodesInScene);
+        selector->SelectQuadNodes(view, &_nodesInScene);
     }
 
     //    for (const TerrainQuadNode* quad : _nodesInScene) {
@@ -95,6 +95,6 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     }
 
     for (TerrainLayerRenderer* layer : _layerRenderers) {
-        layer->Submit(renderQueue, renderView, _nodesInScene);
+        layer->Submit(renderQueue, view, _nodesInScene);
     }
 }

@@ -16,5 +16,5 @@ public:
     TerrainElevationLayerRenderer(DataTileSampler<ElevationDataTile>* elevationSampler)
         : TerrainLayerRenderer(TerrainLayerType::Heightmap), _elevationSampler(elevationSampler) {}
     void         OnInit() final;
-    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView, const std::vector<const TerrainQuadNode*>& selectedQuads) final;
+    virtual void Submit(RenderQueue* renderQueue, const FrameView* view, const std::vector<const TerrainQuadNode*>& selectedQuads) final;
 };

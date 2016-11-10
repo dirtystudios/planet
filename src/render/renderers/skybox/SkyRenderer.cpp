@@ -91,9 +91,8 @@ void SkyRenderer::Unregister(SkyboxRenderObj* renderObj) {
     // TODO: Actually remove it and cleanup
 }
 
-void SkyRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
-    Camera*   camera    = renderView->camera;
-    glm::mat4 translate = glm::translate(glm::mat4(), camera->pos);
+void SkyRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
+    glm::mat4 translate = glm::translate(glm::mat4(), view->eyePos);
     glm::mat4 scale     = glm::scale(glm::mat4(), glm::vec3(500.f, 500.f, 500.f));
     glm::mat4 model     = translate * scale;
     glm::mat4 world     = model;

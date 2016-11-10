@@ -96,15 +96,15 @@ void RenderEngine::RenderFrame() {
 
     // update view constants
     ViewConstants* mapped = viewConstantsBuffer->Map<ViewConstants>();
-    mapped->eye           = _view->camera->pos;
-    mapped->proj          = _view->camera->BuildProjection();
-    mapped->view          = _view->camera->BuildView();
+    mapped->eye           = view.eyePos;
+    mapped->proj          = view.projection;
+    mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
 
     assert(_view);
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->IsActive()) {
-            p.second->Submit(&queue, _view);
+            p.second->Submit(&queue, &view);
         }
     }
     debugDraw()->AddSphere3D(glm::vec3(0, 0, 0), 50);

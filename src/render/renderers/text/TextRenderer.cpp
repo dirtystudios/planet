@@ -356,15 +356,15 @@ const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj
     return gfx::DrawItemEncoder::Encode(device(), drawCall, &renderObj->_cursorGroup, 1);
 }
 
-void TextRenderer::Submit(RenderQueue* queue, RenderView* view) {
+void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
     TextViewConstants* viewConstants = _viewData->Map<TextViewConstants>();
-    viewConstants->projection = glm::ortho(0.0f, view->viewport->width, 0.0f, view->viewport->height); // TODO: this should be set by renderView
+    viewConstants->projection = view->ortho; // TODO: this should be set by renderView
     viewConstants->view = glm::mat4();
     _viewData->Unmap();
 
     TextViewConstants* viewConstants3d = _viewData3D->Map<TextViewConstants>();
-    viewConstants3d->view = view->camera->BuildView();
-    viewConstants3d->projection = view->camera->BuildProjection();
+    viewConstants3d->view = view->view;
+    viewConstants3d->projection = view->projection;
     _viewData3D->Unmap();
 
     bool drewCursor = false;

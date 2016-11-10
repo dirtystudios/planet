@@ -71,5 +71,5 @@ public:
 
 private:
     virtual void OnInit() final;
-    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView) final;
+    virtual void Submit(RenderQueue* renderQueue, const FrameView* view) final;
 };

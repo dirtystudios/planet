@@ -54,7 +54,7 @@ void TerrainElevationLayerRenderer::OnInit() {
 //
 //}
 
-void TerrainElevationLayerRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView, const std::vector<const TerrainQuadNode*>& selectedQuads) {
+void TerrainElevationLayerRenderer::Submit(RenderQueue* renderQueue, const FrameView* view, const std::vector<const TerrainQuadNode*>& selectedQuads) {
     for (const TerrainQuadNode* node : selectedQuads) {
         ElevationDataTile* tile = _elevationSampler->FindTile(node->key);
         if (tile == nullptr) {

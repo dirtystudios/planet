@@ -147,8 +147,8 @@ void UIRenderer::Unregister(UIFrameRenderObj* renderObj) {
     _objs.erase(it);
 }
 
-void UIRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
-    glm::mat4 projection = glm::ortho(0.0f, renderView->viewport->width, 0.0f, renderView->viewport->height);
+void UIRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
+    glm::mat4 projection = view->ortho;
 
     UIViewConstants* viewConstants2d = _viewData->Map<UIViewConstants>();
     viewConstants2d->projection = projection;
@@ -156,8 +156,8 @@ void UIRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
     _viewData->Unmap();
 
     UIViewConstants* viewConstants3d = _viewData3D->Map<UIViewConstants>();
-    viewConstants3d->view = renderView->camera->BuildView();
-    viewConstants3d->projection = renderView->camera->BuildProjection();
+    viewConstants3d->view = view->view;
+    viewConstants3d->projection = view->projection;
     _viewData3D->Unmap();
 
     for (UIFrameRenderObj* uiRenderObj : _objs) {

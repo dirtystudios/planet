@@ -13,30 +13,30 @@ Frustum::Frustum(const glm::mat4& projection, const glm::mat4& view) {
     frustum_planes[5] = glm::row(view_proj, 3) - glm::row(view_proj, 2); // near
     
     for(int i = 0; i < 6; i++) {
-        float len = glm::length(glm::vec3(frustum_planes[i].x, frustum_planes[i].y, frustum_planes[i].z));       
+        double len = glm::length(glm::vec3(frustum_planes[i].x, frustum_planes[i].y, frustum_planes[i].z));
         frustum_planes[i] = frustum_planes[i] / len;        
     }    
 }
     
-bool Frustum::IsPointInFrustum(const glm::vec3& p) {
+bool Frustum::IsPointInFrustum(const glm::dvec3& p) const {
     for(int i = 0; i < 6; ++i) {
-        if(glm::dot(glm::vec4(p.x, p.y, p.z, 1.f), frustum_planes[i]) < 0) {
+        if(glm::dot(glm::dvec4(p.x, p.y, p.z, 1.f), frustum_planes[i]) < 0) {
             return false;                    
         }
     }
     return true;
 }
 
-bool Frustum::IsBoxInFrustum(const BoundingBox& box) {
+bool Frustum::IsBoxInFrustum(const BoundingBox& box) const {
     return
     IsPointInFrustum(box.min) ||
     IsPointInFrustum(box.max) ||
-    IsPointInFrustum(glm::vec3(box.min.x, box.min.y, box.max.z)) ||
-    IsPointInFrustum(glm::vec3(box.min.x, box.max.y, box.min.z)) ||
-    IsPointInFrustum(glm::vec3(box.max.x, box.min.y, box.min.z)) ||
-    IsPointInFrustum(glm::vec3(box.max.x, box.max.y, box.min.z)) ||
-    IsPointInFrustum(glm::vec3(box.max.x, box.min.y, box.max.z)) ||
-    IsPointInFrustum(glm::vec3(box.min.x, box.max.y, box.max.z));
+    IsPointInFrustum(glm::dvec3(box.min.x, box.min.y, box.max.z)) ||
+    IsPointInFrustum(glm::dvec3(box.min.x, box.max.y, box.min.z)) ||
+    IsPointInFrustum(glm::dvec3(box.max.x, box.min.y, box.min.z)) ||
+    IsPointInFrustum(glm::dvec3(box.max.x, box.max.y, box.min.z)) ||
+    IsPointInFrustum(glm::dvec3(box.max.x, box.min.y, box.max.z)) ||
+    IsPointInFrustum(glm::dvec3(box.min.x, box.max.y, box.max.z));
 
 }
 

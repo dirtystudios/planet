@@ -74,7 +74,7 @@ void ChunkedTerrainRenderer::OnInit() {
 //    // TODO: Actually remove it and cleanup
 //}
 
-void ChunkedTerrainRenderer::Submit(RenderQueue* renderQueue, RenderView* renderView) {
+void ChunkedTerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     //    Camera* cam    = renderView->camera;
     //    glm::mat4 proj = cam->BuildProjection();
     //    glm::mat4 view = cam->BuildView();

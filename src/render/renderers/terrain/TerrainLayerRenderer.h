@@ -26,7 +26,7 @@ public:
     }
 
     virtual void OnInit(){};
-    virtual void Submit(RenderQueue* renderQueue, RenderView* renderView, const std::vector<const TerrainQuadNode*>& selectedQuads) = 0;
+    virtual void Submit(RenderQueue* renderQueue, const FrameView* view, const std::vector<const TerrainQuadNode*>& selectedQuads) = 0;
 
 protected:
     gfx::RenderDevice*    device() { return _device; }
