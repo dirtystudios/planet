@@ -237,9 +237,9 @@ void TextRenderer::Register(TextRenderObj* textRenderObj) {
     _objs.push_back(textRenderObj);
 }
 
-void TextRenderer::SetVertices(TextRenderObj* renderObj) {
-    size_t bufferOffset = renderObj->_mesh.vertexOffset * sizeof(GlyphVertex);
-    assert(bufferOffset + (renderObj->_text.length() * quadSizeInBytes) < _vertexBufferSize);
+void TextRenderer::SetVertices(TextRenderObj* renderObj, size_t offset) {
+    size_t bufferOffset = offset * sizeof(GlyphVertex);
+    assert(offset + (renderObj->_text.length() * quadSizeInBytes) < _vertexBufferSize);
 
     uint8_t* mapped = device()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);
     assert(mapped);
@@ -302,23 +302,19 @@ const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
         _vertexBufferOffset = 0;
     }
 
-    renderObj->_mesh.vertexBuffer = _vertexBuffer;
-    renderObj->_mesh.vertexStride = sizeof(GlyphVertex);
-    renderObj->_mesh.vertexOffset = _vertexBufferOffset;
-    renderObj->_mesh.vertexCount  = 6 * renderObj->_text.length();
+    gfx::DrawCall drawCall;
+    drawCall.type = gfx::DrawCall::Type::Arrays;
+    drawCall.startOffset = _vertexBufferOffset;
+    drawCall.primitiveCount = renderObj->_text.length() * 6;
 
-    SetVertices(renderObj);
-    _vertexBufferOffset += renderObj->_mesh.vertexCount;
+    SetVertices(renderObj, _vertexBufferOffset);
+
+    _vertexBufferOffset += (renderObj->_text.length() * 6);
 
     if (wasLessThan && _vertexBufferOffset > _vertexBufferOffsetCheck) {
         assert(false);
         LOG_E("TextBuffer overwriting itself");
     }
-
-    gfx::DrawCall drawCall;
-    drawCall.type           = gfx::DrawCall::Type::Arrays;
-    drawCall.primitiveCount = renderObj->_mesh.vertexCount;
-    drawCall.offset         = renderObj->_mesh.vertexOffset;
 
     return gfx::DrawItemEncoder::Encode(device(), drawCall, &renderObj->_group, 1);
 }
@@ -331,10 +327,6 @@ const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj
         cursorPos = renderObj->_text.length();
     }
 
-    renderObj->_mesh.vertexBuffer = _cursorBuffer;
-    renderObj->_mesh.vertexStride = sizeof(CursorPosVertex);
-    renderObj->_mesh.vertexOffset = 0;
-    renderObj->_mesh.vertexCount  = 2;
 
     float cursorX = renderObj->_glyphXOffsets[cursorPos];
     float cursorY = renderObj->_posY;
@@ -350,8 +342,8 @@ const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj
 
     gfx::DrawCall drawCall;
     drawCall.type           = gfx::DrawCall::Type::Arrays;
-    drawCall.primitiveCount = renderObj->_mesh.vertexCount;
-    drawCall.offset         = renderObj->_mesh.vertexOffset;
+    drawCall.primitiveCount = 2;
+    drawCall.startOffset = 0;
 
     return gfx::DrawItemEncoder::Encode(device(), drawCall, &renderObj->_cursorGroup, 1);
 }

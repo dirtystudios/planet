@@ -94,6 +94,7 @@ void RenderEngine::RenderFrame() {
     RenderQueue queue(cmdbuf);
     queue.defaults = _stateGroupDefaults;
 
+    assert(_view);
     FrameView view = _view->frameView();
     
     // update view constants
@@ -102,8 +103,6 @@ void RenderEngine::RenderFrame() {
     mapped->proj          = view.projection;
     mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
-
-    assert(_view);
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->IsActive()) {
             p.second->Submit(&queue, &view);

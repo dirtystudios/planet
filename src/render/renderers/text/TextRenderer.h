@@ -55,7 +55,7 @@ private:
 
     std::vector<TextRenderObj*> _objs;
 
-    void SetVertices(TextRenderObj* renderObj);
+    void SetVertices(TextRenderObj* renderObj, size_t offset);
     const gfx::DrawItem* CreateDrawItem(TextRenderObj* renderObj);
     const gfx::DrawItem* CreateCursorDrawItem(TextRenderObj* renderObj);
 

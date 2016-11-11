@@ -172,10 +172,10 @@ project "SDL2"
         }
 
     filter {"configurations:debug", "system:windows"}
-         links { "ucrtd", "vcruntimed" }
+        links { "ucrtd", "vcruntimed" }
     
     filter {"configurations:release","system:windows"}
-        links { "vcruntime" }
+        links {  "ucrt",  "vcruntime"}
 
     filter "configurations:release"
         flags {"OptimizeSpeed"}

@@ -47,6 +47,17 @@ struct VertexLayoutElement {
     VertexAttributeType    type{VertexAttributeType::Float3};
     VertexAttributeUsage   usage{VertexAttributeUsage::Position};
     VertexAttributeStorage storage{VertexAttributeStorage::Float};
+
+    inline bool operator==(const VertexLayoutElement& b) const {
+        return (type == b.type) && (usage == b.usage) && (storage == b.storage);
+    }
+    inline bool operator!=(const VertexLayoutElement& b) const {
+        return (type != b.type) || (usage != b.usage) || (storage == b.storage);
+    }
+
+    bool operator()(const VertexLayoutElement& l, const VertexLayoutElement& r) const {
+        return l == r;
+    }
 };
 
 static size_t GetByteCount(VertexAttributeType type, VertexAttributeStorage storage) {
@@ -93,8 +104,18 @@ struct VertexLayoutDesc {
         }
         return vertexStride;
     }
-};
 
+    inline bool operator==(const VertexLayoutDesc& b) const {
+        return elements == b.elements;
+    }
+    inline bool operator!=(const VertexLayoutDesc& b) const {
+        return elements != b.elements;
+    }
+
+    bool operator()(const VertexLayoutDesc& l, const VertexLayoutDesc& r) const {
+        return l == r;
+    }
+};
 } // namespace
 
 namespace std {

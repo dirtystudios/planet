@@ -10,7 +10,7 @@ private:
     gfx::RenderDevice* _device;
     std::string _baseDir;
 
-    std::unordered_map<std::string, std::unique_ptr<Material>> _cache;
+    std::unordered_map<std::string, Material> _cache;
 public:
     MaterialCache(gfx::RenderDevice* device, const std::string& baseDir);
 

@@ -665,18 +665,23 @@ namespace gfx {
 
             // bindings
             for (uint32_t idx = 0; idx <bindingCount; ++idx) {
+
                 const Binding& binding = bindingPtr[idx];
                 switch (binding.type) {
                 case Binding::Type::ConstantBuffer: {
                     BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
-                    m_context->SetVertexCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
-                    m_context->SetPixelCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
+					if (binding.stageFlags & ShaderStageFlags::VertexBit)
+						m_context->SetVertexCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
+					if (binding.stageFlags & ShaderStageFlags::PixelBit)
+						m_context->SetPixelCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
                     break;
                 }
                 case Binding::Type::Texture: {
                     TextureDX11* texturedx11 = GetResource(m_textures, binding.resource);
-                    m_context->SetVertexShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
-                    m_context->SetPixelShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
+					if (binding.stageFlags & ShaderStageFlags::VertexBit)
+						m_context->SetVertexShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
+					if (binding.stageFlags & ShaderStageFlags::PixelBit)
+						m_context->SetPixelShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
                     break;
                 }
                 }
@@ -684,14 +689,14 @@ namespace gfx {
                 
             switch (drawCall.type) {
             case DrawCall::Type::Arrays: {
-                m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, false);
+                m_context->DrawPrimitive(pipelineState->topology, drawCall.startOffset, drawCall.primitiveCount, false);
                 break;
             }
             case DrawCall::Type::Indexed: {
                 assert(indexBufferId);
                 auto indexBuffer = GetResource(m_buffers, indexBufferId);
                 m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
-                m_context->DrawPrimitive(pipelineState->topology, drawCall.offset, drawCall.primitiveCount, true);
+                m_context->DrawPrimitive(pipelineState->topology, drawCall.startOffset, drawCall.primitiveCount, true, drawCall.baseVertexOffset);
                 break;
             }
             }                         

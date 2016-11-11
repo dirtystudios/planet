@@ -587,12 +587,12 @@ void GLDevice::Execute(CommandBuffer* cmdBuffer) {
 
         switch (drawCall.type) {
             case DrawCall::Type::Arrays: {
-                GL_CHECK(glDrawArrays(pipelineState->topology, (GLint)drawCall.offset, (GLsizei)drawCall.primitiveCount));
+                GL_CHECK(glDrawArrays(pipelineState->topology, (GLint)drawCall.startOffset, (GLsizei)drawCall.primitiveCount));
                 break;
             }
             case DrawCall::Type::Indexed: {
                 assert(indexBuffer);
-                GL_CHECK(glDrawElements(pipelineState->topology, drawCall.primitiveCount, GL_UNSIGNED_INT, ((char*)0 + (drawCall.offset))));
+                GL_CHECK(glDrawElementsBaseVertex(pipelineState->topology, drawCall.primitiveCount, GL_UNSIGNED_INT, ((char*)0 + (drawCall.startOffset)), drawCall.baseVertexOffset));
                 break;
             }
         }

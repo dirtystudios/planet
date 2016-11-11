@@ -20,7 +20,7 @@ DebugRenderer::DebugRenderer() {}
 void DebugRenderer::OnInit() {
     MeshGeometryData geometryData;
     dgen::GenerateIcoSphere(3, &geometryData);
-    _sphereGeometry = new MeshGeometry(device(), geometryData);
+    _sphereGeometry = new MeshGeometry(device(), { geometryData });
 
     _sphereCache.reset(new SphereVertexCache(16, [&](const size_t& key, std::vector<DebugVertex>*& value) { delete value; }));
     _3DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
@@ -161,7 +161,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     gfx::DrawItemEncoder encoder;
     gfx::DrawCall        drawCall;
     drawCall.type   = gfx::DrawCall::Type::Arrays;
-    drawCall.offset = 0;
+    drawCall.startOffset = 0;
 
     if (_buffers.filled2D.size() + _buffers.wireframe2D.size() > 0) {
         DebugViewConstants* viewConstants = _2DviewConstants->Map<DebugViewConstants>();
@@ -183,40 +183,40 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
         if (_buffers.filled2D.size() > 0) {
             drawCall.primitiveCount = _buffers.filled2D.size();
 
-            memcpy(ptr + drawCall.offset, _buffers.filled2D.data(), sizeof(DebugVertex) * _buffers.filled2D.size());
+            memcpy(ptr + drawCall.startOffset, _buffers.filled2D.data(), sizeof(DebugVertex) * _buffers.filled2D.size());
 
             _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DfilledSG}));
-            drawCall.offset += _buffers.filled2D.size();
+            drawCall.startOffset += _buffers.filled2D.size();
             _buffers.filled2D.clear();
         }
 
         if (_buffers.wireframe2D.size() > 0) {
             drawCall.primitiveCount = _buffers.wireframe2D.size();
 
-            memcpy(ptr + drawCall.offset, _buffers.wireframe2D.data(), sizeof(DebugVertex) * _buffers.wireframe2D.size());
+            memcpy(ptr + drawCall.startOffset, _buffers.wireframe2D.data(), sizeof(DebugVertex) * _buffers.wireframe2D.size());
 
             _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DwireframeSG}));
-            drawCall.offset += _buffers.wireframe2D.size();
+            drawCall.startOffset += _buffers.wireframe2D.size();
             _buffers.wireframe2D.clear();
         }
 
         if (_buffers.filled3D.size() > 0) {
             drawCall.primitiveCount = _buffers.filled3D.size();
 
-            memcpy(ptr + drawCall.offset, _buffers.filled3D.data(), sizeof(DebugVertex) * _buffers.filled3D.size());
+            memcpy(ptr + drawCall.startOffset, _buffers.filled3D.data(), sizeof(DebugVertex) * _buffers.filled3D.size());
 
             _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DfilledSG}));
-            drawCall.offset += _buffers.filled3D.size();
+            drawCall.startOffset += _buffers.filled3D.size();
             _buffers.filled3D.clear();
         }
 
         if (_buffers.wireframe3D.size() > 0) {
             drawCall.primitiveCount = _buffers.wireframe3D.size();
 
-            memcpy(ptr + drawCall.offset, _buffers.wireframe3D.data(), sizeof(DebugVertex) * _buffers.wireframe3D.size());
+            memcpy(ptr + drawCall.startOffset, _buffers.wireframe3D.data(), sizeof(DebugVertex) * _buffers.wireframe3D.size());
 
             _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DwireframeSG}));
-            drawCall.offset += _buffers.wireframe3D.size();
+            drawCall.startOffset += _buffers.wireframe3D.size();
             _buffers.wireframe3D.clear();
         }
     }

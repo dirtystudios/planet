@@ -153,7 +153,7 @@ public:
 
         MeshGeometryData geometryData;
         dgen::GenerateGrid(glm::vec3(0, 0, 0), {2, 2}, _tileResolution, &geometryData);
-        _tileGeometry.reset(new MeshGeometry(_device, geometryData));
+        _tileGeometry.reset(new MeshGeometry(_device, { geometryData }));
     }
 
     ~ElevationDataTileProducer() {}

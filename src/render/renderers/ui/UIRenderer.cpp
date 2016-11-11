@@ -113,7 +113,7 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     uiRenderObj->_borderSize              = pixelSize * borderWidth;
     uiRenderObj->_drawCall.type           = gfx::DrawCall::Type::Arrays;
     uiRenderObj->_drawCall.primitiveCount = 6;
-    uiRenderObj->_drawCall.offset         = _bufferOffset / sizeof(FrameVertex);
+    uiRenderObj->_drawCall.startOffset         = _bufferOffset / sizeof(FrameVertex);
 
     // pack all frames into a single buffer
     uint8_t* mapped = device()->MapMemory(_vertexBuffer, gfx::BufferAccess::WriteNoOverwrite);

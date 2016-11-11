@@ -8,66 +8,61 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <vector>
+
 #include "Log.h"
 
 namespace materialImport {
-    MaterialData LoadMaterialDataFromFile(const std::string& fpath) {
-        MaterialData matData;
-        Assimp::Importer import;
-        const aiScene* scene = import.ReadFile(fpath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
-        if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            LOG_E("ASSIMP %s", import.GetErrorString());
-            return matData;
-        }
+    std::vector<MaterialData> LoadMaterialDataFromFile(const std::string& fpath) {
+		Assimp::Importer import;
+		const aiScene* scene = import.ReadFile(fpath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+			LOG_E("ASSIMP %s", import.GetErrorString());
+			return{};
+		}
 
-        std::queue<aiNode*> dfsQueue;
-        dfsQueue.push(scene->mRootNode);
+		std::vector<MaterialData> rtnData;
 
-        assert(dfsQueue.size() == 1);
+		rtnData.reserve(scene->mNumMaterials);
+		for (uint32_t i = 0; i < scene->mNumMaterials; ++i) {
+			rtnData.emplace_back();
+			MaterialData* matData = &rtnData.back();
 
-        aiNode* node = dfsQueue.front();
-        LOG_D("Processing node:%s", node->mName.C_Str());
-        dfsQueue.pop();
+			aiMaterial* material = scene->mMaterials[i];
 
-        //for (uint32_t i = 0; i < scene->mNumMaterials; ++i) {
-        
-        assert(scene->mNumMaterials == 2);
-        // second one is the one we want
-        aiMaterial* material = scene->mMaterials[1];
-        aiString name;
-        material->Get(AI_MATKEY_NAME, name);
-        LOG_D("material:%s", name.C_Str());
-        
-        int illumination = 0;
-        material->Get(AI_MATKEY_SHADING_MODEL, illumination);
-        matData.illumination = illumination;
-        
-        aiColor3D color(0.f, 0.f, 0.f);
-        material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-        matData.Kd = glm::vec3(color.r, color.g, color.b);
+			aiString materialName;
+			material->Get(AI_MATKEY_NAME, materialName);
+			LOG_D("Material:%s", materialName.C_Str());
+			matData->name = std::string(materialName.C_Str());
 
-        material->Get(AI_MATKEY_COLOR_AMBIENT, color);
-        matData.Ka = glm::vec3(color.r, color.g, color.b);
+			if (material->GetTextureCount(aiTextureType_DIFFUSE)) {
+				aiString texturePath;
+				material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath);
+				matData->diffuseMap = std::string(texturePath.C_Str());
+				LOG_D("aiTextureType_DIFFUSE:%s", matData->diffuseMap.c_str());
 
-        material->Get(AI_MATKEY_COLOR_SPECULAR, color);
-        matData.Ks = glm::vec3(color.r, color.g, color.b);
+			}
 
-        material->Get(AI_MATKEY_COLOR_EMISSIVE, color);
-        matData.Ke = glm::vec3(color.r, color.g, color.b);
+			if (material->GetTextureCount(aiTextureType_SPECULAR)) {
+				aiString texturePath;
+				material->GetTexture(aiTextureType_SPECULAR, 0, &texturePath);
+				matData->specularMap = std::string(texturePath.C_Str());
+				LOG_D("aiTextureType_SPECULAR:%s", matData->specularMap.c_str());
+			}
 
-        assert(aiReturn_SUCCESS == material->Get(AI_MATKEY_SHININESS, matData.Ns));
+			aiColor3D color;
+			material->Get(AI_MATKEY_SHADING_MODEL, matData->shadingModel);
+			material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+			matData->kd = glm::vec3(color.r, color.g, color.b);
+			material->Get(AI_MATKEY_COLOR_AMBIENT, color);
+			matData->ka = glm::vec3(color.r, color.g, color.b);
+			material->Get(AI_MATKEY_COLOR_SPECULAR, color);
+			matData->ks = glm::vec3(color.r, color.g, color.b);
+			material->Get(AI_MATKEY_COLOR_EMISSIVE, color);
+			matData->ke = glm::vec3(color.r, color.g, color.b);
+			material->Get(AI_MATKEY_SHININESS_STRENGTH, matData->ns);
+		}
 
-        aiString path;
-        material->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-
-        std::string imagePath = fpath.substr(0, fpath.find_last_of("/")) + "/" + path.C_Str();
-
-        matData.diffuseTexture.reset(new dimg::Image);
-        dimg::LoadImageFromFile(imagePath.c_str(), matData.diffuseTexture.get());
-
-        // break;
-        //}
-
-        return matData;
+        return rtnData;
     }
     }

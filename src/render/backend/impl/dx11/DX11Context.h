@@ -66,6 +66,6 @@ namespace gfx {
         void SetRenderTarget(ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* depthStencil);
         void SetViewport(uint32_t target, const D3D11_VIEWPORT& vp);
 
-        void DrawPrimitive(D3D11_PRIMITIVE_TOPOLOGY primitiveType, uint32_t startVertex, uint32_t numVertices, bool indexed);
+        void DrawPrimitive(D3D11_PRIMITIVE_TOPOLOGY primitiveType, uint32_t startVertex, uint32_t numVertices, bool indexed, uint32_t baseVertexLocation = 0);
     };
 }

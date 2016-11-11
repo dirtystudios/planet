@@ -11,6 +11,7 @@ struct DrawCall {
 
     Type type{ Type::Indexed };
     uint32_t primitiveCount{ 0 };
-    uint32_t offset{ 0 };
+    uint32_t startOffset{ 0 };
+    int baseVertexOffset{ 0 };
 };
 }

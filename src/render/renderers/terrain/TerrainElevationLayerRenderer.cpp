@@ -1,6 +1,7 @@
 #include "TerrainElevationLayerRenderer.h"
 #include "DrawItemEncoder.h"
 #include "TerrainElevationTile.h"
+#include "StateGroupEncoder.h"
 struct TileConstants {
     glm::mat4 world;
     uint32_t  heightmapIndex;
@@ -88,8 +89,10 @@ void TerrainElevationLayerRenderer::Submit(RenderQueue* renderQueue, const Frame
         }
 
         if (tile->drawItem == nullptr) {
+            // oops, sorry euge
+            assert(tile->geometry->drawCalls().size() == 1);
             gfx::DrawItemEncoder encoder;
-            tile->drawItem.reset(encoder.Encode(device(), tile->geometry->drawCall(), {tile->stateGroup.get()}));
+            tile->drawItem.reset(encoder.Encode(device(), tile->geometry->drawCalls()[0], {tile->stateGroup.get()}));
         }
 
         renderQueue->AddDrawItem(0, tile->drawItem.get());

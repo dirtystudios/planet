@@ -16,8 +16,6 @@ private:
 
 private:
     std::string        _text;
-    Mesh               _mesh;
-    Mesh               _cursorMesh;
     uint32_t           _cursorPos{0};
     bool               _cursorEnabled{false};
     ConstantBuffer*    _constantBuffer{nullptr};

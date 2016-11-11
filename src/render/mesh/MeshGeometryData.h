@@ -49,6 +49,7 @@ public:
 
     uint32_t vertexCount() const {
         // Todo: actually do this correctly.
+		assert(positions.size() == normals.size() && positions.size() == texcoords.size());
         return positions.size();
     }
 

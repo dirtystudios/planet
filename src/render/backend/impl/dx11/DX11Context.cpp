@@ -195,7 +195,7 @@ namespace gfx {
         }
     }
 
-    void DX11Context::DrawPrimitive(D3D11_PRIMITIVE_TOPOLOGY primitiveType, uint32_t startVertex, uint32_t numVertices, bool indexed) {
+    void DX11Context::DrawPrimitive(D3D11_PRIMITIVE_TOPOLOGY primitiveType, uint32_t startVertex, uint32_t numVertices, bool indexed, uint32_t baseVertexLocation) {
 
         if (m_pendingState.pixelShaderHandle != 0 && m_currentState.pixelShaderHandle != m_pendingState.pixelShaderHandle) {
             m_devcon->PSSetShader(m_pendingState.pixelShader, 0, 0);
@@ -229,7 +229,7 @@ namespace gfx {
         }
 
         for (uint32_t slot : m_pendingState.psDirtyTextureSlots) {
-            m_devcon->PSSetShaderResources(slot, 1, &m_pendingState.vsTextures[slot]);
+            m_devcon->PSSetShaderResources(slot, 1, &m_pendingState.psTextures[slot]);
             m_devcon->PSSetSamplers(slot, 1, &m_defaultSampler);
         }
 
@@ -259,7 +259,7 @@ namespace gfx {
         m_devcon->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 #endif
         if (indexed)
-            m_devcon->DrawIndexed(numVertices, startVertex, 0);
+            m_devcon->DrawIndexed(numVertices, startVertex, baseVertexLocation);
         else
             m_devcon->Draw(numVertices, startVertex);
 

@@ -101,7 +101,7 @@ void SkyRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
         if (skybox->_item == nullptr) {
             gfx::DrawCall drawCall;
             drawCall.type           = gfx::DrawCall::Type::Arrays;
-            drawCall.offset         = 0;
+            drawCall.startOffset         = 0;
             drawCall.primitiveCount = 36;
 
             std::vector<const gfx::StateGroup*> groups = {skybox->_group, renderQueue->defaults};
