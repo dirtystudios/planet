@@ -456,7 +456,9 @@ void MetalDevice::SubmitToGPU() {
             MTLPrimitiveType primitiveType = MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.topology);
             switch (drawCall.type) {
                 case DrawCall::Type::Arrays: {
-                    [encoder drawPrimitives:primitiveType vertexStart:drawCall.offset vertexCount:drawCall.primitiveCount];
+                    [encoder drawPrimitives:primitiveType
+                                vertexStart:drawCall.startOffset
+                                vertexCount:drawCall.primitiveCount];
                     break;
                 }
                 case DrawCall::Type::Indexed: {
@@ -464,7 +466,12 @@ void MetalDevice::SubmitToGPU() {
                                         indexCount:drawCall.primitiveCount
                                          indexType:MTLIndexTypeUInt32
                                        indexBuffer:indexBuffer->mtlBuffer
-                                 indexBufferOffset:drawCall.offset];
+                                 indexBufferOffset:drawCall.startOffset * sizeof(uint32_t) // has to be in bytes when using this draw call i guess
+                                     instanceCount:1
+                                        baseVertex:drawCall.baseVertexOffset
+                                      baseInstance:1];
+                    
+                    
                     break;
                 }
                 default:
