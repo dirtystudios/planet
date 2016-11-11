@@ -10,7 +10,7 @@
 #include "Spatial.h"
 #include "TerrainDataTile.h"
 #include "TerrainElevationLayerRenderer.h"
-#include "TerrainElevationTileProducer.h"
+#include "ElevationDataTileProducer.h"
 #include "TerrainQuadNode.h"
 
 TerrainRenderer::TerrainRenderer() {}
@@ -64,7 +64,7 @@ void TerrainRenderer::OnInit() {
     _rightTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * rightTransform.matrix());
     _selectors.emplace_back(new TerrainQuadNodeSelector(_rightTree));
 
-    _layers.elevation.producer.reset(new TerrainElevationTileProducer(device(), {resolution, resolution}));
+    _layers.elevation.producer.reset(new ElevationDataTileProducer(device(), {resolution, resolution}));
     _layers.elevation.renderer.reset(new TerrainElevationLayerRenderer(_layers.elevation.producer.get()));
 
     _tileProducers.push_back(_layers.elevation.producer.get());
@@ -90,7 +90,7 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     //        services()->debugDraw()->AddRect3D(worldRect, dutil::getColor(quad->key.lod), false);
     //    }
 
-    for (TerrainTileProducer* producer : _tileProducers) {
+    for (DataTileProducer* producer : _tileProducers) {
         producer->Update(_nodesInScene);
     }
 

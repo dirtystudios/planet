@@ -3,7 +3,7 @@
 #include "RenderQueue.h"
 #include "RenderView.h"
 #include "StateGroup.h"
-#include "TerrainElevationTileProducer.h"
+#include "ElevationDataTileProducer.h"
 #include "TerrainLayerRenderer.h"
 #include "TerrainQuadNode.h"
 

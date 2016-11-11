@@ -23,7 +23,7 @@
 #include "TerrainDataTile.h"
 #include "TerrainElevationTile.h"
 #include "TerrainQuadTree.h"
-#include "TerrainTileProducer.h"
+#include "DataTileProducer.h"
 #include "TileCache.h"
 
 class GenerateHeightmapTaskResults {
@@ -95,7 +95,7 @@ public:
     gfx::DrawItemPtr                         drawItem;
 };
 
-class TerrainElevationTileProducer : public TerrainTileProducer, public DataTileSampler<ElevationDataTile> {
+class ElevationDataTileProducer : public DataTileProducer, public DataTileSampler<ElevationDataTile> {
 private:
     using HeightmapGPUTileBuffer = GPUTileBuffer<gfx::PixelFormat::R32Float>;
     using HeightmapGPUTileCache  = GPUTileCache<TerrainTileKey, gfx::PixelFormat::R32Float>;
@@ -122,8 +122,8 @@ private:
     std::unique_ptr<MeshGeometry> _tileGeometry;
 
 public:
-    TerrainElevationTileProducer(gfx::RenderDevice* device, const glm::uvec2& tileResolution)
-        : TerrainTileProducer(TerrainLayerType::Heightmap), _device(device), _tileResolution(tileResolution) {
+    ElevationDataTileProducer(gfx::RenderDevice* device, const glm::uvec2& tileResolution)
+        : DataTileProducer(TerrainLayerType::Heightmap), _device(device), _tileResolution(tileResolution) {
 
         config::ConsoleCommands::getInstance().RegisterCommand("dumphm", [&](const std::vector<std::string>& params) -> std::string {
             this->dumpCachedHeightmapsToDisk();
@@ -156,7 +156,7 @@ public:
         _tileGeometry.reset(new MeshGeometry(_device, geometryData));
     }
 
-    ~TerrainElevationTileProducer() {}
+    ~ElevationDataTileProducer() {}
 
     ElevationDataTile* GetTile(const TerrainQuadNode& node) { return FindTile(node.key); }
 

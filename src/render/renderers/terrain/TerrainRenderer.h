@@ -6,10 +6,10 @@
 #include "TerrainLayerRenderer.h"
 #include "TerrainQuadNodeSelector.h"
 #include "TerrainQuadTree.h"
-#include "TerrainTileProducer.h"
+#include "DataTileProducer.h"
 
 class TerrainElevationLayerRenderer;
-class TerrainElevationTileProducer;
+class ElevationDataTileProducer;
 
 template <typename Producer, typename Renderer>
 struct Layer {
@@ -18,7 +18,7 @@ struct Layer {
 };
 
 struct Layers {
-    Layer<TerrainElevationTileProducer, TerrainElevationLayerRenderer> elevation;
+    Layer<ElevationDataTileProducer, TerrainElevationLayerRenderer> elevation;
 };
 
 class TerrainRenderObj {
@@ -38,7 +38,7 @@ private:
 
     std::vector<TerrainQuadTreePtr>                       _terrains;
     std::vector<std::unique_ptr<TerrainQuadNodeSelector>> _selectors;
-    std::vector<TerrainTileProducer*>                     _tileProducers;
+    std::vector<DataTileProducer*>                     _tileProducers;
     std::vector<TerrainLayerRenderer*>                    _layerRenderers;
 
     std::vector<const TerrainQuadNode*> _nodesInScene;

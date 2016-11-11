@@ -94,6 +94,8 @@ void RenderEngine::RenderFrame() {
     RenderQueue queue(cmdbuf);
     queue.defaults = _stateGroupDefaults;
 
+    FrameView view = _view->frameView();
+    
     // update view constants
     ViewConstants* mapped = viewConstantsBuffer->Map<ViewConstants>();
     mapped->eye           = view.eyePos;

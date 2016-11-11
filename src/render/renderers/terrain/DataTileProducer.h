@@ -10,12 +10,12 @@ public:
     virtual T* FindTile(const TerrainTileKey& key) = 0;
 };
 
-class TerrainTileProducer {
+class DataTileProducer {
 private:
     TerrainLayerType _layerType;
 
 public:
-    TerrainTileProducer(TerrainLayerType layerType) : _layerType(layerType) {}
+    DataTileProducer(TerrainLayerType layerType) : _layerType(layerType) {}
 
     TerrainLayerType LayerType() const { return _layerType; }
 
