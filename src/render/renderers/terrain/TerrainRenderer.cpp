@@ -4,7 +4,6 @@
 #include <queue>
 #include "DMath.h"
 #include "ElevationDataTileProducer.h"
-#include "GPUTextureArrayBuffer.h"
 #include "Log.h"
 #include "Log.h"
 #include "MeshGeneration.h"
