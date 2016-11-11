@@ -47,36 +47,16 @@ float4 getColor(uint32_t index) {
     return float4(r, g, b, 1.f);
 }
 
-float3 cubeToSphere(float3 pos);
-
-float3 cubeToSphere(float3 pos) {
-    // in order to sphereicalize the cube, need to be -1 > x > 1, -1 > y > 1, -1 > z > 1
-    float3 mapping;
-
-    float x_squared = pos.x * pos.x;
-    float y_squared = pos.y * pos.y;
-    float z_squared = pos.z * pos.z;
-    mapping.x       = pos.x * sqrt(1.f - (y_squared / 2.f) - (z_squared / 2.f) + (y_squared * z_squared / 3.f));
-    mapping.y       = pos.y * sqrt(1.f - (z_squared / 2.f) - (x_squared / 2.f) + (z_squared * x_squared / 3.f));
-    mapping.z       = pos.z * sqrt(1.f - (x_squared / 2.f) - (y_squared / 2.f) + (x_squared * y_squared / 3.f));
-
-    return mapping;
-}
-
 vertex VertexOut terrain_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(1)]], constant TileConstants& tile[[buffer(2)]],
                                 texture2d_array<float> heightmap[[texture(0)]], sampler heightmapSampler[[sampler(0)]]) {
-    float  height   = heightmap.sample(heightmapSampler, attributes.texture, tile.heightmapIndex).x * 10.f;
-    float4 worldPos = tile.world * float4(attributes.position.x, attributes.position.y, attributes.position.z, 1.f);
-
-    float3 p = normalize(worldPos.xyz) * (height + 256.f);
-    worldPos = float4(p.x, p.y, p.z, 1.f);
+    float  height   = heightmap.sample(heightmapSampler, attributes.texture, tile.heightmapIndex).x * 250.f;
+    float4 worldPos = tile.world * float4(attributes.position.x, attributes.position.y, height, 1.f);
 
     VertexOut outputValue;
     outputValue.texture = attributes.texture;
     outputValue.normal  = attributes.normal;
 
     outputValue.position = view.proj * view.view * worldPos;
-    //    outputValue.position.z = heightmap.sample(heightmapSampler, attributes.texture, tile.heightmapIndex).x * 500.f;
     return outputValue;
 }
 
@@ -84,5 +64,4 @@ fragment float4 terrain_frag(VertexOut varyingInput[[stage_in]], constant TileCo
                              sampler heightmapSampler[[sampler(0)]]) {
     float height = heightmap.sample(heightmapSampler, varyingInput.texture, tile.heightmapIndex).x;
     return float4((height + 1.f) / 2.f) * getColor(tile.lod);
-    //    return float4(varyingInput.texture.x, varyingInput.texture.y, 0, 1);
 };

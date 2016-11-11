@@ -10,8 +10,8 @@ struct ChunkedTerrainNode {
     double x;
     double y;
 
-    BoundingBox bbox;
-    float size;
+    dm::BoundingBox bbox;
+    float           size;
 
     ChunkedTerrainNode* children = {NULL};
 };

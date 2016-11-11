@@ -2,15 +2,17 @@
 #define __frustum_h__
 
 #include "BoundingBox.h"
+#include "Plane.h"
 
-struct Frustum {
+class Frustum {
+private:
+    std::array<dm::Plane3Dd, 6> _planes;
+
+public:
     Frustum(const glm::mat4& projection, const glm::mat4& view);
 
-    glm::dvec4 frustum_planes[6];
-
     bool IsPointInFrustum(const glm::dvec3& p) const;
-    bool IsBoxInFrustum(const BoundingBox& bbox) const;
+    bool IsBoxInFrustum(const dm::BoundingBox& bbox) const;
 };
-
 
 #endif

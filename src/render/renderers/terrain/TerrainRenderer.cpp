@@ -3,6 +3,7 @@
 #include <glm/gtx/transform.hpp>
 #include <queue>
 #include "DMath.h"
+#include "ElevationDataTileProducer.h"
 #include "GPUTextureArrayBuffer.h"
 #include "Log.h"
 #include "Log.h"
@@ -10,7 +11,6 @@
 #include "Spatial.h"
 #include "TerrainDataTile.h"
 #include "TerrainElevationLayerRenderer.h"
-#include "ElevationDataTileProducer.h"
 #include "TerrainQuadNode.h"
 
 TerrainRenderer::TerrainRenderer() {}
@@ -18,11 +18,11 @@ TerrainRenderer::TerrainRenderer() {}
 TerrainRenderer::~TerrainRenderer() {}
 
 void TerrainRenderer::OnInit() {
-    float    radius     = 256.f;
+    float    radius     = 10000;
     uint32_t resolution = 128;
 
-    //    std::shared_ptr<TerrainDeformation> deformation = std::make_shared<NoDeformation>();
-    std::shared_ptr<TerrainDeformation> deformation = std::make_shared<SphericalDeformation>(radius);
+    std::shared_ptr<TerrainDeformation> deformation = std::make_shared<NoDeformation>();
+    // std::shared_ptr<TerrainDeformation> deformation = std::make_shared<SphericalDeformation>(radius);
 
     dm::Transform rootTransform;
     //    rootTransform.rotateDegrees(-25, glm::normalize(glm::vec3(1, 1, 1)));
@@ -30,39 +30,39 @@ void TerrainRenderer::OnInit() {
     glm::mat4 rootMatrix = rootTransform.matrix();
 
     dm::Transform topTransform;
-    topTransform.rotateDegrees(-90, glm::vec3(1, 0, 0));
-    topTransform.translate(glm::vec3(0, radius / 2.f, 0));
+    //    topTransform.rotateDegrees(-90, glm::vec3(1, 0, 0));
+    //    topTransform.translate(glm::vec3(0, radius / 2.f, 0));
     _topTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * topTransform.matrix());
     _selectors.emplace_back(new TerrainQuadNodeSelector(_topTree));
+
+    //    dm::Transform bottomTransform;
+    //    bottomTransform.rotateDegrees(90, glm::vec3(1, 0, 0));
+    //    bottomTransform.translate(glm::vec3(0, -radius / 2.f, 0));
+    //    _bottomTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * bottomTransform.matrix());
+    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_bottomTree));
     //
-    dm::Transform bottomTransform;
-    bottomTransform.rotateDegrees(90, glm::vec3(1, 0, 0));
-    bottomTransform.translate(glm::vec3(0, -radius / 2.f, 0));
-    _bottomTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * bottomTransform.matrix());
-    _selectors.emplace_back(new TerrainQuadNodeSelector(_bottomTree));
-
-    dm::Transform frontTransform;
-    frontTransform.translate(glm::vec3(0, 0, radius / 2.f));
-    _frontTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * frontTransform.matrix());
-    _selectors.emplace_back(new TerrainQuadNodeSelector(_frontTree));
-
-    dm::Transform backTransform;
-    backTransform.rotateDegrees(180, glm::vec3(1, 0, 0));
-    backTransform.translate(glm::vec3(0, 0, -radius / 2.f));
-    _backTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * backTransform.matrix());
-    _selectors.emplace_back(new TerrainQuadNodeSelector(_backTree));
-
-    dm::Transform leftTransform;
-    leftTransform.rotateDegrees(-90, glm::vec3(0, 1, 0));
-    leftTransform.translate(glm::vec3(-radius / 2.f, 0, 0));
-    _leftTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * leftTransform.matrix());
-    _selectors.emplace_back(new TerrainQuadNodeSelector(_leftTree));
-
-    dm::Transform rightTransform;
-    rightTransform.rotateDegrees(90, glm::vec3(0, 1, 0));
-    rightTransform.translate(glm::vec3(radius / 2.f, 0, 0));
-    _rightTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * rightTransform.matrix());
-    _selectors.emplace_back(new TerrainQuadNodeSelector(_rightTree));
+    //    dm::Transform frontTransform;
+    //    frontTransform.translate(glm::vec3(0, 0, radius / 2.f));
+    //    _frontTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * frontTransform.matrix());
+    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_frontTree));
+    //
+    //    dm::Transform backTransform;
+    //    backTransform.rotateDegrees(180, glm::vec3(1, 0, 0));
+    //    backTransform.translate(glm::vec3(0, 0, -radius / 2.f));
+    //    _backTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * backTransform.matrix());
+    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_backTree));
+    //
+    //    dm::Transform leftTransform;
+    //    leftTransform.rotateDegrees(-90, glm::vec3(0, 1, 0));
+    //    leftTransform.translate(glm::vec3(-radius / 2.f, 0, 0));
+    //    _leftTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * leftTransform.matrix());
+    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_leftTree));
+    //
+    //    dm::Transform rightTransform;
+    //    rightTransform.rotateDegrees(90, glm::vec3(0, 1, 0));
+    //    rightTransform.translate(glm::vec3(radius / 2.f, 0, 0));
+    //    _rightTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * rightTransform.matrix());
+    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_rightTree));
 
     _layers.elevation.producer.reset(new ElevationDataTileProducer(device(), {resolution, resolution}));
     _layers.elevation.renderer.reset(new TerrainElevationLayerRenderer(_layers.elevation.producer.get()));
@@ -79,16 +79,18 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     _nodesInScene.clear();
 
     //    _bottomTree->transform() = glm::rotate(_bottomTree->transform(), 0.01f, glm::vec3(0, 0, 1));
-    //    _frontTree->transform() = glm::rotate(_frontTree->transform(), 0.01f, glm::vec3(0, 0, 1));
+    //        _topTree->transform() = glm::rotate(_topTree->transform(), 0.01f, glm::vec3(1, 0, 0));
 
     for (std::unique_ptr<TerrainQuadNodeSelector>& selector : _selectors) {
         selector->SelectQuadNodes(view, &_nodesInScene);
     }
 
-    //    for (const TerrainQuadNode* quad : _nodesInScene) {
-    //        dm::Rect3Dd worldRect = quad->worldRect();
-    //        services()->debugDraw()->AddRect3D(worldRect, dutil::getColor(quad->key.lod), false);
-    //    }
+    LOG_D("selected: %d", _nodesInScene.size());
+
+    for (const TerrainQuadNode* quad : _nodesInScene) {
+        dm::Rect3Dd worldRect = quad->worldRect();
+        services()->debugDraw()->AddRect3D(worldRect, dutil::getColor(quad->key.lod), false);
+    }
 
     for (DataTileProducer* producer : _tileProducers) {
         producer->Update(_nodesInScene);

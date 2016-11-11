@@ -96,6 +96,8 @@ public:
     T    height() const { return std::abs(tl().y - bl().y); }
     vec3 center() const { return lerp(bl(), tr(), 0.5f); }
 
+    std::array<vec3, 4> corners() const { return _corners; }
+
     void transform(const glm::mat4& transform) {
         for (vec3& corner : _corners) {
             glm::vec4 transformedCorner = transform * glm::vec4(corner.x, corner.y, corner.z, 1);

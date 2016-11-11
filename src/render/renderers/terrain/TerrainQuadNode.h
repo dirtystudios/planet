@@ -23,6 +23,7 @@ public:
     const dm::Rect3Dd            sampleRect;
 
     glm::dvec3  deformedPosition() const;
+    glm::dvec3  normal() const;
     dm::Rect3Dd worldRect() const;
     glm::mat4   worldMatrix() const;
     bool        HasChildren() const { return children.size() == 4; }

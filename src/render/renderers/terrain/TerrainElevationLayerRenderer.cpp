@@ -95,7 +95,7 @@ void TerrainElevationLayerRenderer::Submit(RenderQueue* renderQueue, const Frame
             tile->drawItem.reset(encoder.Encode(device(), tile->geometry->drawCalls()[0], {tile->stateGroup.get()}));
         }
 
-        renderQueue->AddDrawItem(0, tile->drawItem.get());
+        renderQueue->AddDrawItem(50, tile->drawItem.get());
 
         //        glm::vec2 resolution = elevationSampler->tileResolution();
         //

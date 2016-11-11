@@ -169,7 +169,7 @@ void App::OnStart() {
     SetupInputBindings();
 
     // cam.MoveTo(-2826, 1620, 1600);
-    cam.MoveTo(0, 0, 500);
+    cam.MoveTo(0, 0, 5000);
     cam.LookAt(0, 0, 0);
 
     SkyboxRenderObj* skybox = CreateSkybox();

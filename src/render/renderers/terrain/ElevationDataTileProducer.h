@@ -67,8 +67,8 @@ public:
             for (uint32_t j = 0; j < _resolution.x; ++j) {
                 double     t2     = dx * j / _region.width();
                 glm::dvec3 sample = dm::lerp(rowStart, rowEnd, t2);
-                sample *= 0.01f;
-                double val = dm::clamp(_mountain.GetValue(sample.x, sample.y, sample.z), -1.0, 1.0);
+                sample *= 0.001f;
+                double val = _mountain.GetValue(sample.x, sample.y, sample.z);
 
                 if (val > _results.max) {
                     _results.max = val;
@@ -130,7 +130,7 @@ public:
             return "success";
         });
 
-        _gpuTileBuffer.reset(new HeightmapGPUTileBuffer(_device, _tileResolution.x, _tileResolution.y, 128));
+        _gpuTileBuffer.reset(new HeightmapGPUTileBuffer(_device, _tileResolution.x, _tileResolution.y, 256));
         _gpuTileCache.reset(new HeightmapGPUTileCache(_gpuTileBuffer.get(), [&](const TerrainTileKey& key, const HeightmapGPUTileSlot* slot) {
             auto it = _dataTiles.find(key);
             if (it != end(_dataTiles)) {

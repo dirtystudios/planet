@@ -108,7 +108,6 @@ void RenderEngine::RenderFrame() {
             p.second->Submit(&queue, &view);
         }
     }
-    debugDraw()->AddSphere3D(glm::vec3(0, 0, 0), 50);
 
     queue.Submit(_device);
     _device->RenderFrame();
