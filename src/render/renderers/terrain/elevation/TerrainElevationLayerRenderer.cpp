@@ -1,7 +1,7 @@
 #include "TerrainElevationLayerRenderer.h"
 #include "DrawItemEncoder.h"
-#include "TerrainElevationTile.h"
 #include "StateGroupEncoder.h"
+
 struct TileConstants {
     glm::mat4 world;
     uint32_t  heightmapIndex;
