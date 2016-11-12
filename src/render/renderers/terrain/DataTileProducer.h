@@ -7,6 +7,7 @@
 template <typename T>
 class DataTileSampler {
 public:
+    // return the closest matching tile for the given key
     virtual T* FindTile(const TerrainTileKey& key) = 0;
 };
 

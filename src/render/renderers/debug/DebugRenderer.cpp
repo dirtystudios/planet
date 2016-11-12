@@ -236,7 +236,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     // TODODODODODO; recycle and clean up transient buffers for spheres
 
     for (const gfx::DrawItem* item : _drawItems) {
-        renderQueue->AddDrawItem(10000, item);
+        renderQueue->AddDrawItem(0, item);
     }
 
     _buffers.filled2D.clear();

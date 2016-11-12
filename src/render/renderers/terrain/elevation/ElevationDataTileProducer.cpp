@@ -41,7 +41,10 @@ ElevationDataTileProducer::ElevationDataTileProducer(gfx::RenderDevice* device, 
 
 ElevationDataTileProducer::~ElevationDataTileProducer() {}
 
-ElevationDataTile* ElevationDataTileProducer::GetTile(const TerrainQuadNode& node) { return FindTile(node.key); }
+ElevationDataTile* ElevationDataTileProducer::GetTile(const TerrainQuadNode& node) {
+    auto it = _dataTiles.find(node.key);
+    return it == _dataTiles.end() ? nullptr : it->second;
+}
 
 void ElevationDataTileProducer::Update(const std::vector<const TerrainQuadNode*>& nodesInScene) {
     // process arrivals
@@ -142,11 +145,10 @@ void ElevationDataTileProducer::GenerateHeightmapRegion(const glm::vec2& regionC
 ElevationDataTile* ElevationDataTileProducer::FindTile(const TerrainTileKey& key) {
     TerrainTileKey k  = key;
     auto           it = _dataTiles.find(k);
-    //        while(k.lod != 0 && it == end(_dataTiles)) {
-    //            k = getParentKey(k);
-    //            it = _dataTiles.find(k);
-    //        }
-
+    while (k.lod != 0 && it == end(_dataTiles)) {
+        k  = getParentKey(k);
+        it = _dataTiles.find(k);
+    }
     return it == _dataTiles.end() ? nullptr : it->second;
 }
 

@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 
 struct Camera {
-    Camera(float fov_degrees = 45.f, float aspect_ratio = 1.33333f, float znear = 0.1f, float zfar = 10000.f);
+    Camera(float fov_degrees = 45.f, float aspect_ratio = 1.33333f, float znear = 0.1f, float zfar = 20000.f);
 
     glm::vec3 up;
     glm::vec3 right;
@@ -23,10 +23,10 @@ struct Camera {
     void Pitch(float degrees);
     void LookAt(glm::vec3 target);
     void LookAt(float x, float y, float z);
-    
+
     float GetHorizontalFieldOfView();
     float GetVerticalFieldOfView();
-    
+
     glm::mat4 BuildView();
-    glm::mat4 BuildProjection();    
+    glm::mat4 BuildProjection();
 };

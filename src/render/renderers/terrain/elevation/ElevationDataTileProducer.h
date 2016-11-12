@@ -41,12 +41,15 @@ public:
     ElevationDataTileProducer(gfx::RenderDevice* device, const glm::uvec2& tileResolution);
     ~ElevationDataTileProducer();
 
-    virtual ElevationDataTile* GetTile(const TerrainQuadNode& node) override;
-    virtual void Update(const std::vector<const TerrainQuadNode*>& nodesInScene) override;
+    // DataTileProducer interface
+    virtual ElevationDataTile* GetTile(const TerrainQuadNode& node) final;
+    virtual void Update(const std::vector<const TerrainQuadNode*>& nodesInScene) final;
+
+    // DataTileSampler interface
+    virtual ElevationDataTile* FindTile(const TerrainTileKey& key) final;
 
 private:
     void GenerateHeightmapRegion(const glm::vec2& regionCenter, const glm::vec2& regionSize, const glm::uvec2& resolution,
                                  std::function<float(float localX, float localY)> heightDelegate, std::vector<float>* data, float* max, float* min);
-    virtual ElevationDataTile* FindTile(const TerrainTileKey& key) override;
     void dumpCachedHeightmapsToDisk();
 };

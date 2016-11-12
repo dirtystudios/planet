@@ -24,6 +24,7 @@ struct ViewConstants {
 struct TileConstants {
     float4x4 world;
     uint     heightmapIndex;
+    uint     heightmapLod;
     uint     lod;
 };
 
@@ -63,5 +64,5 @@ vertex VertexOut terrain_vertex(VertexIn attributes[[stage_in]], constant ViewCo
 fragment float4 terrain_frag(VertexOut varyingInput[[stage_in]], constant TileConstants& tile[[buffer(2)]], texture2d_array<float> heightmap[[texture(0)]],
                              sampler heightmapSampler[[sampler(0)]]) {
     float height = heightmap.sample(heightmapSampler, varyingInput.texture, tile.heightmapIndex).x;
-    return float4((height + 1.f) / 2.f) * getColor(tile.lod);
+    return float4((height + 1.f) / 2.f) * getColor(tile.heightmapLod);
 };

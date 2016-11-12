@@ -13,9 +13,9 @@ using LocalCoords = glm::dvec2;
 
 class TerrainQuadNode {
 public:
-    TerrainQuadNode(TerrainQuadTree* terrain, const TerrainTileKey& key, const dm::Rect3Dd& local, const dm::Rect3Dd& sampleSpace, double size);
+    TerrainQuadNode(const TerrainQuadTree* terrain, const TerrainTileKey& key, const dm::Rect3Dd& local, const dm::Rect3Dd& sampleSpace, double size);
 
-    TerrainQuadTree*             terrain{nullptr};
+    const TerrainQuadTree*       terrain{nullptr};
     std::vector<TerrainQuadNode> children;
     const TerrainTileKey         key;
     const double                 size;

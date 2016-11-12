@@ -46,13 +46,21 @@ struct TerrainTileKey {
 //  |_____|_____|
 bool operator<(const TerrainTileKey& lhs, const TerrainTileKey& rhs);
 
+static TerrainTileKey keyToLOD(const TerrainTileKey& key, int32_t newLOD) {
+    assert(key.lod != newLOD);
+
+    int    diff    = key.lod - newLOD;
+    double divisor = dm::pow(2, diff);
+    return TerrainTileKey(key.tid, std::floor<uint32_t>(key.tx / divisor), std::floor<uint32_t>(key.ty / divisor), newLOD);
+}
+
 static TerrainTileKey getParentKey(const TerrainTileKey& key) {
     if (key.lod == 0)
         return key;
 
-    TerrainTileKey parent(key.tid, key.lod - 1, std::floor<uint32_t>(key.tx / 2.f), std::floor<uint32_t>(key.ty / 2.f));
+    TerrainTileKey parent(key.tid, std::floor<uint32_t>(key.tx / 2.f), std::floor<uint32_t>(key.ty / 2.f), key.lod - 1);
 
-    return parent;
+    return keyToLOD(key, key.lod - 1);
 }
 
 static dm::Rect2Dd localRectForKey(const TerrainTileKey& key, double rootTileSize) {

@@ -8,7 +8,7 @@ namespace controllers {
         cam              = camera;
         moveInput        = {0.0f, 0.0f, 0.0f};
         m_mouseLookInput = {0.f, 0.f};
-        walkSpeed        = 70.0f;
+        walkSpeed        = 550.0f;
         lookSpeed = 1.f;
         m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveForward", std::bind(&PlayerController::MoveForward, this, std::placeholders::_1));
         m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveBackward", std::bind(&PlayerController::MoveBackward, this, std::placeholders::_1));

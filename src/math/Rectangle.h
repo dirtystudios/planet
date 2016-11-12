@@ -62,6 +62,12 @@ public:
 
     Rect3D(const vec3& bl, const vec3& br, const vec3& tl, const vec3& tr) : _corners({{bl, br, tl, tr}}) {}
 
+    Rect3D(const Rect3D<T>& rect, const glm::mat4& transform) {
+        _corners[0] = glm::vec3(transform * glm::vec4(rect.bl().x, rect.bl().y, rect.bl().z, 1.f));
+        _corners[1] = glm::vec3(transform * glm::vec4(rect.br().x, rect.br().y, rect.br().z, 1.f));
+        _corners[2] = glm::vec3(transform * glm::vec4(rect.tl().x, rect.tl().y, rect.tl().z, 1.f));
+        _corners[3] = glm::vec3(transform * glm::vec4(rect.tr().x, rect.tr().y, rect.tr().z, 1.f));
+    }
     Rect3D(const Rect2D<T>& rect, const glm::mat4& transform = glm::mat4()) {
         _corners[0] = glm::vec3(transform * glm::vec4(rect.bl().x, rect.bl().y, 0.f, 1.f));
         _corners[1] = glm::vec3(transform * glm::vec4(rect.br().x, rect.br().y, 0.f, 1.f));

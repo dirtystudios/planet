@@ -22,9 +22,9 @@ class GenerateHeightmapTask : public Task {
 private:
     GenerateHeightmapTaskResults _results;
 
-    const dm::Rect3Dd                _region;
-    const glm::uvec2                 _resolution;
-    const noise::module::RidgedMulti _mountain;
+    const dm::Rect3Dd          _region;
+    const glm::uvec2           _resolution;
+    noise::module::RidgedMulti _noise;
 
     BlockingQueue<GenerateHeightmapTaskResults>* _outputQueue{nullptr};
 

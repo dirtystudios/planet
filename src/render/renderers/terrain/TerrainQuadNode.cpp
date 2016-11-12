@@ -1,18 +1,12 @@
 #include "TerrainQuadNode.h"
 #include "TerrainQuadTree.h"
-#
+
 using namespace dm;
 
-TerrainQuadNode::TerrainQuadNode(TerrainQuadTree* terrain, const TerrainTileKey& key, const dm::Rect3Dd& local, const dm::Rect3Dd& sampleSpace, double size)
+TerrainQuadNode::TerrainQuadNode(const TerrainQuadTree* terrain, const TerrainTileKey& key, const dm::Rect3Dd& local, const dm::Rect3Dd& sampleSpace, double size)
     : terrain(terrain), key(key), size(size), localRect(local), sampleRect(sampleSpace) {}
 
-glm::mat4 TerrainQuadNode::worldMatrix() const {
-    dm::Transform transform;
-    transform.translate(localRect.center());
-    transform.scale(glm::vec3(size / 2.f, size / 2.f, 1.f)); // dont scale Z because thats the direction we displace for NoDeformation
-
-    return terrain->transform() * transform.matrix();
-}
+glm::mat4 TerrainQuadNode::worldMatrix() const { return terrain->worldTransformForKey(key); }
 
 glm::dvec3 TerrainQuadNode::normal() const {
     glm::dvec3 bl = worldRect().bl();

@@ -3,10 +3,10 @@
 GenerateHeightmapTask::GenerateHeightmapTask(const TerrainTileKey& key, const dm::Rect3Dd& region, const glm::uvec2& resolution,
                                              BlockingQueue<GenerateHeightmapTaskResults>* outputQueue)
     : _results({key}), _region(region), _resolution(resolution), _outputQueue(outputQueue) {
-    noise::module::RidgedMulti mountain;
-    mountain.SetSeed(32);
-    mountain.SetFrequency(0.05);
-    mountain.SetOctaveCount(8);
+
+    _noise.SetSeed(32);
+    _noise.SetFrequency(0.05);
+    _noise.SetOctaveCount(8);
 }
 
 void GenerateHeightmapTask::execute() {
@@ -21,8 +21,8 @@ void GenerateHeightmapTask::execute() {
         for (uint32_t j = 0; j < _resolution.x; ++j) {
             double     t2     = dx * j / _region.width();
             glm::dvec3 sample = dm::lerp(rowStart, rowEnd, t2);
-            sample *= 0.001f;
-            double val = _mountain.GetValue(sample.x, sample.y, sample.z);
+            sample *= 0.01f;
+            double val = _noise.GetValue(sample.x, sample.y, sample.z);
 
             if (val > _results.max) {
                 _results.max = val;

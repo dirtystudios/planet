@@ -55,12 +55,15 @@ public:
 
     TerrainQuadNode* rootNode();
 
-    glm::dvec3 localToDeformed(const glm::dvec3& localPosition);
-    glm::dvec3 localToWorld(const glm::dvec3& localPosition);
+    glm::dvec3 localToDeformed(const glm::dvec3& localPosition) const;
+    glm::dvec3 localToWorld(const glm::dvec3& localPosition) const;
     glm::mat4& transform();
 
-    dm::Rect2Dd localRectForKey(const TerrainTileKey& key);
-    dm::Rect3Dd worldRectForKey(const TerrainTileKey& key);
+    glm::mat4 worldTransformForKey(const TerrainTileKey& key) const;
+
+    dm::Rect3Dd sampleRectForKey(const TerrainTileKey& key) const;
+    dm::Rect3Dd localRectForKey(const TerrainTileKey& key) const;
+    dm::Rect3Dd worldRectForKey(const TerrainTileKey& key) const;
 };
 
 using TerrainQuadTreePtr = std::shared_ptr<TerrainQuadTree>;
