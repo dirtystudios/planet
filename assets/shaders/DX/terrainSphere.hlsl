@@ -45,8 +45,11 @@ float4 getColor(uint index) {
 }
 
 VS_OUTPUT VSMain(VS_INPUT input) {
-	float  height = heightmap.SampleLevel(heightmapSampler, float3(input.vTex, heightmapIndex), 0) * 250.f;
-	float4 worldPos = mul(world, float4(input.vPos.x, input.vPos.y, height, 1.f));
+	float  height = heightmap.SampleLevel(heightmapSampler, float3(input.vTex, heightmapIndex), 0).x * 250.f;
+	float4 worldPos = mul(world, float4(input.vPos.xyz, 1.f));
+
+    float3 p = normalize(worldPos.xyz) * (height + 256.f);
+    worldPos = float4(p, 1.f);
 
     VS_OUTPUT output;
     output.vTex = input.vTex;
