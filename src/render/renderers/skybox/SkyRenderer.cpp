@@ -55,7 +55,8 @@ void SkyRenderer::Register(SkyboxRenderObj* skybox) {
 
     uint32_t        vertexCount = 36;
     size_t          bufferSize  = sizeof(SkyboxVertex) * vertexCount;
-    gfx::BufferDesc desc        = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, bufferSize);
+    gfx::BufferDesc desc        = 
+        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, bufferSize, "skyVB");
     skybox->_vertexBuffer       = device()->AllocateBuffer(desc);
 
     glm::vec3* mapped = reinterpret_cast<glm::vec3*>(device()->MapMemory(skybox->_vertexBuffer, gfx::BufferAccess::Write));
@@ -73,7 +74,7 @@ void SkyRenderer::Register(SkyboxRenderObj* skybox) {
         0.f, 0.f, 0.f);
     device()->UnmapMemory(skybox->_vertexBuffer);
 
-    skybox->_constantBuffer = services()->constantBufferManager()->GetConstantBuffer(sizeof(SkyboxConstants));
+    skybox->_constantBuffer = services()->constantBufferManager()->GetConstantBuffer(sizeof(SkyboxConstants), "skyWorld");
 
     assert(vertexCount == mappedVertices);
 

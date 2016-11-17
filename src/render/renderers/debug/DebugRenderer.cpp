@@ -23,10 +23,11 @@ void DebugRenderer::OnInit() {
     _sphereGeometry = new MeshGeometry(device(), { geometryData });
 
     _sphereCache.reset(new SphereVertexCache(16, [&](const size_t& key, std::vector<DebugVertex>*& value) { delete value; }));
-    _3DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
-    _2DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants));
+    _3DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants), "debug3Dview");
+    _2DviewConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(DebugViewConstants), "debug2Dview");
 
-    gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize);
+    gfx::BufferDesc desc = 
+        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize, "debugVB");
     _vertexBuffer        = device()->AllocateBuffer(desc);
 
     gfx::BlendState blendState;

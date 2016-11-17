@@ -54,9 +54,10 @@ public:
             ioffset += (geomData.indexCount() * sizeof(uint32_t));
         }
 
-        vertexBuffer = _device->AllocateBuffer(gfx::BufferDesc::vbPersistent(vld.stride() * vertexCount), interleavedVertexData.data());
+        vertexBuffer = _device->AllocateBuffer(
+            gfx::BufferDesc::vbPersistent(vld.stride() * vertexCount, "meshGeomVB"), interleavedVertexData.data());
         if (indexCount > 0) {
-            indexBuffer = _device->AllocateBuffer(gfx::BufferDesc::ibPersistent(sizeof(uint32_t) * indexCount), indicesData.data());
+            indexBuffer = _device->AllocateBuffer(gfx::BufferDesc::ibPersistent(sizeof(uint32_t) * indexCount, "meshGeomIB"), indicesData.data());
         }
 
         uint32_t indexOffset  = 0;

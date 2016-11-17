@@ -21,7 +21,7 @@ private:
 
 public:
     GPUTileBuffer(gfx::RenderDevice* device, uint32_t width, uint32_t height, uint32_t capacity) : TileBuffer<Slot>(width, height, capacity), _device(device) {
-        _textureArray = _device->CreateTextureArray(F, 1, width, height, capacity);
+        _textureArray = _device->CreateTextureArray(F, 1, width, height, capacity, "TileBuf");
         _freeArraySlots.resize(capacity);
         std::iota(_freeArraySlots.begin(), _freeArraySlots.end(), 0);
     }

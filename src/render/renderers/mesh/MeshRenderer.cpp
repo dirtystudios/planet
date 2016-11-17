@@ -43,8 +43,8 @@ void MeshRenderer::OnInit() {
 
 	MeshRenderData renderData;
 
-    renderData.cb1  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants));
-    renderData.cb2  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MaterialConstants));
+    renderData.cb1  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");
+    renderData.cb2  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MaterialConstants), "Mat");
     renderData.mesh = services()->meshCache()->Get("roxas/roxas.obj");
     renderData.mat  = services()->materialCache()->Get("roxas/roxas.obj", services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
 
@@ -76,7 +76,8 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView)
 			dimg::Image imageData;
 			std::string path = assetDirPath  + "roxas/" + renderData.mat->matData[1].diffuseMap;
 			dimg::LoadImageFromFile(path.c_str(), &imageData);
-			renderData.textureid = device()->CreateTexture2D(imageData.pixelFormat == dimg::PixelFormat::RGBA8Unorm ? gfx::PixelFormat::RGBA8Unorm : gfx::PixelFormat::RGB8Unorm, imageData.width, imageData.height, imageData.data);
+			renderData.textureid = 
+                device()->CreateTexture2D(imageData.pixelFormat == dimg::PixelFormat::RGBA8Unorm ? gfx::PixelFormat::RGBA8Unorm : gfx::PixelFormat::RGB8Unorm, imageData.width, imageData.height, imageData.data, renderData.mat->matData[1].diffuseMap);
 		}
 
         if (renderData.meshGeometry.get() == nullptr) {

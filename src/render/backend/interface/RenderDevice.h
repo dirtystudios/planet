@@ -49,10 +49,10 @@ public:
     virtual void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) = 0;
 
     virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
-    virtual TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data) = 0;
-    virtual TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) = 0;
+    virtual TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") = 0;
+    virtual TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "") = 0;
 
-    virtual TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data) = 0;
+    virtual TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "") = 0;
     virtual VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc) = 0;
 
     virtual void DestroyResource(ResourceId resourceId) = 0;

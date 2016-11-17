@@ -354,7 +354,7 @@ PipelineStateId GLDevice::CreatePipelineState(const PipelineStateDesc& desc) {
     return _resourceManager.AddResource(pipelineState);
 }
 
-TextureId GLDevice::CreateTexture2D(PixelFormat texFormat, uint32_t width, uint32_t height, void* data) {
+TextureId GLDevice::CreateTexture2D(PixelFormat texFormat, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_2D;
@@ -380,7 +380,7 @@ TextureId GLDevice::CreateTexture2D(PixelFormat texFormat, uint32_t width, uint3
     return _resourceManager.AddResource(texture);
 }
 
-TextureId GLDevice::CreateTextureArray(PixelFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
+TextureId GLDevice::CreateTextureArray(PixelFormat texFormat, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName) {
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_2D_ARRAY;
@@ -400,7 +400,7 @@ TextureId GLDevice::CreateTextureArray(PixelFormat texFormat, uint32_t levels, u
     return _resourceManager.AddResource(texture);
 }
 
-TextureId GLDevice::CreateTextureCube(PixelFormat texFormat, uint32_t width, uint32_t height, void** data) {
+TextureId GLDevice::CreateTextureCube(PixelFormat texFormat, uint32_t width, uint32_t height, void** data, const std::string& debugName) {
     GLTexture* texture = new GLTexture();
     texture->format    = GLEnumAdapter::Convert(texFormat);
     texture->type      = GL_TEXTURE_CUBE_MAP;

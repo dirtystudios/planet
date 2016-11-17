@@ -70,6 +70,8 @@ namespace gfx {
         }
 
         DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, initialData ? &initData : NULL, &buffer));
+        if (desc.debugName != "")
+            D3D_SET_OBJECT_NAME_A(buffer, desc.debugName.c_str());
         BufferDX11 bufferdx11;
         bufferdx11.buffer.Swap(buffer);
         return GenerateHandleEmplaceConstRef<ResourceType::Buffer>(m_buffers, bufferdx11);
@@ -90,7 +92,7 @@ namespace gfx {
                 ShaderType shaderType = ShaderType::PixelShader;
 
                 ShaderId existingShaderId = m_shaderLibrary.GetShader(shaderType, funcName);
-                ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len));
+                ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len), funcName + "PS");
 
                 assert(newID);
 
@@ -110,7 +112,7 @@ namespace gfx {
                 ShaderType shaderType = ShaderType::VertexShader;
 
                 ShaderId existingShaderId = m_shaderLibrary.GetShader(shaderType, funcName);
-                ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len));
+                ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len), funcName + "VS");
 
                 assert(newID);
 
@@ -129,7 +131,7 @@ namespace gfx {
         }
     }
 
-    ShaderId DX11Device::CreateShader(ShaderType type, const std::string& source) {
+    ShaderId DX11Device::CreateShader(ShaderType type, const std::string& source, const std::string& name) {
         ComPtr<ID3DBlob> blob;
         void* bufPtr;
         size_t bufSize;
@@ -160,6 +162,7 @@ namespace gfx {
             DX11_CHECK_RET0(m_dev->CreateVertexShader(bufPtr, bufSize, NULL, &vertexShader));
             shaderDX11->vertexShader = vertexShader;
             shaderDX11->blob.Swap(blob);
+            D3D_SET_OBJECT_NAME_A(vertexShader, name.c_str());
             return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX11);
             break;
         }
@@ -169,6 +172,7 @@ namespace gfx {
             DX11_CHECK_RET0(m_dev->CreatePixelShader(bufPtr, bufSize, NULL, &pixelShader));
 
             shaderDX11->pixelShader = pixelShader;
+            D3D_SET_OBJECT_NAME_A(pixelShader, name.c_str());
             return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX11);
             break;
         }
@@ -427,7 +431,7 @@ namespace gfx {
         return state->inputLayout.Get();
     }
 
-    TextureId DX11Device::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data) {
+    TextureId DX11Device::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -452,6 +456,7 @@ namespace gfx {
         ComPtr<ID3D11Texture2D> texture;
 
         DX11_CHECK_RET0(m_dev->CreateTexture2D(&tdesc, data ? &srd : NULL, &texture));
+        D3D_SET_OBJECT_NAME_A(texture, debugName.c_str());
 
         D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
         viewDesc.Format = tdesc.Format;
@@ -465,6 +470,8 @@ namespace gfx {
             texture.Reset();
             return 0;
         }
+        std::string tmp = debugName + "SRV";
+        D3D_SET_OBJECT_NAME_A(shaderResourceView, tmp.c_str());
 
         TextureDX11 textureDX11 = {};
         textureDX11.texture.Swap(texture);
@@ -476,7 +483,7 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
-    TextureId DX11Device::CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
+    TextureId DX11Device::CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName) {
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -493,6 +500,7 @@ namespace gfx {
         ComPtr<ID3D11Texture2D> texture;
 
         DX11_CHECK_RET0(m_dev->CreateTexture2D(&tdesc, NULL, &texture));
+        D3D_SET_OBJECT_NAME_A(texture, debugName.c_str());
 
         D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
         viewDesc.Format = tdesc.Format;
@@ -508,6 +516,8 @@ namespace gfx {
             texture.Reset();
             return 0;
         }
+        std::string tmp = debugName + "SRV";
+        D3D_SET_OBJECT_NAME_A(shaderResourceView, tmp.c_str());
 
         TextureDX11 textureDX11 = {};
         textureDX11.texture.Swap(texture);
@@ -519,7 +529,7 @@ namespace gfx {
         return GenerateHandleEmplaceConstRef<ResourceType::Texture>(m_textures, textureDX11);
     }
 
-    TextureId DX11Device::CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data) {
+    TextureId DX11Device::CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) {
         D3D11_TEXTURE2D_DESC tdesc = { 0 };
         tdesc.Width = width;
         tdesc.Height = height;
@@ -547,6 +557,7 @@ namespace gfx {
         ComPtr<ID3D11Texture2D> texture;
 
         DX11_CHECK_RET0(m_dev->CreateTexture2D(&tdesc, data ? &srd[0] : NULL, &texture));
+        D3D_SET_OBJECT_NAME_A(texture, debugName.c_str());
 
         D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
         viewDesc.Format = tdesc.Format;
@@ -560,6 +571,9 @@ namespace gfx {
             texture.Reset();
             return 0;
         }
+
+        std::string tmp = debugName + "SRV";
+        D3D_SET_OBJECT_NAME_A(shaderResourceView, tmp.c_str());
 
         TextureDX11 textureDX11 = {};
         textureDX11.texture.Swap(texture);

@@ -54,7 +54,7 @@ void TerrainElevationLayerRenderer::Submit(RenderQueue* renderQueue, const Frame
         };
 
         if (tile->perTileConstants == nullptr) {
-            tile->perTileConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(TileConstants));
+            tile->perTileConstants = services()->constantBufferManager()->GetConstantBuffer(sizeof(TileConstants), "perTile");
         }
 
         TileConstants* constants  = tile->perTileConstants->Map<TileConstants>();

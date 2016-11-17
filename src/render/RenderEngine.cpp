@@ -56,7 +56,7 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _constantBufferManager = new ConstantBufferManager(_device);
     _materialCache         = new MaterialCache(_device, assetDirPath);
 
-    viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants));
+    viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
     cmdbuf              = _device->CreateCommandBuffer();
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);

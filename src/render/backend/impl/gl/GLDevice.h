@@ -47,9 +47,9 @@ public:
     void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
     PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-    TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
-    TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
-    TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data);
+    TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "");
+    TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "");
+    TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "");
     VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& desc);
     void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData);
     void DestroyResource(ResourceId resourceId);

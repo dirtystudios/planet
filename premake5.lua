@@ -124,6 +124,7 @@ project "planet"
             "d3d11",
             "d3dcompiler",
             "DXGI",
+			"dxguid",
             "glew32s"
         }
 

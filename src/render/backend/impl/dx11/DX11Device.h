@@ -121,11 +121,11 @@ namespace gfx {
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-        TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
+        TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName);
         TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height,
-            uint32_t depth);
+            uint32_t depth, const std::string& debugName);
 
-        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data);
+        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName);
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
         CommandBuffer* CreateCommandBuffer();
@@ -145,7 +145,7 @@ namespace gfx {
 
         ID3D11InputLayout* CreateInputLayout(InputLayoutDX11* state, ShaderId shaderId);
 
-        ShaderId CreateShader(ShaderType type, const std::string& source);
+        ShaderId CreateShader(ShaderType type, const std::string& source, const std::string& name);
 
         void SetPipelineState(PipelineStateDX11* state);
         void Execute(CommandBuffer* cmdBuffer);

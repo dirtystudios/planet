@@ -21,9 +21,10 @@ struct FrameVertex {
 static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 48;
 
 void UIRenderer::OnInit() {
-    _viewData            = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
-    _viewData3D          = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants));
-    gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize);
+    _viewData            = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants), "ui2DViewConstants");
+    _viewData3D          = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants), "ui3DViewConstants");
+    gfx::BufferDesc desc = 
+        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize, "uiVB");
     _vertexBuffer        = device()->AllocateBuffer(desc);
     _bufferOffset        = 0;
     _bufferSize          = kDefaultVertexBufferSize;
@@ -122,7 +123,7 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     device()->UnmapMemory(_vertexBuffer);
     _bufferOffset += verticesSize;
 
-    uiRenderObj->_frameData = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIFrameConstants));
+    uiRenderObj->_frameData = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIFrameConstants), "uiFrameConstants");
 
     gfx::StateGroupEncoder encoder;
     if (uiRenderObj->_usePerspective)

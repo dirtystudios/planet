@@ -131,7 +131,7 @@ void TextRenderer::OnInit() {
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
-    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, kAtlasWidth, kAtlasHeight, buffer);
+    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
     assert(_glyphAtlas || "Failed to create glyph atlas");
 
     delete[] buffer;
@@ -140,17 +140,19 @@ void TextRenderer::OnInit() {
 
     _vertexBufferSize    = kVertexBufferSize;
     _vertexBufferOffset  = 0;
-    gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, _vertexBufferSize);
+    gfx::BufferDesc desc = 
+        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, _vertexBufferSize, "textVB");
     _vertexBuffer        = device()->AllocateBuffer(desc);
     assert(_vertexBuffer);
 
-    gfx::BufferDesc cDesc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kCursorBufferSize);
+    gfx::BufferDesc cDesc = 
+        gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kCursorBufferSize, "textCursorVB");
     _cursorBuffer         = device()->AllocateBuffer(desc);
     assert(_cursorBuffer);
 
-    _viewData = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
+    _viewData = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants), "text2DView");
     assert(_viewData);
-    _viewData3D = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants));
+    _viewData3D = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextViewConstants), "text3DView");
     assert(_viewData3D);
 
     gfx::BlendState bs;
@@ -211,7 +213,7 @@ TextRenderer::~TextRenderer() {}
 void TextRenderer::Unregister(TextRenderObj* renderObj) { assert(false); }
 
 void TextRenderer::Register(TextRenderObj* textRenderObj) {
-    textRenderObj->_constantBuffer = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextConstants));
+    textRenderObj->_constantBuffer = services()->constantBufferManager()->GetConstantBuffer(sizeof(TextConstants), "textConstants");
     textRenderObj->_cursorPos      = 0;
 
     gfx::StateGroupEncoder encoder;
