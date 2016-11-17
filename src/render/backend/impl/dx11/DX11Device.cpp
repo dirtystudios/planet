@@ -713,7 +713,8 @@ namespace gfx {
                 m_context->DrawPrimitive(pipelineState->topology, drawCall.startOffset, drawCall.primitiveCount, true, drawCall.baseVertexOffset);
                 break;
             }
-            }                         
+            }
+            m_numDrawCalls++;
         }
     }
 
@@ -743,13 +744,14 @@ namespace gfx {
 
     void DX11Device::RenderFrame() {
         m_context->Clear(0.f, 0.f, 0.f, 0.f);
+        m_numDrawCalls = 0;
         for (uint32_t idx = 0; idx < m_submittedBuffers.size(); ++idx) {
             CommandBuffer* cmdBuffer = m_submittedBuffers[idx];
             Execute(cmdBuffer);
             cmdBuffer->Reset();
         }
 
-        DX11_CHECK(m_swapchain->Present(1, 0));
+        DX11_CHECK(m_swapchain->Present(0, 0));
 
         m_submittedBuffers.clear();
     }

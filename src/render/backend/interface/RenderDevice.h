@@ -66,5 +66,6 @@ public:
     virtual void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) = 0;
 
     virtual void RenderFrame() = 0;
+    virtual uint32_t DrawCallCount() = 0;
 };
 }

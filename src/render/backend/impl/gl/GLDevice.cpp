@@ -596,6 +596,7 @@ void GLDevice::Execute(CommandBuffer* cmdBuffer) {
                 break;
             }
         }
+        ++_drawCallCount;
     }
 }
 
@@ -612,7 +613,7 @@ void GLDevice::UnmapMemory(BufferId bufferId) {
 void GLDevice::RenderFrame() {
     //LOG_D("%s", "RenderFrame");
     GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
+    _drawCallCount = 0;
     for (uint32_t idx = 0; idx < _submittedBuffers.size(); ++idx) {
         CommandBuffer* cmdBuffer = _submittedBuffers[idx];
         Execute(cmdBuffer);

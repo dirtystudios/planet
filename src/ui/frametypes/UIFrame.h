@@ -16,7 +16,8 @@ enum class FrameType : uint32_t {
     EDITBOX,
     LABEL,
     TEXTLIST,
-    COUNT,
+    // Debug
+    KEYVALUE,
 };
 
 // positions are rendered based on this for now until i get relative positioning n stuff

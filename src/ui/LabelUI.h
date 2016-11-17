@@ -31,8 +31,8 @@ namespace ui {
             // height and width is ignored for text for now
             labelDesc.height = 0;
             labelDesc.width = 0;
-            labelDesc.x = 5.f;
-            labelDesc.y = 5.f;
+            labelDesc.x = 1.f;
+            labelDesc.y = 1.f;
             labelDesc.font.textSize = 12.f;
             labelDesc.show = true;
             labelDesc.acceptMouse = false;

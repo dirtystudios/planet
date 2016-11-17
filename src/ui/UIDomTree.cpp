@@ -2,6 +2,7 @@
 
 #include "EditBox.h"
 #include "TextList.h"
+#include "KeyValueList.h"
 #include "Label.h"
 #include "Rectangle.h"
 
@@ -72,6 +73,19 @@ namespace ui {
             Label*    label = dynamic_cast<Label*>(frame);
             node->textROs.push_back(std::make_unique<TextRenderObj>(label->GetText(), scaled.x, scaled.y, scaled.z, label->GetColor(), !m_worldFrame));
             m_textRenderer->Register(node->textROs[0].get());
+            break;
+        }
+
+        case FrameType::KEYVALUE: {
+            KeyValueList* kvl = dynamic_cast<KeyValueList*>(frame);
+            int maxLines = kvl->GetMaxLines();
+            for (int x = 0; x < maxLines; ++x) {
+                node->textROs.push_back(std::make_unique<TextRenderObj>("", scaled.x, scaled.y, scaled.z, glm::vec3(1.f, 1.f, 1.f), !m_worldFrame));
+                m_textRenderer->Register(node->textROs.back().get());
+            }
+            node->frameRO.reset(
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
+            m_uiRenderer->Register(node->frameRO.get());
             break;
         }
         default:
@@ -175,8 +189,8 @@ namespace ui {
             float y = newPos.y;
             for (auto& textRO : node->textROs) {
                 if (textRO.get()) {
-                    textRO.get()->x(newPos.x);
-                    textRO.get()->y(y);
+                    textRO.get()->x(newPos.x + 5.f);
+                    textRO.get()->y(y + 5.f);
                     textRO.get()->z(newPos.z);
                     // todo, get lineheight....
                     y += 12.f;
@@ -213,6 +227,20 @@ namespace ui {
                         ++x;
                     }
                 }
+                else if (node->frame->GetFrameType() == FrameType::KEYVALUE) {
+                    KeyValueList* kvl = (KeyValueList*)node->frame;
+                    int x = 0;
+                    assert(kvl->GetMaxLines() == node->textROs.size());
+                    for (auto text : kvl->GetList()) {
+                        if (node->textROs[x].get()) {
+                            node->textROs[x].get()->text(text);
+                        }
+                        else
+                            assert(false);
+                        ++x;
+                    }
+                }
+
                 else {
                     DomTreeLogE("Unknown frametype that has a textRO");
                     assert(false);

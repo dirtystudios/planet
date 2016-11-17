@@ -29,6 +29,7 @@ namespace gfx {
 
         uint32_t m_winWidth, m_winHeight;
         bool m_usePrebuiltShaders;
+        uint32_t m_numDrawCalls{0};
 #ifdef DX11_3_API
         ComPtr<ID3D11Device3> m_dev;
         ComPtr<IDXGISwapChain1> m_swapchain;
@@ -110,6 +111,7 @@ namespace gfx {
         ~DX11Device();
 
         RenderDeviceApi GetDeviceApi() { return RenderDeviceApi::D3D11; };
+        uint32_t DrawCallCount() { return m_numDrawCalls; }
 
         int32_t InitializeDevice(const DeviceInitialization& deviceInit);
         void ResizeWindow(uint32_t width, uint32_t height);

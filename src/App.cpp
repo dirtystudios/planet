@@ -11,6 +11,7 @@
 #include "ChunkedTerrain.h"
 #include "Config.h"
 #include "ConsoleUI.h"
+#include "DebugUI.h"
 #include "InputManager.h"
 #include "LabelUI.h"
 #include "PlayerController.h"
@@ -34,6 +35,7 @@ RenderView*                    playerView;
 Viewport*                      playerViewport;
 ui::UIManager*                 uiManager;
 ui::ConsoleUI*                 consoleUI;
+ui::DebugUI*                   debugUI;
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -135,6 +137,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);
+    debugUI = new ui::DebugUI(ui);
 
     // Show/Hide sample text test with this call
     ui::LabelUI::AttachLabel(ui, "hey look im a label");
@@ -207,6 +210,8 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     ++total_frame_count;
 
     if (taccumulate > 1.0) {
+        debugUI->AddKeyValue("FPS", std::to_string(frame_count));
+        debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
         std::stringstream ss;
         ss << "gfx Device: " << renderDevice->DeviceConfig.DeviceAbbreviation;
         ss << " | FPS: " << frame_count << " | Frame: " << total_frame_count;
