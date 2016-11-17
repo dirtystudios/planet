@@ -22,6 +22,7 @@ workspace "planet"
     filter "configurations:release"
         runtime "Release"
         optimize "On"
+		symbols "On"
         defines { "NDEBUG" }
 
     filter "system:windows"

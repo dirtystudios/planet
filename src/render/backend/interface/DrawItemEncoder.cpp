@@ -11,9 +11,9 @@ namespace gfx {
 PipelineStateId GetPipelineState(gfx::RenderDevice* device, StateGroupDecoder& decoder) {
     gfx::PipelineStateDesc desc;
 
-    assert(decoder.ReadPixelShader(&desc.pixelShader));
-    assert(decoder.ReadVertexShader(&desc.vertexShader));
-    assert(decoder.ReadVertexLayout(&desc.vertexLayout));
+    dg_assert_nm(decoder.ReadPixelShader(&desc.pixelShader));
+    dg_assert_nm(decoder.ReadVertexShader(&desc.vertexShader));
+    dg_assert_nm(decoder.ReadVertexLayout(&desc.vertexLayout));
 
     // these can be defaulted so no assert
     decoder.ReadBlendState(&desc.blendState);
@@ -51,12 +51,12 @@ const DrawItem* DrawItemEncoder::Encode(gfx::RenderDevice* device, const DrawCal
     BufferId indexBuffer          = 0;
     uint8_t streamCount           = 1;
     VertexStream stream;
-    assert(decoder.ReadVertexBuffer(&stream.vertexBuffer));
+    dg_assert_nm(decoder.ReadVertexBuffer(&stream.vertexBuffer));
     stream.offset = 0; // unused until we try to Read more complicated
     stream.stride = 0; // unused until we try to Read more complicated
 
     if (drawCall.type == DrawCall::Type::Indexed) {
-        assert(decoder.ReadIndexBuffer(&indexBuffer));
+        dg_assert_nm(decoder.ReadIndexBuffer(&indexBuffer));
     }
 
     size_t drawItemSize = sizeof(uint8_t) * 2 + bindingCount * sizeof(Binding) + sizeof(DrawCall) +
@@ -74,7 +74,7 @@ const DrawItem* DrawItemEncoder::Encode(gfx::RenderDevice* device, const DrawCal
     writer.Write(&stream, sizeof(VertexStream));
     if (decoder.HasState(StateGroupIndex::Bindings)) {
         int16_t bindingOffset = decoder.GetOffset(StateGroupIndex::Bindings);
-        assert(bindingOffset != -1);
+        dg_assert_nm(bindingOffset != -1);
         writer.Write(stateGroup->data() + bindingOffset, stateGroup->size() - bindingOffset);
     }
 

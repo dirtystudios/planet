@@ -555,12 +555,12 @@ void GLDevice::Execute(CommandBuffer* cmdBuffer) {
 
         assert(streamCount == 1); // > 1 not supported
 
-        assert(decoder.ReadDrawCall(&drawCall));
-        assert(decoder.ReadPipelineState(&psId));
-        assert(decoder.ReadIndexBuffer(&indexBufferId));
-        assert(decoder.ReadVertexStreams(&streamPtr));
+        dg_assert_nm(decoder.ReadDrawCall(&drawCall));
+        dg_assert_nm(decoder.ReadPipelineState(&psId));
+        dg_assert_nm(decoder.ReadIndexBuffer(&indexBufferId));
+        dg_assert_nm(decoder.ReadVertexStreams(&streamPtr));
         if (bindingCount > 0) {
-            assert(decoder.ReadBindings(&bindingPtr));
+            dg_assert_nm(decoder.ReadBindings(&bindingPtr));
         }
 
         GLPipelineState* pipelineState = _resourceManager.GetResource<GLPipelineState>(psId);
