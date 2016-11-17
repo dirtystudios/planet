@@ -19,9 +19,13 @@ protected:
     std::unique_ptr<Pool<T>> _slotPool;
 
 public:
-    TileBuffer(uint32_t tileWidth, uint32_t tileHeight, uint32_t capacity) : _tileWidth(tileWidth), _tileHeight(tileHeight), _slotPool(new Pool<T>(capacity)){};
+    TileBuffer(uint32_t tileWidth, uint32_t tileHeight, uint32_t capacity)
+        : _tileWidth(tileWidth)
+        , _tileHeight(tileHeight)
+        , _slotPool(new Pool<T>(capacity)){};
     virtual ~TileBuffer() {}
 
+    // TODO: instead of handing out the pointer to the slot, should hand out handles to the slot that can then be invalidated on release
     T* getFreeSlot() {
         T* slot = _slotPool->construct();
         dg_assert_nm(slot != nullptr);

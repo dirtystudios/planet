@@ -41,6 +41,8 @@ private:
     NSWindow*                   _window{nil};
     MetalView*                  _view{nil};
 
+    uint64_t _frameDrawCallCount{0};
+
 public:
     MetalDevice();
     ~MetalDevice();

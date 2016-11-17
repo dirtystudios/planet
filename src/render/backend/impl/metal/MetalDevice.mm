@@ -328,6 +328,7 @@ TextureId MetalDevice::CreateTextureCube(PixelFormat format, uint32_t width, uin
 
 void MetalDevice::UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) {
     dg_assert_nm(slice >= 0 && srcData != nullptr);
+    // TOOD: doesnt properly support 24 bit textures
     MetalTexture* texture = _resourceManager.GetResource<MetalTexture>(textureId);
     dg_assert_nm(texture);
 
@@ -366,6 +367,7 @@ void                                                        MetalDevice::RenderF
 #pragma mark - Rawr
 
 void MetalDevice::SubmitToGPU() {
+    _frameDrawCallCount = 0;
     dispatch_semaphore_wait(_inflightSemaphore, DISPATCH_TIME_FOREVER);
     id<MTLCommandBuffer> mtlCmdBuff     = [_queue commandBuffer];
     id<MTLRenderCommandEncoder> encoder = [mtlCmdBuff renderCommandEncoderWithDescriptor:_view.renderPassDescriptor];
@@ -382,6 +384,7 @@ void MetalDevice::SubmitToGPU() {
         BufferId        indexBufferId;
 
         for (const DrawItem* item : *items) {
+            _frameDrawCallCount++;
             DrawItemDecoder decoder(item);
 
             size_t streamCount = decoder.GetStreamCount();
@@ -496,9 +499,7 @@ void MetalDevice::SubmitToGPU() {
     [mtlCmdBuff commit];
 }
 
-uint32_t MetalDevice::DrawCallCount() {
-    return 0;
-}
-    
+uint32_t MetalDevice::DrawCallCount() { return _frameDrawCallCount; }
+
 void MetalDevice::ResizeWindow(uint32_t width, uint32_t height) { [_view shouldResize]; }
 }

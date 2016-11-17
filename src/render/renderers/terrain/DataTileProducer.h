@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <vector>
 #include "TerrainDataTile.h"
 #include "TerrainQuadNode.h"
@@ -12,14 +13,16 @@ public:
 };
 
 class DataTileProducer {
-private:
-    TerrainLayerType _layerType;
+public:
+    const TerrainLayerType layerType;
+    const glm::uvec2       tileResolution;
 
 public:
-    DataTileProducer(TerrainLayerType layerType) : _layerType(layerType) {}
+    DataTileProducer(TerrainLayerType layerType, const glm::uvec2& resolution)
+        : layerType(layerType)
+        , tileResolution(resolution) {}
 
-    TerrainLayerType LayerType() const { return _layerType; }
-
-    virtual TerrainDataTile* GetTile(const TerrainQuadNode& quadNode)            = 0;
-    virtual void Update(const std::vector<const TerrainQuadNode*>& nodesInScene) = 0;
+    virtual TerrainDataTile* GetTile(const TerrainQuadNode& quadNode) = 0;
+    virtual void Update(const std::vector<const TerrainQuadNode*>& nodesInScene, const std::set<TerrainTileKey>& keysLeaving,
+                        const std::set<TerrainTileKey>& keysEntering) = 0;
 };

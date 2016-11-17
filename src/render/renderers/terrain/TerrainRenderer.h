@@ -1,15 +1,17 @@
 #pragma once
 
 #include <memory>
+#include <set>
 #include <vector>
+#include "DataTileProducer.h"
 #include "Renderer.h"
 #include "TerrainLayerRenderer.h"
 #include "TerrainQuadNodeSelector.h"
 #include "TerrainQuadTree.h"
-#include "DataTileProducer.h"
 
 class TerrainElevationLayerRenderer;
 class ElevationDataTileProducer;
+class NormalDataTileProducer;
 
 template <typename Producer, typename Renderer>
 struct Layer {
@@ -19,15 +21,14 @@ struct Layer {
 
 struct Layers {
     Layer<ElevationDataTileProducer, TerrainElevationLayerRenderer> elevation;
-};
-
-class TerrainRenderObj {
-public:
+    Layer<NormalDataTileProducer, TerrainElevationLayerRenderer>    normals;
 };
 
 class TerrainRenderer : public Renderer {
 private:
     Layers _layers;
+
+    std::vector<TerrainQuadTree*> _terrainCache;
 
     std::shared_ptr<TerrainQuadTree> _bottomTree;
     std::shared_ptr<TerrainQuadTree> _topTree;
@@ -38,10 +39,15 @@ private:
 
     std::vector<TerrainQuadTreePtr>                       _terrains;
     std::vector<std::unique_ptr<TerrainQuadNodeSelector>> _selectors;
-    std::vector<DataTileProducer*>                     _tileProducers;
+    std::vector<DataTileProducer*>                        _tileProducers;
     std::vector<TerrainLayerRenderer*>                    _layerRenderers;
 
     std::vector<const TerrainQuadNode*> _nodesInScene;
+
+    std::set<TerrainTileKey> _keysInPrevScene;
+    std::set<TerrainTileKey> _keysInScene;
+    std::set<TerrainTileKey> _keysLeaving;
+    std::set<TerrainTileKey> _keysEntering;
 
 public:
     TerrainRenderer();

@@ -26,14 +26,14 @@ vec4 getColor(uint index) {
         uint(0x00489C), uint(0x6F0062), uint(0x0CBD66), uint(0xEEC3FF), uint(0x456D75), uint(0xB77B68), uint(0x7A87A1), uint(0x788D66), uint(0x885578), uint(0xFAD09F), uint(0xFF8A9A), uint(0xD157A0), uint(0xBEC459), uint(0x456648), uint(0x0086ED), uint(0x886F4C)
     );
 
-    uint mask = ~(((1 << 16) - 1) << 8);
-    float    r    = (colors[index] >> 16 & mask) / 255.f;
-    float    g    = (colors[index] >> 8 & mask) / 255.f;
-    float    b    = (colors[index] & mask) / 255.f;
+    uint  mask = ~(((1 << 16) - 1) << 8);
+    float r    = (colors[index] >> 16 & mask) / 255.f;
+    float g    = (colors[index] >> 8 & mask) / 255.f;
+    float b    = (colors[index] & mask) / 255.f;
     return vec4(r, g, b, 1.f);
 }
 
 void main() {
     float height = texture(_s0_heightmap, vec3(i_tex, b1_heightmapIndex)).x;
-    o_color = (vec4((height + 1.f) / 2.f)) * getColor(b1_lod);
+    o_color      = (vec4((height + 1.f) / 2.f)) * getColor(b1_lod);
 }

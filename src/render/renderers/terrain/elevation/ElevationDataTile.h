@@ -6,14 +6,21 @@
 #include "TerrainDataTile.h"
 #include "TileCache.h"
 
-class ElevationDataTile : public TerrainDataTile {
+class GPUElevationDataTile : public TerrainDataTile {
 public:
-    ElevationDataTile(const TerrainTileKey& key) : TerrainDataTile(key, TerrainLayerType::Heightmap) {}
+    GPUElevationDataTile(const TerrainTileKey& key, const glm::uvec2& res)
+        : TerrainDataTile(key, TerrainLayerType::Heightmap, res) {}
 
-    CPUTileSlot<float>*                      cpuData{nullptr};
     GPUTileSlot<gfx::PixelFormat::R32Float>* gpuData{nullptr};
     MeshGeometry*                            geometry{nullptr};
     ConstantBuffer*                          perTileConstants{nullptr};
     std::unique_ptr<const gfx::StateGroup>   stateGroup;
     gfx::DrawItemPtr                         drawItem;
+};
+
+class CPUElevationDataTile : public TerrainDataTile {
+public:
+    CPUElevationDataTile(const TerrainTileKey& key, const glm::uvec2& res)
+        : TerrainDataTile(key, TerrainLayerType::Heightmap, res) {}
+    CPUTileSlot<float>* cpuData{nullptr};
 };

@@ -33,5 +33,8 @@ void GenerateHeightmapTask::execute() {
             _results.data.push_back(val);
         }
     }
-    _outputQueue->enqueue(_results);
+
+    if (!isCanceled()) {
+        _outputQueue->enqueue(_results);
+    }
 }

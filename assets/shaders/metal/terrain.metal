@@ -24,6 +24,7 @@ struct ViewConstants {
 struct TileConstants {
     float4x4 world;
     uint     heightmapIndex;
+    uint     normalmapIndex;
     uint     heightmapLod;
     uint     lod;
 };
@@ -49,20 +50,25 @@ float4 getColor(uint32_t index) {
 }
 
 vertex VertexOut terrain_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(1)]], constant TileConstants& tile[[buffer(2)]],
-                                texture2d_array<float> heightmap[[texture(0)]], sampler heightmapSampler[[sampler(0)]]) {
+                                texture2d_array<float> heightmap[[texture(0)]], sampler heightmapSampler[[sampler(0)]], texture2d_array<float> normalmap[[texture(1)]],
+                                sampler normalmapSampler[[sampler(1)]]) {
     float  height   = heightmap.sample(heightmapSampler, attributes.texture, tile.heightmapIndex).x * 250.f;
+    float4 normal   = normalmap.sample(normalmapSampler, attributes.texture, tile.normalmapIndex);
     float4 worldPos = tile.world * float4(attributes.position.x, attributes.position.y, height, 1.f);
 
     VertexOut outputValue;
     outputValue.texture = attributes.texture;
-    outputValue.normal  = attributes.normal;
+    outputValue.normal  = normal.xyz;
 
     outputValue.position = view.proj * view.view * worldPos;
     return outputValue;
 }
 
 fragment float4 terrain_frag(VertexOut varyingInput[[stage_in]], constant TileConstants& tile[[buffer(2)]], texture2d_array<float> heightmap[[texture(0)]],
-                             sampler heightmapSampler[[sampler(0)]]) {
-    float height = heightmap.sample(heightmapSampler, varyingInput.texture, tile.heightmapIndex).x;
-    return float4((height + 1.f) / 2.f) * getColor(tile.heightmapLod);
+                             sampler heightmapSampler[[sampler(0)]], texture2d_array<float> normalmap[[texture(1)]], sampler normalmapSampler[[sampler(1)]]) {
+
+    float d = clamp(dot(normalize(float3(1, 1, 1)), varyingInput.normal.xyz), 0.1, 1.0);
+    return float4(d, d, d, 1.f) * 0.8 + getColor(tile.heightmapLod) * 0.2;
+    // return float4(varyingInput.normal.x, varyingInput.normal.y, varyingInput.normal.z, 1.f);
+    //    return float4((height + 1.f) / 2.f) * getColor(tile.heightmapLod);
 };

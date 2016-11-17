@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include "BlockingQueue.h"
+#include "CPUElevationDataTileProducer.h"
 #include "DataTileProducer.h"
 #include "ElevationDataTile.h"
 #include "GPUTileBuffer.h"
@@ -11,7 +12,7 @@
 #include "RenderDevice.h"
 #include "TileCache.h"
 
-class ElevationDataTileProducer : public DataTileProducer, public DataTileSampler<ElevationDataTile> {
+class ElevationDataTileProducer : public DataTileProducer, public DataTileSampler<GPUElevationDataTile> {
 private:
     using HeightmapGPUTileBuffer = GPUTileBuffer<gfx::PixelFormat::R32Float>;
     using HeightmapGPUTileCache  = GPUTileCache<TerrainTileKey, gfx::PixelFormat::R32Float>;
@@ -24,32 +25,26 @@ private:
 private:
     gfx::RenderDevice* _device{nullptr};
 
-    std::unordered_map<TerrainTileKey, TaskPtr> _pendingTasks;
-
-    std::unique_ptr<BlockingQueue<GenerateHeightmapTaskResults>> _generateHeightmapTaskOutput;
-
-    std::map<TerrainTileKey, ElevationDataTile*> _dataTiles;
+    std::map<TerrainTileKey, GPUElevationDataTile*> _dataTiles;
     std::unique_ptr<HeightmapGPUTileBuffer> _gpuTileBuffer;
     std::unique_ptr<HeightmapGPUTileCache>  _gpuTileCache;
-    std::unique_ptr<HeightmapCPUTileBuffer> _cpuTileBuffer;
-    std::unique_ptr<HeightmapCPUTileCache>  _cpuTileCache;
 
-    const glm::uvec2              _tileResolution;
+    CPUElevationDataTileProducer* _dataProducer;
     std::unique_ptr<MeshGeometry> _tileGeometry;
 
 public:
-    ElevationDataTileProducer(gfx::RenderDevice* device, const glm::uvec2& tileResolution);
+    ElevationDataTileProducer(gfx::RenderDevice* device, CPUElevationDataTileProducer* cpuElevationDataTileProducer);
     ~ElevationDataTileProducer();
 
     // DataTileProducer interface
-    virtual ElevationDataTile* GetTile(const TerrainQuadNode& node) final;
-    virtual void Update(const std::vector<const TerrainQuadNode*>& nodesInScene) final;
+    virtual GPUElevationDataTile* GetTile(const TerrainQuadNode& node) final;
+    virtual void Update(const std::vector<const TerrainQuadNode*>& nodesInScene, const std::set<TerrainTileKey>& keysLeaving,
+                        const std::set<TerrainTileKey>& keysEntering) final;
 
     // DataTileSampler interface
-    virtual ElevationDataTile* FindTile(const TerrainTileKey& key) final;
+    virtual GPUElevationDataTile* FindTile(const TerrainTileKey& key) final;
 
 private:
     void GenerateHeightmapRegion(const glm::vec2& regionCenter, const glm::vec2& regionSize, const glm::uvec2& resolution,
                                  std::function<float(float localX, float localY)> heightDelegate, std::vector<float>* data, float* max, float* min);
-    void dumpCachedHeightmapsToDisk();
 };

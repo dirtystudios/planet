@@ -74,7 +74,6 @@ static dm::Rect2Dd localRectForKey(const TerrainTileKey& key, double rootTileSiz
 static std::string asFilename(const TerrainTileKey& key) {
     return "tid_" + std::to_string(key.tid) + "-tx_" + std::to_string(key.tx) + "-ty_" + std::to_string(key.ty) + "-lod_" + std::to_string(key.lod);
 }
-
 static std::string toString(const TerrainTileKey& key) {
     return "TerrainTileKey [tid:" + std::to_string(key.tid) + " tx:" + std::to_string(key.tx) + " ty:" + std::to_string(key.ty) + " lod:" + std::to_string(key.lod) + "]";
 }

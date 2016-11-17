@@ -21,7 +21,7 @@ static void Orthogonalize(glm::vec3* v1, glm::vec3* v2, glm::vec3* v3) {
 }
 
 static std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
-    return os << std::right << std::setw(5) << v.x << ", " << std::right << std::setw(5) << v.y << ", " << std::right << std::setw(5) << v.z;
+    return os << std::right << std::setprecision(3) << v.x << ", " << std::right << std::setprecision(3) << v.y << ", " << std::right << std::setprecision(3) << v.z;
 }
 
 static std::ostream& operator<<(std::ostream& os, const glm::vec4& v) { return os << v.x << ", " << v.y << ", " << v.z << ", " << v.w; }

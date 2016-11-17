@@ -62,7 +62,7 @@ private:
         return view->frustum.IsBoxInFrustum(box);
     }
     bool ShouldSplitNode(const FrameView* view, const TerrainQuadNode* node) {
-        if (node->key.lod >= 5)
+        if (node->key.lod >= 7)
             return false;
         glm::dvec3 world = node->deformedPosition();
         glm::dvec3 eye   = view->eyePos;

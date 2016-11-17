@@ -2,11 +2,13 @@
 
 #include <glm/gtx/transform.hpp>
 #include <queue>
+#include <set>
 #include "DMath.h"
 #include "ElevationDataTileProducer.h"
 #include "Log.h"
 #include "Log.h"
 #include "MeshGeneration.h"
+#include "NormalDataTileProducer.h"
 #include "Spatial.h"
 #include "TerrainDataTile.h"
 #include "TerrainElevationLayerRenderer.h"
@@ -15,6 +17,15 @@
 TerrainRenderer::TerrainRenderer() {}
 
 TerrainRenderer::~TerrainRenderer() {}
+
+std::unique_ptr<CPUElevationDataTileProducer> residualsProducer;
+std::unique_ptr<CPUNormalDataTileProducer>    normalsProducer;
+
+// TODO: Layer abstraction in TerrainRenderer is no good. Think of something better.
+// TODO: Producers have alot of duplicate code. Do something about it
+// TODO: Properly rendering partial tiles. (ex. Scale texure coords). Necessary to fix flickering
+// TODO: producers need to walk tree instead of jumping straight to tile so that we have high lod fallback
+// TODO: selection can select too many tiles, raping caches
 
 void TerrainRenderer::OnInit() {
     float    radius     = 10000;
@@ -63,11 +74,21 @@ void TerrainRenderer::OnInit() {
     //    _rightTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * rightTransform.matrix());
     //    _selectors.emplace_back(new TerrainQuadNodeSelector(_rightTree));
 
-    _layers.elevation.producer.reset(new ElevationDataTileProducer(device(), {resolution, resolution}));
-    _layers.elevation.renderer.reset(new TerrainElevationLayerRenderer(_layers.elevation.producer.get()));
+    residualsProducer.reset(new CPUElevationDataTileProducer({resolution, resolution}));
+    normalsProducer.reset(new CPUNormalDataTileProducer(residualsProducer.get()));
 
+    _layers.elevation.producer.reset(new ElevationDataTileProducer(device(), residualsProducer.get()));
+    _layers.normals.producer.reset(new NormalDataTileProducer(device(), normalsProducer.get()));
+    _layers.elevation.renderer.reset(new TerrainElevationLayerRenderer(_layers.elevation.producer.get(), _layers.normals.producer.get()));
+
+    _tileProducers.push_back(residualsProducer.get());
+    _tileProducers.push_back(normalsProducer.get());
     _tileProducers.push_back(_layers.elevation.producer.get());
+    _tileProducers.push_back(_layers.normals.producer.get());
     _layerRenderers.push_back(_layers.elevation.renderer.get());
+
+    _terrainCache.push_back(_topTree.get());
+    dg_assert_nm(_topTree->terrainId() == _terrainCache.size() - 1);
 
     for (TerrainLayerRenderer* layerRenderer : _layerRenderers) {
         layerRenderer->Init(device(), services());
@@ -77,14 +98,20 @@ void TerrainRenderer::OnInit() {
 void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     _nodesInScene.clear();
 
-    //    _bottomTree->transform() = glm::rotate(_bottomTree->transform(), 0.01f, glm::vec3(0, 0, 1));
-    //        _topTree->transform() = glm::rotate(_topTree->transform(), 0.01f, glm::vec3(1, 0, 0));
-
     for (std::unique_ptr<TerrainQuadNodeSelector>& selector : _selectors) {
         selector->SelectQuadNodes(view, &_nodesInScene);
     }
 
-    LOG_D("selected: %d", _nodesInScene.size());
+    _keysEntering.clear();
+    _keysLeaving.clear();
+    _keysInPrevScene = std::move(_keysInScene);
+
+    for (const TerrainQuadNode* quad : _nodesInScene) {
+        _keysInScene.insert(quad->key);
+    }
+
+    std::set_difference(begin(_keysInPrevScene), end(_keysInPrevScene), begin(_keysInScene), end(_keysInScene), std::inserter(_keysLeaving, begin(_keysLeaving)));
+    std::set_difference(begin(_keysInScene), end(_keysInScene), begin(_keysInPrevScene), end(_keysInPrevScene), std::inserter(_keysEntering, begin(_keysEntering)));
 
     for (const TerrainQuadNode* quad : _nodesInScene) {
         dm::Rect3Dd worldRect = quad->worldRect();
@@ -92,7 +119,7 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     }
 
     for (DataTileProducer* producer : _tileProducers) {
-        producer->Update(_nodesInScene);
+        producer->Update(_nodesInScene, _keysLeaving, _keysEntering);
     }
 
     for (TerrainLayerRenderer* layer : _layerRenderers) {

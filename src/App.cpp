@@ -172,7 +172,7 @@ void App::OnStart() {
     SetupInputBindings();
 
     // cam.MoveTo(-2826, 1620, 1600);
-    cam.MoveTo(0, 0, 8000);
+    cam.MoveTo(0, 0, 2000);
     cam.LookAt(0, 0, 0);
 
     SkyboxRenderObj* skybox = CreateSkybox();
@@ -212,6 +212,10 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     if (taccumulate > 1.0) {
         debugUI->AddKeyValue("FPS", std::to_string(frame_count));
         debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
+        debugUI->AddKeyValue("U", ToString(cam.up));
+        debugUI->AddKeyValue("L", ToString(cam.look));
+        debugUI->AddKeyValue("R", ToString(cam.right));
+
         std::stringstream ss;
         ss << "gfx Device: " << renderDevice->DeviceConfig.DeviceAbbreviation;
         ss << " | FPS: " << frame_count << " | Frame: " << total_frame_count;

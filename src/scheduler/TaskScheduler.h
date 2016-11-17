@@ -15,9 +15,11 @@ private:
     void workerThreadFunc() {
         while (!_interruptWorkers) {
             TaskPtr task;
-            if (_queue->dequeue(&task) == false) continue;
+            if (_queue->dequeue(&task) == false)
+                continue;
             dg_assert_nm(task != nullptr);
-            task->execute();
+
+            task->run();
         }
     }
 

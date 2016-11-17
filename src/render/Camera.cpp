@@ -16,24 +16,18 @@ void Camera::MoveTo(glm::vec3 new_pos) { pos = new_pos; }
 
 void Camera::Translate(float x, float y, float z) { Translate(glm::vec3(x, y, z)); }
 
-void Camera::MoveTo(float x, float y, float z) {
-    MoveTo(glm::vec3(x, y, z));
-}
+void Camera::MoveTo(float x, float y, float z) { MoveTo(glm::vec3(x, y, z)); }
 
 void Camera::Yaw(float degrees) {
-    look = glm::normalize(glm::rotate(look, degrees, Y_AXIS));
-    right = glm::normalize(glm::rotate(right, degrees, Y_AXIS));    
+    look  = glm::normalize(glm::rotate(look, degrees, up));
+    right = glm::normalize(glm::rotate(right, degrees, up));
 }
 void Camera::Pitch(float degrees) {
     look = glm::normalize(glm::rotate(look, degrees, right));
-    up = glm::normalize(glm::rotate(up, degrees, right));
+    up   = glm::normalize(glm::rotate(up, degrees, right));
 }
-void Camera::LookAt(glm::vec3 target) {
-    look = glm::normalize(target - pos);
-}
-void Camera::LookAt(float x, float y, float z) {
-    LookAt(glm::vec3(x, y, z));
-}
+void Camera::LookAt(glm::vec3 target) { look = glm::normalize(target - pos); }
+void Camera::LookAt(float x, float y, float z) { LookAt(glm::vec3(x, y, z)); }
 
 glm::mat4 Camera::BuildView() {
     Orthogonalize(&look, &up, &right);

@@ -34,6 +34,8 @@ public:
     dm::Rect3Dd sampleRectForKey(const TerrainTileKey& key) const;
     dm::Rect3Dd localRectForKey(const TerrainTileKey& key) const;
     dm::Rect3Dd worldRectForKey(const TerrainTileKey& key) const;
+
+    uint32_t terrainId() const { return _terrainId; };
 };
 
 using TerrainQuadTreePtr = std::shared_ptr<TerrainQuadTree>;
