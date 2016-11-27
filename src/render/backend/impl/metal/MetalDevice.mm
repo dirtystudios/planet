@@ -107,6 +107,7 @@ BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initial
     buffer->desc        = desc;
     buffer->desc.size   = bufferSize;
     buffer->mtlBuffer   = mtlBuffer;
+    buffer->mtlBuffer.label = [NSString stringWithUTF8String: desc.debugName.c_str()];
 
     return _resourceManager.AddResource(buffer);
 }
@@ -278,13 +279,15 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
     }
     texture->bytesPerRow   = bytesPerRow;
     texture->bytesPerImage = bytesPerImage;
+    texture->mtlTexture.label = [NSString stringWithUTF8String:params.debugName.c_str()];
 
     [desc release];
     return _resourceManager.AddResource(texture);
 }
 
-TextureId MetalDevice::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* srcData) {
+TextureId MetalDevice::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* srcData, const std::string& debugName) {
     CreateTextureParams params;
+    params.debugName   = debugName;
     params.format      = format;
     params.width       = width;
     params.height      = height;
@@ -296,8 +299,9 @@ TextureId MetalDevice::CreateTexture2D(PixelFormat format, uint32_t width, uint3
 
     return CreateTexture(params);
 }
-TextureId MetalDevice::CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth) {
+TextureId MetalDevice::CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName) {
     CreateTextureParams params;
+    params.debugName   = debugName;
     params.format      = format;
     params.width       = width;
     params.height      = height;
@@ -307,8 +311,9 @@ TextureId MetalDevice::CreateTextureArray(PixelFormat format, uint32_t levels, u
 
     return CreateTexture(params);
 }
-TextureId MetalDevice::CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data) {
+TextureId MetalDevice::CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) {
     CreateTextureParams params;
+    params.debugName   = debugName;
     params.format      = format;
     params.width       = width;
     params.height      = height;
@@ -491,5 +496,9 @@ void MetalDevice::SubmitToGPU() {
     [mtlCmdBuff commit];
 }
 
+uint32_t MetalDevice::DrawCallCount() {
+    return 0;
+}
+    
 void MetalDevice::ResizeWindow(uint32_t width, uint32_t height) { [_view shouldResize]; }
 }

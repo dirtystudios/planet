@@ -16,7 +16,13 @@ namespace ui {
 
         void InsertKey(std::string key, std::string value) {
             dg_assert_nm(keyValues.size() <= GetMaxLines());
-            auto it = keyValues.insert_or_assign(key, value);
+            auto it = keyValues.find(key);
+            if(it == end(keyValues)) {
+                keyValues.emplace(key, value);
+            } else {
+                keyValues[key] = value;
+            }
+            
         }
 
         std::vector<std::string> GetList() {

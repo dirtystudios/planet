@@ -15,6 +15,7 @@
 
 namespace gfx {
 struct CreateTextureParams {
+    std::string     debugName {""};
     PixelFormat     format{PixelFormat::R8Unorm};
     uint32_t        width{0};
     uint32_t        height{0};
@@ -57,9 +58,9 @@ public:
     uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
     void RenderFrame();
     void ResizeWindow(uint32_t width, uint32_t height);
-    TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
-    TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth);
-    TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data);
+    TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "");
+    TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "");
+    TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "");
     void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData);
     void PrintDisplayAdapterInfo() {}
     void DestroyResource(ResourceId resourceId) {}
@@ -67,6 +68,7 @@ public:
 
     // RenderDelegate Interface
     void SubmitToGPU();
+    uint32_t DrawCallCount();
 
 private:
     TextureId CreateTexture(const CreateTextureParams& params);
