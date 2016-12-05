@@ -7,11 +7,16 @@ cbuffer viewConstants : register(b0) {
 cbuffer cbPerObject : register(b1) {
     float4x4 world;
     uint heightmapIndex;
+	uint normalmapIndex;
+	uint heightmapLod;
     uint lod;
 }
 
 Texture2DArray<float> heightmap : register(t0);
 SamplerState heightmapSampler : register(s0);
+
+Texture2DArray<float> normalmap : register(t1);
+SamplerState normalmapSampler : register (s1);
 
 struct VS_INPUT {
     float3 vPos : POSITION;
@@ -46,17 +51,18 @@ float4 getColor(uint index) {
 
 VS_OUTPUT VSMain(VS_INPUT input) {
 	float  height = heightmap.SampleLevel(heightmapSampler, float3(input.vTex, heightmapIndex), 0) * 250.f;
+	float4 normal = normalmap.SampleLevel(normalmapSampler, float3(input.vTex, normalmapIndex), 0);
 	float4 worldPos = mul(world, float4(input.vPos.x, input.vPos.y, height, 1.f));
 
     VS_OUTPUT output;
     output.vTex = input.vTex;
-    output.vNorm = input.vNorm;
+    output.vNorm = normal.xyz;
     output.vPosition = mul(mul(proj, view), worldPos);
 
     return output;
 }
 
 float4 PSMain(VS_OUTPUT input) : SV_TARGET {
-    float height = heightmap.Sample(heightmapSampler, float3(input.vTex, heightmapIndex));
-    return ((float4)((height + 1.f) / 2.f));// * getColor(lod);
+	float d = clamp(dot(normalize(float3(1, 1, 1)), input.vNorm), 0.1, 1.0);
+	return float4(d, d, d, 1.f) * 0.8 + getColor(heightmapLod) * 0.2;
 }
