@@ -28,7 +28,7 @@ std::unique_ptr<CPUNormalDataTileProducer>    normalsProducer;
 // TODO: selection can select too many tiles, raping caches
 
 void TerrainRenderer::OnInit() {
-    float    radius     = 10000;
+    float    radius     = 50000;
     uint32_t resolution = 128;
 
     std::shared_ptr<TerrainDeformation> deformation = std::make_shared<NoDeformation>();
@@ -113,9 +113,35 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     std::set_difference(begin(_keysInPrevScene), end(_keysInPrevScene), begin(_keysInScene), end(_keysInScene), std::inserter(_keysLeaving, begin(_keysLeaving)));
     std::set_difference(begin(_keysInScene), end(_keysInScene), begin(_keysInPrevScene), end(_keysInPrevScene), std::inserter(_keysEntering, begin(_keysEntering)));
 
+    // draw nodes in 3D
     for (const TerrainQuadNode* quad : _nodesInScene) {
         dm::Rect3Dd worldRect = quad->worldRect();
         services()->debugDraw()->AddRect3D(worldRect, dutil::getColor(quad->key.lod), false);
+    }
+
+    // draw selected nodes on 2D ui element
+    if (_nodesInScene.size() > 0) {
+        dm::Rect3Dd root  = _nodesInScene[0]->terrain->localRectForKey({_nodesInScene[0]->key.tid, 0, 0, 0});
+        float terrainSize = root.width();
+        float xsize       = 250;
+        float ysize       = 250.f;
+        glm::vec3 bgColor = {0.85, 0.85, 0.85};
+        float border      = 1.f;
+        float xloc        = view->viewport.topLeftXY[0] + xsize / 2.f;
+        float yloc        = view->viewport.height - view->viewport.topLeftXY[1] - ysize / 2.f; // viewport param isnt actually top left
+
+        glm::vec2 bl = {xloc + (float)root.bl().x / terrainSize * xsize, yloc + (float)root.bl().y / terrainSize * ysize};
+        glm::vec2 tr = {xloc + (float)root.tr().x / terrainSize * xsize, yloc + (float)root.tr().y / terrainSize * ysize};
+        dm::Rect2Df screenRect(bl, tr);
+        services()->debugDraw()->AddRect2D(screenRect, bgColor, true);
+
+        for (const TerrainQuadNode* quad : _nodesInScene) {
+            glm::vec2 bl = {xloc + (float)quad->localRect.bl().x / terrainSize * xsize, yloc + (float)quad->localRect.bl().y / terrainSize * ysize};
+            glm::vec2 tr = {xloc + (float)quad->localRect.tr().x / terrainSize * xsize, yloc + (float)quad->localRect.tr().y / terrainSize * ysize};
+            dm::Rect2Df screenRect(bl + border / 2.f, tr - border / 2.f);
+
+            services()->debugDraw()->AddRect2D(screenRect, dutil::getColor(quad->key.lod), true);
+        }
     }
 
     for (DataTileProducer* producer : _tileProducers) {

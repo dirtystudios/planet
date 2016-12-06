@@ -21,7 +21,7 @@ void GenerateHeightmapTask::execute() {
         for (uint32_t j = 0; j < _resolution.x; ++j) {
             double     t2     = dx * j / _region.width();
             glm::dvec3 sample = dm::lerp(rowStart, rowEnd, t2);
-            sample *= 0.01f;
+            sample *= 0.005f;
             double val = _noise.GetValue(sample.x, sample.y, sample.z);
 
             if (val > _results.max) {
