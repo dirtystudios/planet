@@ -102,8 +102,8 @@ float sys::GetTime() {
 }
 
 void sys::ShowCursor(bool showCursor) {
-    if (SDL_ShowCursor(showCursor ? SDL_ENABLE : SDL_DISABLE) < 0) {
-        LOG_E("SDL_ShowCursor failed setting %d. Error: %s", showCursor, SDL_GetError());
+    if (SDL_SetRelativeMouseMode(showCursor ? SDL_FALSE : SDL_TRUE) < 0) {
+        LOG_E("SDL_SetRelativeMouseMode failed setting %d. Error: %s", showCursor, SDL_GetError());
     }
 }
 
