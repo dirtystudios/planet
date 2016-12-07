@@ -22,6 +22,12 @@ std::string AppendPathProcessDir(const std::string& path);
 
 std::string GetParentDir(const std::string& fpath);
 
+// replace all "\\" with "/"
+std::string SanitizeFilePath(const std::string& fpath);
+
+// Returns fullpath of the containing directory for a file, should probably sanitize path first
+std::string DirName(const std::string& s);
+
 // -------------------------
 // Implementation specific
 // ------------------------

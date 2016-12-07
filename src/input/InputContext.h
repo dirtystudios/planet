@@ -6,8 +6,8 @@
 
 namespace input {
     struct InputContextCallbackArgs {
-        float value; // Value of key press
-        bool fromController; // true if came from controller
+        float value{ 0.f }; // Value of key press
+        bool fromController{ false }; // true if came from controller
         InputContextCallbackArgs(float val, bool fromCont)
             : value(val), fromController(fromCont) {};
     };

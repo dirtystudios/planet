@@ -4,6 +4,7 @@
 #include <cassert>
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 namespace fs {
     bool ReadFileContents(const std::string& fpath, std::string* output) {
@@ -34,4 +35,18 @@ namespace fs {
         return fpath.substr(0, pos);
     }
 
+    std::string fs::SanitizeFilePath(const std::string& fpath) {
+        const static std::regex kMatch("\\\\+");
+        const static std::string kReplace = "/";
+        if (fpath == "") return fpath;
+
+        return std::regex_replace(fpath, kMatch, kReplace);
+    }
+
+    std::string DirName(const std::string& s) {
+        size_t pos = s.find_last_of("\\/");
+        return (std::string::npos == pos)
+            ? ""
+            : s.substr(0, pos);
+    }
 }
