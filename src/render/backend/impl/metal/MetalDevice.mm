@@ -8,8 +8,9 @@
 #import "MetalView.h"
 #include "TexConvert.h"
 
-static const std::string kMetalGfxChannel = "metal";
-#define GFXLog(fmt, ...) LOG(Log::Debug, kMetalGfxChannel, category, fmt, ...)
+static const std::string kMetalGfxChannel = "MetalDevice";
+#define GFXLog_D(fmt, ...) LOG(Log::Level::Debug, kMetalGfxChannel, fmt, ##__VA_ARGS__)
+#define GFXLog_W(fmt, ...) LOG(Log::Level::Warn, kMetalGfxChannel, fmt, ##__VA_ARGS__)
 #import "MetalView.h"
 
 namespace gfx {
@@ -80,7 +81,9 @@ BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initial
     id<MTLBuffer>      mtlBuffer = nullptr;
     MTLResourceOptions options   = 0;
 
-    dg_assert(!desc.isDynamic, "not implemented");
+    if(desc.isDynamic) {
+        GFXLog_W("Dynamic buffers are unsupported");
+    }
 
     // TODO right now we just treat transient buffers as persistent.
     // just check exact configurations for now

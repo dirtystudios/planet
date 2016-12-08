@@ -35,7 +35,7 @@ namespace fs {
         return fpath.substr(0, pos);
     }
 
-    std::string fs::SanitizeFilePath(const std::string& fpath) {
+    std::string SanitizeFilePath(const std::string& fpath) {
         const static std::regex kMatch("\\\\+");
         const static std::string kReplace = "/";
         if (fpath == "") return fpath;

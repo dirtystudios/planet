@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include "VertexLayoutDesc.h"
+#include "Log.h"
 
 enum class VertexComponent : uint8_t { Position = 0, Normal, Texcoord };
 
@@ -41,6 +42,12 @@ public:
             vertexLayout.elements.push_back(
                 gfx::VertexLayoutElement(gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float));
         }
+        // hacky hack
+        else {
+            Log::msg(Log::Level::Debug, "MeshGeomData", "Doesnt have texcoordData for layout, assuming it anyway");
+            vertexLayout.elements.push_back(
+                gfx::VertexLayoutElement(gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float));
+        }
 
         return vertexLayout;
     }
@@ -49,7 +56,7 @@ public:
 
     uint32_t vertexCount() const {
         // Todo: actually do this correctly.
-		assert(positions.size() == normals.size() && positions.size() == texcoords.size());
+        //assert(positions.size() == normals.size() && positions.size() == texcoords.size());
         return positions.size();
     }
 
@@ -69,6 +76,12 @@ public:
             }
             if (hasComponent(VertexComponent::Texcoord)) {
                 memcpy(outputData + offset, &texcoords[idx], sizeof(glm::vec2));
+                offset += sizeof(glm::vec2);
+            }
+            else {
+                // hacky hack
+                assert(hasComponent(VertexComponent::Position));
+                memcpy(outputData + offset, &positions[idx], sizeof(glm::vec2));
                 offset += sizeof(glm::vec2);
             }
         }

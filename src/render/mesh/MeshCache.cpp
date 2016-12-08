@@ -23,9 +23,9 @@ Mesh* MeshCache::Get(const std::string& name) {
     
     std::string fpath = _baseDir + "/" + name;
 
-	std::vector<MeshPart> parts = meshImport::LoadMeshDataFromFile(fpath);
-	Mesh mesh(std::move(parts));
-	auto inserted = _cache.emplace(name, std::move(mesh));
+    std::vector<MeshPart> parts = meshImport::LoadMeshDataFromFile(fpath);
+    Mesh mesh(std::move(parts));
+    auto inserted = _cache.emplace(name, std::move(mesh));
 
-	return &inserted.first->second;
+    return &inserted.first->second;
 }

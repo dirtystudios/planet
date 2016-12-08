@@ -8,110 +8,115 @@
 #include "DrawItemEncoder.h"
 #include "Image.h"
 #include "Config.h"
+#include "MeshRenderObj.h"
+
+// this is in bytes, should be about ~20mb, 650k 32 byte vertices
+constexpr static uint32_t MAX_VERT_BUFF_SIZE = 650000 * 32;
+// also in bytes for now just same size as vert buff
+constexpr static uint32_t MAX_INDEX_BUFF_SIZE = MAX_VERT_BUFF_SIZE;
 
 struct MeshConstants {
     glm::mat4 world;
 };
 
-struct MaterialConstants {
-    glm::vec3 ka;
-    float padding0;
-    glm::vec3 kd;
-    float padding1;
-    glm::vec3 ks;
-    float padding2;
-    glm::vec3 ke;
-    float ns;
-};
-
-struct tempVert {
-	glm::vec3 pos;
-	glm::vec3 norm;
-	glm::vec2 tex;
-};
-std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
-
 MeshRenderer::~MeshRenderer() {
     // TODO: Cleanup renderObjs
+    assert(false);
 }
 
 void MeshRenderer::OnInit() {
+
+    gfx::BufferDesc vBufDesc = gfx::BufferDesc::vbPersistent(MAX_VERT_BUFF_SIZE, "MeshSharedVB");
+
+    gfx::BufferDesc iBufDesc = gfx::BufferDesc::ibPersistent(MAX_INDEX_BUFF_SIZE, "MeshSharedIB");
+
+    vertBufferId = device()->AllocateBuffer(vBufDesc);
+    indexBufferId = device()->AllocateBuffer(iBufDesc);
+
+    // whoops, this doesnt get deleted
+    MeshRenderObj* renderObj = new MeshRenderObj("crytek/sponza.obj", "crytek/sponza.obj");
+    Register(renderObj);
+}
+
+void MeshRenderer::Register(MeshRenderObj* meshObj) {
+    meshObj->perObject = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");
+    meshObj->mesh = services()->meshCache()->Get(meshObj->_meshName);
+    meshObj->mat = services()->materialCache()->Get(meshObj->_matName);
+
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
+    encoder.BindResource(meshObj->perObject->GetBinding(1));
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "blinn"));
-    baseStateGroup.reset(encoder.End());
+    meshObj->stateGroup.reset(encoder.End());
 
-	MeshRenderData renderData;
+    for (const MaterialData& matdata : meshObj->mat->matData) {
+        std::string shaderName;
+        switch (matdata.shadingModel) {
+            // oh how convienient, their all blinn
+        default:
+            shaderName = "blinn";
+        }
+        gfx::ShaderId ps = services()->shaderCache()->Get(gfx::ShaderType::PixelShader, shaderName);
+        meshObj->meshMaterial.push_back(std::make_unique<MeshMaterial>(device(), matdata, ps));
+    }
 
-    renderData.cb1  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");
-    renderData.cb2  = services()->constantBufferManager()->GetConstantBuffer(sizeof(MaterialConstants), "Mat");
-    renderData.mesh = services()->meshCache()->Get("roxas/roxas.obj");
-    renderData.mat  = services()->materialCache()->Get("roxas/roxas.obj", services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "blinn"));
+    for (const MeshPart& part : meshObj->mesh->GetParts()) {
+        assert(MAX_VERT_BUFF_SIZE > ((vertOffset + part.geometryData.vertexCount()) * part.geometryData.vertexLayout().stride()));
+        assert(MAX_INDEX_BUFF_SIZE > ((indexOffset + part.geometryData.indexCount()) * sizeof(uint32_t)));
 
-	meshRenderData.emplace_back(std::move(renderData));
+        MeshGeomExistBuffer existBuffer;
+        existBuffer.indexBuffer = indexBufferId;
+        existBuffer.indexOffset = indexOffset;
+        existBuffer.vertexBuffer = vertBufferId;
+        existBuffer.vertexOffset = vertOffset;
+
+        meshObj->meshGeometry.push_back(std::make_unique<MeshGeometry>(device(), part.geometryData, &existBuffer));
+        meshObj->meshGeometry.back()->meshMaterialId = part.matIdx;
+        
+        vertOffset += part.geometryData.vertexCount();
+        indexOffset += part.geometryData.indexCount();
+    }
+    meshRenderObjs.push_back(meshObj);
 }
 
 void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView) {
-	_drawItems.clear();
-    glm::mat4 world = glm::scale(glm::mat4(), glm::vec3(2, 2, 2));
-	for (MeshRenderData& renderData : meshRenderData) {
-		assert(renderData.cb1);
-		assert(renderData.cb2);
-		assert(renderData.mat);
-		assert(renderData.mesh);
+    _drawItems.clear();
+    sortedMatCache.clear();
 
-		MeshConstants* meshBuffer = renderData.cb1->Map<MeshConstants>();
-		meshBuffer->world = world;
-		renderData.cb1->Unmap();
+    glm::mat4 world = glm::scale(glm::mat4(), glm::vec3(1, 1, 1));
+    for (MeshRenderObj* renderObj : meshRenderObjs) {
+        assert(renderObj->perObject);
+        assert(renderObj->mat);
+        assert(renderObj->mesh);
 
-		MaterialConstants* materialBuffer = renderData.cb2->Map<MaterialConstants>();
-		materialBuffer->ka = renderData.mat->matData[1].ka;
-		materialBuffer->kd = renderData.mat->matData[1].kd;
-		materialBuffer->ke = renderData.mat->matData[1].ke;
-		materialBuffer->ks = renderData.mat->matData[1].ks;
-		materialBuffer->ns = renderData.mat->matData[1].ns;
-		renderData.cb2->Unmap();
+        MeshConstants* meshBuffer = renderObj->perObject->Map<MeshConstants>();
+        meshBuffer->world = world;
+        renderObj->perObject->Unmap();
 
-		if (renderData.textureid == 0) {
-			dimg::Image imageData;
-			std::string path = assetDirPath  + "roxas/" + renderData.mat->matData[1].diffuseMap;
-			dimg::LoadImageFromFile(path.c_str(), &imageData);
-			renderData.textureid = 
-                device()->CreateTexture2D(imageData.pixelFormat == dimg::PixelFormat::RGBA8Unorm ? gfx::PixelFormat::RGBA8Unorm : gfx::PixelFormat::RGB8Unorm, imageData.width, imageData.height, imageData.data, renderData.mat->matData[1].diffuseMap);
-		}
-
-        if (renderData.meshGeometry.get() == nullptr) {
-            std::vector<MeshGeometryData> tempGeomData;
-            for (const MeshPart& part : renderData.mesh->GetParts()) {
-                tempGeomData.push_back(part.geometryData);
-            }
-            renderData.meshGeometry.reset(new MeshGeometry(device(), tempGeomData));
-        }
-
-		if (renderData.stateGroup.get() == nullptr) {
-			gfx::StateGroupEncoder encoder;
-			encoder.Begin(baseStateGroup.get());
-			encoder.BindResource(renderData.cb1->GetBinding(1));
-			encoder.BindResource(renderData.cb2->GetBinding(2));
-			encoder.SetPixelShader(renderData.mat->pixelShader);
-			encoder.BindTexture(0, renderData.textureid, gfx::ShaderStageFlags::PixelBit);
-			renderData.stateGroup.reset(encoder.End());
-		}
-
-        for (const gfx::DrawCall& dc : renderData.meshGeometry->drawCalls()) {
+        for (auto& mg : renderObj->meshGeometry) {
             gfx::DrawItemEncoder encoder;
 
             std::unique_ptr<const gfx::DrawItem> drawItem;
 
-            std::vector<const gfx::StateGroup*> groups = { renderData.stateGroup.get(), renderData.meshGeometry->stateGroup(), renderQueue->defaults };
+            int meshMatIdx = mg->meshMaterialId;
+            assert(renderObj->meshMaterial.size() > meshMatIdx);
 
-            drawItem.reset(encoder.Encode(device(), dc, groups.data(), groups.size()));
+            std::vector<const gfx::StateGroup*> groups = { 
+                renderObj->stateGroup.get(),
+                mg->stateGroup(),
+                renderObj->meshMaterial[meshMatIdx]->stateGroup(),
+                renderQueue->defaults 
+            };
+
+            drawItem.reset(encoder.Encode(device(), mg->drawCall(), groups.data(), groups.size()));
 
             _drawItems.emplace_back(std::move(drawItem));
+            sortedMatCache.emplace(meshMatIdx, _drawItems.back().get());
         }
 
-		for (auto &drawItem : _drawItems) {
-			renderQueue->AddDrawItem(0, drawItem.get());
-		}
-	}
+        // cant find if iterator is guarenteed to go bucket by bucket, but still doing it live
+        for (auto it = sortedMatCache.begin(); it != sortedMatCache.end(); ++it) {
+            renderQueue->AddDrawItem(0, it->second);
+        }
+    }
 }

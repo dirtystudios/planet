@@ -16,5 +16,5 @@ public:
 
     ~MaterialCache() {};
 
-    Material* Get(const std::string& name, gfx::ShaderId ps);
+    Material* Get(const std::string& name);
 };
