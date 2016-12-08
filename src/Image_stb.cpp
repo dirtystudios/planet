@@ -1,10 +1,12 @@
 #include "Image.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include "DGAssert.h"
 #include "Log.h"
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize.h"
 
 using namespace dimg;
 
@@ -25,7 +27,7 @@ static uint32_t getComponents(PixelFormat format) {
     return 0;
 }
 
-static PixelFormat getFormat(uint32_t components) {
+static PixelFormat getFormatU8(uint32_t components) {
     dg_assert_nm(components > 0 && components <= 4);
     switch (components) {
         case 1:
@@ -84,6 +86,31 @@ bool dimg::LoadImageFromFile(const char* fpath, Image* image) {
 
     image->data = data;
     LOG_D("%s, w:%d h:%d comp:%d", fpath, image->width, image->height, components);
-    image->pixelFormat = getFormat(components);
+    image->pixelFormat = getFormatU8(components);
     return true;
+}
+
+bool dimg::ResizeImage(const Image& inData, Image& outData) {
+    int stbRtn = 0;
+    switch (inData.pixelFormat) {
+    case PixelFormat::RGB32Float:
+        stbRtn = stbir_resize_float(reinterpret_cast<float*>(inData.data), inData.width, inData.height, 0,
+            reinterpret_cast<float*>(outData.data), outData.width, outData.height, 0, 3);
+        break;
+    case PixelFormat::RGBA32Float:
+        stbRtn = stbir_resize_float(reinterpret_cast<float*>(inData.data), inData.width, inData.height, 0,
+            reinterpret_cast<float*>(outData.data), outData.width, outData.height, 0, 4);
+        break;
+    case PixelFormat::RGB8Unorm:
+        stbRtn = stbir_resize_uint8(reinterpret_cast<uint8_t*>(inData.data), inData.width, inData.height, 0,
+            reinterpret_cast<uint8_t*>(outData.data), outData.width, outData.height, 0, 3);
+        break;
+    case PixelFormat::RGBA8Unorm:
+        stbRtn = stbir_resize_uint8(reinterpret_cast<uint8_t*>(inData.data), inData.width, inData.height, 0,
+            reinterpret_cast<uint8_t*>(outData.data), outData.width, outData.height, 0, 4);
+        break;
+    default:
+        Log::msg(Log::Level::Error, "Image", "Unsupported PixelFormat in ResizeImage");
+    }
+    return stbRtn > 0;
 }
