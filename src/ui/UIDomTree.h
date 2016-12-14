@@ -39,10 +39,18 @@ namespace ui {
         UIFrame* m_focused;
         bool m_worldFrame{ false };
 
+        std::string assetDirPath{ "" };
     public:
         // note: i dislike sending renderers to this
         UIDomTree(TextRenderer* text, UIRenderer* ui, Viewport viewport, bool worldFrame = false) 
-            : m_textRenderer(text), m_uiRenderer(ui), m_viewport(viewport), m_worldFrame(worldFrame) {}
+            : m_textRenderer(text), m_uiRenderer(ui), m_viewport(viewport), m_worldFrame(worldFrame) {
+
+            assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
+
+            if (!fs::IsPathDirectory(assetDirPath)) {
+                LOG_E("Invalid Directory Path given for AssetDirectory.");
+            }
+        }
 
         void SetRoot(UIFrame* frame);
 

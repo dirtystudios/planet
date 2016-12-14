@@ -94,8 +94,9 @@ namespace ui {
             Texture* tex = dynamic_cast<Texture*>(frame);
             node->frameRO.reset(
                 new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
-            node->frameRO->texPath(tex->GetTexture());
+            node->frameRO->texPath(assetDirPath + "/" + tex->GetTexture());
             m_uiRenderer->Register(node->frameRO.get());
+            break;
         }
         default:
             node->frameRO.reset(

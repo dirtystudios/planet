@@ -13,6 +13,7 @@ namespace ui {
     public:
         DebugUI(UI* uiFrameObj) {
             UIFrame::UIFrameDesc frameDesc;
+            frameDesc.name = "KVDebug";
             frameDesc.acceptMouse = false;
             frameDesc.width = 100;
             frameDesc.height = 80;
@@ -25,6 +26,7 @@ namespace ui {
             _kvList = (KeyValueList*)uiFrameObj->frames.back().get();
 
             Texture::TextureDesc texDesc;
+            texDesc.name = "UITexDebug";
             texDesc.acceptMouse = false;
             texDesc.width = 100;
             texDesc.height = 100;

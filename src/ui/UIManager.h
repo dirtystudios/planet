@@ -42,7 +42,6 @@ private:
     float                   m_mouseX = 0.f, m_mouseY = 0.f;
     ScriptApi               m_scriptApi;
 
-    std::string assetDirPath{ "" };
 public:
     UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, input::InputContext* debugContext, Viewport viewport)
         : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext), m_scriptApi(this) {
@@ -54,11 +53,6 @@ public:
         
         m_debugContext->BindContext<input::ContextBindingType::Action>("debug5", std::bind(&UIManager::ToggleDebugDraw, this, std::placeholders::_1));
         config::ConsoleCommands::getInstance().RegisterCommand("toggleFocusDebug", std::bind(&UIManager::ToggleDebugDrawConsole, this, std::placeholders::_1));
-        assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
-
-        if (!fs::IsPathDirectory(assetDirPath)) {
-            LOG_E("Invalid Directory Path given for AssetDirectory.");
-        }
 
     };
     ~UIManager() {}
