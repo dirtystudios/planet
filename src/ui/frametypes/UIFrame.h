@@ -16,6 +16,7 @@ enum class FrameType : uint32_t {
     EDITBOX,
     LABEL,
     TEXTLIST,
+    TEXTURE,
     // Debug
     KEYVALUE,
 };

@@ -11,6 +11,7 @@ struct UIFrameConstants {
     glm::vec2 borderSize;
     glm::vec2 pad;
     glm::vec3 position;
+    int hasTex;
 };
 
 struct FrameVertex {
@@ -171,6 +172,7 @@ void UIRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
         frameConstants->borderColor      = uiRenderObj->_borderColor;
         frameConstants->borderSize       = uiRenderObj->_borderSize;
         frameConstants->position         = { uiRenderObj->_x, uiRenderObj->_y, uiRenderObj->_z};
+        frameConstants->hasTex           = 0;
         uiRenderObj->_frameData->Unmap();
 
         renderQueue->AddDrawItem(1, uiRenderObj->_item);

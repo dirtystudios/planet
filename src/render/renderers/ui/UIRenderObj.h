@@ -24,6 +24,7 @@ public:
     float width() const { return _w; }
     float height() const { return _h; }
     bool  isRendered() const { return _isRendered; }
+    gfx::TextureId texId() const { return _texId; }
 
     void x(float x) { _x = x; }
     void y(float y) { _y = y; }
@@ -32,6 +33,7 @@ public:
     void width(float w) { _w = w; }
     void height(float h) { _h = h; }
     void isRendered(bool isRendered) { _isRendered = isRendered; }
+    void texId(bool texId) { _texId = texId; }
 
     void* operator new(size_t i) {
         return _mm_malloc(i, 16);
@@ -56,6 +58,8 @@ private:
     glm::vec4         _bgColor;
     glm::vec4         _borderColor;
     glm::vec2         _borderSize;
+
+    gfx::TextureId    _texId{0};
 
     ConstantBuffer*        _frameData{nullptr};
     const gfx::StateGroup* _group{nullptr};

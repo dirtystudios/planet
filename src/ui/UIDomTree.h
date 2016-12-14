@@ -25,7 +25,8 @@ namespace ui {
         };
         UIDomNode* root{ nullptr };
 
-        // this is *def* not a nasty hack spawned out of lazines
+        // this is an attempt at a speed increase, as new insertions 
+        // will normally be a child of the last inserted
         UIDomNode* lastInserted;
 
         // anchor pos
