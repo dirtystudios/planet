@@ -61,7 +61,7 @@ namespace materialImport {
                 matData->diffuseMap = fs::SanitizeFilePath(std::string(texturePath.C_Str()));
                 LOG_D("aiTextureType_DIFFUSE:%s", matData->diffuseMap.c_str());
 
-                std::string imgPath = fs::DirName(fpath) + "/" + matData->diffuseMap.c_str();
+                std::string imgPath = fs::FullPathDirName(fpath) + "/" + matData->diffuseMap.c_str();
                 
                 dimg::LoadImageFromFile(imgPath.c_str(), &matData->diffuseData);
 

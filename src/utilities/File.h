@@ -26,7 +26,13 @@ std::string GetParentDir(const std::string& fpath);
 std::string SanitizeFilePath(const std::string& fpath);
 
 // Returns fullpath of the containing directory for a file, should probably sanitize path first
-std::string DirName(const std::string& s);
+std::string FullPathDirName(const std::string& path);
+
+// Returns name of file, no extension from a path
+std::string FileName(const std::string& path);
+
+// Makes directories recursively for full path
+bool mkdirs(const std::string& path);
 
 // -------------------------
 // Implementation specific
@@ -42,9 +48,8 @@ std::string GetProcessDirectory();
 **/
 std::vector<std::string> ListFilesInDirectory(const std::string& dir);
 
-bool IsPathDirectory(std::string path);
+bool IsPathDirectory(const std::string& path);
 
 bool exists(const std::string& path);
 bool mkdir(const std::string& path);
-bool mkdirs(const std::string& path);
 }

@@ -25,7 +25,6 @@ struct MaterialConstants {
 
 class MeshMaterial {
 private:
-    gfx::RenderDevice* _device{ nullptr };
     gfx::TextureId textureid{ 0 };
     gfx::ShaderId pixelShader{ 0 };
     ConstantBuffer* matConstants{ nullptr };
@@ -34,7 +33,7 @@ private:
     std::unique_ptr<const gfx::StateGroup> _stateGroup;
 
 public:
-    MeshMaterial(gfx::RenderDevice* device, const MaterialData& matData, gfx::ShaderId ps) : _device(device) {
+    MeshMaterial(gfx::RenderDevice* device, const MaterialData& matData, gfx::ShaderId ps) {
 
         std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
         if (!fs::IsPathDirectory(assetDirPath)) {
@@ -55,7 +54,7 @@ public:
 
         gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ConstantBufferBit, sizeof(MaterialConstants), "MeshMatContants" + matData.name);
         gfx::BufferId buffer = device->AllocateBuffer(desc);
-        matConstants = new ConstantBuffer(buffer, _device);
+        matConstants = new ConstantBuffer(buffer, device);
 
         
         MaterialConstants* materialBuffer = matConstants->Map<MaterialConstants>();

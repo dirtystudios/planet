@@ -21,7 +21,7 @@ std::string fs::GetProcessDirectory() {
 }
 
 // Untested -- jake
-bool fs::IsPathDirectory(std::string path) {
+bool fs::IsPathDirectory(const std::string& path) {
     struct stat fileAtt;
 
     if (stat(path.c_str(), &fileAtt) != 0) {
@@ -46,22 +46,6 @@ bool fs::mkdir(const std::string& path) {
         return false;
     }
 
-    return true;
-}
-
-bool fs::mkdirs(const std::string& path) {
-    if (exists(path))
-        return true;
-
-    std::vector<std::string> splits = dutil::Split(path, '/');
-
-    std::string currentPath = "";
-    for (std::string& split : splits) {
-        currentPath += "/" + split;
-        if (!fs::mkdir(currentPath)) {
-            return false;
-        }
-    }
     return true;
 }
 

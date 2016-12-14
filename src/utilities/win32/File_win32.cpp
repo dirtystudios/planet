@@ -17,7 +17,7 @@ namespace fs {
         return std::string(buffer).substr(0, pos).append("\\");;
     }
 
-    bool fs::IsPathDirectory(std::string path) {
+    bool fs::IsPathDirectory(const std::string& path) {
         return (PathIsDirectory(path.c_str()) > 0);
     }
 
@@ -53,22 +53,5 @@ namespace fs {
     bool mkdir(const std::string& path) {
         BOOL rtn = CreateDirectory(path.c_str(), NULL);
         return (rtn == 0 || rtn == ERROR_ALREADY_EXISTS);
-    }
-
-    // this could get moved
-    bool mkdirs(const std::string& path) {
-        if (exists(path))
-            return true;
-
-        std::vector<std::string> splits = dutil::Split(path, '/');
-
-        std::string currentPath = "";
-        for (std::string& split : splits) {
-            currentPath += "/" + split;
-            if (!fs::mkdir(currentPath)) {
-                return false;
-            }
-        }
-        return true;
     }
 }

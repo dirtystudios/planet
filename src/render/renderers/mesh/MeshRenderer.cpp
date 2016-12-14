@@ -98,7 +98,7 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView)
 
             std::unique_ptr<const gfx::DrawItem> drawItem;
 
-            int meshMatIdx = mg->meshMaterialId;
+            uint32_t meshMatIdx = mg->meshMaterialId;
             assert(renderObj->meshMaterial.size() > meshMatIdx);
 
             std::vector<const gfx::StateGroup*> groups = { 
