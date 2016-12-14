@@ -8,7 +8,6 @@ cbuffer cbPerObject : register(b2) {
     float4 borderColor : COLOR1;
     float2 borderSize;
     float3 position;
-    int hasTex;
 }
 
 Texture2D<float3> bgTexture : register(t0);
@@ -40,5 +39,5 @@ float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {
                             - (borderSize * borderSize - borderSize)); //becomes positive when inside the border and 0 when outside
  
     return (-within_border.x == within_border.y) ? 
-         (hasTex  > 0 ? float4(bgTexture.Sample(samplerBG, Input.vTexCoords), 1.f) : bgColor) : borderColor;
+         (float4(bgTexture.Sample(samplerBG, Input.vTexCoords), 1.f) * bgColor) : borderColor;
 }

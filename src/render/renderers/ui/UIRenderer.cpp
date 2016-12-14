@@ -11,7 +11,6 @@ struct UIFrameConstants {
     glm::vec2 borderSize;
     glm::vec2 pad;
     glm::vec3 position;
-    int hasTex;
 };
 
 struct FrameVertex {
@@ -29,6 +28,9 @@ void UIRenderer::OnInit() {
     _vertexBuffer        = device()->AllocateBuffer(desc);
     _bufferOffset        = 0;
     _bufferSize          = kDefaultVertexBufferSize;
+
+    std::vector<uint32_t> whiteImageData(16 * 16, 0xFFFFFFFF);
+    _whiteTex = device()->CreateTexture2D(gfx::PixelFormat::RGBA8Unorm, 16, 16, whiteImageData.data(), "uiRendererWhiteTex");
 
     gfx::BlendState blendState;
     blendState.enable       = true;
@@ -87,6 +89,17 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     dg_assert_nm(uiRenderObj != nullptr);
     dg_assert(std::find(begin(_objs), end(_objs), uiRenderObj) == end(_objs), "UIFrameRenderObj already registered");
 
+    // load image 
+    if (uiRenderObj->_texId == 0 && uiRenderObj->_texPath != "") {
+        dimg::Image imageData;
+        if (!LoadImageFromFile(uiRenderObj->_texPath.c_str(), &imageData)) {
+            LOG_E("Failed to load image: %s", uiRenderObj->_texPath.c_str());
+        }
+
+        uiRenderObj->_texId = device()->CreateTexture2D(imageData.pixelFormat == dimg::PixelFormat::RGBA8Unorm ? gfx::PixelFormat::RGBA8Unorm : gfx::PixelFormat::RGB8Unorm, 
+            imageData.width, imageData.height, imageData.data, "uiTex-"+ fs::FileName(uiRenderObj->_texPath.c_str()));
+    }
+
     float xpos = 0.f;//uiRenderObj->x();
     float ypos = 0.f;// uiRenderObj->y();
     float zpos = 0.f;// uiRenderObj->z();
@@ -132,6 +145,12 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     else
         encoder.Begin(_base);
     encoder.BindResource(uiRenderObj->_frameData->GetBinding(2));
+    if (uiRenderObj->_texId == 0)
+        encoder.BindTexture(0, _whiteTex, gfx::ShaderStageFlags::PixelBit);
+    else {
+        uiRenderObj->_bgColor = { 1.f, 1.f, 1.f, 1.f };
+        encoder.BindTexture(0, uiRenderObj->_texId, gfx::ShaderStageFlags::PixelBit);
+    }
     uiRenderObj->_group = encoder.End();
 
     uiRenderObj->_item = gfx::DrawItemEncoder::Encode(device(), uiRenderObj->_drawCall, &uiRenderObj->_group, 1);
@@ -172,7 +191,6 @@ void UIRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
         frameConstants->borderColor      = uiRenderObj->_borderColor;
         frameConstants->borderSize       = uiRenderObj->_borderSize;
         frameConstants->position         = { uiRenderObj->_x, uiRenderObj->_y, uiRenderObj->_z};
-        frameConstants->hasTex           = 0;
         uiRenderObj->_frameData->Unmap();
 
         renderQueue->AddDrawItem(1, uiRenderObj->_item);

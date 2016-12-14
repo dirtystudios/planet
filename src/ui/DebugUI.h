@@ -2,6 +2,7 @@
 
 #include "UI.h"
 #include "KeyValueList.h"
+#include "UITexture.h"
 
 // In a perfect world something like this would be described in lua/xml
 
@@ -22,6 +23,18 @@ namespace ui {
 
             uiFrameObj->frames.push_back(std::make_unique<KeyValueList>(kvList));
             _kvList = (KeyValueList*)uiFrameObj->frames.back().get();
+
+            Texture::TextureDesc texDesc;
+            texDesc.acceptMouse = false;
+            texDesc.width = 100;
+            texDesc.height = 100;
+            texDesc.path = "skybox/TropicalSunnyDayBack2048.png";
+            texDesc.x = 500.f;
+            texDesc.y = 200.f;
+            texDesc.show = true;
+            Texture tex(texDesc);
+
+            uiFrameObj->frames.push_back(std::make_unique<Texture>(texDesc));
         }
 
         void AddKeyValue(std::string key, std::string value) {

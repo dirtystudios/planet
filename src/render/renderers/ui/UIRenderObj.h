@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <string>
 #include "ConstantBuffer.h"
 #include "DrawItemEncoder.h"
 #include "RenderObj.h"
@@ -24,7 +25,9 @@ public:
     float width() const { return _w; }
     float height() const { return _h; }
     bool  isRendered() const { return _isRendered; }
+
     gfx::TextureId texId() const { return _texId; }
+    const std::string texPath() const { return _texPath; }
 
     void x(float x) { _x = x; }
     void y(float y) { _y = y; }
@@ -33,7 +36,9 @@ public:
     void width(float w) { _w = w; }
     void height(float h) { _h = h; }
     void isRendered(bool isRendered) { _isRendered = isRendered; }
+
     void texId(bool texId) { _texId = texId; }
+    void texPath(const std::string& texPath) { _texPath = texPath; }
 
     void* operator new(size_t i) {
         return _mm_malloc(i, 16);
@@ -60,6 +65,7 @@ private:
     glm::vec2         _borderSize;
 
     gfx::TextureId    _texId{0};
+    std::string       _texPath{ "" };
 
     ConstantBuffer*        _frameData{nullptr};
     const gfx::StateGroup* _group{nullptr};

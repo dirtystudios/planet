@@ -19,6 +19,8 @@ private:
     const gfx::StateGroup*         _base{nullptr};
     const gfx::StateGroup*         _base3D{ nullptr };
 
+    gfx::TextureId                 _whiteTex{ 0 };
+
 public:
     ~UIRenderer();
 

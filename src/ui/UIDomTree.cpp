@@ -5,6 +5,7 @@
 #include "KeyValueList.h"
 #include "Label.h"
 #include "Rectangle.h"
+#include "UITexture.h"
 
 using namespace dm;
 
@@ -87,6 +88,14 @@ namespace ui {
                 new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
             m_uiRenderer->Register(node->frameRO.get());
             break;
+        }
+
+        case FrameType::TEXTURE: {
+            Texture* tex = dynamic_cast<Texture*>(frame);
+            node->frameRO.reset(
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
+            node->frameRO->texPath(tex->GetTexture());
+            m_uiRenderer->Register(node->frameRO.get());
         }
         default:
             node->frameRO.reset(
