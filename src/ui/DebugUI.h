@@ -2,7 +2,7 @@
 
 #include "UI.h"
 #include "KeyValueList.h"
-#include "UITexture.h"
+#include "UITextureDebug.h"
 
 // In a perfect world something like this would be described in lua/xml
 
@@ -10,6 +10,7 @@ namespace ui {
     class DebugUI {
 
         KeyValueList* _kvList;
+        TextureDebug* _tex;
     public:
         DebugUI(UI* uiFrameObj) {
             UIFrame::UIFrameDesc frameDesc;
@@ -34,13 +35,18 @@ namespace ui {
             texDesc.x = 500.f;
             texDesc.y = 200.f;
             texDesc.show = true;
-            Texture tex(texDesc);
+            TextureDebug tex(texDesc);
 
-            uiFrameObj->frames.push_back(std::make_unique<Texture>(texDesc));
+            uiFrameObj->frames.push_back(std::make_unique<TextureDebug>(texDesc));
+            _tex = (TextureDebug*)uiFrameObj->frames.back().get();
         }
 
         void AddKeyValue(std::string key, std::string value) {
             _kvList->InsertKey(key, value);
+        }
+
+        void SetDebugTextureID(gfx::TextureId texid) {
+            _tex->SetTexID(texid);
         }
     };
 }

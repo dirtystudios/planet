@@ -95,9 +95,8 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
         if (!LoadImageFromFile(uiRenderObj->_texPath.c_str(), &imageData)) {
             LOG_E("Failed to load image: %s", uiRenderObj->_texPath.c_str());
         }
-
-        uiRenderObj->_texId = device()->CreateTexture2D(imageData.pixelFormat == dimg::PixelFormat::RGBA8Unorm ? gfx::PixelFormat::RGBA8Unorm : gfx::PixelFormat::RGB8Unorm, 
-            imageData.width, imageData.height, imageData.data, "uiTex-"+ fs::FileName(uiRenderObj->_texPath.c_str()));
+        dg_assert_nm(imageData.pixelFormat == dimg::PixelFormat::RGB8Unorm);
+        uiRenderObj->_texId = device()->CreateTexture2D(gfx::PixelFormat::RGB8Unorm, imageData.width, imageData.height, imageData.data, "uiTex-"+ fs::FileName(uiRenderObj->_texPath.c_str()));
     }
 
     float xpos = 0.f;//uiRenderObj->x();
@@ -151,9 +150,9 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
         uiRenderObj->_bgColor = { 1.f, 1.f, 1.f, 1.f };
         encoder.BindTexture(0, uiRenderObj->_texId, gfx::ShaderStageFlags::PixelBit);
     }
-    uiRenderObj->_group = encoder.End();
+    uiRenderObj->_group.reset(encoder.End());
 
-    uiRenderObj->_item = gfx::DrawItemEncoder::Encode(device(), uiRenderObj->_drawCall, &uiRenderObj->_group, 1);
+    uiRenderObj->_item.reset(gfx::DrawItemEncoder::Encode(device(), uiRenderObj->_drawCall, uiRenderObj->_group.get()));
 
     _objs.push_back(uiRenderObj);
 }
@@ -166,6 +165,18 @@ void UIRenderer::Unregister(UIFrameRenderObj* renderObj) {
 
     // TODO: cleanup device stuff
     _objs.erase(it);
+}
+
+void UIRenderer::CheckReplaceObjTexture(UIFrameRenderObj* renderObj) {
+    if (!renderObj->_texChanged)
+        return;
+
+    gfx::StateGroupEncoder encoder;
+    encoder.Begin(renderObj->_group.get());
+    encoder.BindTexture(0, renderObj->_texId);
+    renderObj->_group.reset(encoder.End());
+    renderObj->_item.reset(gfx::DrawItemEncoder::Encode(device(), renderObj->_drawCall, renderObj->_group.get()));
+    renderObj->_texChanged = false;
 }
 
 void UIRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
@@ -193,6 +204,8 @@ void UIRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
         frameConstants->position         = { uiRenderObj->_x, uiRenderObj->_y, uiRenderObj->_z};
         uiRenderObj->_frameData->Unmap();
 
-        renderQueue->AddDrawItem(1, uiRenderObj->_item);
+        CheckReplaceObjTexture(uiRenderObj);
+
+        renderQueue->AddDrawItem(1, uiRenderObj->_item.get());
     }
 }

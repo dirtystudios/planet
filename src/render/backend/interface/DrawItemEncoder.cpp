@@ -5,6 +5,7 @@
 #include "RenderDevice.h"
 #include "VertexStream.h"
 #include <cassert>
+#include <memory>
 
 namespace gfx {
 
@@ -33,17 +34,15 @@ const DrawItem* DrawItemEncoder::Encode(RenderDevice* device, const DrawCall& dr
 }
 
 const DrawItem* DrawItemEncoder::Encode(gfx::RenderDevice* device, const DrawCall& drawCall, const StateGroup* const* stateGroups, uint32_t count) {
-    const StateGroup* stateGroup    = nullptr;
-    bool              shouldCleanUp = false;
-
     if (count > 1) {
-        // merge into temporary buffer
-        shouldCleanUp = true;
-        stateGroup    = StateGroupEncoder::Merge(stateGroups, count);
-    } else {
-        stateGroup = stateGroups[0];
+        std::unique_ptr<const StateGroup> tempStateGroup(StateGroupEncoder::Merge(stateGroups, count));
+        return Encode(device, drawCall, tempStateGroup.get());
     }
+    else 
+        return Encode(device, drawCall, stateGroups[0]);
+}
 
+const DrawItem* DrawItemEncoder::Encode(gfx::RenderDevice* device, const DrawCall& drawCall, const StateGroup* stateGroup) {
     StateGroupDecoder decoder(stateGroup);
 
     PipelineStateId pipelineState = GetPipelineState(device, decoder);
@@ -76,10 +75,6 @@ const DrawItem* DrawItemEncoder::Encode(gfx::RenderDevice* device, const DrawCal
         int16_t bindingOffset = decoder.GetOffset(StateGroupIndex::Bindings);
         dg_assert_nm(bindingOffset != -1);
         writer.Write(stateGroup->data() + bindingOffset, stateGroup->size() - bindingOffset);
-    }
-
-    if (shouldCleanUp) {
-        delete stateGroup;
     }
     
     return di;

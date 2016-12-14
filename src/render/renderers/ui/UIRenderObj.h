@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <memory>
 #include "ConstantBuffer.h"
 #include "DrawItemEncoder.h"
 #include "RenderObj.h"
@@ -37,7 +38,7 @@ public:
     void height(float h) { _h = h; }
     void isRendered(bool isRendered) { _isRendered = isRendered; }
 
-    void texId(bool texId) { _texId = texId; }
+    void texId(bool texId) { _texId = texId; _texChanged = true; }
     void texPath(const std::string& texPath) { _texPath = texPath; }
 
     void* operator new(size_t i) {
@@ -58,6 +59,8 @@ private:
     bool  _isRendered{true};
     bool _usePerspective{ false };
 
+    bool _texChanged{ false };
+
     gfx::DrawCall     _drawCall;
     gfx::VertexStream _stream;
     glm::vec4         _bgColor;
@@ -68,6 +71,6 @@ private:
     std::string       _texPath{ "" };
 
     ConstantBuffer*        _frameData{nullptr};
-    const gfx::StateGroup* _group{nullptr};
-    const gfx::DrawItem*   _item{nullptr};
+    std::unique_ptr<const gfx::StateGroup> _group;
+    std::unique_ptr<const gfx::DrawItem>   _item;
 };

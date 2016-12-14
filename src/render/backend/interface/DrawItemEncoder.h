@@ -16,5 +16,6 @@ class DrawItemEncoder {
 public:
     static const DrawItem* Encode(RenderDevice* device, const DrawCall& drawCall, const StateGroup* const* stateGroups, uint32_t count);
     static const DrawItem* Encode(RenderDevice* device, const DrawCall& drawCall, const std::vector<const StateGroup*>& stateGroups);
+    static const DrawItem* Encode(RenderDevice* device, const DrawCall& drawCall, const StateGroup* stateGroup);
 };
 }

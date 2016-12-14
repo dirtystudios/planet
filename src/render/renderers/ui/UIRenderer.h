@@ -30,4 +30,7 @@ public:
     // Renderer Interface
     void OnInit() final;
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
+
+private:
+    void CheckReplaceObjTexture(UIFrameRenderObj* renderObj);
 };

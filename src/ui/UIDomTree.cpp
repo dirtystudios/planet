@@ -6,6 +6,7 @@
 #include "Label.h"
 #include "Rectangle.h"
 #include "UITexture.h"
+#include "UITextureDebug.h"
 
 using namespace dm;
 
@@ -98,6 +99,16 @@ namespace ui {
             m_uiRenderer->Register(node->frameRO.get());
             break;
         }
+
+        case FrameType::TEXTUREDEBUG: {
+            TextureDebug* tex = dynamic_cast<TextureDebug*>(frame);
+            node->frameRO.reset(
+                new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
+            node->frameRO->texId(tex->GetTexID());
+            m_uiRenderer->Register(node->frameRO.get());
+            break;
+        }
+
         default:
             node->frameRO.reset(
                 new UIFrameRenderObj(scaled.x, scaled.y, scaled.z, scaled.width, scaled.height, scaled.rot, frame->IsShown(), !m_worldFrame));
@@ -249,6 +260,11 @@ namespace ui {
                             assert(false);
                         ++x;
                     }
+                }
+                else if (node->frame->GetFrameType() == FrameType::TEXTUREDEBUG) {
+                    TextureDebug* tex = (TextureDebug*)node->frame;
+                    if (node->frameRO.get())
+                        node->frameRO->texId(tex->GetTexID());
                 }
 
                 else {

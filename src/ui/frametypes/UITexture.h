@@ -12,7 +12,6 @@ namespace ui {
         };
 
     private:
-        std::unique_ptr<dimg::Image> m_image;
         TextureDesc m_textureDesc;
 
     public:

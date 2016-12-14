@@ -906,7 +906,7 @@ namespace gfx {
         DX11_CHECK_RET0(m_factory->CreateSwapChain(m_dev.Get(), &sd, &m_swapchain));
 #endif
 
-        m_context.reset(new DX11Context(context.Get()));
+        m_context = std::make_unique<DX11Context>(context.Get());
 
         ComPtr<ID3D11Texture2D> backbuffer;
         DX11_CHECK_RET0(m_swapchain->GetBuffer(0, IID_PPV_ARGS(&backbuffer)));

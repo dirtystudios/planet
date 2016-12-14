@@ -18,6 +18,7 @@ enum class FrameType : uint32_t {
     TEXTLIST,
     TEXTURE,
     // Debug
+    TEXTUREDEBUG,
     KEYVALUE,
 };
 
