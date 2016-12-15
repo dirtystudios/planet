@@ -13,7 +13,7 @@ CPUElevationDataTileProducer::CPUElevationDataTileProducer(const glm::uvec2& til
         this->dumpCachedHeightmapsToDisk();
         return "success";
     });
-    _cpuTileBuffer.reset(new HeightmapCPUTileBuffer(DataTileProducer::tileResolution.x, DataTileProducer::tileResolution.y, 128));
+    _cpuTileBuffer.reset(new HeightmapCPUTileBuffer(DataTileProducer::tileResolution.x, DataTileProducer::tileResolution.y, 256));
     _cpuTileCache.reset(new HeightmapCPUTileCache(_cpuTileBuffer.get(), [&](const TerrainTileKey& key, const HeightmapCPUTileSlot* slot) {
         auto it = _dataTiles.find(key);
         if (it != end(_dataTiles)) {

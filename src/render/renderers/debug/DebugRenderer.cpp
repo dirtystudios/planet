@@ -90,6 +90,23 @@ void DebugRenderer::AddLine2D(const glm::vec2& start, const glm::vec2& end, glm:
     AddRect2D({{start.x - kHalfLineWidth, start.y}, {end.x + kHalfLineWidth, end.y}}, color, true);
 }
 
+void DebugRenderer::AddCircle2D(const glm::vec2& origin, float r, const glm::vec3& color, bool filled) {
+    DebugVertexVec& buffer  = filled ? _buffers.filled2D : _buffers.wireframe2D;
+    const uint32_t kSamples = 15;
+    double dt               = 2.0 * M_PI / (double)kSamples;
+    glm::vec3 o             = to3(origin);
+    for (uint32_t i = 0; i < kSamples; ++i) {
+        buffer.push_back({o, {0, 0}, color});
+
+        glm::vec3 p1 = {r * cos(i * dt), r * sin(i * dt), 0};
+        glm::vec3 p2 = {r * cos((i + 1) * dt), r * sin((i + 1) * dt), 0};
+        p1 += o;
+        p2 += o;
+        buffer.push_back({p1, {0, 0}, color});
+        buffer.push_back({p2, {0, 0}, color});
+    }
+}
+
 void DebugRenderer::AddSphere3D(const glm::vec3& origin, float radius) {
     //    gfx::BufferId transientBuffer = device()->AllocateBuffer(gfx::BufferDesc::defaultTransient(gfx::BufferUsageFlags::ConstantBufferBit, sizeof(DebugViewConstants)));
     //    dm::Transform transform;

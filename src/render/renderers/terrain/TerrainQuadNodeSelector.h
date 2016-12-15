@@ -57,17 +57,17 @@ public:
 
 private:
     bool IsNodeInView(const FrameView* view, const TerrainQuadNode* node) {
-        dm::Rect3Dd     rect = node->worldRect();
+        dm::Rect3Dd rect = node->worldRect();
         dm::BoundingBox box(rect.bl(), rect.tr());
         return view->frustum.IsBoxInFrustum(box);
     }
     bool ShouldSplitNode(const FrameView* view, const TerrainQuadNode* node) {
         if (node->key.lod >= 15)
             return false;
-        dm::Rect3Dd     rect = node->worldRect();
+        dm::Rect3Dd rect = node->worldRect();
         dm::BoundingBox box(rect.bl(), rect.tr());
-        float           d = box.distance(view->eyePos);
-        if (d < 0.75f * node->size) {
+        float d = box.distance(view->eyePos);
+        if (d < 1.5f * node->size) {
             return true;
         }
         return false;

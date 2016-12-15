@@ -55,12 +55,15 @@ private:
     using copy_vec3 = glm::tvec3<P, glm::precision::highp>;
     using vec3      = glm::tvec3<T, glm::precision::highp>;
     using vec2      = glm::tvec2<T, glm::precision::highp>;
+    using mat4      = glm::tmat4x4<T, glm::precision::highp>;
     std::array<vec3, 4> _corners{};
 
 public:
-    Rect3D(const vec2& dimensions, const glm::mat4& transform = glm::mat4()) : Rect3D(Rect2D<T>(dimensions), transform) {}
+    Rect3D(const vec2& dimensions, const glm::mat4& transform = glm::mat4())
+        : Rect3D(Rect2D<T>(dimensions), transform) {}
 
-    Rect3D(const vec3& bl, const vec3& br, const vec3& tl, const vec3& tr) : _corners({{bl, br, tl, tr}}) {}
+    Rect3D(const vec3& bl, const vec3& br, const vec3& tl, const vec3& tr)
+        : _corners({{bl, br, tl, tr}}) {}
 
     Rect3D(const Rect3D<T>& rect, const glm::mat4& transform) {
         _corners[0] = glm::vec3(transform * glm::vec4(rect.bl().x, rect.bl().y, rect.bl().z, 1.f));
@@ -105,6 +108,14 @@ public:
     std::array<vec3, 4> corners() const { return _corners; }
 
     void transform(const glm::mat4& transform) {
+        for (vec3& corner : _corners) {
+            glm::vec4 transformedCorner = transform * glm::vec4(corner.x, corner.y, corner.z, 1);
+            corner                      = glm::vec3(transformedCorner);
+        }
+    }
+
+    void scale(const vec3& scaleFactors) {
+        mat4 transform = glm::scale(mat4(), scaleFactors);
         for (vec3& corner : _corners) {
             glm::vec4 transformedCorner = transform * glm::vec4(corner.x, corner.y, corner.z, 1);
             corner                      = glm::vec3(transformedCorner);

@@ -19,16 +19,18 @@ TerrainRenderer::TerrainRenderer() {}
 TerrainRenderer::~TerrainRenderer() {}
 
 std::unique_ptr<CPUElevationDataTileProducer> residualsProducer;
-std::unique_ptr<CPUNormalDataTileProducer>    normalsProducer;
+std::unique_ptr<CPUNormalDataTileProducer> normalsProducer;
 
 // TODO: Layer abstraction in TerrainRenderer is no good. Think of something better.
 // TODO: Producers have alot of duplicate code. Do something about it
+// TODO: Quadnodes needs bounding boxes with proper elevation data
 // TODO: Properly rendering partial tiles. (ex. Scale texure coords). Necessary to fix flickering
 // TODO: producers need to walk tree instead of jumping straight to tile so that we have high lod fallback
 // TODO: selection can select too many tiles, raping caches
+// TODO: Borders for normalmaps
 
 void TerrainRenderer::OnInit() {
-    float    radius     = 50000;
+    float radius        = 50000;
     uint32_t resolution = 128;
 
     std::shared_ptr<TerrainDeformation> deformation = std::make_shared<NoDeformation>();
@@ -40,7 +42,7 @@ void TerrainRenderer::OnInit() {
     glm::mat4 rootMatrix = rootTransform.matrix();
 
     dm::Transform topTransform;
-    //    topTransform.rotateDegrees(-90, glm::vec3(1, 0, 0));
+    //        topTransform.rotateDegrees(-90, glm::vec3(1, 0, 0));
     //    topTransform.translate(glm::vec3(0, radius / 2.f, 0));
     _topTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * topTransform.matrix());
     _selectors.emplace_back(new TerrainQuadNodeSelector(_topTree));
@@ -116,7 +118,7 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     // draw nodes in 3D
     for (const TerrainQuadNode* quad : _nodesInScene) {
         dm::Rect3Dd worldRect = quad->worldRect();
-        services()->debugDraw()->AddRect3D(worldRect, dutil::getColor(quad->key.lod), false);
+        // services()->debugDraw()->AddRect3D(worldRect, dutil::getColor(quad->key.lod), false);
     }
 
     // draw selected nodes on 2D ui element
