@@ -8,39 +8,37 @@
 #include "TerrainLayerRenderer.h"
 #include "TerrainQuadNodeSelector.h"
 #include "TerrainQuadTree.h"
+#include "TerrainRenderObj.h"
 
 class TerrainElevationLayerRenderer;
-class ElevationDataTileProducer;
+
+class CPUElevationDataTileProducer;
+class CPUNormalDataTileProducer;
 class NormalDataTileProducer;
+class ElevationDataTileProducer;
 
-template <typename Producer, typename Renderer>
-struct Layer {
-    std::unique_ptr<Producer> producer;
-    std::unique_ptr<Renderer> renderer;
-};
-
-struct Layers {
-    Layer<ElevationDataTileProducer, TerrainElevationLayerRenderer> elevation;
-    Layer<NormalDataTileProducer, TerrainElevationLayerRenderer>    normals;
-};
-
-class TerrainRenderer : public Renderer {
+class TerrainRenderer : public TypedRenderer<TerrainRenderObj> {
 private:
-    Layers _layers;
+    struct {
+        struct {
+            std::unique_ptr<CPUElevationDataTileProducer> cpu;
+            std::unique_ptr<ElevationDataTileProducer> gpu;
+        } elevations;
+        struct {
+            std::unique_ptr<CPUNormalDataTileProducer> cpu;
+            std::unique_ptr<NormalDataTileProducer> gpu;
+        } normals;
+    } _producers;
 
-    std::vector<TerrainQuadTree*> _terrainCache;
+    struct {
+        std::unique_ptr<TerrainElevationLayerRenderer> baseLayer;
+    } _renderers;
 
-    std::shared_ptr<TerrainQuadTree> _bottomTree;
-    std::shared_ptr<TerrainQuadTree> _topTree;
-    std::shared_ptr<TerrainQuadTree> _frontTree;
-    std::shared_ptr<TerrainQuadTree> _backTree;
-    std::shared_ptr<TerrainQuadTree> _leftTree;
-    std::shared_ptr<TerrainQuadTree> _rightTree;
+    std::vector<TerrainRenderObj*> _renderObjs;
+    std::vector<TerrainQuadTree*> _terrains;
 
-    std::vector<TerrainQuadTreePtr>                       _terrains;
-    std::vector<std::unique_ptr<TerrainQuadNodeSelector>> _selectors;
-    std::vector<DataTileProducer*>                        _tileProducers;
-    std::vector<TerrainLayerRenderer*>                    _layerRenderers;
+    std::vector<DataTileProducer*> _tileProducers;
+    std::vector<TerrainLayerRenderer*> _layerRenderers;
 
     std::vector<const TerrainQuadNode*> _nodesInScene;
 
@@ -54,5 +52,7 @@ public:
     ~TerrainRenderer();
 
     void OnInit() override;
+    void Register(TerrainRenderObj* renderObj) final;
+    void Unregister(TerrainRenderObj* renderObj) final { assert(false); }
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
 };

@@ -12,6 +12,7 @@
 #include "Config.h"
 #include "ConsoleUI.h"
 #include "DebugUI.h"
+#include "FlatTerrain.h"
 #include "InputManager.h"
 #include "LabelUI.h"
 #include "PlayerController.h"
@@ -23,19 +24,20 @@
 #include "UI.h"
 #include "UIManager.h"
 
-uint32_t                       frame_count       = 0;
-double                         taccumulate       = 0;
-double                         total_frame_count = 0;
-Camera                         cam;
-input::InputManager*           inputManager;
+uint32_t frame_count = 0;
+double taccumulate = 0;
+double total_frame_count = 0;
+Camera cam;
+input::InputManager* inputManager;
 controllers::PlayerController* playerController;
-RenderEngine*                  renderEngine;
-Simulation                     simulation;
-RenderView*                    playerView;
-Viewport*                      playerViewport;
-ui::UIManager*                 uiManager;
-ui::ConsoleUI*                 consoleUI;
-ui::DebugUI*                   debugUI;
+RenderEngine* renderEngine;
+Simulation simulation;
+RenderView* playerView;
+Viewport* playerViewport;
+ui::UIManager* uiManager;
+ui::ConsoleUI* consoleUI;
+ui::DebugUI* debugUI;
+std::unique_ptr<FlatTerrain> terrain;
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -177,6 +179,9 @@ void App::OnStart() {
 
     SkyboxRenderObj* skybox = CreateSkybox();
     renderEngine->Renderers().sky->Register(skybox);
+
+    terrain.reset(new FlatTerrain(10000));
+    renderEngine->Renderers().terrain->Register(terrain.get());
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
@@ -184,7 +189,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     sys::SysWindowSize windowSize = sys::GetWindowSize();
     if (windowSize.width != static_cast<uint32_t>(playerViewport->width) || windowSize.height != static_cast<uint32_t>(playerViewport->height)) {
 
-        playerViewport->width  = static_cast<float>(windowSize.width);
+        playerViewport->width = static_cast<float>(windowSize.width);
         playerViewport->height = static_cast<float>(windowSize.height);
 
         uiManager->UpdateViewport(*playerViewport);
@@ -199,8 +204,6 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     uiManager->DoUpdate(dt * 1000);
     simulation.Update(dt);
 
-    //    renderEngine->DebugDraw()->AddRect3D({{glm::vec2(-100, -100), glm::vec2(200, 200)},
-    //        glm::rotate(2.f/2.f, glm::vec3(0, 1, 0)) * glm::rotate(3.f/2.f, glm::vec3(1, 0, 0))}, glm::vec3(1.f, 0.f, 0.f), false);
     // render
     renderEngine->RenderFrame();
 

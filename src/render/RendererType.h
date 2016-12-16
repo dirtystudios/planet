@@ -4,9 +4,10 @@
 #include <stdint.h>
 #include <string>
 
-enum class RendererType : uint8_t {
+enum class RendererType : uint8_t
+{
     Skybox,
-    ChunkedTerrain,
+    Terrain,
     Ui,
     Text,
     Mesh,
@@ -17,7 +18,7 @@ static std::string ToString(RendererType type) {
     switch (type) {
         case RendererType::Mesh:
             return "Mesh";
-        case RendererType::ChunkedTerrain:
+        case RendererType::Terrain:
             return "Terrain";
         case RendererType::Ui:
             return "Ui";

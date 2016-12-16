@@ -18,9 +18,6 @@ TerrainRenderer::TerrainRenderer() {}
 
 TerrainRenderer::~TerrainRenderer() {}
 
-std::unique_ptr<CPUElevationDataTileProducer> residualsProducer;
-std::unique_ptr<CPUNormalDataTileProducer> normalsProducer;
-
 // TODO: Layer abstraction in TerrainRenderer is no good. Think of something better.
 // TODO: Producers have alot of duplicate code. Do something about it
 // TODO: Quadnodes needs bounding boxes with proper elevation data
@@ -30,78 +27,34 @@ std::unique_ptr<CPUNormalDataTileProducer> normalsProducer;
 // TODO: Borders for normalmaps
 
 void TerrainRenderer::OnInit() {
-    float radius        = 50000;
     uint32_t resolution = 128;
 
-    std::shared_ptr<TerrainDeformation> deformation = std::make_shared<NoDeformation>();
-    // std::shared_ptr<TerrainDeformation> deformation = std::make_shared<SphericalDeformation>(radius);
+    _producers.elevations.cpu.reset(new CPUElevationDataTileProducer({resolution, resolution}));
+    _producers.elevations.gpu.reset(new ElevationDataTileProducer(device(), _producers.elevations.cpu.get()));
+    _producers.normals.cpu.reset(new CPUNormalDataTileProducer(_producers.elevations.cpu.get()));
+    _producers.normals.gpu.reset(new NormalDataTileProducer(device(), _producers.normals.cpu.get()));
+    _renderers.baseLayer.reset(new TerrainElevationLayerRenderer(_producers.elevations.gpu.get(), _producers.normals.gpu.get()));
 
-    dm::Transform rootTransform;
-    //    rootTransform.rotateDegrees(-25, glm::normalize(glm::vec3(1, 1, 1)));
-    //    rootTransform.translate(glm::vec3(0, 10, 0));
-    glm::mat4 rootMatrix = rootTransform.matrix();
-
-    dm::Transform topTransform;
-    //        topTransform.rotateDegrees(-90, glm::vec3(1, 0, 0));
-    //    topTransform.translate(glm::vec3(0, radius / 2.f, 0));
-    _topTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * topTransform.matrix());
-    _selectors.emplace_back(new TerrainQuadNodeSelector(_topTree));
-
-    //    dm::Transform bottomTransform;
-    //    bottomTransform.rotateDegrees(90, glm::vec3(1, 0, 0));
-    //    bottomTransform.translate(glm::vec3(0, -radius / 2.f, 0));
-    //    _bottomTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * bottomTransform.matrix());
-    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_bottomTree));
-    //
-    //    dm::Transform frontTransform;
-    //    frontTransform.translate(glm::vec3(0, 0, radius / 2.f));
-    //    _frontTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * frontTransform.matrix());
-    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_frontTree));
-    //
-    //    dm::Transform backTransform;
-    //    backTransform.rotateDegrees(180, glm::vec3(1, 0, 0));
-    //    backTransform.translate(glm::vec3(0, 0, -radius / 2.f));
-    //    _backTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * backTransform.matrix());
-    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_backTree));
-    //
-    //    dm::Transform leftTransform;
-    //    leftTransform.rotateDegrees(-90, glm::vec3(0, 1, 0));
-    //    leftTransform.translate(glm::vec3(-radius / 2.f, 0, 0));
-    //    _leftTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * leftTransform.matrix());
-    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_leftTree));
-    //
-    //    dm::Transform rightTransform;
-    //    rightTransform.rotateDegrees(90, glm::vec3(0, 1, 0));
-    //    rightTransform.translate(glm::vec3(radius / 2.f, 0, 0));
-    //    _rightTree = std::make_shared<TerrainQuadTree>(radius, deformation, rootMatrix * rightTransform.matrix());
-    //    _selectors.emplace_back(new TerrainQuadNodeSelector(_rightTree));
-
-    residualsProducer.reset(new CPUElevationDataTileProducer({resolution, resolution}));
-    normalsProducer.reset(new CPUNormalDataTileProducer(residualsProducer.get()));
-
-    _layers.elevation.producer.reset(new ElevationDataTileProducer(device(), residualsProducer.get()));
-    _layers.normals.producer.reset(new NormalDataTileProducer(device(), normalsProducer.get()));
-    _layers.elevation.renderer.reset(new TerrainElevationLayerRenderer(_layers.elevation.producer.get(), _layers.normals.producer.get()));
-
-    _tileProducers.push_back(residualsProducer.get());
-    _tileProducers.push_back(normalsProducer.get());
-    _tileProducers.push_back(_layers.elevation.producer.get());
-    _tileProducers.push_back(_layers.normals.producer.get());
-    _layerRenderers.push_back(_layers.elevation.renderer.get());
-
-    _terrainCache.push_back(_topTree.get());
-    dg_assert_nm(_topTree->terrainId() == _terrainCache.size() - 1);
+    _tileProducers.push_back(_producers.elevations.cpu.get());
+    _tileProducers.push_back(_producers.elevations.gpu.get());
+    _tileProducers.push_back(_producers.normals.cpu.get());
+    _tileProducers.push_back(_producers.normals.gpu.get());
+    _layerRenderers.push_back(_renderers.baseLayer.get());
 
     for (TerrainLayerRenderer* layerRenderer : _layerRenderers) {
         layerRenderer->Init(device(), services());
     }
 }
 
+void TerrainRenderer::Register(TerrainRenderObj* renderObj) { _renderObjs.push_back(renderObj); }
+
 void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     _nodesInScene.clear();
 
-    for (std::unique_ptr<TerrainQuadNodeSelector>& selector : _selectors) {
-        selector->SelectQuadNodes(view, &_nodesInScene);
+    for (const TerrainRenderObj* terrain : _renderObjs) {
+        for (TerrainQuadTree* tree : terrain->getQuadTrees()) {
+            TerrainQuadNodeSelector().SelectQuadNodes(view, tree, &_nodesInScene);
+        }
     }
 
     _keysEntering.clear();
@@ -117,7 +70,7 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
 
     // draw nodes in 3D
     for (const TerrainQuadNode* quad : _nodesInScene) {
-        dm::Rect3Dd worldRect = quad->worldRect();
+        // dm::Rect3Dd worldRect = quad->worldRect();
         // services()->debugDraw()->AddRect3D(worldRect, dutil::getColor(quad->key.lod), false);
     }
 

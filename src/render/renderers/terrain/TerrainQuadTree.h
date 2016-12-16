@@ -14,10 +14,10 @@ private:
         static uint32_t tid = 0;
         return tid++;
     }
-    const uint32_t                      _terrainId{tid()};
-    std::unique_ptr<TerrainQuadNode>    _rootNode;
-    glm::mat4                           _transform;
-    glm::mat4                           _sampleSpaceTransform;
+    const uint32_t _terrainId{tid()};
+    std::unique_ptr<TerrainQuadNode> _rootNode;
+    glm::mat4 _transform;
+    glm::mat4 _sampleSpaceTransform;
     std::shared_ptr<TerrainDeformation> _deformation;
 
 public:
