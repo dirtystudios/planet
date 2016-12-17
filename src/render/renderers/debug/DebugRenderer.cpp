@@ -6,6 +6,9 @@
 #include "StateGroupEncoder.h"
 #include "glm/gtc/matrix_transform.hpp"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 using namespace dm;
 
 constexpr float  kLineWidth               = 1.f;
