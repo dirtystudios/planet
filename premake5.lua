@@ -27,6 +27,7 @@ workspace "planet"
 
     filter "system:windows"
         defines { "_WINDOWS", "WIN32" }
+        systemversion "10.0.14393.0"
     -- optimization levels in debug running debug stepping
     filter { "configurations:debug", "system:macosx" }
         xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
@@ -102,6 +103,7 @@ project "planet"
         removefiles { "src/**/win32/**" }
         removefiles { "src/**/uwp/**" }
         removefiles { "src/**/dx11/**"}
+        removefiles { "src/**/dx12/**"}
     filter {}
 
     -- linkage / build stuff
@@ -120,6 +122,7 @@ project "planet"
         links { 
             "opengl32",
             "d3d11",
+			"d3d12",
             "d3dcompiler",
             "DXGI",
 			"dxguid",

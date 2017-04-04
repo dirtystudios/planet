@@ -107,11 +107,11 @@ namespace gfx {
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-        TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data);
+        TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName);
         TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height,
-            uint32_t depth) { return 0; }
+            uint32_t depth, const std::string& debugName) { return 0; }
 
-        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data) { return 0; }
+        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) { return 0; }
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
         CommandBuffer* CreateCommandBuffer() { return 0; }
@@ -122,7 +122,10 @@ namespace gfx {
 
         void RenderFrame();
 
+        //todo:
         void DestroyResource(ResourceId resourceId) {}
+        void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) {}
+        uint32_t DrawCallCount() { return 0; }
     private:
         ShaderId CreateShader(ShaderType type, const std::string& source);
         ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const std::string& source);

@@ -49,6 +49,9 @@ namespace gfx {
             nullptr,
             IID_PPV_ARGS(&resource)));
 
+        if (desc.debugName != "")
+            D3D_SET_OBJECT_NAME_A(resource, desc.debugName.c_str());
+
         if (initialData) {
             uint8_t* pData;
             CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
@@ -216,7 +219,7 @@ namespace gfx {
         return UseHandleEmplaceConstRef(m_inputLayouts, hash, il);
     }
 
-    TextureId DX12Device::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data) {
+    TextureId DX12Device::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
         D3D12_RESOURCE_DESC texDesc = {};
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
         texDesc.Width = width;
@@ -240,6 +243,7 @@ namespace gfx {
 
         DX12_CHECK_RET0(m_dev->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
             D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(resource.ReleaseAndGetAddressOf())));
+        D3D_SET_OBJECT_NAME_A(resource, debugName.c_str());
 
         std::unique_ptr<byte> dataByteRef;
         D3D12_SUBRESOURCE_DATA srd;
@@ -371,7 +375,7 @@ namespace gfx {
     }
 
     uint8_t* DX12Device::MapMemory(BufferId buffer, BufferAccess access) {
-        if (access != BufferAccess::Write && access != BufferAccess::WriteInit)
+        if (access != BufferAccess::Write && access != BufferAccess::WriteNoOverwrite)
             assert(false);
 
         BufferDX12* bufferDX12 = GetResource(m_buffers, buffer);
