@@ -12,4 +12,4 @@
 	url = https://github.com/spurious/SDL-mirror
 [submodule "external/include/enum-flags"]
 	path = external/include/enum-flags
-	url=https://bitbucket.org/dirtystudios/enum-flags.git
+url=https://github.com/dirtystudios/enum-flags
