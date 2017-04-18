@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/mq8g05wb1dftb31c/branch/master?svg=true)]
+[![Build status](https://ci.appveyor.com/api/projects/status/997pes24nuhua6g2?svg=true)](https://ci.appveyor.com/project/jarveson/planet)
 
 # General Things to Do (In no particular order)
 Scratchpad for future tasks. Flesh them out if and when necessary
