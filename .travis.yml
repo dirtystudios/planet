@@ -1,0 +1,34 @@
+language: cpp
+
+os:
+  - osx
+
+compiler: 
+  - clang
+  - gcc
+
+cache:
+  ccache: true
+  directories:
+    -"$HOME/Library/Caches/Homebrew"
+
+branches:
+  only:
+   - master
+
+before_install:
+  - brew update
+  - brew install ccache
+  - PATH=$PATH:/usr/local/opt/ccache/libexec
+  - wget  https://github.com/premake/premake-core/releases/download/v5.0.0-alpha11/premake-5.0.0-alpha11-macosx.tar.gz -O premake.tar.gz
+  - tar -xzvf premake.tar.gz
+
+install:
+  - git submodule update --init --recursive
+
+before_script:
+  - ./premake5 xcode4
+
+script:
+  - cd build
+  - xcodebuild -configuration release

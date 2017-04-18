@@ -23,7 +23,7 @@ project "assimp"
     }
 
     -- these are manual otherwise it moves when flamewreath is cast and the raid blows up
-    includedirs { 
+    sysincludedirs { 
         "assimp/include",
         "assimp/contrib/zlib",
         "assimp/contrib/rapidjson/include",
