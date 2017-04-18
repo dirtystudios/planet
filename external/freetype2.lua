@@ -16,7 +16,7 @@ project "freetype2"
         "_CRT_SECURE_NO_WARNINGS"
     }
     
-    includedirs {
+    sysincludedirs {
         "freetype2/include"
     }
 

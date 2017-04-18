@@ -67,10 +67,7 @@ project "planet"
     filter {}
 
     -- files 
-    includedirs {
-        "src",
-        "src/**", --double stars cause we mean buisness
-
+    sysincludedirs {
         "external/include",
         "external/include/enum-flags/include",
 
@@ -78,6 +75,11 @@ project "planet"
         "external/freetype2/include",
         "external/libnoise/src",
         "external/SDL-mirror/include"
+    }
+    
+    includedirs {
+        "src",
+        "src/**" --double stars cause we mean buisness
     }
 
     files {
