@@ -6,11 +6,10 @@ test: off
 
 configuration: release
 
-cache:
-  - build\SDL2 -> .gitmodules
-  - build\freetype2 -> .gitmodules
-  - build\libnoise -> .gitmodules
-  - build\assimp -> .gitmodules
+branches:
+  only:
+  - master
+skip_branch_with_pr: true
 
 init:
   - cmd: git config --global lfs.fetchexclude "*"
