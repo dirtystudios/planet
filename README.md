@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/mq8g05wb1dftb31c/branch/master?svg=true)]
+
 # General Things to Do (In no particular order)
 Scratchpad for future tasks. Flesh them out if and when necessary
 

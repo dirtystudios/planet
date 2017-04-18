@@ -2,6 +2,7 @@
 
 #include "RenderDevice.h"
 #include "TileBuffer.h"
+#include <numeric>
 
 template <gfx::PixelFormat F>
 struct GPUTileSlot : public TileBufferSlot {
