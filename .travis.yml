@@ -12,6 +12,9 @@ cache:
   directories:
     -"$HOME/Library/Caches/Homebrew"
 
+notifications:
+  email: false
+
 branches:
   only:
    - master
