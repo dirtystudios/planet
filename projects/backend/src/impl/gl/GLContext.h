@@ -13,7 +13,7 @@
 #include <OpenGL/OpenGL.h>
 #endif
 #include "BufferType.h"
-#include "Helpers.h"
+
 #include "ShaderStageFlags.h"
 #include "GLUtils.h"
 

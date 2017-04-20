@@ -5,12 +5,10 @@
 #include <unordered_map>
 #include "Binding.h"
 #include "CommandBuffer.h"
-#include "DMath.h"
 #include "SimpleShaderLibrary.h"
 #include "ResourceManager.h"
 #include "GLContext.h"
 #include "GLStructs.h"
-#include "Pool.h"
 #include "RenderDevice.h"
 #include "VertexStream.h"
 

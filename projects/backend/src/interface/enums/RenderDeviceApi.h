@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Helpers.h"
 #include <array>
 
 namespace gfx {

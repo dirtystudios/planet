@@ -24,7 +24,7 @@
 #include "FillMode.h"
 #include "GLStructs.h"
 #include "GLTextureFormatDesc.h"
-#include "Helpers.h"
+
 #include "ParamType.h"
 #include "PixelFormat.h"
 #include "PrimitiveType.h"
