@@ -507,6 +507,16 @@ namespace gfx {
             DX12_CHECK_RET0(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
         }
 
+        DX12_CHECK_RET0(m_dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[0].Get(), NULL, IID_PPV_ARGS(&m_commandList)));
+
+        m_commandList->Close();
+
+        DX12_CHECK_RET0(m_dev->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+
+        m_fenceEvent = CreateEventEx(NULL, FALSE, FALSE, EVENT_ALL_ACCESS);
+
+        m_fenceValues[0] = 1;
+
         m_drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
 
         return 1;
