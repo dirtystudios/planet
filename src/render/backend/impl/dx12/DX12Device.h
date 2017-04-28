@@ -56,6 +56,7 @@ namespace gfx {
     private:
 
         static const uint32_t FrameCount = 2;
+        uint32_t m_numDrawCalls{ 0 };
 
         uint32_t m_winWidth, m_winHeight;
         bool m_usePrebuiltShaders;
@@ -133,6 +134,8 @@ namespace gfx {
         D3D12_RASTERIZER_DESC CreateRasterState(const RasterState& state);
         D3D12_BLEND_DESC CreateBlendState(const BlendState& state);
         D3D12_DEPTH_STENCIL_DESC CreateDepthState(const DepthState& state);
+
+        void Execute(CommandBuffer* cmdBuffer);
 
         // todo: make this stuff shared between dx
         void* TextureDataConverter(const D3D12_RESOURCE_DESC& tDesc, PixelFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef);

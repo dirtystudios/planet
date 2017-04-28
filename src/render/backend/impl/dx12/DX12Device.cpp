@@ -7,6 +7,8 @@
 #include "TexConvert.h"
 #include "Memory.h"
 
+#include "DrawItemDecoder.h"
+
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 
@@ -392,7 +394,88 @@ namespace gfx {
         bufferDX12->buffer->Unmap(0, nullptr);
     }
 
+    void DX12Device::Execute(CommandBuffer* cmdBuffer) {
+        const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
+        for (const DrawItem* item : *items) {
+            DrawItemDecoder decoder(item);
+
+            PipelineStateId psId;
+            DrawCall drawCall;
+            BufferId indexBufferId;
+            size_t streamCount = decoder.GetStreamCount();
+            size_t bindingCount = decoder.GetBindingCount();
+            std::vector<VertexStream> streams(streamCount);
+            std::vector<Binding> bindings(bindingCount);
+            VertexStream* streamPtr = streams.data();
+            Binding* bindingPtr = bindings.data();
+
+            dg_assert_nm(streamCount == 1); // > 1 not supported
+
+            dg_assert_nm(decoder.ReadDrawCall(&drawCall));
+            dg_assert_nm(decoder.ReadPipelineState(&psId));
+            dg_assert_nm(decoder.ReadIndexBuffer(&indexBufferId));
+            dg_assert_nm(decoder.ReadVertexStreams(&streamPtr));
+            if (bindingCount > 0) {
+                dg_assert_nm(decoder.ReadBindings(&bindingPtr));
+            }
+
+
+            /*PipelineStateDX12* pipelineState = GetResource(m_pipelinestates, psId);
+            SetPipelineState(pipelineState);
+
+            dg_assert_nm(streamCount == 1); // > 1 not supported
+            const VertexStream& stream = streamPtr[0];
+
+            auto vertexBuffer = GetResource(m_buffers, stream.vertexBuffer);
+            if (vertexBuffer)
+                m_context->SetVertexBuffer(stream.vertexBuffer, vertexBuffer->buffer.Get());
+
+            // bindings
+            for (uint32_t idx = 0; idx <bindingCount; ++idx) {
+
+                const Binding& binding = bindingPtr[idx];
+                switch (binding.type) {
+                case Binding::Type::ConstantBuffer: {
+                    BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
+                    if (binding.stageFlags & ShaderStageFlags::VertexBit)
+                        m_context->SetVertexCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
+                    if (binding.stageFlags & ShaderStageFlags::PixelBit)
+                        m_context->SetPixelCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
+                    break;
+                }
+                case Binding::Type::Texture: {
+                    TextureDX11* texturedx11 = GetResource(m_textures, binding.resource);
+                    if (binding.stageFlags & ShaderStageFlags::VertexBit)
+                        m_context->SetVertexShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
+                    if (binding.stageFlags & ShaderStageFlags::PixelBit)
+                        m_context->SetPixelShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
+                    break;
+                }
+                }
+            }
+
+            switch (drawCall.type) {
+            case DrawCall::Type::Arrays: {
+                m_context->DrawPrimitive(pipelineState->topology, drawCall.startOffset, drawCall.primitiveCount, false);
+                break;
+            }
+            case DrawCall::Type::Indexed: {
+                assert(indexBufferId);
+                auto indexBuffer = GetResource(m_buffers, indexBufferId);
+                m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
+                m_context->DrawPrimitive(pipelineState->topology, drawCall.startOffset, drawCall.primitiveCount, true, drawCall.baseVertexOffset);
+                break;
+            }
+            }*/
+            m_numDrawCalls++;
+        }
+    }
+    
     void DX12Device::RenderFrame() {
+        m_numDrawCalls = 0;
+        DX12_CHECK(m_commandAllocators[0]->Reset());
+        DX12_CHECK(m_commandList->Reset(m_commandAllocators[0].Get(), 0));
+
         for (uint32_t idx = 0; idx < m_submittedBuffers.size(); ++idx) {
             CommandBuffer* dx12Buffer = reinterpret_cast<CommandBuffer*>(m_submittedBuffers[idx]);
             //Execute(dx12Buffer);
