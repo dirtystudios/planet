@@ -51,7 +51,7 @@ project "backend"
     filter {}
 
     filter { "system:windows" }
-        libdirs { "external/winlibs/%{cfg.platform}" }
+        libdirs { "../../external/winlibs/%{cfg.platform}" }
         links { 
             "opengl32",
             "d3d11",
