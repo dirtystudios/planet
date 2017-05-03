@@ -12,7 +12,8 @@ project "dstd"
     }
 
     includedirs {
-        "src",        
+        "src/",    
+        "src/**",        
     }
 
     sysincludedirs {        
@@ -31,13 +32,13 @@ project "dstd"
         removefiles { "src/metal/**"}
         removefiles { "src/**/uwp/**" }
         removefiles { "src/**/osx/**" }
-        removefiles { "src/**metal/**"}
+        removefiles { "src/**/metal/**"}
     filter "system:macosx"
         files { "src/**.mm" }
         removefiles { "src/win32/**" }        
         removefiles { "src/uwp/**" }
         removefiles { "src/dx11/**"}
-        removefiles { "src/**dx11/**"}
+        removefiles { "src/**/dx11/**"}
         removefiles { "src/**/win32/**" }
         removefiles { "src/**/uwp/**" }
     filter {}
