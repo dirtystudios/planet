@@ -2,6 +2,8 @@
 
 #include <sstream>
 #include <string>
+#include <algorithm>
+
 namespace dutil {
 
 const std::string WHITESPACE = " \n\r\t";

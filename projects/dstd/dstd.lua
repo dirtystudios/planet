@@ -4,6 +4,9 @@ project "dstd"
     language "C++"
 
     targetname "dstd"
+
+    filter "system:windows"
+        characterset "MBCS" -- oops
     
     flags {
         -- This should speed up initial compile
