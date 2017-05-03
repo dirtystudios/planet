@@ -2,10 +2,20 @@
 
 #include <sstream>
 #include <string>
+#include <algorithm>
+
 namespace dutil {
 
 const std::string WHITESPACE = " \n\r\t";
 
+static void ToLowercase(std::string& s) { std::transform(begin(s), end(s), begin(s), ::tolower); }
+
+static std::string ToLowercase(const std::string& s) {
+    std::string copied(s);
+    ToLowercase(copied);
+    return copied;
+}
+    
 static std::string TrimLeft(const std::string& s) {
     size_t startpos = s.find_first_not_of(WHITESPACE);
     return (startpos == std::string::npos) ? "" : s.substr(startpos);

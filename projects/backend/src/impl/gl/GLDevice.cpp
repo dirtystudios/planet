@@ -10,9 +10,7 @@
 #include "Log.h"
 #include "StringUtil.h"
 #include "ShaderStageFlags.h"
-#include "Memory.h"
 #include "DrawItemDecoder.h"
-#include "DMath.h"
 #include "ResourceTypes.h"
 #include "DGAssert.h"
 

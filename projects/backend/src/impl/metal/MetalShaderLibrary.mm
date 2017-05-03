@@ -1,14 +1,14 @@
 #include "MetalShaderLibrary.h"
 #import <Foundation/Foundation.h>
 #include <algorithm>
-#include "Helpers.h"
 #include "MetalEnumAdapter.h"
+#include "StringUtil.h"
 
 namespace gfx {
 
 void MetalShaderLibrary::AddLibrary(id<MTLLibrary> mtlLibrary) {
     for (NSString* functionName : [mtlLibrary functionNames]) {
-        std::string lowercaseFname = ToLowercase([functionName UTF8String]);
+        std::string lowercaseFname = dutil::ToLowercase([functionName UTF8String]);
         auto comp                  = [&](const MetalLibraryFunction* f) { return f->functionName == lowercaseFname; };
         if (std::find_if(begin(_functions), end(_functions), comp) != end(_functions)) {
             // dont handle duplicates now
@@ -28,7 +28,7 @@ void MetalShaderLibrary::AddLibrary(id<MTLLibrary> mtlLibrary) {
 }
 
 ShaderId MetalShaderLibrary::GetShader(ShaderType type, const std::string& functionName) {
-    std::string lowercase = ToLowercase(functionName);
+    std::string lowercase = dutil::ToLowercase(functionName);
     auto result           = std::find_if(begin(_functions), end(_functions), [&](const MetalLibraryFunction* f) { return f->functionName == lowercase && f->type == type; });
 
     return result != _functions.end() ? (*result)->resourceId : 0;
