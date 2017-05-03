@@ -52,7 +52,7 @@ void MeshRenderer::Register(MeshRenderObj* meshObj) {
     for (const MaterialData& matdata : meshObj->mat->matData) {
         std::string shaderName;
         switch (matdata.shadingModel) {
-            // oh how convienient, their all blinn
+            // oh how convienient, they're all blinn
         default:
             shaderName = "blinn";
         }
