@@ -80,7 +80,7 @@ project "planet"
     filter { "system:windows" }
         postbuildcommands { '{COPY} "%{wks.location}SDL2/bin/%{cfg.platform}/%{cfg.buildcfg}/SDL2.dll" "%{cfg.buildtarget.directory}SDL2.dll*"' }
 
-        libdirs { "external/winlibs/%{cfg.platform}" }
+        libdirs { "../../external/winlibs/%{cfg.platform}" }
         links { 
             "opengl32",
             "d3d11",
