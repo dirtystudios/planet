@@ -12,7 +12,9 @@ project "backend"
     }
 
     sysincludedirs {
-        "../dstd/src/",  
+        "../dstd/src/",
+        "../dstd/src/**",  
+        "../../external/include/",
         "../../external/include/enum-flags/include",
     }
     includedirs {
