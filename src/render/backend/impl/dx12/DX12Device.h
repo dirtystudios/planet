@@ -82,7 +82,9 @@ namespace gfx {
         std::unordered_map<VertexLayoutId, InputLayoutDX12> m_inputLayouts;
         std::unordered_map<TextureId, TextureDX12> m_textures;
 
-        uint32_t m_frameIndex;
+        CD3DX12_CPU_DESCRIPTOR_HANDLE m_rtvHandle;
+
+        uint32_t m_bufferIndex;
         HANDLE m_fenceEvent;
         ComPtr<ID3D12Fence> m_fence;
 

@@ -473,8 +473,38 @@ namespace gfx {
     
     void DX12Device::RenderFrame() {
         m_numDrawCalls = 0;
+
+        ID3D12CommandList* ppCommandLists[1];
+
         DX12_CHECK(m_commandAllocators[0]->Reset());
         DX12_CHECK(m_commandList->Reset(m_commandAllocators[0].Get(), 0));
+
+        CD3DX12_RESOURCE_BARRIER barrier;
+        barrier.Transition(
+            m_renderTargets[m_bufferIndex].Get(),
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_RENDER_TARGET
+        );
+
+        m_commandList->ResourceBarrier(1, &barrier);
+
+        m_rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+        
+        const uint32_t rtvDescSize = m_dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+        if (m_bufferIndex == 1)
+            m_rtvHandle.Offset(rtvDescSize);
+
+        m_commandList->OMSetRenderTargets(1, &m_rtvHandle, false, NULL);
+
+        m_commandList->ClearRenderTargetView(m_rtvHandle, new float[4]{ 0.5, 0.5, 0.5, 1.0 }, 0, NULL);
+
+        barrier.Transition(
+            m_renderTargets[m_bufferIndex].Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PRESENT
+        );
+        m_commandList->ResourceBarrier(1, &barrier);
 
         for (uint32_t idx = 0; idx < m_submittedBuffers.size(); ++idx) {
             CommandBuffer* dx12Buffer = reinterpret_cast<CommandBuffer*>(m_submittedBuffers[idx]);
@@ -482,10 +512,28 @@ namespace gfx {
             dx12Buffer->Reset();
         }
 
+        DX12_CHECK(m_commandList->Close());
+
+        ppCommandLists[0] = m_commandList.Get();
+        m_commandQueue->ExecuteCommandLists(1, ppCommandLists);
+
         DX12_CHECK(m_swapchain->Present(1, 0));
 
         m_submittedBuffers.clear();
         m_drawItemByteBuffer.Reset();
+
+        const uint64_t fenceToWaitFor = m_fenceValues[0];
+
+        DX12_CHECK(m_commandQueue->Signal(m_fence.Get(), fenceToWaitFor));
+
+        m_fenceValues[0]++;
+
+        if (m_fence->GetCompletedValue() < fenceToWaitFor) {
+            DX12_CHECK_RET(m_fence->SetEventOnCompletion(fenceToWaitFor, m_fenceEvent));
+            WaitForSingleObject(m_fenceEvent, INFINITE);
+        }
+
+        m_bufferIndex = m_bufferIndex == 0 ? 1 : 0;
     }
 
     int32_t DX12Device::InitializeDevice(const DeviceInitialization& deviceInit) {
@@ -566,7 +614,7 @@ namespace gfx {
         DX12_CHECK_RET0(m_factory->MakeWindowAssociation(static_cast<HWND>(deviceInit.windowHandle), DXGI_MWA_NO_ALT_ENTER));
 
         DX12_CHECK_RET0(swapChain.As(&m_swapchain));
-        m_frameIndex = m_swapchain->GetCurrentBackBufferIndex();
+        m_bufferIndex = m_swapchain->GetCurrentBackBufferIndex();
 
         // Describe and create a render target view (RTV) descriptor heap.
         D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
@@ -578,14 +626,14 @@ namespace gfx {
         m_rtvDescriptorSize = m_dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
         // Create frame resources.
-        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
+        m_rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
 
         // Create a RTV and a command allocator for each frame.
         for (uint32_t n = 0; n < FrameCount; n++)
         {
             DX12_CHECK_RET0(m_swapchain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
-            m_dev->CreateRenderTargetView(m_renderTargets[n].Get(), nullptr, rtvHandle);
-            rtvHandle.Offset(1, m_rtvDescriptorSize);
+            m_dev->CreateRenderTargetView(m_renderTargets[n].Get(), nullptr, m_rtvHandle);
+            m_rtvHandle.Offset(1, m_rtvDescriptorSize);
 
             DX12_CHECK_RET0(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
         }
