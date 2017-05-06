@@ -10,13 +10,13 @@ private:
     gfx::RenderDevice* _device;
     std::string _baseDir;
 
-    std::unordered_map<std::string, Mesh> _cache;    
+    std::unordered_map<std::string, MeshPtr> _cache;
 public:
     MeshCache(gfx::RenderDevice* device, const std::string& baseDir);
 
     ~MeshCache();
 
-    Mesh* Get(const std::string& name);
+    MeshPtr Get(const std::string& name);
 
 private:    
 };

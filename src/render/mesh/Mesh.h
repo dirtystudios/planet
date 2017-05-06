@@ -15,3 +15,5 @@ public:
     }
 
 };
+
+using MeshPtr = std::shared_ptr<Mesh>;

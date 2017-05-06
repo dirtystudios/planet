@@ -55,7 +55,6 @@ public:
         gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ConstantBufferBit, sizeof(MaterialConstants), "MeshMatContants" + matData.name);
         gfx::BufferId buffer = device->AllocateBuffer(desc);
         matConstants = new ConstantBuffer(buffer, device);
-
         
         MaterialConstants* materialBuffer = matConstants->Map<MaterialConstants>();
         materialBuffer->ka = matData.ka;

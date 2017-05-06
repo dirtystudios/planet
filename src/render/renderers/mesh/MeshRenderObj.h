@@ -16,8 +16,8 @@ class MeshRenderObj : public RenderObj {
 private:
     friend MeshRenderer;
 
-    Material* mat{ nullptr };
-    Mesh* mesh{ nullptr };
+    MaterialPtr mat{ nullptr };
+    MeshPtr mesh{ nullptr };
     std::vector<std::unique_ptr<MeshMaterial>> meshMaterial;
     std::vector<std::unique_ptr<MeshGeometry>> meshGeometry;
     ConstantBuffer* perObject{ nullptr };
@@ -26,7 +26,7 @@ private:
     std::string _meshName, _matName;
 
 public:
-    MeshRenderObj(const std::string meshName, const std::string matName)
-        : RenderObj(RendererType::Mesh), _meshName(meshName), _matName(matName) {};
+    MeshRenderObj(const MeshPtr& mesh, const MaterialPtr& material)
+        : RenderObj(RendererType::Mesh), mesh(mesh), mat(material) {};
     ~MeshRenderObj() {}
 };

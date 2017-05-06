@@ -10,10 +10,10 @@ MaterialCache::MaterialCache(gfx::RenderDevice* device, const std::string& baseD
     }
 }
 
-Material* MaterialCache::Get(const std::string& name) {
+MaterialPtr MaterialCache::Get(const std::string& name) {
     auto it = _cache.find(name);
     if (it != _cache.end()) {
-        return &it->second;
+        return it->second;
     }
 
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -23,10 +23,8 @@ Material* MaterialCache::Get(const std::string& name) {
 
     std::string fpath   = _baseDir + "/" + name;
     std::vector<MaterialData> matData = materialImport::LoadMaterialDataFromFile(fpath);
+    
+    auto inserted = _cache.emplace(name, std::make_shared<Material>(std::move(matData)));
 
-    Material mat;
-    mat.matData = std::move(matData);
-    auto inserted = _cache.emplace(name, std::move(mat));
-
-    return &inserted.first->second;
+    return inserted.first->second;
 }
