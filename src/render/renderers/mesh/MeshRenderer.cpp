@@ -31,17 +31,11 @@ void MeshRenderer::OnInit() {
     gfx::BufferDesc iBufDesc = gfx::BufferDesc::ibPersistent(MAX_INDEX_BUFF_SIZE, "MeshSharedIB");
 
     vertBufferId = device()->AllocateBuffer(vBufDesc);
-    indexBufferId = device()->AllocateBuffer(iBufDesc);
-
-    // whoops, this doesnt get deleted
-    MeshRenderObj* renderObj = new MeshRenderObj("crytek/sponza.obj", "crytek/sponza.obj");
-    Register(renderObj);
+    indexBufferId = device()->AllocateBuffer(iBufDesc);    
 }
 
 void MeshRenderer::Register(MeshRenderObj* meshObj) {
-    meshObj->perObject = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");
-    meshObj->mesh = services()->meshCache()->Get(meshObj->_meshName);
-    meshObj->mat = services()->materialCache()->Get(meshObj->_matName);
+    meshObj->perObject = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");    
 
     gfx::StateGroupEncoder encoder;
     encoder.Begin();

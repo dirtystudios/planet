@@ -18,11 +18,13 @@
 #include "PlayerController.h"
 #include "Simulation.h"
 #include "SkyRenderer.h"
+#include "MeshRenderer.h"
 #include "Skybox.h"
 #include "Spatial.h"
 #include "TaskScheduler.h"
 #include "UI.h"
 #include "UIManager.h"
+#include "MeshGeneration.h"
 
 uint32_t frame_count = 0;
 double taccumulate = 0;
@@ -182,6 +184,19 @@ void App::OnStart() {
 
     terrain.reset(new FlatTerrain(10000));
     renderEngine->Renderers().terrain->Register(terrain.get());
+    
+    // whoops, this doesnt get deleted
+//    MaterialData materialData;
+//    MeshGeometryData geometryData;
+    
+    MeshPtr mesh = renderEngine->meshCache()->Get("sponza/sponza.obj");
+    MaterialPtr material = renderEngine->materialCache()->Get("sponza/sponza.obj");
+    
+    MeshRenderObj* renderObj = new MeshRenderObj(mesh, material);
+    renderEngine->Renderers().mesh->Register(renderObj);
+    
+    //dgen::GenerateIcoSphere(3, &geometryData);
+    
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {

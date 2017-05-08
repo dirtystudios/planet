@@ -2,6 +2,7 @@
 
 #include "MeshPart.h"
 #include <vector>
+#include <memory>
 
 class Mesh {
 private:
@@ -15,3 +16,5 @@ public:
     }
 
 };
+
+using MeshPtr = std::shared_ptr<Mesh>;

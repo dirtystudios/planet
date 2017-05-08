@@ -43,8 +43,11 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
     _renderersByType.insert({RendererType::Terrain, _renderers.terrain.get()});
 
-    _renderers.mesh->SetActive(false);
+    _renderers.mesh->SetActive(true);
     _renderers.sky->SetActive(false);
+    _renderers.terrain->SetActive(false);
+    _renderers.text->SetActive(false);
+    _renderers.ui->SetActive(false);
 
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     std::string assetDirPath  = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
