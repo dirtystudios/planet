@@ -57,7 +57,7 @@ float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {
 	float Id = 1.0; 
 	float Is = 1.0;
 	
-	float3 texColor = tex.Sample(texSampler, Input.vTex).rgb;
+	float3 texColor = Kd * tex.Sample(texSampler, Input.vTex).rgb;
 	float diffuseTerm = saturate(dot(L, N));
 	float specularTerm = saturate(pow(saturate(dot(N, H)), Ns));
 	
