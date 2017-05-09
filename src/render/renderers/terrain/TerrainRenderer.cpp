@@ -14,7 +14,7 @@
 #include "TerrainElevationLayerRenderer.h"
 #include "TerrainQuadNode.h"
 
-TerrainRenderer::TerrainRenderer() {}
+TerrainRenderer::TerrainRenderer()  : TypedRenderer<TerrainRenderObj>(RendererType::Terrain) {}
 
 TerrainRenderer::~TerrainRenderer() {}
 

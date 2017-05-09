@@ -20,6 +20,7 @@ private:
     const gfx::StateGroup*         _base3D{ nullptr };
 
 public:
+    UIRenderer() : TypedRenderer<UIFrameRenderObj>(RendererType::Ui) {};
     ~UIRenderer();
 
     void Register(UIFrameRenderObj* uiFrameObj);
