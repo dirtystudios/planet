@@ -21,9 +21,32 @@ MeshPtr MeshCache::Get(const std::string& name) {
         return it->second;
     }
     
-    std::string fpath = _baseDir + "/" + name;
+    return nullptr;
+}
 
+MeshPtr MeshCache::Create(const std::string& name, const std::string& assetPath)
+{
+    MeshPtr mesh = Get(name);
+    if (mesh) {
+        return mesh;
+    }
+    
+    std::string fpath = _baseDir + "/" + assetPath;
+    
     std::vector<MeshPart> parts = meshImport::LoadMeshDataFromFile(fpath);
+    auto inserted = _cache.emplace(name, std::make_shared<Mesh>(std::move(parts)));
+    return inserted.first->second;
+}
+
+MeshPtr MeshCache::Create(const std::string& name, MeshGeometryData&& geometryData)
+{
+    MeshPtr mesh = Get(name);
+    if (mesh) {
+        return mesh;
+    }
+    
+    std::vector<MeshPart> parts;
+    parts.emplace_back(0, std::move(geometryData));
     auto inserted = _cache.emplace(name, std::make_shared<Mesh>(std::move(parts)));
     return inserted.first->second;
 }

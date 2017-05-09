@@ -17,6 +17,8 @@ public:
     ~MeshCache();
 
     MeshPtr Get(const std::string& name);
+    MeshPtr Create(const std::string& name, const std::string& assetPath);
+    MeshPtr Create(const std::string& name, MeshGeometryData&& geometryData);
 
 private:    
 };

@@ -17,4 +17,6 @@ public:
     ~MaterialCache() {};
 
     MaterialPtr Get(const std::string& name);
+    MaterialPtr Create(const std::string& name, const std::string& assetPath);
+    MaterialPtr Create(const std::string& name, MaterialData&& materialData);
 };

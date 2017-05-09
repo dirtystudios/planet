@@ -52,7 +52,7 @@ public:
         }
         assert(matData.specularMap == "");
 
-        gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ConstantBufferBit, sizeof(MaterialConstants), "MeshMatContants" + matData.name);
+        gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ConstantBufferBit, sizeof(MaterialConstants), "MeshMatContants_" + matData.name);
         gfx::BufferId buffer = device->AllocateBuffer(desc);
         matConstants = new ConstantBuffer(buffer, device);
         

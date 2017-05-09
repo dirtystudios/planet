@@ -75,7 +75,7 @@ void default_main() {
     float Id = 1.f;
     float Is = 1.f;
 
-    vec3 Kd = texture(_s0_diffuse, i_tex).rgb;
+    vec3 Kd = b2_Kd * texture(_s0_diffuse, i_tex).rgb;
     vec3 Ks = b2_Ks;
     vec3 Ka = b2_Ka;
 

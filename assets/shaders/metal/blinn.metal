@@ -28,11 +28,8 @@ struct ObjectConstants {
 
 struct MaterialConstants {
     float3 ka;
-    float  pad0;
     float3 kd;
-    float  pad1;
-    float3 ks;
-    float  pad2;
+    float3 ks;    
     float3 ke;
     float  ns;
 };
@@ -61,7 +58,7 @@ fragment float4 blinn_frag(VertexOut varyingInput[[stage_in]], texture2d<float> 
     float Is = 1.f;
 
     float4 sampledKd = diffuse.sample(diffuseSampler, varyingInput.texture);
-    float3 Kd        = float3(sampledKd.x, sampledKd.y, sampledKd.z);
+    float3 Kd        = material.kd * float3(sampledKd.x, sampledKd.y, sampledKd.z);
     float3 Ks        = material.ks;
     float3 Ka        = material.ka;
 

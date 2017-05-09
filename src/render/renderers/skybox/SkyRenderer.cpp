@@ -98,7 +98,13 @@ void SkyRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     glm::mat4 model     = translate * scale;
     glm::mat4 world     = model;
 
-    for (SkyboxRenderObj* skybox : _objs) {
+    for (RenderObj* baseRO : view->_visibleObjects) {
+        if (baseRO->GetRendererType() != Renderer::rendererType()) {
+            continue;
+        }
+        
+        SkyboxRenderObj* skybox = static_cast<SkyboxRenderObj*>(baseRO);
+        
         if (skybox->_item == nullptr) {
             gfx::DrawCall drawCall;
             drawCall.type           = gfx::DrawCall::Type::Arrays;

@@ -51,7 +51,13 @@ void TerrainRenderer::Register(TerrainRenderObj* renderObj) { _renderObjs.push_b
 void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     _nodesInScene.clear();
 
-    for (const TerrainRenderObj* terrain : _renderObjs) {
+    for (const RenderObj* baseRO : view->_visibleObjects) {
+        if (baseRO->GetRendererType() != Renderer::rendererType()) {
+            continue;
+        }
+        
+        const TerrainRenderObj* terrain = static_cast<const TerrainRenderObj*>(baseRO);
+        
         for (TerrainQuadTree* tree : terrain->getQuadTrees()) {
             TerrainQuadNodeSelector().SelectQuadNodes(view, tree, &_nodesInScene);
         }

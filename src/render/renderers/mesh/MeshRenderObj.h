@@ -9,6 +9,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "RenderObj.h"
+#include "DMath.h"
 
 class MeshRenderer;
 
@@ -24,9 +25,15 @@ private:
     std::unique_ptr<const gfx::StateGroup>   stateGroup;
 
     std::string _meshName, _matName;
+    
+    dm::Transform _transform;
 
 public:
     MeshRenderObj(const MeshPtr& mesh, const MaterialPtr& material)
         : RenderObj(RendererType::Mesh), mesh(mesh), mat(material) {};
+    
+    
+    dm::Transform* transform() { return &_transform; };
+    
     ~MeshRenderObj() {}
 };
