@@ -47,7 +47,11 @@ static constexpr size_t quadSizeInBytes = 6 * sizeof(GlyphVertex);
 
 static constexpr size_t kCursorBufferSize = 2 * sizeof(CursorPosVertex);
 
-TextRenderer::TextRenderer(float scaleX, float scaleY) : _scaleX(scaleX), _scaleY(scaleY) {}
+TextRenderer::TextRenderer(float scaleX, float scaleY)
+: TypedRenderer<TextRenderObj>(RendererType::Text)
+, _scaleX(scaleX)
+, _scaleY(scaleY)
+{}
 
 void TextRenderer::OnInit() {
     // load freetype glyphs

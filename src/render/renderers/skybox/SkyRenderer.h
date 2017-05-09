@@ -10,6 +10,7 @@ private:
     const gfx::StateGroup*        _base;
 
 public:
+    SkyRenderer() : TypedRenderer<SkyboxRenderObj>(RendererType::Skybox) {}
     virtual ~SkyRenderer() final;
 
     void Register(SkyboxRenderObj* skyRO) final;

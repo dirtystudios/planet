@@ -1,7 +1,5 @@
 #include "Renderer.h"
 
-Renderer::Renderer() {}
-
 Renderer::~Renderer() { OnDestroy(); }
 
 void Renderer::Init(gfx::RenderDevice* device, RenderServiceLocator* serviceLocator) {

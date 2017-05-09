@@ -106,7 +106,7 @@ void RenderEngine::RenderFrame() {
     mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
-        if (p.second->IsActive()) {
+        if (p.second->isActive()) {
             p.second->Submit(&queue, &view);
         }
     }

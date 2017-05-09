@@ -18,7 +18,7 @@ constexpr size_t kDefaultVertexBufferSize = sizeof(DebugVertex) * 4096;
 static glm::vec3 to3(const glm::vec2& v) { return {v.x, v.y, 0}; }
 static glm::vec4 to4(const glm::vec3& v) { return {v.x, v.y, v.z, 1}; }
 
-DebugRenderer::DebugRenderer() {}
+DebugRenderer::DebugRenderer() : Renderer(RendererType::Debug) {}
 
 void DebugRenderer::OnInit() {
     MeshGeometryData geometryData;

@@ -15,18 +15,18 @@ private:
     gfx::RenderDevice*    _device{};
     RenderServiceLocator* _renderServiceLocator{nullptr};
     bool                  _isActive{true};
-
+    const RendererType    _rendererType;
 protected:
 public:
-    Renderer();
+    Renderer(RendererType rendererType) : _rendererType(rendererType) {};
     virtual ~Renderer();
 
     virtual void SetActive(bool isActive) { _isActive = isActive; }
-    virtual bool                IsActive() const { return _isActive; }
+    virtual bool                isActive() const { return _isActive; }
 
     gfx::RenderDevice*    device() { return _device; }
     RenderServiceLocator* services() { return _renderServiceLocator; };
-
+    RendererType          rendererType() const { return _rendererType; };
 protected:
     virtual void OnInit();
     virtual void OnDestroy();
@@ -39,7 +39,7 @@ private:
 template <typename T>
 class TypedRenderer : public Renderer {
 public:
-    TypedRenderer() { static_assert(std::is_base_of<RenderObj, T>::value, "Derived class is not derived from RenderObj"); }
+    TypedRenderer(RendererType rendererType) : Renderer(rendererType) { static_assert(std::is_base_of<RenderObj, T>::value, "Derived class is not derived from RenderObj"); }
 
     virtual ~TypedRenderer(){};
 
@@ -47,5 +47,5 @@ public:
     virtual void Unregister(T* typedRenderObjects) = 0;
 
 private:
-    virtual void Submit(RenderQueue* renderQueue, const FrameView* view) = 0;
+    virtual void Submit(RenderQueue* renderQueue, const FrameView* view) = 0;    
 };

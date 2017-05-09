@@ -20,6 +20,7 @@ private:
     uint32_t indexOffset{0};
 
 public:
+    MeshRenderer() : Renderer(RendererType::Mesh) {}
     ~MeshRenderer();
 
     void OnInit() override;
