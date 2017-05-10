@@ -1,7 +1,7 @@
 workspace "planet"
     startproject "planet"
     location "build"
-    targetdir "bin"
+    targetdir "%{wks.location}/bin"
     configurations { "debug", "release" }
     platforms { "x32", "x64" }
 
