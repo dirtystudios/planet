@@ -35,4 +35,6 @@ before_script:
 
 script:
   - cd build
-  - xcodebuild -configuration release
+  - xcodebuild -project dstd.xcodeproj -configuration release
+  - xcodebuild -project backend.xcodeproj -configuration release
+  - xcodebuild -project planet.xcodeproj -configuration release
