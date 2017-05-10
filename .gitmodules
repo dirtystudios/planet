@@ -13,3 +13,6 @@
 [submodule "external/include/enum-flags"]
 	path = external/include/enum-flags
 url=https://github.com/dirtystudios/enum-flags
+[submodule "external/include/microprofile"]
+	path = external/include/microprofile
+	url = https://github.com/zeux/microprofile

@@ -12,6 +12,8 @@
 #include "Memory.h"
 #include "DrawItemDecoder.h"
 
+#include <microprofile\microprofile.h>
+
 #define SafeGet(id, idx) id[(uint32_t)idx]
 
 namespace gfx {
@@ -928,6 +930,8 @@ namespace gfx {
 
         // todo: deal with this?
         CreateSetDefaultSampler();
+
+        MicroProfileGpuInitD3D11(m_dev.Get());
 
         return 1;
     }
