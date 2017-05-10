@@ -16,14 +16,10 @@
 #include "StateGroup.h"
 #include "TerrainRenderer.h"
 #include "VertexLayoutCache.h"
-//
-// struct RenderScene {
-//    using RenderObjIdx = uint32_t;
-//    std::vector<RenderView*> _activeViews;
-//    std::vector<std::vector<RenderObjIdx>> _objectsPerView;
-//
-//    std::vector<RenderObj*> _visibleObjects;
-//};
+
+ struct RenderScene {
+    std::vector<RenderObj*> renderObjects;
+};
 //
 
 // enum class RenderLayerType : uint8_t {
@@ -72,6 +68,7 @@ struct Renderers {
     std::unique_ptr<TerrainRenderer> terrain;
 };
 
+
 class RenderEngine : public RenderServiceLocator {
 private:
     gfx::RenderDevice* _device{nullptr};
@@ -94,7 +91,7 @@ public:
     ~RenderEngine();
 
     Renderers& Renderers() { return _renderers; }
-    void       RenderFrame();
+    void       RenderFrame(const RenderScene* scene);
 
     ShaderCache*           shaderCache() override;
     PipelineStateCache*    pipelineStateCache() override;

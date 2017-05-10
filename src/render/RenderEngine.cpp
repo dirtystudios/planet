@@ -91,13 +91,14 @@ RenderEngine::~RenderEngine() {
         delete _stateGroupDefaults;
 }
 
-void RenderEngine::RenderFrame() {
+void RenderEngine::RenderFrame(const RenderScene* scene) {
     cmdbuf->Reset();
     RenderQueue queue(cmdbuf);
     queue.defaults = _stateGroupDefaults;
 
     assert(_view);
     FrameView view = _view->frameView();
+    view._visibleObjects = scene->renderObjects; // for now
     
     // update view constants
     ViewConstants* mapped = viewConstantsBuffer->Map<ViewConstants>();

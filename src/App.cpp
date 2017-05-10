@@ -40,6 +40,7 @@ ui::UIManager* uiManager;
 ui::ConsoleUI* consoleUI;
 ui::DebugUI* debugUI;
 std::unique_ptr<FlatTerrain> terrain;
+std::unique_ptr<MeshRenderObj> meshRO;
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -185,18 +186,28 @@ void App::OnStart() {
     terrain.reset(new FlatTerrain(10000));
     renderEngine->Renderers().terrain->Register(terrain.get());
     
-    // whoops, this doesnt get deleted
-//    MaterialData materialData;
-//    MeshGeometryData geometryData;
+//    // whoops, this doesnt get deleted
+//    MeshPtr mesh = renderEngine->meshCache()->Create("sponza", "sponza/sponza.obj");
+//    MaterialPtr material = renderEngine->materialCache()->Create("sponza", "sponza/sponza.obj");
+//    
+//    MeshRenderObj* renderObj = new MeshRenderObj(mesh, material);
+//    renderEngine->Renderers().mesh->Register(renderObj);
     
-    MeshPtr mesh = renderEngine->meshCache()->Get("sponza/sponza.obj");
-    MaterialPtr material = renderEngine->materialCache()->Get("sponza/sponza.obj");
+    MaterialData materialData;
+    MeshGeometryData geometryData;
     
-    MeshRenderObj* renderObj = new MeshRenderObj(mesh, material);
-    renderEngine->Renderers().mesh->Register(renderObj);
+    dgen::GenerateIcoSphere(3, &geometryData);
     
-    //dgen::GenerateIcoSphere(3, &geometryData);
+    materialData.kd = glm::vec3(1, 0, 0);
+    materialData.shadingModel = ShadingModel::Blinn;
     
+    MeshPtr sphereMesh = renderEngine->meshCache()->Create("ico_sphere_3", std::move(geometryData));
+    MaterialPtr redMaterial = renderEngine->materialCache()->Create("red_blinn", std::move(materialData));
+    
+    meshRO.reset(new MeshRenderObj(sphereMesh, redMaterial));
+    meshRO->transform()->scale(50);
+
+    renderEngine->Renderers().mesh->Register(meshRO.get());
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
@@ -218,9 +229,15 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     playerController->DoUpdate(dt);
     uiManager->DoUpdate(dt * 1000);
     simulation.Update(dt);
-
+    
+    meshRO->transform()->reset();
+    meshRO->transform()->scale(50.f + 10.f * cos(total_frame_count / 60.f));
+    
     // render
-    renderEngine->RenderFrame();
+    RenderScene scene;
+    scene.renderObjects.push_back(meshRO.get());
+    
+    renderEngine->RenderFrame(&scene);
 
     // timers
     taccumulate += dt;

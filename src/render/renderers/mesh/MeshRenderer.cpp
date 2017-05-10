@@ -76,9 +76,15 @@ void MeshRenderer::Register(MeshRenderObj* meshObj) {
 void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView) {
     _drawItems.clear();
     sortedMatCache.clear();
-
-    glm::mat4 world = glm::scale(glm::mat4(), glm::vec3(1, 1, 1));
-    for (MeshRenderObj* renderObj : meshRenderObjs) {
+    
+    for (RenderObj* baseRO : renderView->_visibleObjects) {
+        if (baseRO->GetRendererType() != Renderer::rendererType()) {
+            continue;
+        }
+        MeshRenderObj* renderObj = static_cast<MeshRenderObj*>(baseRO);
+        
+        glm::mat4 world = renderObj->_transform.matrix();
+        
         assert(renderObj->perObject);
         assert(renderObj->mat);
         assert(renderObj->mesh);

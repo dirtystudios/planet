@@ -15,16 +15,39 @@ MaterialPtr MaterialCache::Get(const std::string& name) {
     if (it != _cache.end()) {
         return it->second;
     }
+    
+    return nullptr;
+}
 
+MaterialPtr MaterialCache::Create(const std::string& name, const std::string& assetPath)
+{
+    MaterialPtr material = Get(name);
+    if (material) {
+        return material;
+    }
+    
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
     if (!fs::IsPathDirectory(assetDirPath)) {
         LOG_E("Invalid Directory Path given for AssetDirectory.");
     }
-
-    std::string fpath   = _baseDir + "/" + name;
+    
+    std::string fpath = _baseDir + "/" + assetPath;
     std::vector<MaterialData> matData = materialImport::LoadMaterialDataFromFile(fpath);
     
     auto inserted = _cache.emplace(name, std::make_shared<Material>(std::move(matData)));
+    
+    return inserted.first->second;
+}
 
+MaterialPtr MaterialCache::Create(const std::string& name, MaterialData&& materialData)
+{
+    MaterialPtr material = Get(name);
+    if (material) {
+        return material;
+    }
+    
+    std::vector<MaterialData> materials;
+    materials.emplace_back(materialData);    
+    auto inserted = _cache.emplace(name, std::make_shared<Material>(std::move(materials)));
     return inserted.first->second;
 }

@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Frustum.h"
 #include "Viewport.h"
+#include "RenderObj.h"
 
 struct FrameView {
     const glm::vec3 eyePos;
@@ -13,6 +14,8 @@ struct FrameView {
     const glm::vec3 look;
     const Frustum   frustum;
     const Viewport  viewport;
+    
+    std::vector<RenderObj*> _visibleObjects;
 };
 
 struct RenderView {

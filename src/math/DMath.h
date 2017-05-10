@@ -38,6 +38,12 @@ public:
     void scale(float scalar) { scale({scalar, scalar, scalar}); };
     void translate(const glm::vec3& translation) { _translation = glm::translate(_translation, translation); }
 
+    void reset() {
+        _scale = glm::mat4();
+        _rotation = glm::mat4();
+        _translation = glm::mat4();
+    }
+    
     glm::mat4 matrix() { return _translation * _rotation * _scale; }
 };
 
