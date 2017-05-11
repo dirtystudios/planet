@@ -373,6 +373,7 @@ namespace gfx {
     void DX11Device::CreateSetDefaultSampler() {
         D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
         //samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+        samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
         DX11_CHECK(m_dev->CreateSamplerState(&samplerDesc, &m_defaultSampler));
     }
 
