@@ -37,10 +37,24 @@ void MeshRenderer::OnInit() {
 void MeshRenderer::Register(MeshRenderObj* meshObj) {
     meshObj->perObject = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");    
 
+
+    gfx::RasterState rs;
+    rs.cullMode = gfx::CullMode::Front;  
+    rs.windingOrder = gfx::WindingOrder::FrontCW;
+
+    gfx::BlendState blendState;
+    blendState.enable = true;
+    blendState.srcRgbFunc = gfx::BlendFunc::SrcAlpha;
+    blendState.srcAlphaFunc = blendState.srcRgbFunc;
+    blendState.dstRgbFunc = gfx::BlendFunc::OneMinusSrcAlpha;
+    blendState.dstAlphaFunc = blendState.dstRgbFunc;
+    
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
     encoder.BindResource(meshObj->perObject->GetBinding(1));
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "blinn"));
+    //encoder.SetRasterState(rs);
+    encoder.SetBlendState(blendState);
     meshObj->stateGroup.reset(encoder.End());
 
     for (const MaterialData& matdata : meshObj->mat->matData) {

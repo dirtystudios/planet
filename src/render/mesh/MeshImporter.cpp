@@ -54,6 +54,7 @@ std::vector<MeshPart> meshImport::LoadMeshDataFromFile(const std::string& fpath)
         aiProcess_JoinIdenticalVertices
         | aiProcess_Triangulate
         | aiProcess_FlipUVs
+        | aiProcess_FixInfacingNormals
         | aiProcess_GenNormals
         | aiProcess_OptimizeGraph
         | aiProcess_OptimizeMeshes
