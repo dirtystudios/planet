@@ -8,7 +8,7 @@ extern void MicroProfileGpuInitD3D11(struct ID3D11Device* pDevice);
 
 class Profiler {
 private:
-    DebugDrawInterface* m_debugRenderer{ nullptr };
+    static DebugDrawInterface* m_debugRenderer;
 public:
     static void Initialize(DebugDrawInterface* debug);
     static bool OnKeyDown(int key_code);

@@ -1,6 +1,7 @@
 
 #include "Log.h"
 #include "Helpers.h"
+#include "System.h"
 
 #define MICROPROFILE_ENABLED 1
 #define MICROPROFILEUI_ENABLED 1
@@ -18,26 +19,28 @@
 #include "Profiler.h"
 #include <microprofile/microprofileui.h>
 
+DebugDrawInterface* Profiler::m_debugRenderer = nullptr;
+
 const char* MicroProfileGetThreadName() { return "TODO: get thread name!"; }
 
 void MicroProfileDrawBox(int nX, int nY, int nX1, int nY1, uint32_t nColor, MicroProfileBoxType type) {
     // todo: support stupid boxtype
     auto renderer = Profiler::Renderer();
     if (renderer)
-        renderer->AddRect2D({ { nX, nY }, { nX1, nY1 } }, dUtils::ConvertRGBColor(nColor));
+        renderer->AddRect2D({ { nX, nY }, { nX1, nY1 } }, dutil::ConvertRGBColor(nColor));
 }
 
 void MicroProfileDrawLine2D(uint32_t nVertices, float* pVertices, uint32_t nColor) {
     auto renderer = Profiler::Renderer();
     if (renderer) {
         for (int i=1;i<=nVertices;++i)
-            renderer->AddLine2D({pVertices[(i - 1) * 2], pVertices[(i - 1) * 2 + 1] }, { pVertices[i * 2], pVertices[i * 2 + 1] }, ConvertRGBColor(nColor));
+            renderer->AddLine2D({pVertices[(i - 1) * 2], pVertices[(i - 1) * 2 + 1] }, { pVertices[i * 2], pVertices[i * 2 + 1] }, dutil::ConvertRGBColor(nColor));
     }
 }
 
 void MicroProfileDrawText(int nX, int nY, uint32_t nColor, const char* pText, uint32_t nLen) {
     auto renderer = Profiler::Renderer();
-    if (renderer) 
+    //if (renderer) 
         // todo:
 }
 
@@ -49,8 +52,23 @@ void Profiler::Initialize(DebugDrawInterface* debug) {
     g_MicroProfileUI.nOpacityBackground = 0x40u << 24;
     g_MicroProfileUI.nOpacityForeground = 0xc0u << 24;
     MicroProfileSetDisplayMode(1);
+    m_debugRenderer = debug;
 }
 
 void Profiler::Shutdown() {
     MicroProfileShutdown();
+}
+
+void Profiler::Draw() {
+    auto renderer = Profiler::Renderer();
+    if (renderer) {
+        const sys::SysWindowSize& windowSize = sys::GetWindowSize();
+        MicroProfileDraw(windowSize.width, windowSize.height);
+    }
+}
+
+void Profiler::Flip() {
+    auto renderer = Profiler::Renderer();
+    if (renderer)
+        MicroProfileFlip();
 }

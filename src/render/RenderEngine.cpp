@@ -40,12 +40,12 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _renderersByType.insert({RendererType::Mesh, _renderers.mesh.get()});
     _renderersByType.insert({RendererType::Ui, _renderers.ui.get()});
     _renderersByType.insert({RendererType::Text, _renderers.text.get()});
-    _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
     _renderersByType.insert({RendererType::Terrain, _renderers.terrain.get()});
+    _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
 
     _renderers.mesh->SetActive(true);
     _renderers.sky->SetActive(false);
-    _renderers.terrain->SetActive(false);
+    _renderers.terrain->SetActive(true);
     _renderers.text->SetActive(false);
     _renderers.ui->SetActive(false);
 

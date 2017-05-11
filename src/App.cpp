@@ -25,6 +25,7 @@
 #include "UI.h"
 #include "UIManager.h"
 #include "MeshGeneration.h"
+#include "Profiler.h"
 
 uint32_t frame_count = 0;
 double taccumulate = 0;
@@ -196,6 +197,8 @@ void App::OnStart() {
     renderEngine->Renderers().mesh->Register(renderObj);
     
     //dgen::GenerateIcoSphere(3, &geometryData);
+
+    Profiler::Initialize(renderEngine->debugDraw());
     
 }
 
@@ -219,8 +222,10 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     uiManager->DoUpdate(dt * 1000);
     simulation.Update(dt);
 
-    // render
+    // render    
     renderEngine->RenderFrame();
+    Profiler::Draw();
+    Profiler::Flip();
 
     // timers
     taccumulate += dt;
