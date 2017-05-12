@@ -174,7 +174,7 @@
             NSScreen* screen = self.window.screen ?: [NSScreen mainScreen];
             drawableSize.width *= screen.backingScaleFactor;
             drawableSize.height *= screen.backingScaleFactor;
-
+            
             _metalLayer.drawableSize = drawableSize;
             _layerSizeDidUpdate      = NO;
         }
@@ -184,6 +184,10 @@
         // do not retain current drawable beyond the frame.
         _currentDrawable = nil;
     }
+}
+- (CGSize)extents
+{
+    return _metalLayer.drawableSize;
 }
 
 // using SDL, we are a subview so these are handled by the SDLView

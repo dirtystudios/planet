@@ -10,12 +10,17 @@
 #include "ResourceTypes.h"
 
 namespace gfx {
+    
+static const size_t kMaxColorAttachments = 4;
+    
 struct PipelineStateDesc {
+    RenderPassId renderPass{0};
     ShaderId vertexShader{0};
     ShaderId pixelShader{0};
     VertexLayoutId vertexLayout{0};
     PrimitiveType topology{PrimitiveType::Triangles};
-    BlendState blendState;
+    size_t blendAttachmentCount{0};
+    BlendState blendState[kMaxColorAttachments];
     RasterState rasterState;
     DepthState depthState;
 };
@@ -27,7 +32,12 @@ struct hash<gfx::PipelineStateDesc> {
     typedef gfx::PipelineStateDesc argument_type;
     typedef std::size_t result_type;
     size_t operator()(argument_type const& s) const {
-        return HashCombine(s.vertexShader, s.pixelShader, s.vertexLayout, s.topology, s.blendState, s.rasterState,
+        size_t blendStateKey = 0;
+        for (uint32_t i = 0; i < s.blendAttachmentCount; ++i) {
+            blendStateKey = HashCombine(blendStateKey, s.blendState[i]);
+        }
+        
+        return HashCombine(blendStateKey, s.blendAttachmentCount, s.renderPass, s.vertexShader, s.pixelShader, s.vertexLayout, s.topology, s.rasterState,
                            s.depthState);
     }
 };

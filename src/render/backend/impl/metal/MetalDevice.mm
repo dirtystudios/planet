@@ -13,8 +13,20 @@ static const std::string kMetalGfxChannel = "MetalDevice";
 #define GFXLog_W(fmt, ...) LOG(Log::Level::Warn, kMetalGfxChannel, fmt, ##__VA_ARGS__)
 #import "MetalView.h"
 
-namespace gfx {
+using namespace gfx;
+    
+constexpr bool isDepthFormat(MTLPixelFormat pixelFormat)
+{
+    return pixelFormat == MTLPixelFormatDepth16Unorm || pixelFormat == MTLPixelFormatDepth32Float || pixelFormat == MTLPixelFormatDepth24Unorm_Stencil8
+        || pixelFormat == MTLPixelFormatDepth32Float_Stencil8;
+}
 
+constexpr bool isStencilFormat(MTLPixelFormat pixelFormat)
+{
+    return pixelFormat == MTLPixelFormatStencil8 || pixelFormat == MTLPixelFormatX24_Stencil8 || pixelFormat == MTLPixelFormatX32_Stencil8
+        || pixelFormat == MTLPixelFormatDepth24Unorm_Stencil8 || pixelFormat == MTLPixelFormatDepth32Float_Stencil8;
+}
+    
 id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device) {
     static id<MTLSamplerState> sampler = nil;
 
@@ -40,6 +52,7 @@ uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width) {
     switch (format) {
         case MTLPixelFormatR8Unorm:
             return width;
+        case MTLPixelFormatDepth32Float:
         case MTLPixelFormatR32Float:
         case MTLPixelFormatRGBA8Unorm:
             return 4 * width;
@@ -59,6 +72,10 @@ MetalDevice::MetalDevice() {
 
 MetalDevice::~MetalDevice() {}
 
+SwapChainInfo MetalDevice::GetSwapChainInfo() {
+    return { (uint32_t)_view.extents.width, (uint32_t)_view.extents.height, MetalEnumAdapter::fromMTL(_view.colorPixelFormat) };
+}
+
 RenderDeviceApi MetalDevice::GetDeviceApi() { return RenderDeviceApi::Metal; }
 
 int32_t MetalDevice::InitializeDevice(const DeviceInitialization& deviceInit) {
@@ -69,11 +86,12 @@ int32_t MetalDevice::InitializeDevice(const DeviceInitialization& deviceInit) {
 
     _device = _view.device;
     _queue  = [_device newCommandQueue];
-
+    
     _view.depthPixelFormat = MTLPixelFormatDepth32Float;
     _inflightSemaphore     = dispatch_semaphore_create(1);
     _library               = new MetalShaderLibrary(&_resourceManager);
-
+    
+    [_view display];    
     return 0;
 }
 
@@ -165,6 +183,7 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     rpd.colorAttachments[0].destinationRGBBlendFactor   = MetalEnumAdapter::toMTL(desc.blendState.dstRgbFunc);
     rpd.colorAttachments[0].sourceAlphaBlendFactor      = MetalEnumAdapter::toMTL(desc.blendState.srcAlphaFunc);
     rpd.colorAttachments[0].sourceRGBBlendFactor        = MetalEnumAdapter::toMTL(desc.blendState.srcRgbFunc);
+    
 
     NSError*                     error            = nil;
     MTLRenderPipelineReflection* reflection       = nil;
@@ -246,12 +265,14 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
     desc.sampleCount           = params.sampleCount;
     desc.arrayLength           = params.arrayLength;
     desc.cpuCacheMode          = params.cpuCacheMode;
-    desc.storageMode           = params.storageMode;
+    desc.storageMode           = isDepthFormat(mtlPixelFormat) || isStencilFormat(mtlPixelFormat) ? MTLStorageModePrivate : params.storageMode;
+    desc.usage                 = params.usage;
 
     MetalTexture* texture    = new MetalTexture();
     texture->mtlTexture      = [_device newTextureWithDescriptor:desc];
     texture->mtlSamplerState = GetDefaultSampler(_device);
     texture->externalFormat  = params.format;
+    texture->usage           = params.usage;
 
     void* const* srcDatas      = params.srcData;
     uint32_t     width         = params.width;
@@ -286,6 +307,73 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
 
     [desc release];
     return _resourceManager.AddResource(texture);
+}
+    
+TextureId MetalDevice::CreateAttachment(PixelFormat format, uint32_t width, uint32_t height, const std::string& debugName)
+{
+    CreateTextureParams params;
+    params.debugName   = debugName;
+    params.format      = format;
+    params.width       = width;
+    params.height      = height;
+    params.textureType = MTLTextureType2D;
+    params.usage       = MTLTextureUsageRenderTarget;
+    
+    return CreateTexture(params);
+}
+
+RenderPassId MetalDevice::CreateRenderPass(const RenderPassDesc& desc)
+{
+    MTLRenderPassDescriptor* renderPass = [MTLRenderPassDescriptor renderPassDescriptor];
+    
+    int32_t backBufferIndex = -1;
+    uint32_t index = 0;
+    for (TextureId target : desc.colorAttachments) {
+        MetalTexture* texture = nullptr;
+        if (target != RenderDevice::BackBufferAttachment()) {
+            _resourceManager.GetResource<MetalTexture>(target);
+            dg_assert_nm(texture && texture->usage == MTLTextureUsageRenderTarget);
+        } else {
+            backBufferIndex = index;
+        }
+        
+        MTLRenderPassColorAttachmentDescriptor* colorAttachment = [MTLRenderPassColorAttachmentDescriptor new];
+        colorAttachment.texture = texture ? texture->mtlTexture : nullptr;
+        colorAttachment.loadAction = MTLLoadActionClear;
+        colorAttachment.clearColor = MTLClearColorMake(0.15f, 0.15f, 0.15f, 1.0f);
+        
+        [renderPass.colorAttachments setObject:colorAttachment atIndexedSubscript:index++];
+    } 
+    
+    if (desc.depthAttachment != 0) {
+        MetalTexture* depthTexture = _resourceManager.GetResource<MetalTexture>(desc.depthAttachment);
+        dg_assert_nm(depthTexture && depthTexture->usage == MTLTextureUsageRenderTarget && isDepthFormat(depthTexture->mtlTexture.pixelFormat));
+        MTLRenderPassDepthAttachmentDescriptor* depthAttachment = [MTLRenderPassDepthAttachmentDescriptor new];
+        depthAttachment.texture = depthTexture->mtlTexture;
+        depthAttachment.loadAction  = MTLLoadActionClear;
+        depthAttachment.storeAction = MTLStoreActionDontCare;
+        depthAttachment.clearDepth = 1.0;
+        
+        renderPass.depthAttachment = depthAttachment;
+    }
+    
+    if (desc.stencilAttachment != 0) {
+        MetalTexture* stencilTexture = _resourceManager.GetResource<MetalTexture>(desc.stencilAttachment);
+        dg_assert_nm(stencilTexture && stencilTexture->usage == MTLTextureUsageRenderTarget && isStencilFormat(stencilTexture->mtlTexture.pixelFormat));
+        MTLRenderPassStencilAttachmentDescriptor* stencilAttachment = [MTLRenderPassStencilAttachmentDescriptor new];
+        stencilAttachment.texture = stencilTexture->mtlTexture;
+        stencilAttachment.loadAction  = MTLLoadActionClear;
+        stencilAttachment.storeAction = MTLStoreActionDontCare;
+        stencilAttachment.clearStencil = 0.f;
+        
+        renderPass.stencilAttachment = stencilAttachment;
+    }
+    
+    MetalRenderPass* metalRenderPass = new MetalRenderPass();
+    metalRenderPass->mtlRenderPass = renderPass;
+    metalRenderPass->backBufferIndex = backBufferIndex;
+    
+    return _resourceManager.AddResource(metalRenderPass);
 }
 
 TextureId MetalDevice::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* srcData, const std::string& debugName) {
@@ -505,4 +593,4 @@ void MetalDevice::SubmitToGPU() {
 uint32_t MetalDevice::DrawCallCount() { return _frameDrawCallCount; }
 
 void MetalDevice::ResizeWindow(uint32_t width, uint32_t height) { [_view shouldResize]; }
-}
+

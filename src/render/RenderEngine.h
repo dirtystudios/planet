@@ -75,6 +75,7 @@ private:
     gfx::RenderDevice* _device{nullptr};
     RenderView*        _view{nullptr};
     std::unordered_map<RendererType, Renderer*> _renderersByType;
+    std::unordered_map<RenderPassType, std::vector<Renderer*>> _renderersByPass;
     std::unordered_map<RenderObj*, Renderer*>   _renderObjLookup;
     ShaderCache*           _shaderCache{nullptr};
     PipelineStateCache*    _pipelineStateCache{nullptr};

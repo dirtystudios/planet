@@ -110,7 +110,27 @@ public:
         dg_assert_fail_nm();
         return MTLPrimitiveTypeTriangle; // to silence warnings
     }
-
+    
+    static PixelFormat fromMTL(MTLPixelFormat format) {
+        switch (format) {
+            case MTLPixelFormatR32Float:
+                return PixelFormat::R32Float;
+            case MTLPixelFormatRGBA32Float:
+                return PixelFormat::RGBA32Float;
+            case MTLPixelFormatR8Unorm:
+                return PixelFormat::R8Unorm;
+            case MTLPixelFormatRGBA8Unorm:
+                return PixelFormat::RGBA8Unorm;
+            case MTLPixelFormatBGRA8Unorm:
+                return PixelFormat::BGRA8Unorm;
+            case MTLPixelFormatDepth32Float:
+                return PixelFormat::Depth32Float;
+            default:
+                dg_assert_fail_nm();
+        }
+        return PixelFormat::R32Float;
+    }
+    
     static MTLPixelFormat toMTL(PixelFormat format) {
         switch (format) {
             case PixelFormat::R32Float:
@@ -125,6 +145,10 @@ public:
                 return MTLPixelFormatInvalid;
             case PixelFormat::RGBA8Unorm:
                 return MTLPixelFormatRGBA8Unorm;
+            case PixelFormat::BGRA8Unorm:
+                return MTLPixelFormatBGRA8Unorm;
+            case PixelFormat::Depth32Float:
+                return MTLPixelFormatDepth32Float;
             default:
                 dg_assert_fail_nm();
         }

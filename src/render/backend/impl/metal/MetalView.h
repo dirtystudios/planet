@@ -20,5 +20,6 @@
 - (void)shouldResize;
 - (void)display;
 - (void)releaseTextures;
+- (CGSize)extents;
 
 @end

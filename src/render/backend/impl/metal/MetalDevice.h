@@ -14,6 +14,8 @@
 #include "ResourceManager.h"
 
 namespace gfx {
+
+    
 struct CreateTextureParams {
     std::string     debugName {""};
     PixelFormat     format{PixelFormat::R8Unorm};
@@ -26,6 +28,7 @@ struct CreateTextureParams {
     MTLCPUCacheMode cpuCacheMode{MTLCPUCacheModeDefaultCache};
     MTLStorageMode  storageMode{MTLStorageModeManaged};
     MTLTextureType  textureType{MTLTextureType2D};
+    MTLTextureUsage usage{MTLTextureUsageShaderRead};
     void* const*    srcData{nullptr};
     uint32_t        srcDataCount{0};
 };
@@ -39,18 +42,19 @@ private:
     std::vector<CommandBuffer*> _commandBuffers;
     dispatch_semaphore_t        _inflightSemaphore;
     NSWindow*                   _window{nil};
-    MetalView*                  _view{nil};
-
+    MetalView*                  _view{nil};    
     uint64_t _frameDrawCallCount{0};
+    
 
 public:
     MetalDevice();
     ~MetalDevice();
 
     // RenderDevice Interface
+    SwapChainInfo GetSwapChainInfo();
     RenderDeviceApi GetDeviceApi();
     int32_t InitializeDevice(const DeviceInitialization& deviceInit);
-    BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr);
+    BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr);    
     VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& desc);
     ShaderId GetShader(ShaderType type, const std::string& functionName);
     void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
@@ -63,6 +67,8 @@ public:
     TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "");
     TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "");
     TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "");
+    TextureId CreateAttachment(PixelFormat format, uint32_t width, uint32_t height, const std::string& debugName = "");
+    RenderPassId CreateRenderPass(const RenderPassDesc& desc);
     void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData);
     void PrintDisplayAdapterInfo() {}
     void DestroyResource(ResourceId resourceId) {}

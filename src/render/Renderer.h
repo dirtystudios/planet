@@ -20,13 +20,15 @@ protected:
 public:
     Renderer(RendererType rendererType) : _rendererType(rendererType) {};
     virtual ~Renderer();
-
+    
     virtual void SetActive(bool isActive) { _isActive = isActive; }
     virtual bool                isActive() const { return _isActive; }
 
     gfx::RenderDevice*    device() { return _device; }
     RenderServiceLocator* services() { return _renderServiceLocator; };
     RendererType          rendererType() const { return _rendererType; };
+    
+    virtual std::vector<RenderPassType> supportedPasses() = 0;
 protected:
     virtual void OnInit();
     virtual void OnDestroy();

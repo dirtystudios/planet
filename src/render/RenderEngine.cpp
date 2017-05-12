@@ -28,6 +28,25 @@ ConstantBuffer* viewConstantsBuffer;
 
 CommandBuffer* cmdbuf;
 
+enum class RenderPassType {
+    Invalid = 0,
+    Standard,
+};
+
+std::array<RenderPassType, 1> renderPassTypeArray = { RenderPassType::Standard };
+
+struct RenderPass {
+    RenderPassType type{RenderPassType::Invalid};
+    RenderPassId passId{0};
+    size_t colorAttachmentCount{0};
+    TextureId colorAttachments[8];
+    TextureId depthAttachment{0};
+    TextureId stencilAttachment{0};
+};
+
+
+RenderPass pass;
+
 RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
     _renderers.sky.reset(new SkyRenderer());
     _renderers.text.reset(new TextRenderer());
@@ -42,6 +61,8 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _renderersByType.insert({RendererType::Text, _renderers.text.get()});
     _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
     _renderersByType.insert({RendererType::Terrain, _renderers.terrain.get()});
+    
+    for
 
     _renderers.mesh->SetActive(true);
     _renderers.sky->SetActive(false);
@@ -74,6 +95,36 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     encoder.SetDepthState(DepthState());
     encoder.BindResource(viewConstantsBuffer->GetBinding(0));
     _stateGroupDefaults = encoder.End();
+    
+    SwapChainInfo swapChainInfo = _device->GetSwapChainInfo();
+    
+    pass.colorAttachmentCount = 1;
+    pass.colorAttachments[0] = _device->BackBufferAttachment();
+    pass.depthAttachment = _device->CreateAttachment(gfx::PixelFormat::Depth32Float, swapChainInfo.width, swapChainInfo.height);
+    
+    RenderPassDesc passDesc;
+    passDesc.colorAttachments = { pass.colorAttachments[0]};
+    passDesc.depthAttachment = pass.depthAttachment;
+    
+    pass.type = RenderPassType::Standard;
+    pass.passId = _device->CreateRenderPass(passDesc);
+    
+//    TextureId gbufferPosition = _device->CreateAttachment(gfx::PixelFormat::RGBA32Float, swapChainInfo.width, swapChainInfo.height);
+//    TextureId gbufferAlbedo = _device->CreateAttachment(gfx::PixelFormat::RGBA32Float, swapChainInfo.width, swapChainInfo.height);
+//    TextureId gbufferNormal = _device->CreateAttachment(gfx::PixelFormat::RGBA32Float, swapChainInfo.width, swapChainInfo.height);
+//    TextureId depthBuffer = _device->CreateAttachment(gfx::PixelFormat::Depth32Float, swapChainInfo.width, swapChainInfo.height);
+//
+//    RenderPassDesc gbufferPassDesc;
+//    gbufferPassDesc.colorAttachments = { gbufferPosition, gbufferAlbedo, gbufferNormal };
+//    gbufferPassDesc.depthAttachment = depthBuffer;
+//
+//    RenderPassDesc compositionPassDesc;
+//    compositionPassDesc.inputAttachments = { gbufferPosition, gbufferAlbedo, gbufferNormal };
+//    compositionPassDesc.colorAttachments = { RenderDevice::BackBufferAttachment() };
+//    compositionPassDesc.depthAttachment = depthBuffer;
+//
+//    RenderPassId gbufferPass = _device->CreateRenderPass(gbufferPassDesc);
+//    RenderPassId compositionPass = _device->CreateRenderPass(compositionPassDesc);
 }
 
 RenderEngine::~RenderEngine() {
