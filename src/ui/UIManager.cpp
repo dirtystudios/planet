@@ -170,7 +170,7 @@ void UIManager::PostProcess(float ms) {
         if (m_debugDrawFocus && m_focusedEditBox) {
             dm::Rect2Df rect = tree->GetRenderedSize(m_focusedEditBox);
             if (rect.bl() != rect.tr()) {
-                m_debugRenderer->AddRect2D(rect, { 1.f, 0.f, 0.f });
+                m_debugRenderer->AddRect2D(rect, { 1.f, 0.f, 0.f, 1.f });
             }
         }
     }

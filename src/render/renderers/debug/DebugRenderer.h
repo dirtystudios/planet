@@ -15,13 +15,13 @@
 struct DebugVertex {
     glm::vec3 position;
     glm::vec2 uv;
-    glm::vec3 color;
+    glm::vec4 color;
 
     static const gfx::VertexLayoutDesc vertexLayoutDesc() {
         static gfx::VertexLayoutDesc vld = {{
             {gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Position, gfx::VertexAttributeStorage::Float},
             {gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float},
-            {gfx::VertexAttributeType::Float3, gfx::VertexAttributeUsage::Color0, gfx::VertexAttributeStorage::Float},
+            {gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::Color0, gfx::VertexAttributeStorage::Float},
         }};
         return vld;
     }
@@ -43,9 +43,12 @@ private:
         DebugVertexVec filled3D;
     } _buffers;
 
+    std::array<uint16_t, 256> _fontCharOffsets{0};
+
     ConstantBuffer*        _3DviewConstants{nullptr};
     ConstantBuffer*        _2DviewConstants{nullptr};
     gfx::BufferId          _vertexBuffer{0};
+    gfx::TextureId         _fontTexture{0};
     const gfx::StateGroup* _2DwireframeSG{nullptr};
     const gfx::StateGroup* _2DfilledSG{nullptr};
     const gfx::StateGroup* _3DwireframeSG{nullptr};
@@ -62,15 +65,17 @@ public:
     DebugRenderer();
     ~DebugRenderer();
 
-    virtual void AddLine2D(const glm::vec2& start, const glm::vec2& end, glm::vec3 color) final;
-    virtual void AddRect2D(const dm::Rect2Df& rect, const glm::vec3& color, bool filled = false) final;
-    virtual void AddCircle2D(const glm::vec2& origin, float r, const glm::vec3& color, bool filled = false) final;
+    virtual void AddLine2D(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color) final;
+    virtual void AddRect2D(const dm::Rect2Df& rect, const glm::vec4& color, bool filled = false) final;
+    virtual void AddCircle2D(const glm::vec2& origin, float r, const glm::vec4& color, bool filled = false) final;
 
-    virtual void AddLine3D(const glm::vec3& start, const glm::vec3& end, glm::vec3 color) final;
-    virtual void AddRect3D(const dm::Rect3Df& rect, const glm::vec3& color, bool filled = false) final;
+    virtual void AddLine3D(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color) final;
+    virtual void AddRect3D(const dm::Rect3Df& rect, const glm::vec4& color, bool filled = false) final;
     virtual void AddSphere3D(const glm::vec3& origin, float radius) final;
+    virtual void AddText(const glm::vec2& start, const glm::vec4& color, const std::string& text) final;
 
 private:
     virtual void OnInit() final;
     virtual void Submit(RenderQueue* renderQueue, const FrameView* view) final;
+    void CreateFontTexture();
 };

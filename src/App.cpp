@@ -19,6 +19,7 @@
 #include "Simulation.h"
 #include "SkyRenderer.h"
 #include "MeshRenderer.h"
+#include "DebugRenderer.h"
 #include "Skybox.h"
 #include "Spatial.h"
 #include "TaskScheduler.h"
@@ -190,16 +191,15 @@ void App::OnStart() {
 //    MaterialData materialData;
 //    MeshGeometryData geometryData;
     
-    MeshPtr mesh = renderEngine->meshCache()->Get("sponza/sponza.obj");
-    MaterialPtr material = renderEngine->materialCache()->Get("sponza/sponza.obj");
+    //MeshPtr mesh = renderEngine->meshCache()->Get("sponza/sponza.obj");
+    //MaterialPtr material = renderEngine->materialCache()->Get("sponza/sponza.obj");
     
-    MeshRenderObj* renderObj = new MeshRenderObj(mesh, material);
-    renderEngine->Renderers().mesh->Register(renderObj);
+    //MeshRenderObj* renderObj = new MeshRenderObj(mesh, material);
+    //renderEngine->Renderers().mesh->Register(renderObj);
     
     //dgen::GenerateIcoSphere(3, &geometryData);
 
     Profiler::Initialize(renderEngine->debugDraw());
-    
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {

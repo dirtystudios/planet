@@ -80,7 +80,7 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
         float terrainSize = root.width();
         float xsize       = 250;
         float ysize       = 250.f;
-        glm::vec3 bgColor = {0.85, 0.85, 0.85};
+        glm::vec4 bgColor = {0.85, 0.85, 0.85, 1.f};
         float border      = 1.f;
         float xloc        = view->viewport.topLeftXY[0] + xsize / 2.f;
         float yloc        = view->viewport.height - view->viewport.topLeftXY[1] - ysize / 2.f; // viewport param isnt actually top left
@@ -95,7 +95,7 @@ void TerrainRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
             glm::vec2 tr = {xloc + (float)quad->localRect.tr().x / terrainSize * xsize, yloc + (float)quad->localRect.tr().y / terrainSize * ysize};
             dm::Rect2Df screenRect(bl + border / 2.f, tr - border / 2.f);
 
-            services()->debugDraw()->AddRect2D(screenRect, dutil::getColor(quad->key.lod), true);
+            services()->debugDraw()->AddRect2D(screenRect, glm::vec4{ dutil::getColor(quad->key.lod), 1.f }, true);
         }
     }
 

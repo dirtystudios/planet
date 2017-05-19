@@ -3,16 +3,19 @@ cbuffer cbProj : register(b0) {
     float4x4 projection : PROJECTION;
 }
 
+Texture2D<float> text : register(t0);
+SamplerState textSampler : register(s0);
+
 struct VS_INPUT {
 	float3 vPos : POSITION0;
     float2 vTex : TEXCOORD0;
-    float3 vCol : COLOR0;
+    float4 vCol : COLOR0;
 };
 
 struct VS_OUTPUT {
     float4 vPosition : SV_POSITION;
     float2 vTex : TEXCOORD0;
-    float3 vCol : COLOR0;
+    float4 vCol : COLOR0;
 };
 
 VS_OUTPUT VSMain( VS_INPUT Input ) {  
@@ -24,5 +27,6 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
 }
 
 float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {  
-	return float4(Input.vCol, 1.0);
+	float alpha = text.Sample(textSampler, Input.vTex);
+	return float4(Input.vCol.rgb, alpha * Input.vCol.a);
 }

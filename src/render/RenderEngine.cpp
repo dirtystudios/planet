@@ -43,9 +43,9 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _renderersByType.insert({RendererType::Terrain, _renderers.terrain.get()});
     _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
 
-    _renderers.mesh->SetActive(true);
+    _renderers.mesh->SetActive(false);
     _renderers.sky->SetActive(false);
-    _renderers.terrain->SetActive(true);
+    _renderers.terrain->SetActive(false);
     _renderers.text->SetActive(false);
     _renderers.ui->SetActive(false);
 

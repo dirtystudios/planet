@@ -2,7 +2,6 @@
 
 #include <deque>
 #include <mutex>
-#include <thread>
 using namespace std;
 
 template <class T>

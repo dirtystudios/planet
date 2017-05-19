@@ -1,5 +1,6 @@
 #pragma once
 
+#include <intrin.h>
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
@@ -47,6 +48,14 @@ static inline glm::vec3 ConvertRGBColor(uint32_t color) {
     return glm::vec3(r, g, b);
 }
 
+static inline glm::vec4 ConvertRGBAColor(uint32_t color) {
+    float a = (color & 0xFF) / 255.f;
+    float b = ((color >> 8) & 0xFF) / 255.f;
+    float g = ((color >> 16) & 0xFF) / 255.f;
+    float r = ((color >> 24) & 0xFF) / 255.f;
+    return glm::vec4(r, g, b, a);
+}
+
 static inline glm::vec3 getColor(uint32_t index) {
     if (index > 64) {
         return glm::vec3(1, 1, 1);
@@ -59,6 +68,10 @@ static inline glm::vec3 getColor(uint32_t index) {
         0x00489C, 0x6F0062, 0x0CBD66, 0xEEC3FF, 0x456D75, 0xB77B68, 0x7A87A1, 0x788D66, 0x885578, 0xFAD09F, 0xFF8A9A, 0xD157A0, 0xBEC459, 0x456648, 0x0086ED, 0x886F4C,
     };
     return ConvertRGBColor(colors[index]);
+}
+
+static inline uint32_t swap32(uint32_t val) {
+    return _byteswap_ulong(val);
 }
 }
 
