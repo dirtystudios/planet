@@ -50,7 +50,9 @@ private:
 public:
     TerrainRenderer();
     ~TerrainRenderer();
-
+    
+    std::vector<RenderPassType> supportedPasses() const final { return { RenderPassType::Standard }; }
+    
     void OnInit() override;
     void Register(TerrainRenderObj* renderObj) final;
     void Unregister(TerrainRenderObj* renderObj) final { assert(false); }

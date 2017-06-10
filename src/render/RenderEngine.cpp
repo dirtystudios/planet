@@ -28,24 +28,19 @@ ConstantBuffer* viewConstantsBuffer;
 
 CommandBuffer* cmdbuf;
 
-enum class RenderPassType {
-    Invalid = 0,
-    Standard,
-};
-
-std::array<RenderPassType, 1> renderPassTypeArray = { RenderPassType::Standard };
-
-struct RenderPass {
-    RenderPassType type{RenderPassType::Invalid};
-    RenderPassId passId{0};
-    size_t colorAttachmentCount{0};
-    TextureId colorAttachments[8];
-    TextureId depthAttachment{0};
-    TextureId stencilAttachment{0};
-};
-
 
 RenderPass pass;
+
+std::array<Renderer*, 6> Renderers::all() {
+    return { {
+        ui.get(),
+        text.get(),
+        debug.get(),
+        terrain.get(),
+        sky.get(),
+        mesh.get()
+    } };
+}
 
 RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
     _renderers.sky.reset(new SkyRenderer());
@@ -62,7 +57,12 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
     _renderersByType.insert({RendererType::Terrain, _renderers.terrain.get()});
     
-    for
+    for (Renderer* renderer : _renderers.all()) {
+        for (RenderPassType passType : renderer->supportedPasses()) {
+            dg_assert_nm(passType != RenderPassType::Invalid);
+            _renderersByPass[passType].push_back(renderer);  
+        }        
+    }
 
     _renderers.mesh->SetActive(true);
     _renderers.sky->SetActive(false);
@@ -83,9 +83,9 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
     cmdbuf              = _device->CreateCommandBuffer();
-    for (auto p : _renderersByType) {
-        LOG_D("Initializing Renderer: %d", p.first);
-        p.second->Init(_device, this);
+    for (Renderer* renderer : _renderers.all()) {
+        LOG_D("Initializing Renderer: %d", renderer->rendererType());
+        renderer->Init(_device, this);
     }
 
     StateGroupEncoder encoder;
@@ -148,6 +148,8 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     RenderQueue queue(cmdbuf);
     queue.defaults = _stateGroupDefaults;
 
+    std::vector<RenderPassType> passesForFrame = { RenderPassType::Standard }; 
+
     assert(_view);
     FrameView view = _view->frameView();
     view._visibleObjects = scene->renderObjects; // for now
@@ -158,12 +160,17 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     mapped->proj          = view.projection;
     mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
-    for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
-        if (p.second->isActive()) {
-            p.second->Submit(&queue, &view);
+
+    for (RenderPassType renderPassType : passesForFrame) {
+        dg_assert_nm(renderPassType != RenderPassType::Invalid);
+        const std::vector<Renderer*>& renderers = _renderersByPass[renderPassType];
+        for (Renderer* renderer : renderers) {
+            if (renderer->isActive()) {
+                renderer->Submit(&queue, &view);
+            }    
         }
     }
-
+    
     queue.Submit(_device);
     _device->RenderFrame();
 }

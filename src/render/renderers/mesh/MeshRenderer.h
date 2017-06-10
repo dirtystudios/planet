@@ -16,7 +16,9 @@ private:
 public:
     MeshRenderer() : Renderer(RendererType::Mesh) {}
     ~MeshRenderer();
-
+    
+    std::vector<RenderPassType> supportedPasses() const final { return { RenderPassType::Standard }; }
+    
     void OnInit() override;
     void Register(MeshRenderObj* renderObj);
     void Unregister(MeshRenderObj* renderObj) { assert(false); }

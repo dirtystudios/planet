@@ -4,6 +4,7 @@
 #include "RenderQueue.h"
 #include "RenderServiceLocator.h"
 #include "RenderView.h"
+#include "RenderPass.h"
 
 class RenderEngine;
 
@@ -28,7 +29,7 @@ public:
     RenderServiceLocator* services() { return _renderServiceLocator; };
     RendererType          rendererType() const { return _rendererType; };
     
-    virtual std::vector<RenderPassType> supportedPasses() = 0;
+    virtual std::vector<RenderPassType> supportedPasses() const { return { RenderPassType::Invalid }; };
 protected:
     virtual void OnInit();
     virtual void OnDestroy();

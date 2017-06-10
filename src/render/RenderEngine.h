@@ -17,6 +17,7 @@
 #include "StateGroup.h"
 #include "TerrainRenderer.h"
 #include "VertexLayoutCache.h"
+#include "RenderPass.h"
 
  struct RenderScene {
     std::vector<RenderObj*> renderObjects;
@@ -67,7 +68,10 @@ struct Renderers {
     std::unique_ptr<UIRenderer>      ui;
     std::unique_ptr<DebugRenderer>   debug;
     std::unique_ptr<TerrainRenderer> terrain;
+
+    std::array<Renderer*, 6> all();
 };
+
 
 
 class RenderEngine : public RenderServiceLocator {

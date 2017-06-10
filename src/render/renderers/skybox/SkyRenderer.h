@@ -12,10 +12,12 @@ private:
 public:
     SkyRenderer() : TypedRenderer<SkyboxRenderObj>(RendererType::Skybox) {}
     virtual ~SkyRenderer() final;
-
+    
+    std::vector<RenderPassType> supportedPasses() const final { return { RenderPassType::Standard }; }
+    
     void Register(SkyboxRenderObj* skyRO) final;
     void Unregister(SkyboxRenderObj* skyRO) final;
-
+    
     void OnInit() override;
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
 };

@@ -45,5 +45,6 @@ struct StateGroupHeader {
 };
         
 struct StateGroup : public std::vector<uint8_t> {};
+
     
 }

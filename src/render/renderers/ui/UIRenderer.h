@@ -27,6 +27,7 @@ public:
     void Unregister(UIFrameRenderObj* uiFrameObj);
 
     // Renderer Interface
+    std::vector<RenderPassType> supportedPasses() const final { return { RenderPassType::Standard }; }
     void OnInit() final;
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
 };

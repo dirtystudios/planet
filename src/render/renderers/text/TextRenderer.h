@@ -63,6 +63,8 @@ public:
     TextRenderer(float scaleX = 1.f, float scaleY = 1.f);
     ~TextRenderer();
 
+    std::vector<RenderPassType> supportedPasses() const final { return { RenderPassType::Standard }; }
+    
     void OnInit() final;
 
     void Register(TextRenderObj* textRO);

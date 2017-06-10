@@ -61,7 +61,9 @@ private:
 public:
     DebugRenderer();
     ~DebugRenderer();
-
+    
+    std::vector<RenderPassType> supportedPasses() const final { return { RenderPassType::Standard }; }
+    
     virtual void AddLine2D(const glm::vec2& start, const glm::vec2& end, glm::vec3 color) final;
     virtual void AddRect2D(const dm::Rect2Df& rect, const glm::vec3& color, bool filled = false) final;
     virtual void AddCircle2D(const glm::vec2& origin, float r, const glm::vec3& color, bool filled = false) final;

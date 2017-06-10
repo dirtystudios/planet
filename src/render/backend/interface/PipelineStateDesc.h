@@ -20,7 +20,7 @@ struct PipelineStateDesc {
     VertexLayoutId vertexLayout{0};
     PrimitiveType topology{PrimitiveType::Triangles};
     size_t blendAttachmentCount{0};
-    BlendState blendState[kMaxColorAttachments];
+    BlendState blendState;//[kMaxColorAttachments];
     RasterState rasterState;
     DepthState depthState;
 };
@@ -33,12 +33,13 @@ struct hash<gfx::PipelineStateDesc> {
     typedef std::size_t result_type;
     size_t operator()(argument_type const& s) const {
         size_t blendStateKey = 0;
-        for (uint32_t i = 0; i < s.blendAttachmentCount; ++i) {
-            blendStateKey = HashCombine(blendStateKey, s.blendState[i]);
-        }
-        
-        return HashCombine(blendStateKey, s.blendAttachmentCount, s.renderPass, s.vertexShader, s.pixelShader, s.vertexLayout, s.topology, s.rasterState,
-                           s.depthState);
+        return blendStateKey;
+//        for (uint32_t i = 0; i < s.blendAttachmentCount; ++i) {
+//            blendStateKey = HashCombine(blendStateKey, s.blendState[i]);
+//        }
+//
+//        return HashCombine(blendStateKey, s.blendAttachmentCount, s.renderPass, s.vertexShader, s.pixelShader, s.vertexLayout, s.topology, s.rasterState,
+//                           s.depthState);
     }
 };
 }
