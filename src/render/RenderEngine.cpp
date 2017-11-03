@@ -45,7 +45,7 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
 
     _renderers.mesh->SetActive(true);
     _renderers.sky->SetActive(false);
-    _renderers.terrain->SetActive(false);
+    _renderers.terrain->SetActive(true);
     _renderers.text->SetActive(false);
     _renderers.ui->SetActive(false);
 

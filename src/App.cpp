@@ -236,6 +236,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // render
     RenderScene scene;
     scene.renderObjects.push_back(meshRO.get());
+    scene.renderObjects.push_back(terrain.get());
     
     renderEngine->RenderFrame(&scene);
 
