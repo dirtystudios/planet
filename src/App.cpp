@@ -25,6 +25,9 @@
 #include "UI.h"
 #include "UIManager.h"
 #include "MeshGeneration.h"
+#include "AnimationManager.h"
+#include "SkinnedMesh.h"
+#include "AnimationComponent.h"
 
 uint32_t frame_count = 0;
 double taccumulate = 0;
@@ -37,10 +40,11 @@ Simulation simulation;
 RenderView* playerView;
 Viewport* playerViewport;
 ui::UIManager* uiManager;
+AnimationManager* animationManager;
+
 ui::ConsoleUI* consoleUI;
 ui::DebugUI* debugUI;
 std::unique_ptr<FlatTerrain> terrain;
-std::unique_ptr<MeshRenderObj> meshRO;
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -163,6 +167,29 @@ void AddWorldText() {
     uiManager->AddFrameObj(worldText);
 }
 
+void AddArthas() {
+    SimObj* arthas = simulation.AddSimObj();
+    SkinnedMesh* mesh = arthas->AddComponent<SkinnedMesh>(ComponentType::SkinnedMesh);
+    mesh->mesh = renderEngine->meshCache()->Create("arthas", "arthas/arthas.fbx");
+    mesh->mat = renderEngine->materialCache()->Create("arthas", "arthas/arthas.fbx");
+
+    AnimationComponent* anim = arthas->AddComponent<AnimationComponent>(ComponentType::Animation);
+    anim->animData = renderEngine->animationCache()->Create("arthas", "arthas/arthas.fbx")->animData.begin()->second;
+    animationManager->AddAnimationObj(arthas);
+}
+
+void AddRoxas() {
+    SimObj* roxas = simulation.AddSimObj();
+    SkinnedMesh* mesh = roxas->AddComponent<SkinnedMesh>(ComponentType::SkinnedMesh);
+    mesh->mesh = renderEngine->meshCache()->Create("roxasps3", "roxasps3/roxasps3.fbx");
+    mesh->mat = renderEngine->materialCache()->Create("roxasps3", "roxasps3/roxasps3.fbx");
+    mesh->scale = 0.05f;
+
+    AnimationComponent* anim = roxas->AddComponent<AnimationComponent>(ComponentType::Animation);
+    anim->animData = renderEngine->animationCache()->Create("roxasps3", "roxasps3/roxasps3.fbx")->animData.begin()->second;
+    animationManager->AddAnimationObj(roxas);
+}
+
 void App::OnStart() {
     sys::SysWindowSize windowSize = sys::GetWindowSize();
     playerViewport                = new Viewport();
@@ -171,6 +198,7 @@ void App::OnStart() {
     playerView                    = new RenderView(&cam, playerViewport);
     renderEngine                  = new RenderEngine(renderDevice, playerView);
     inputManager                  = new input::InputManager();
+    animationManager              = new AnimationManager(renderEngine->Renderers().mesh.get());
     SetupUI(renderDevice, playerViewport);
     AddWorldText();
 
@@ -186,28 +214,8 @@ void App::OnStart() {
     terrain.reset(new FlatTerrain(10000));
     renderEngine->Renderers().terrain->Register(terrain.get());
     
-//    // whoops, this doesnt get deleted
-//    MeshPtr mesh = renderEngine->meshCache()->Create("sponza", "sponza/sponza.obj");
-//    MaterialPtr material = renderEngine->materialCache()->Create("sponza", "sponza/sponza.obj");
-//    
-//    MeshRenderObj* renderObj = new MeshRenderObj(mesh, material);
-//    renderEngine->Renderers().mesh->Register(renderObj);
-    
-    MaterialData materialData;
-    MeshGeometryData geometryData;
-    
-    dgen::GenerateIcoSphere(3, &geometryData);
-    
-    materialData.kd = glm::vec3(1, 0, 0);
-    materialData.shadingModel = ShadingModel::Blinn;
-    
-    MeshPtr sphereMesh = renderEngine->meshCache()->Create("ico_sphere_3", std::move(geometryData));
-    MaterialPtr redMaterial = renderEngine->materialCache()->Create("red_blinn", std::move(materialData));
-    
-    meshRO.reset(new MeshRenderObj(sphereMesh, redMaterial));
-    meshRO->transform()->scale(50);
-
-    renderEngine->Renderers().mesh->Register(meshRO.get());
+    //AddArthas();
+    //AddRoxas();
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
@@ -228,16 +236,13 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // update
     playerController->DoUpdate(dt);
     uiManager->DoUpdate(dt * 1000);
+    animationManager->DoUpdate(dt * 1000);
     simulation.Update(dt);
     
-    meshRO->transform()->reset();
-    meshRO->transform()->scale(50.f + 10.f * cos(total_frame_count / 60.f));
-    
     // render
+    // todo: link skinnedmesh's somehow to this correctly
     RenderScene scene;
-    scene.renderObjects.push_back(meshRO.get());
     scene.renderObjects.push_back(terrain.get());
-    
     renderEngine->RenderFrame(&scene);
 
     // timers
