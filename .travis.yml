@@ -3,9 +3,10 @@ language: cpp
 os:
   - osx
 
+osx_image: xcode9
+
 compiler: 
   - clang
-  - gcc
 
 cache:
   ccache: true

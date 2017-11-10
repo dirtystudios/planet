@@ -22,9 +22,15 @@ project "assimp"
         "_CRT_SECURE_NO_WARNINGS"
     }
 
+    cppdialect "C++14"
+    xcodebuildsettings {['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++14'}
+
     -- these are manual otherwise it moves when flamewreath is cast and the raid blows up
     sysincludedirs { 
         "assimp/include",
+        "assimp",
+        "assimp/contrib",
+        "assimp/contrib/irrXML",
         "assimp/contrib/zlib",
         "assimp/contrib/rapidjson/include",
         "assimp/contrib/openddlparser/include",
@@ -66,12 +72,29 @@ project "assimp"
         printf("error %s", err)
     end
 
+    ok, err = os.mkdir('./../build/assimp/inc/assimp')
+    if (not ok) then
+        printf("error %s", err)
+    end
+
     ok, err = os.writefile_ifnotequal(revStr, "./../build/assimp/inc/revision.h")
     if (not ok) then
         printf("error %s", err)
     end
 
-	
+    local configFilePath = "./assimp/include/assimp/config.h.in"
+
+    if (os.isfile(configFilePath)) then
+        local content = io.readfile(configFilePath)
+        content = content:gsub("#cmakedefine", "//#cmakedefine")
+        ok, err = os.writefile_ifnotequal(content, './../build/assimp/inc/assimp/config.h')
+        if (not ok) then
+            printf("error %s", err)
+        end
+    else
+        printf("error missing config.h.in file")
+    end
+
 project "assimp-zlib"
     location    "../build/assimp"
     warnings "Off"

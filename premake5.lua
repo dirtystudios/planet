@@ -26,14 +26,14 @@ workspace "planet"
         defines { "NDEBUG" }
 
     filter "system:windows"
-		defines { "_WINDOWS", "WIN32" }
-    filter {}
-
+        defines { "_WINDOWS", "WIN32" }
     -- optimization levels in debug running debug stepping
     filter { "configurations:debug", "system:macosx" }
         xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
+    filter {}
 
     cppdialect "C++14"
+    xcodebuildsettings {['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++14'}
 
     group "external"
         include "external/assimp.lua"
@@ -67,6 +67,7 @@ project "planet"
         "external/include/enum-flags/include",
 
         "external/assimp/include",
+        "build/assimp/inc",
         "external/freetype2/include",
         "external/libnoise/src",
         "external/SDL-mirror/include"
