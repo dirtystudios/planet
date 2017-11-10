@@ -81,6 +81,14 @@ public:
                         dg_assert_fail_nm();
                 }
             }
+            case VertexAttributeType::Int4: {
+                switch (storage) {
+                    case VertexAttributeStorage::UInt32N:
+                        return MTLVertexFormatUInt4;
+                    default:
+                        dg_assert_fail_nm();
+                }
+            }
             default:
                 dg_assert_fail_nm();
         }

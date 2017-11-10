@@ -257,9 +257,15 @@ public:
                 return {GL_FLOAT, 2};
             case VertexAttributeType::Float:
                 return {GL_FLOAT, 1};
+            case VertexAttributeType::Int4:
+                switch (element.storage) {
+                case VertexAttributeStorage::UInt32N:
+                    return{ GL_UNSIGNED_INT, 4 };
+                }
             default:
                 dg_assert_fail_nm();
         }
+        dg_assert_fail_nm();
     }
 
     static GLVertexElement Convert(const GLAttributeMetadata& attribute) {
@@ -273,6 +279,8 @@ public:
                 return {GL_FLOAT, 3};
             case GL_FLOAT_VEC4:
                 return {GL_FLOAT, 4};
+            case GL_UNSIGNED_INT_VEC4:
+                return{ GL_UNSIGNED_INT, 4 };
             default:
                 dg_assert_fail_nm();
         }

@@ -26,11 +26,45 @@
 
 namespace gfx {
 using namespace Microsoft::WRL;
-    static DXGI_FORMAT VertexAttributeTypeDX11[(uint32_t)VertexAttributeType::Count] = {
-        DXGI_FORMAT_R32_FLOAT,
-        DXGI_FORMAT_R32G32_FLOAT,
-        DXGI_FORMAT_R32G32B32_FLOAT,
-        DXGI_FORMAT_R32G32B32A32_FLOAT,
+
+    static DXGI_FORMAT GetVertexAttributeFormatDX11(VertexAttributeType type, VertexAttributeStorage storage) {
+        switch (type) {
+        case VertexAttributeType::Float: {
+            switch (storage) {
+            case VertexAttributeStorage::Float:
+                return DXGI_FORMAT_R32_FLOAT;
+            }
+        }
+        case VertexAttributeType::Float2: {
+            switch (storage) {
+            case VertexAttributeStorage::Float:
+                return DXGI_FORMAT_R32G32_FLOAT;
+            }
+        }
+        case VertexAttributeType::Float3: {
+            switch (storage) {
+            case VertexAttributeStorage::Float:
+                return DXGI_FORMAT_R32G32B32_FLOAT;
+            }
+        }
+        case VertexAttributeType::Float4: {
+            switch (storage) {
+            case VertexAttributeStorage::Float:
+                return DXGI_FORMAT_R32G32B32A32_FLOAT;
+            }
+        }
+        case VertexAttributeType::Int4: {
+            switch (storage) {
+            case VertexAttributeStorage::UInt32N:
+                return DXGI_FORMAT_R32G32B32A32_UINT;
+            }
+        }
+        default:
+            dg_assert_fail("implement vertexattribute type for dx11.");
+        }
+        dg_assert_fail("implement vertexattribute type for dx11.");
+        // silence warning
+        return DXGI_FORMAT_R32_FLOAT; 
     };
 
     static D3D11_MAP MapAccessDX11[(uint32_t)BufferAccess::Count] = {

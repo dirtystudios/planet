@@ -6,6 +6,7 @@ cbuffer viewConstants : register(b0) {
 
 cbuffer cbPerObject : register(b1) {
     float4x4 world : WORLD;
+	float4x4 boneOffsets[255];
 }
 
 cbuffer material : register ( b2 ) {
@@ -23,6 +24,8 @@ struct VS_INPUT {
 	float3 vPos : POSITION0;
 	float3 vNorm : NORMAL0;
 	float2 vTexCoords : TEXCOORD0;
+	uint4 vBoneIds : BLENDINDICES;
+	float4 vBoneWeights : BLENDWEIGHTS;
 };
 
 struct VS_OUTPUT {
@@ -35,13 +38,19 @@ struct VS_OUTPUT {
 VS_OUTPUT VSMain( VS_INPUT Input ) {  
     VS_OUTPUT output;
 	
-	float4 worldPos = mul(world, float4(Input.vPos, 1.f));
+	float4x4 skin = Input.vBoneWeights.x * boneOffsets[Input.vBoneIds.x];
+	skin += Input.vBoneWeights.y * boneOffsets[Input.vBoneIds.y];
+	skin += Input.vBoneWeights.z * boneOffsets[Input.vBoneIds.z];
+	skin += Input.vBoneWeights.w * boneOffsets[Input.vBoneIds.w];
+	
+
+	float4 worldPos = mul(world, mul(float4(Input.vPos, 1.f), skin));
 	
     output.vPosition = mul(mul(proj, view), worldPos);
 	
 	output.vToCamera = normalize(eyePos - worldPos.xyz);
 	
-	output.vNormal = Input.vNorm;
+	output.vNormal = Input.vNorm;//mul(float4(Input.vNorm, 0.f), skin);
     output.vTex = Input.vTexCoords;
     return output;
 }
@@ -58,14 +67,10 @@ float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {
 	float Is = 1.0;
 	
 	float3 texColor = Kd * tex.Sample(texSampler, Input.vTex).rgb;
-	float diffuseTerm = saturate(dot(L, N));
-	float specularTerm = saturate(pow(saturate(dot(N, H)), Ns));
 	
-	float3 ambientLighting = mul(Ka, Ia);
-	float3 diffuseColor = mul(mul(texColor, diffuseTerm), Id);
-	float3 specLighting = mul(Ks, (specularTerm * Is));
-	
-	float3 rawr = saturate((ambientLighting + diffuseColor) + specLighting);
-	float4 ret = float4(rawr, 1.f);
-	return ret;
+	float diffuseTerm = max(dot(L, N), 0.0);
+	float specularAngle = saturate(dot(H, N));
+	float specularTerm = Ns == 0.f || specularAngle == 0.f ? 0.f : saturate(pow(specularAngle, Ns));
+
+	return float4((Ka * Ia) + (texColor * diffuseTerm * Id) + (Ks * specularTerm * Is), 1.f);
 } 
