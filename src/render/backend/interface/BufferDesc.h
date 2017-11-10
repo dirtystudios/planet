@@ -27,9 +27,9 @@ struct BufferDesc {
         return bd;
     }
 
-    static BufferDesc vbPersistent(size_t size, const std::string& debugName = "") { return defaultPersistent(BufferUsageFlags::VertexBufferBit, size); }
+    static BufferDesc vbPersistent(size_t size, const std::string& debugName = "") { return defaultPersistent(BufferUsageFlags::VertexBufferBit, size, debugName); }
 
-    static BufferDesc ibPersistent(size_t size, const std::string& debugName = "") { return defaultPersistent(BufferUsageFlags::IndexBufferBit, size); }
+    static BufferDesc ibPersistent(size_t size, const std::string& debugName = "") { return defaultPersistent(BufferUsageFlags::IndexBufferBit, size, debugName); }
 
     static BufferDesc defaultPersistent(BufferUsageFlags usageFlags, size_t size, const std::string& debugName = "" ) {
         BufferDesc bd;

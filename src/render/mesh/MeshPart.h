@@ -1,15 +1,16 @@
 #pragma once
 
-#include <string>
 #include "MeshGeometryData.h"
+#include <string>
+#include <vector>
 
 struct MeshPart {
     MeshPart() {}
-    MeshPart(uint32_t matIdx, MeshGeometryData&& geometryData)
+    MeshPart(uint32_t matIdx, uint32_t meshIdx)
     : matIdx(matIdx)
-    , geometryData(geometryData)
+    , meshIdx(meshIdx)
     {}
     
     uint32_t matIdx{0};
-    MeshGeometryData geometryData;
+    uint32_t meshIdx{0};
 };

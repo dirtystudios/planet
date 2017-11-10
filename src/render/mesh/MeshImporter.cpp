@@ -5,13 +5,29 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 #include <vector>
+#include <algorithm>
 #include <queue>
+#include <map>
 #include "Log.h"
 
-#include "MeshPart.h"
+#include "MeshNode.h"
+#include "MeshGeometryData.h"
 
-MeshGeometryData ProcessMesh(aiMesh* mesh, const aiScene* scene) {
+static glm::mat4 ConvertMat4(aiMatrix4x4& im) {
+    return{
+        im.a1, im.b1, im.c1, im.d1,
+        im.a2, im.b2, im.c2, im.d2,
+        im.a3, im.b3, im.c3, im.d3,
+        im.a4, im.b4, im.c4, im.d4
+    };
+}
+
+MeshGeometryData ProcessMesh(const aiMesh* mesh, const aiScene* scene, std::vector<std::pair<std::string, glm::mat4>>& boneOffsets) {
     MeshGeometryData geometryData;
 
     if(mesh->HasPositions()) {
@@ -34,6 +50,38 @@ MeshGeometryData ProcessMesh(aiMesh* mesh, const aiScene* scene) {
             geometryData.texcoords.push_back(glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y));
         }
     }
+
+    if (mesh->HasBones()) {
+        geometryData.boneIds.resize(mesh->mNumVertices);
+        geometryData.weights.resize(mesh->mNumVertices);
+        
+        std::fill(geometryData.boneIds.begin(), geometryData.boneIds.end(), glm::uvec4{ 0, 0, 0, 0 });
+        std::fill(geometryData.weights.begin(), geometryData.weights.end(), glm::vec4{ 0.f, 0.f, 0.f, 0.f });
+
+        for (uint32_t i = 0; i < mesh->mNumBones; ++i) {
+            const std::string bName(mesh->mBones[i]->mName.data);
+            auto check = std::find_if(boneOffsets.begin(), boneOffsets.end(),
+                [&](const auto& element) { return element.first == bName; });
+
+            uint32_t boneIndex = 0;
+            if (check != boneOffsets.end())
+                boneIndex = std::distance(boneOffsets.begin(), check);
+            else {
+                boneIndex = boneOffsets.size();
+                boneOffsets.emplace_back(bName, ConvertMat4(mesh->mBones[i]->mOffsetMatrix));
+            }
+            for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; ++j) {
+                uint32_t vertId = mesh->mBones[i]->mWeights[j].mVertexId;
+                for (int c = 0; c < 4; ++c) {
+                    if (geometryData.weights[vertId][c] == 0.f) {
+                        geometryData.boneIds[vertId][c] = boneIndex;
+                        geometryData.weights[vertId][c] = mesh->mBones[i]->mWeights[j].mWeight;
+                        break;
+                    }
+                }
+            }
+        }
+    }
     
     // Process indices
     for(uint32_t i = 0; i < mesh->mNumFaces; ++i) {
@@ -46,11 +94,27 @@ MeshGeometryData ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     return geometryData;
 }
 
-std::vector<MeshPart> meshImport::LoadMeshDataFromFile(const std::string& fpath) {
+const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string& NodeName) {
+    for (uint32_t i = 0; i < pAnimation->mNumChannels; i++) {
+        const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
 
-    std::vector<MeshPart> meshParts;
+        if (std::string(pNodeAnim->mNodeName.data) == NodeName) {
+            return pNodeAnim;
+        }
+    }
+
+    return NULL;
+}
+
+meshImport::MeshData meshImport::LoadMeshDataFromFile(const std::string& fpath) {
+
+    std::vector<MeshNode> meshNodes;
+    std::vector<MeshGeometryData> meshGeomData;
+    std::vector<std::pair<std::string, glm::mat4>> boneInfo;
+    std::map<uint32_t, std::vector<uint32_t>> tree;
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(fpath, 
+
+    const aiScene* scene = import.ReadFile(fpath,
         aiProcess_JoinIdenticalVertices
         | aiProcess_Triangulate
         | aiProcess_FlipUVs
@@ -58,37 +122,58 @@ std::vector<MeshPart> meshImport::LoadMeshDataFromFile(const std::string& fpath)
         | aiProcess_GenNormals
         | aiProcess_OptimizeGraph
         | aiProcess_OptimizeMeshes
+        | aiProcess_LimitBoneWeights
+        | aiProcess_GenUVCoords
+        | aiProcess_FindInstances
     );
+
     if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         LOG_E("ASSIMP %s", import.GetErrorString());
         return{};
     }
     
-    std::queue<aiNode*> dfsQueue;
-    dfsQueue.push(scene->mRootNode);
-    
-    while(!dfsQueue.empty()) {
-        aiNode* node = dfsQueue.front();
-        LOG_D("Processing node:%s", node->mName.C_Str());
-        dfsQueue.pop();	
-       
-        for(uint32_t i = 0; i < node->mNumMeshes; i++) {
-            meshParts.emplace_back();
-            MeshPart* part = &meshParts.back();
-
-            aiString materialName;
-            
-            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            part->matIdx = mesh->mMaterialIndex;
-            LOG_D("Mesh:%s", mesh->mName.C_Str());
-
-            part->geometryData = ProcessMesh(mesh, scene);
-        }
-
-        for(uint32_t i = 0; i < node->mNumChildren; i++) {
-            dfsQueue.push(node->mChildren[i]);        	
-        }	
+    // Process meshes 
+    meshGeomData.reserve(scene->mNumMeshes);
+    for (uint32_t i = 0; i < scene->mNumMeshes; ++i) {
+        const aiMesh* mesh = scene->mMeshes[i];
+        LOG_D("Mesh:%s", mesh->mName.C_Str());
+        meshGeomData.emplace_back(ProcessMesh(mesh, scene, boneInfo));
     }
 
-    return meshParts;
+    std::queue<aiNode*> dfsQueue;
+    dfsQueue.push(scene->mRootNode);
+
+    const glm::mat4 gimt = glm::inverse(ConvertMat4(scene->mRootNode->mTransformation));
+
+    while(!dfsQueue.empty()) {
+        auto node = dfsQueue.front();
+        const std::string nodeName = std::string(node->mName.C_Str());
+        LOG_D("Processing node:%s", nodeName.c_str());
+        dfsQueue.pop();	
+
+		const size_t currentIdx = meshNodes.size();
+        meshNodes.emplace_back();
+        MeshNode* meshNode = &meshNodes.back();
+
+		meshNode->name = nodeName;
+		meshNode->localTransform = ConvertMat4(node->mTransformation);
+
+        meshNode->meshParts.reserve(node->mNumMeshes);
+		for (uint32_t i = 0; i < node->mNumMeshes; i++) {
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			uint32_t matIdx = mesh->mMaterialIndex;
+            uint32_t meshIdx = node->mMeshes[i];
+            meshNode->meshParts.emplace_back(matIdx, meshIdx);
+		}
+
+        std::vector<uint32_t> children(node->mNumChildren);
+        for(uint32_t i = 0; i < node->mNumChildren; i++) {
+            dfsQueue.push(node->mChildren[i]);
+            children[i] = (currentIdx + dfsQueue.size());
+        }
+
+        tree.insert({ currentIdx, std::move(children) });
+    }
+
+    return{ meshNodes, meshGeomData, boneInfo, gimt, tree };
 }

@@ -9,11 +9,12 @@
 #include "ParamType.h"
 
 namespace gfx {
-enum class VertexAttributeType : uint8_t { Float = 0, Float2, Float3, Float4, Count };
+enum class VertexAttributeType : uint8_t { Float = 0, Float2, Float3, Float4, Int4, Count };
 
 enum class VertexAttributeStorage : uint8_t {
     UInt8N = 0,
     UInt16N,
+    UInt32N,
     Float,
 };
 
@@ -22,6 +23,8 @@ enum class VertexAttributeUsage : uint8_t {
     Normal,
     Color0,
     Texcoord0,
+    BlendIndices,
+    BlendWeights
 };
 
 static std::string VertexAttributeUsageToString(VertexAttributeUsage usage) {
@@ -34,6 +37,10 @@ static std::string VertexAttributeUsageToString(VertexAttributeUsage usage) {
             return "COLOR";
         case VertexAttributeUsage::Texcoord0:
             return "TEXCOORD";
+        case VertexAttributeUsage::BlendIndices:
+            return "BLENDINDICES";
+        case VertexAttributeUsage::BlendWeights:
+            return "BLENDWEIGHTS";
         default:
             assert(false);
     }
@@ -75,6 +82,10 @@ static size_t GetByteCount(VertexAttributeType type, VertexAttributeStorage stor
             bytes = sizeof(float);
             break;
         }
+        case VertexAttributeStorage::UInt32N: {
+            bytes = sizeof(uint32_t);
+            break;
+        }
         default:
             dg_assert_fail_nm();
     }
@@ -87,6 +98,7 @@ static size_t GetByteCount(VertexAttributeType type, VertexAttributeStorage stor
         case VertexAttributeType::Float3:
             return bytes * 3;
         case VertexAttributeType::Float4:
+        case VertexAttributeType::Int4:
             return bytes * 4;
         default:
             dg_assert_fail_nm();

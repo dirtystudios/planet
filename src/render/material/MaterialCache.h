@@ -1,22 +1,22 @@
 #pragma once
 
-#include <unordered_map>
-#include <memory>
 #include "Material.h"
-#include "RenderDevice.h"
+#include "RenderCache.h"
+#include "MaterialImporter.h"
 
-class MaterialCache {
-private:
-    gfx::RenderDevice* _device;
-    std::string _baseDir;
+struct MaterialCachePolicy {
+    using CacheItemType = MaterialPtr;
+    using FileDataType = std::vector<MaterialData>;
 
-    std::unordered_map<std::string, MaterialPtr> _cache;
-public:
-    MaterialCache(gfx::RenderDevice* device, const std::string& baseDir);
+    MaterialCachePolicy(gfx::RenderDevice* device) {};
 
-    ~MaterialCache() {};
+    FileDataType LoadDataFromFile(const std::string& fpath) {
+        return materialImport::LoadMaterialDataFromFile(fpath);
+    }
 
-    MaterialPtr Get(const std::string& name);
-    MaterialPtr Create(const std::string& name, const std::string& assetPath);
-    MaterialPtr Create(const std::string& name, MaterialData&& materialData);
+    CacheItemType ConstructCacheItem(FileDataType&& data) {
+        return std::make_shared<Material>(std::move(data));
+    }
 };
+
+using MaterialCache = RenderCache<MaterialCachePolicy>;

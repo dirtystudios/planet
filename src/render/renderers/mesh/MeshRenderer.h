@@ -13,12 +13,6 @@ private:
 
     std::unordered_multimap<uint32_t, const gfx::DrawItem*> sortedMatCache;
 
-    gfx::TextureId vertBufferId;
-    gfx::TextureId indexBufferId;
-
-    uint32_t vertOffset{0};
-    uint32_t indexOffset{0};
-
 public:
     MeshRenderer() : Renderer(RendererType::Mesh) {}
     ~MeshRenderer();
