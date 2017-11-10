@@ -8,6 +8,8 @@ enum class ComponentType : uint8_t {
     Spatial,
     Skybox,
     UI,
+    SkinnedMesh,
+    Animation,
 };
 
 namespace std {
