@@ -7,6 +7,8 @@ struct VertexIn {
     float3 position[[attribute(0)]];
     float3 normal[[attribute(1)]];
     float2 texture[[attribute(2)]];
+	uint4 boneIds[[attribute(3)]];
+	float4 boneWeights[[attribute(4)]];
 };
 
 struct VertexOut {
@@ -24,6 +26,7 @@ struct ViewConstants {
 
 struct ObjectConstants {
     float4x4 world;
+	float4x4 boneOffsets[255];
 };
 
 struct MaterialConstants {
@@ -35,7 +38,12 @@ struct MaterialConstants {
 };
 
 vertex VertexOut blinn_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(1)]], constant ObjectConstants& obj[[buffer(2)]]) {
-    float4 worldPos = obj.world * float4(attributes.position.x, attributes.position.y, attributes.position.z, 1.f);
+    float4x4 BoneTransform = obj.offsets[a_boneIds.x] * attributes.boneWeights.x;
+    BoneTransform     += obj.offsets[a_boneIds.y] * attributes.boneWeights.y;
+    BoneTransform     += obj.offsets[a_boneIds.z] * attributes.boneWeights.z;
+    BoneTransform     += obj.offsets[a_boneIds.w] * attributes.boneWeights.w;
+	
+    float4 worldPos = obj.world * (float4(attributes.position.x, attributes.position.y, attributes.position.z, 1.f) * BoneTransform);
 
     VertexOut outputValue;
     outputValue.texture  = attributes.texture;

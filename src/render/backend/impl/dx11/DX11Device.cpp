@@ -404,7 +404,7 @@ namespace gfx {
             ied.AlignedByteOffset = first ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
             ied.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
             ied.InstanceDataStepRate = 0;
-            ied.Format = SafeGet(VertexAttributeTypeDX11, layout.type);
+            ied.Format = GetVertexAttributeFormatDX11(layout.type, layout.storage);
             stride += GetByteCount(layout);
             first = false;
             ieds.emplace_back(ied);

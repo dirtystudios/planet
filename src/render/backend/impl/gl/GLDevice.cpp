@@ -494,7 +494,12 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
               GLEnumToString(attributeAsElement.type).c_str(), vertexLayout->stride, offset, attribute.location);
 
         GL_CHECK(glEnableVertexAttribArray(attribute.location));
-        GL_CHECK(glVertexAttribPointer(attribute.location, element.count, element.type, GL_FALSE, vertexLayout->stride, (const void*)offset));
+        if (attributeAsElement.type == GL_INT || attributeAsElement.type == GL_UNSIGNED_INT)
+            GL_CHECK(glVertexAttribIPointer(attribute.location, element.count, element.type, vertexLayout->stride, (const void*)offset));
+        else if (attributeAsElement.type == GL_FLOAT)
+            GL_CHECK(glVertexAttribPointer(attribute.location, element.count, element.type, GL_FALSE, vertexLayout->stride, (const void*)offset));
+        else
+            dg_assert_fail("invalid attribute type in vao creation: 0x%x", attributeAsElement.type);
 
         offset += GetByteCount(GLEnumAdapter::ConvertParamType(element.type)) * element.count;
     }
@@ -517,8 +522,10 @@ void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) { _submitte
 
 void GLDevice::BindResource(const Binding& binding) {
     if (binding.stageFlags != gfx::ShaderStageFlags::AllStages) {
-        LOG_W("Unsupported ShaderStageFlags configuration. Currently only support "
-              "AllStages. Will render as AllStages");
+        // todo: stageflags unsupported on version of opengl we use, cause mac sux
+
+        //LOG_W("Unsupported ShaderStageFlags configuration. Currently only support "
+        //      "AllStages. Will render as AllStages");
     }
 
     switch (binding.type) {

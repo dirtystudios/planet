@@ -68,6 +68,7 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView)
     _drawItems.clear();
     sortedMatCache.clear();
     
+    // todo: switch this back to renderview
     for (RenderObj* baseRO : meshRenderObjs) {
         if (baseRO->GetRendererType() != Renderer::rendererType()) {
             continue;
