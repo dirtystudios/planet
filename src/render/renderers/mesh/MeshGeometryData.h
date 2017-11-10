@@ -2,16 +2,19 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <unordered_set>
 #include "VertexLayoutDesc.h"
 #include "Log.h"
 
-enum class VertexComponent : uint8_t { Position = 0, Normal, Texcoord };
+enum class VertexComponent : uint8_t { Position = 0, Normal, Texcoord, bones, weights };
 
 class MeshGeometryData {
 public:
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texcoords;
+    std::vector<glm::uvec4> boneIds;
+    std::vector<glm::vec4> weights;
     std::vector<uint32_t>  indices;
 
     bool hasComponent(VertexComponent component) const {
@@ -22,6 +25,10 @@ public:
                 return normals.size() > 0;
             case VertexComponent::Texcoord:
                 return texcoords.size() > 0;
+            case VertexComponent::bones:
+                return boneIds.size() > 0;
+            case VertexComponent::weights:
+                return weights.size() > 0;
             default:
                 assert(false);
         }
@@ -48,6 +55,13 @@ public:
             vertexLayout.elements.push_back(
                 gfx::VertexLayoutElement(gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float));
         }
+
+        // ef this
+        vertexLayout.elements.push_back(
+            gfx::VertexLayoutElement(gfx::VertexAttributeType::Int4, gfx::VertexAttributeUsage::BlendIndices, gfx::VertexAttributeStorage::UInt32N));
+
+        vertexLayout.elements.push_back(
+            gfx::VertexLayoutElement(gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::BlendWeights, gfx::VertexAttributeStorage::Float));
 
         return vertexLayout;
     }
@@ -83,6 +97,26 @@ public:
                 assert(hasComponent(VertexComponent::Position));
                 memcpy(outputData + offset, &positions[idx], sizeof(glm::vec2));
                 offset += sizeof(glm::vec2);
+            }
+
+            // more hacky hacky
+            if (hasComponent(VertexComponent::bones)) {
+                memcpy(outputData + offset, &boneIds[idx], sizeof(glm::uvec4));
+                offset += sizeof(glm::uvec4);
+            }
+            else {
+                const glm::uvec4 zero = glm::uvec4{ 0 };
+                memcpy(outputData + offset, &zero, sizeof(glm::uvec4));
+                offset += sizeof(glm::uvec4);
+            }
+            if (hasComponent(VertexComponent::weights)) {
+                memcpy(outputData + offset, &weights[idx], sizeof(glm::vec4));
+                offset += sizeof(glm::vec4);
+            }
+            else {
+                const glm::vec4 zero = glm::vec4{ 0.f, 0.f, 0.f, 0.f };
+                memcpy(outputData + offset, &zero, sizeof(glm::vec4));
+                offset += sizeof(glm::vec4);
             }
         }
     }

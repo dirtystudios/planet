@@ -9,6 +9,7 @@
 #include "RenderDevice.h"
 #include "ShaderCache.h"
 #include "VertexLayoutCache.h"
+#include "AnimationCache.h"
 
 class RenderServiceLocator {
 public:
@@ -20,4 +21,5 @@ public:
     virtual PipelineStateCache*    pipelineStateCache()    = 0;
     virtual ConstantBufferManager* constantBufferManager() = 0;
     virtual DebugDrawInterface*    debugDraw()             = 0;
+    virtual AnimationCache*        animationCache()        = 0;
 };

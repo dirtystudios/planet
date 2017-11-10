@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include "AnimationCache.h"
 #include "ConstantBufferManager.h"
 #include "DebugDrawInterface.h"
 #include "MeshCache.h"
@@ -81,6 +82,7 @@ private:
     MeshCache*             _meshCache;
     ConstantBufferManager* _constantBufferManager{nullptr};
     MaterialCache*         _materialCache;
+    AnimationCache*        _animationCache;
 
     Renderers _renderers;
 
@@ -100,6 +102,7 @@ public:
     ConstantBufferManager* constantBufferManager() override;
     MaterialCache*         materialCache() override;
     DebugDrawInterface*    debugDraw() override;
+    AnimationCache*        animationCache() override;
 
 private:
 };

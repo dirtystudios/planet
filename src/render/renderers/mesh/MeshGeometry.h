@@ -102,7 +102,7 @@ public:
         SetStateGroupAndDrawCall();
     }
 
-    const gfx::DrawCall& drawCall() { return m_drawCall; }
+    const gfx::DrawCall& drawCall() const { return m_drawCall; }
 
-    const gfx::StateGroup* stateGroup() { return _stateGroup.get(); }
+    const gfx::StateGroup* stateGroup() const { return _stateGroup.get(); }
 };

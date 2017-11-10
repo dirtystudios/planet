@@ -10,13 +10,9 @@
 #include "Config.h"
 #include "MeshRenderObj.h"
 
-// this is in bytes, should be about ~20mb, 650k 32 byte vertices
-constexpr static uint32_t MAX_VERT_BUFF_SIZE = 650000 * 32;
-// also in bytes for now just same size as vert buff
-constexpr static uint32_t MAX_INDEX_BUFF_SIZE = MAX_VERT_BUFF_SIZE;
-
 struct MeshConstants {
     glm::mat4 world;
+    std::array<glm::mat4, 255> boneOffsets;
 };
 
 MeshRenderer::~MeshRenderer() {
@@ -24,14 +20,7 @@ MeshRenderer::~MeshRenderer() {
     assert(false);
 }
 
-void MeshRenderer::OnInit() {
-
-    gfx::BufferDesc vBufDesc = gfx::BufferDesc::vbPersistent(MAX_VERT_BUFF_SIZE, "MeshSharedVB");
-
-    gfx::BufferDesc iBufDesc = gfx::BufferDesc::ibPersistent(MAX_INDEX_BUFF_SIZE, "MeshSharedIB");
-
-    vertBufferId = device()->AllocateBuffer(vBufDesc);
-    indexBufferId = device()->AllocateBuffer(iBufDesc);    
+void MeshRenderer::OnInit() {    
 }
 
 void MeshRenderer::Register(MeshRenderObj* meshObj) {
@@ -39,7 +28,7 @@ void MeshRenderer::Register(MeshRenderObj* meshObj) {
 
 
     gfx::RasterState rs;
-    rs.cullMode = gfx::CullMode::Front;  
+    rs.cullMode = gfx::CullMode::None;  
     rs.windingOrder = gfx::WindingOrder::FrontCW;
 
     gfx::BlendState blendState;
@@ -68,22 +57,10 @@ void MeshRenderer::Register(MeshRenderObj* meshObj) {
         meshObj->meshMaterial.push_back(std::make_unique<MeshMaterial>(device(), matdata, ps));
     }
 
-    for (const MeshPart& part : meshObj->mesh->GetParts()) {
-        assert(MAX_VERT_BUFF_SIZE > ((vertOffset + part.geometryData.vertexCount()) * part.geometryData.vertexLayout().stride()));
-        assert(MAX_INDEX_BUFF_SIZE > ((indexOffset + part.geometryData.indexCount()) * sizeof(uint32_t)));
-
-        MeshGeomExistBuffer existBuffer;
-        existBuffer.indexBuffer = indexBufferId;
-        existBuffer.indexOffset = indexOffset;
-        existBuffer.vertexBuffer = vertBufferId;
-        existBuffer.vertexOffset = vertOffset;
-
-        meshObj->meshGeometry.push_back(std::make_unique<MeshGeometry>(device(), part.geometryData, &existBuffer));
-        meshObj->meshGeometry.back()->meshMaterialId = part.matIdx;
-        
-        vertOffset += part.geometryData.vertexCount();
-        indexOffset += part.geometryData.indexCount();
+    for (const auto& boneInfo : meshObj->mesh->GetBones()) {
+        meshObj->_boneOffsets.emplace_back(boneInfo.second);
     }
+
     meshRenderObjs.push_back(meshObj);
 }
 
@@ -91,7 +68,7 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView)
     _drawItems.clear();
     sortedMatCache.clear();
     
-    for (RenderObj* baseRO : renderView->_visibleObjects) {
+    for (RenderObj* baseRO : meshRenderObjs) {
         if (baseRO->GetRendererType() != Renderer::rendererType()) {
             continue;
         }
@@ -104,25 +81,28 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView)
         assert(renderObj->mesh);
 
         MeshConstants* meshBuffer = renderObj->perObject->Map<MeshConstants>();
+        assert(renderObj->_boneOffsets.size() <= meshBuffer->boneOffsets.size());
+
+        std::memcpy(meshBuffer->boneOffsets.data(), renderObj->_boneOffsets.data(), std::min(renderObj->_boneOffsets.size(), meshBuffer->boneOffsets.size()) * sizeof(glm::mat4));
         meshBuffer->world = world;
         renderObj->perObject->Unmap();
 
-        for (auto& mg : renderObj->meshGeometry) {
+        for (const auto& mg : renderObj->mesh->GetMeshGeometry()) {
             gfx::DrawItemEncoder encoder;
 
             std::unique_ptr<const gfx::DrawItem> drawItem;
 
-            uint32_t meshMatIdx = mg->meshMaterialId;
+            uint32_t meshMatIdx = mg.meshMaterialId;
             assert(renderObj->meshMaterial.size() > meshMatIdx);
 
             std::vector<const gfx::StateGroup*> groups = { 
                 renderObj->stateGroup.get(),
-                mg->stateGroup(),
+                mg.stateGroup(),
                 renderObj->meshMaterial[meshMatIdx]->stateGroup(),
                 renderQueue->defaults 
             };
 
-            drawItem.reset(encoder.Encode(device(), mg->drawCall(), groups.data(), groups.size()));
+            drawItem.reset(encoder.Encode(device(), mg.drawCall(), groups.data(), groups.size()));
 
             _drawItems.emplace_back(std::move(drawItem));
             sortedMatCache.emplace(meshMatIdx, _drawItems.back().get());

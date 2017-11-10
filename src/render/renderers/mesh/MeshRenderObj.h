@@ -21,10 +21,9 @@ private:
     MeshPtr mesh{ nullptr };
     std::vector<std::unique_ptr<MeshMaterial>> meshMaterial;
     std::vector<std::unique_ptr<MeshGeometry>> meshGeometry;
+    std::vector<glm::mat4> _boneOffsets;
     ConstantBuffer* perObject{ nullptr };
     std::unique_ptr<const gfx::StateGroup>   stateGroup;
-
-    std::string _meshName, _matName;
     
     dm::Transform _transform;
 
@@ -33,7 +32,14 @@ public:
         : RenderObj(RendererType::Mesh), mesh(mesh), mat(material) {};
     
     
+    const std::vector<glm::mat4>& boneOffsets() const { return _boneOffsets; }
     dm::Transform* transform() { return &_transform; };
+
+    void boneOffsets(const std::vector<glm::mat4>& offsets) {
+        // todo: ehh... maybe this could be a std::array with a max size for bones instead of a vector.
+        // would help out, and with the shader neeeding hardcode of max anyway is probly better
+        _boneOffsets = std::vector<glm::mat4>(offsets);
+    }
     
     ~MeshRenderObj() {}
 };

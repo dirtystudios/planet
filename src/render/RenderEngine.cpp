@@ -58,6 +58,7 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _meshCache             = new MeshCache(_device, assetDirPath);
     _constantBufferManager = new ConstantBufferManager(_device);
     _materialCache         = new MaterialCache(_device, assetDirPath);
+    _animationCache        = new AnimationCache(_device, assetDirPath);
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
     cmdbuf              = _device->CreateCommandBuffer();
@@ -123,3 +124,4 @@ MeshCache*             RenderEngine::meshCache() { return _meshCache; }
 ConstantBufferManager* RenderEngine::constantBufferManager() { return _constantBufferManager; }
 MaterialCache*         RenderEngine::materialCache() { return _materialCache; }
 DebugDrawInterface*    RenderEngine::debugDraw() { return _renderers.debug.get(); }
+AnimationCache*        RenderEngine::animationCache() { return _animationCache; }
