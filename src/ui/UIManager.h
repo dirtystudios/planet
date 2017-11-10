@@ -61,7 +61,7 @@ public:
     void AddFrameObj(SimObj* uiFrame);
     void DoUpdate(float ms);
 
-    UIFrame* GetFrame(std::string name);
+    UIFrame* GetFrame(const std::string& name);
 
     // hackish for now
     void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
