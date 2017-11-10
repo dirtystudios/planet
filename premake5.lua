@@ -29,16 +29,11 @@ workspace "planet"
 		defines { "_WINDOWS", "WIN32" }
     filter {}
 
-    -- this should fix xcode till premake alpha11
-    xcodebuildsettings {['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++14'}
-
     -- optimization levels in debug running debug stepping
     filter { "configurations:debug", "system:macosx" }
         xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
 
-    flags { 
-        "C++14",-- this should take care of gcc / clang
-    }
+    cppdialect "C++14"
 
     group "external"
         include "external/assimp.lua"
