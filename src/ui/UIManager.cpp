@@ -111,7 +111,7 @@ void UIManager::ProcessFrames() {
 
 // This returns first frame with given name
 // todo: deal with multiple somehow, or don't do this
-UIFrame* UIManager::GetFrame(std::string name) {
+UIFrame* UIManager::GetFrame(const std::string& name) {
     for (auto& uiFrame : m_uiFrames) {
         if (uiFrame->GetFrameName() == name) {
             return uiFrame;
