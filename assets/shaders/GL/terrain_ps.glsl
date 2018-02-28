@@ -2,10 +2,12 @@
 #version 410 core
 
 uniform sampler2DArray _s0_heightmap;
+uniform sampler2DArray _s1_normalmap;
 
 layout(std140) uniform _b1_objectConstants {
     mat4 b1_world;  
     uint b1_heightmapIndex;
+    uint b1_normalmapIndex;
     uint b1_lod;  
 };
 
@@ -34,6 +36,6 @@ vec4 getColor(uint index) {
 }
 
 void main() {
-    float height = texture(_s0_heightmap, vec3(i_tex, b1_heightmapIndex)).x;
-    o_color      = (vec4((height + 1.f) / 2.f)) * getColor(b1_lod);
+    float d = clamp(dot(normalize(vec3(1,1,1)), i_norm), 0.1, 1.0);
+    o_color = vec4(d,d,d,1.f) * 0.8 + getColor(b1_lod) * 0.2;
 }

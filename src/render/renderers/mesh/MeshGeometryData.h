@@ -10,6 +10,8 @@ enum class VertexComponent : uint8_t { Position = 0, Normal, Texcoord, bones, we
 
 class MeshGeometryData {
 public:
+	bool isSkinned{ false };
+
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texcoords;
@@ -56,12 +58,14 @@ public:
                 gfx::VertexLayoutElement(gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float));
         }
 
-        // ef this
-        vertexLayout.elements.push_back(
-            gfx::VertexLayoutElement(gfx::VertexAttributeType::Int4, gfx::VertexAttributeUsage::BlendIndices, gfx::VertexAttributeStorage::UInt32N));
+		if (isSkinned) {
+			// ef this
+			vertexLayout.elements.push_back(
+				gfx::VertexLayoutElement(gfx::VertexAttributeType::Int4, gfx::VertexAttributeUsage::BlendIndices, gfx::VertexAttributeStorage::UInt32N));
 
-        vertexLayout.elements.push_back(
-            gfx::VertexLayoutElement(gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::BlendWeights, gfx::VertexAttributeStorage::Float));
+			vertexLayout.elements.push_back(
+				gfx::VertexLayoutElement(gfx::VertexAttributeType::Float4, gfx::VertexAttributeUsage::BlendWeights, gfx::VertexAttributeStorage::Float));
+		}
 
         return vertexLayout;
     }
@@ -100,24 +104,26 @@ public:
             }
 
             // more hacky hacky
-            if (hasComponent(VertexComponent::bones)) {
-                memcpy(outputData + offset, &boneIds[idx], sizeof(glm::uvec4));
-                offset += sizeof(glm::uvec4);
-            }
-            else {
-                const glm::uvec4 zero = glm::uvec4{ 0 };
-                memcpy(outputData + offset, &zero, sizeof(glm::uvec4));
-                offset += sizeof(glm::uvec4);
-            }
-            if (hasComponent(VertexComponent::weights)) {
-                memcpy(outputData + offset, &weights[idx], sizeof(glm::vec4));
-                offset += sizeof(glm::vec4);
-            }
-            else {
-                const glm::vec4 zero = glm::vec4{ 0.f, 0.f, 0.f, 0.f };
-                memcpy(outputData + offset, &zero, sizeof(glm::vec4));
-                offset += sizeof(glm::vec4);
-            }
+			if (isSkinned) {
+				if (hasComponent(VertexComponent::bones)) {
+					memcpy(outputData + offset, &boneIds[idx], sizeof(glm::uvec4));
+					offset += sizeof(glm::uvec4);
+				}
+				else {
+					const glm::uvec4 zero = glm::uvec4{ 0 };
+					memcpy(outputData + offset, &zero, sizeof(glm::uvec4));
+					offset += sizeof(glm::uvec4);
+				}
+				if (hasComponent(VertexComponent::weights)) {
+					memcpy(outputData + offset, &weights[idx], sizeof(glm::vec4));
+					offset += sizeof(glm::vec4);
+				}
+				else {
+					const glm::vec4 zero = glm::vec4{ 0.f, 0.f, 0.f, 0.f };
+					memcpy(outputData + offset, &zero, sizeof(glm::vec4));
+					offset += sizeof(glm::vec4);
+				}
+			}
         }
     }
 };

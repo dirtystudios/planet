@@ -29,6 +29,7 @@ static glm::mat4 ConvertMat4(aiMatrix4x4& im) {
 
 MeshGeometryData ProcessMesh(const aiMesh* mesh, const aiScene* scene, std::vector<std::pair<std::string, glm::mat4>>& boneOffsets) {
     MeshGeometryData geometryData;
+	geometryData.isSkinned = true;
 
     if(mesh->HasPositions()) {
         geometryData.positions.reserve(mesh->mNumVertices);
