@@ -38,10 +38,10 @@ struct MaterialConstants {
 };
 
 vertex VertexOut blinn_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(1)]], constant ObjectConstants& obj[[buffer(2)]]) {
-    float4x4 BoneTransform = obj.offsets[a_boneIds.x] * attributes.boneWeights.x;
-    BoneTransform     += obj.offsets[a_boneIds.y] * attributes.boneWeights.y;
-    BoneTransform     += obj.offsets[a_boneIds.z] * attributes.boneWeights.z;
-    BoneTransform     += obj.offsets[a_boneIds.w] * attributes.boneWeights.w;
+    float4x4 BoneTransform = obj.boneOffsets[attributes.boneIds.x] * attributes.boneWeights.x;
+    BoneTransform     += obj.boneOffsets[attributes.boneIds.y] * attributes.boneWeights.y;
+    BoneTransform     += obj.boneOffsets[attributes.boneIds.z] * attributes.boneWeights.z;
+    BoneTransform     += obj.boneOffsets[attributes.boneIds.w] * attributes.boneWeights.w;
 	
     float4 worldPos = obj.world * (float4(attributes.position.x, attributes.position.y, attributes.position.z, 1.f) * BoneTransform);
 
