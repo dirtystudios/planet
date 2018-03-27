@@ -4,9 +4,6 @@ project "dstd"
     language "C++"
 
     targetname "dstd"
-
-    filter "system:windows"
-        characterset "MBCS" -- oops
     
     flags {
         -- This should speed up initial compile
@@ -14,14 +11,14 @@ project "dstd"
         "NoMinimalRebuild"
     }
 
-    includedirs {
-        "src/",    
-        "src/**",        
-    }
-
     sysincludedirs {        
         "../external/include/enum-flags/include",
         "../../external/include",
+    }
+
+    includedirs {
+        "src",
+        "src/**",        
     }
 
     files {
