@@ -17,6 +17,7 @@ project "backend"
         "../../external/include/",
         "../../external/include/enum-flags/include",
     }
+
     includedirs {
         "src",
         "src/**" --double stars cause we mean buisness
@@ -25,13 +26,11 @@ project "backend"
     files {
         "src/**.cpp",
         "src/**.h",
-        "assets/shaders/**"
     }
 
     links {
-        "dstd",        
+        "dstd",
     }
-
 
     filter "system:windows"
         removefiles { "src/osx/**" }

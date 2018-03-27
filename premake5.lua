@@ -37,15 +37,16 @@ workspace "planet"
     filter { "configurations:debug", "system:macosx" }
         xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
 
-    flags { 
-        "C++14",-- this should take care of gcc / clang
-    }    
+    cppdialect "C++14"
 
     group "external"
         include "external/assimp.lua"
         include "external/libnoise.lua"
         include "external/freetype2.lua"
-        include "external/sdl2.lua"                
+        include "external/sdl2.lua"
+    group ""
+
+    group "projects"
         include "projects/backend/backend.lua"
         include "projects/dstd/dstd.lua"
         include "projects/planet/planet.lua"

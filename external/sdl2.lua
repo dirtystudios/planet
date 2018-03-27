@@ -178,7 +178,7 @@ project "SDL2"
         links {  "ucrt",  "vcruntime"}
 
     filter "configurations:release"
-        flags {"OptimizeSpeed"}
+        optimize "Speed"
     
     filter {}
 
@@ -187,12 +187,12 @@ project "SDL2"
         printf("error %s", err)
     end
 
-    if os.is("windows") then
+    if os.ishost("windows") then
         ok, err = os.copyfile("./SDL-mirror/include/SDL_config_windows.h", './../build/SDL2/inc/SDL_config.h')
         if (not ok) then
             printf("error %s", err)
         end
-    elseif os.is("macosx") then
+    elseif os.ishost("macosx") then
         ok, err = os.copyfile("./SDL-mirror/include/SDL_config_macosx.h", './../build/SDL2/inc/SDL_config.h')
         if (not ok) then
             printf("error %s", err)
