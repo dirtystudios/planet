@@ -4,12 +4,11 @@
 #include <functional>
 
 enum class ComponentType : uint8_t {
-    ChunkedTerrain = 0,
     Spatial,
-    Skybox,
     UI,
     SkinnedMesh,
     Animation,
+    COUNT
 };
 
 namespace std {

@@ -35,7 +35,7 @@ namespace ui {
             return rtnVector;
         }
 
-        int GetMaxLines() {
+        uint32_t GetMaxLines() {
             return 5;
         }
 

@@ -2,13 +2,15 @@
 
 #include "MeshRenderObj.h"
 #include "AnimationData.h"
+#include "ComponentManager.h"
+#include "SimulationManager.h"
 #include <vector>
 #include <unordered_map>
 
 class MeshRenderer;
 class SimObj;
 
-class AnimationManager {
+class AnimationManager : public ComponentManager {
 private:
     struct ManagedAnimation {
         std::unique_ptr<MeshRenderObj> meshRenderObj;
@@ -18,7 +20,7 @@ private:
     };
 
     MeshRenderer* m_meshRenderer;
-    std::vector<ManagedAnimation> m_managedAnimations;
+    std::map<uint64_t, ManagedAnimation> m_managedAnimations;
     float m_runningTime{ 0.f };
 
 public:
@@ -26,11 +28,13 @@ public:
         : m_meshRenderer(meshRenderer) {
 
     }
-
-    void AddAnimationObj(SimObj* animObj);
-    void DoUpdate(float ms);
+    void UpdateViewport(const Viewport& vp) override {}
+    void DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) override;
 
 private:
+    void AddAnimationObj(uint64_t key, SkinnedMesh* skinnedMesh, AnimationComponent* anim);
+    void DoUpdate(float ms);
+
     glm::vec3 CalcInterpolatedScaling(float animTime, const AnimationData::AnimationNode& animNode);
     glm::quat CalcInterpolatedRotation(float animTime, const AnimationData::AnimationNode& animNode);
     glm::vec3 CalcInterpolatedTrans(float animTime, const AnimationData::AnimationNode& animNode);
