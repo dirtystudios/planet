@@ -22,7 +22,7 @@ private:
         }
 
         void OnEnterPressed(EditBox& frame) {
-            if (frame.GetText() == "")
+            if (!consoleFrame || frame.GetText() == "")
                 return;
             config::ConsoleCommands* cc         = &config::ConsoleCommands::getInstance();
             std::string              retMessage = cc->ProcessConsoleString(frame.GetText());

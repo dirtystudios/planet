@@ -8,6 +8,8 @@ static uint64_t createId() {
 }
 
 class IdObj {
-protected:
-    const uint64_t _id{createId()};
+public:
+    const uint64_t _id;
+    IdObj(uint64_t id) : _id(id) {};
+    IdObj() : _id(createId()) {};
 };

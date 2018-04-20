@@ -4,7 +4,6 @@
 #include "DrawItemEncoder.h"
 #include "Image.h"
 #include "MeshGeneration.h"
-#include "Skybox.h"
 #include "SkyboxVertex.h"
 #include "StateGroupEncoder.h"
 

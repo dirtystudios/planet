@@ -179,48 +179,48 @@ namespace ui {
             newPos = anch + descPos;
             newRot = rot + scaled.rot;
 
-            if (node->frameRO.get()) {
-                node->frameRO.get()->x(newPos.x);
-                node->frameRO.get()->y(newPos.y);
-                node->frameRO.get()->z(newPos.z);
-                node->frameRO.get()->rot(newRot);
+            if (node->frameRO) {
+                node->frameRO->x(newPos.x);
+                node->frameRO->y(newPos.y);
+                node->frameRO->z(newPos.z);
+                node->frameRO->rot(newRot);
             }
 
             float y = newPos.y;
             for (auto& textRO : node->textROs) {
-                if (textRO.get()) {
-                    textRO.get()->x(newPos.x + 5.f);
-                    textRO.get()->y(y + 5.f);
-                    textRO.get()->z(newPos.z);
+                if (textRO) {
+                    textRO->x(newPos.x + 5.f);
+                    textRO->y(y + 5.f);
+                    textRO->z(newPos.z);
                     // todo, get lineheight....
                     y += 12.f;
                 }
             }
         }
 
-        if (node->frameRO.get())
-            node->frameRO.get()->isRendered(shouldRender);
+        if (node->frameRO)
+            node->frameRO->isRendered(shouldRender);
 
         if (!shouldRender) {
             for (auto& textRO : node->textROs) {
-                textRO.get()->text("");
-                textRO.get()->cursorEnabled(false);
+                textRO->text("");
+                textRO->cursorEnabled(false);
             }
         }
 
         else {
             if (node->textROs.size() > 0) {
                 if (node->frame->GetFrameType() == FrameType::LABEL)
-                    node->textROs[0].get()->text(((Label*)node->frame)->GetText());
+                    node->textROs[0]->text(((Label*)node->frame)->GetText());
                 else if (node->frame->GetFrameType() == FrameType::EDITBOX)
-                    node->textROs[0].get()->text(((EditBox*)node->frame)->GetText());
+                    node->textROs[0]->text(((EditBox*)node->frame)->GetText());
                 else if (node->frame->GetFrameType() == FrameType::TEXTLIST) {
                     TextList* textList = (TextList*)node->frame;
                     int x = 0;
                     assert(textList->GetMaxLines() == node->textROs.size());
                     for (auto text : textList->GetTextList()) {
-                        if (node->textROs[x].get()) {
-                            node->textROs[x].get()->text(text);
+                        if (node->textROs[x]) {
+                            node->textROs[x]->text(text);
                         }
                         else
                             assert(false);
@@ -232,8 +232,8 @@ namespace ui {
                     int x = 0;
                     assert(kvl->GetMaxLines() == node->textROs.size());
                     for (auto text : kvl->GetList()) {
-                        if (node->textROs[x].get()) {
-                            node->textROs[x].get()->text(text);
+                        if (node->textROs[x]) {
+                            node->textROs[x]->text(text);
                         }
                         else
                             assert(false);
@@ -249,8 +249,8 @@ namespace ui {
 
             if (node->frame == m_focused) {
                 if (node->frame->GetFrameType() == FrameType::EDITBOX) {
-                    node->textROs[0].get()->cursorPos(((EditBox*)node->frame)->GetCursor());
-                    node->textROs[0].get()->cursorEnabled(renderCursor);
+                    node->textROs[0]->cursorPos(((EditBox*)node->frame)->GetCursor());
+                    node->textROs[0]->cursorEnabled(renderCursor);
                 }
             }
         }
