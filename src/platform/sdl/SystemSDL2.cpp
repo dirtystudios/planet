@@ -10,7 +10,7 @@
 
 #include "GLDevice.h"
 #ifndef _WIN32
-#include "MetalDevice.h"
+#include "MetalBackend.h"
 #endif
 
 #include <map>
@@ -150,11 +150,13 @@ int sys::Run(app::Application* app) {
     SDL_VERSION(&info.version);
     const char* subsystem = "Unknown System!";
     int         initRtn   = 0;
-
+    
     gfx::DeviceInitialization devInit;
     devInit.windowHeight = _window_height;
     devInit.windowWidth  = _window_width;
-
+    
+    std::unique_ptr<gfx::RenderBackend> backend;
+    
     if (SDL_GetWindowWMInfo(_window, &info)) {
         switch (info.subsystem) {
             case SDL_SYSWM_UNKNOWN:
@@ -189,6 +191,7 @@ int sys::Run(app::Application* app) {
                 if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
                     _app->renderDevice = new gfx::GLDevice();
                 } else if (deviceApi == gfx::RenderDeviceApi::Metal) {
+                    backend.reset(new gfx::MetalBackend());
                     _app->renderDevice = new gfx::MetalDevice();
                 } else {
                     dg_assert_fail_nm();
@@ -207,7 +210,13 @@ int sys::Run(app::Application* app) {
         LOG_E("Couldn't get window information: %s\n", SDL_GetError());
     }
 
-    _app->renderDevice->InitializeDevice(devInit);
+    gfx::SwapchainDesc desc;
+    desc.format = gfx::PixelFormat::BGRA8Unorm;
+    desc.width = _window_width;
+    desc.height = _window_height;
+    
+    _app->renderDevice = backend->getRenderDevice();
+    _app->swapchain = backend->createSwapchainForWindow(desc, _app->renderDevice, devInit.windowHandle);
 
     PopulateKeyMapping();
 
@@ -321,9 +330,13 @@ int sys::Run(app::Application* app) {
                 }
             }
         }
-
-        _app->OnFrame(inputValues, static_cast<float>(dt));
-
+        
+        gfx::TextureId surface = _app->swapchain->begin();
+        gfx::TextureId surface2 = _app->swapchain->begin();
+        _app->swapchain->present(surface2);
+        _app->swapchain->present(surface);
+//        _app->OnFrame(inputValues, static_cast<float>(dt));
+        
         // is there a different way we can swapbuffer?
         if (renderDeviceConfig == "opengl") {
             SDL_GL_SwapWindow(_window);

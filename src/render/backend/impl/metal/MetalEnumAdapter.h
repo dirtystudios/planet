@@ -125,6 +125,8 @@ public:
                 return MTLPixelFormatInvalid;
             case PixelFormat::RGBA8Unorm:
                 return MTLPixelFormatRGBA8Unorm;
+            case PixelFormat::BGRA8Unorm:
+                return MTLPixelFormatBGRA8Unorm;
             default:
                 dg_assert_fail_nm();
         }

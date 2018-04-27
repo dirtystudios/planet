@@ -41,6 +41,8 @@ GLDevice::~GLDevice() {}
 
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
 
+#define GL_SILENCE_DEPRECATION 1
+    
 void GLDevice::PrintDisplayAdapterInfo() {
     LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
     LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));

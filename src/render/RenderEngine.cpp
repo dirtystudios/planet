@@ -114,7 +114,6 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     }
 
     queue.Submit(_device);
-    _device->RenderFrame();
 }
 
 ShaderCache*           RenderEngine::shaderCache() { return _shaderCache; }

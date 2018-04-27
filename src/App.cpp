@@ -214,7 +214,7 @@ void App::OnStart() {
     terrain.reset(new FlatTerrain(10000));
     renderEngine->Renderers().terrain->Register(terrain.get());
     
-    //AddArthas();
+    AddArthas();
     //AddRoxas();
 }
 
@@ -243,8 +243,10 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // todo: link skinnedmesh's somehow to this correctly
     RenderScene scene;
     scene.renderObjects.push_back(terrain.get());
+    
+    
     renderEngine->RenderFrame(&scene);
-
+    
     // timers
     taccumulate += dt;
     ++frame_count;
