@@ -7,6 +7,7 @@
 #include "MetalShaderLibrary.h"
 #import "MetalView.h"
 #include "TexConvert.h"
+#include "MetalCommandBuffer.h"
 
 static const std::string kMetalGfxChannel = "MetalDevice";
 #define GFXLog_D(fmt, ...) LOG(Log::Level::Debug, kMetalGfxChannel, fmt, ##__VA_ARGS__)
@@ -369,6 +370,54 @@ void MetalDevice::UnmapMemory(BufferId bufferId) {
 }
 
 CommandBuffer* MetalDevice::CreateCommandBuffer() { return new CommandBuffer(); }
+CmdBuffer* MetalDevice::CreateCommandBuffer2()
+{
+    // TODO: manage this
+    return new MetalCommandBuffer([_queue commandBuffer], _resourceManager);
+}
+
+void MetalDevice::Submit(const std::vector<CmdBuffer*>& cmdBuffers)
+{
+    for (CmdBuffer* cmdBuffer : cmdBuffers) {
+        MetalCommandBuffer* metalCommandBuffer = reinterpret_cast<MetalCommandBuffer*>(cmdBuffer);
+        metalCommandBuffer->commit();        
+    }
+}
+
+void MetalDevice::Submit(const FrameBuffer& framebuffer, CommandBuffer** commandBuffers, size_t bufferCount)
+{
+    if (bufferCount == 0) {
+        return;
+    }
+    
+    // problem, now we have command buffer per framebuffer per command buffer
+    
+    MTLRenderPassDescriptor* renderPassDesc = [MTLRenderPassDescriptor new];
+    
+    for (int i = 0; i < framebuffer.colorCount; ++i) {
+        TextureId targetId = framebuffer.color[i];
+        MetalTexture* renderTarget = _resourceManager->GetResource<MetalTexture>(targetId);
+        
+        MTLRenderPassColorAttachmentDescriptor* colorAttachment = [MTLRenderPassColorAttachmentDescriptor new];
+        colorAttachment.texture = renderTarget->mtlTexture;
+        //            colorAttachment.loadAction = attachmentDesc.loadAction;
+        //            colorAttachment.storeAction = attachmentDesc.storeAction;
+        //            colorAttachment.clearColor = attachmentDesc.clearColor;
+        [renderPassDesc.colorAttachments setObject:colorAttachment atIndexedSubscript:i];
+    }
+    
+    for (int i = 0; i < bufferCount; ++i) {
+        CommandBuffer* commandBuffer =  commandBuffers[i];
+        id<MTLCommandBuffer> mtlCommandBuffer = [_queue commandBuffer];
+        [mtlCommandBuffer enqueue];
+        
+        id<MTLRenderCommandEncoder> encoder = [mtlCommandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
+        for (const DrawItem* drawItem : *commandBuffer->GetDrawItems()) {
+            submit(encoder, drawItem);
+        }
+        [mtlCommandBuffer commit];
+    }
+}
 
 void MetalDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers)
 {    

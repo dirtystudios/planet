@@ -50,6 +50,7 @@ namespace gfx {
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
         CommandBuffer* CreateCommandBuffer();
+        CmdBuffer* CreateCommandBuffer2();
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
         uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
         void RenderFrame();
@@ -62,6 +63,8 @@ namespace gfx {
         void DestroyResource(ResourceId resourceId) {}
         void UnmapMemory(BufferId bufferId);
 
+        virtual void Submit(const FrameBuffer& frameBuffer, CommandBuffer** commandBuffers, size_t bufferCount);
+        virtual void Submit(const std::vector<CmdBuffer*>& cmdBuffers);
         // RenderDelegate Interface
         void SubmitToGPU();
         uint32_t DrawCallCount();

@@ -28,7 +28,7 @@ ConstantBuffer* viewConstantsBuffer;
 
 CommandBuffer* cmdbuf;
 
-RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
+RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, RenderView* view) : _device(device), _swapchain(swapchain), _view(view) {
     _renderers.sky.reset(new SkyRenderer());
     _renderers.text.reset(new TextRenderer());
     _renderers.ui.reset(new UIRenderer());
@@ -94,6 +94,7 @@ RenderEngine::~RenderEngine() {
 
 void RenderEngine::RenderFrame(const RenderScene* scene) {
     cmdbuf->Reset();
+    TextureId backbuffer = _swapchain->begin();
     RenderQueue queue(cmdbuf);
     queue.defaults = _stateGroupDefaults;
 
@@ -114,6 +115,7 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     }
 
     queue.Submit(_device);
+    _swapchain->present(backbuffer);
 }
 
 ShaderCache*           RenderEngine::shaderCache() { return _shaderCache; }

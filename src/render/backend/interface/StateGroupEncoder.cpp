@@ -204,7 +204,9 @@ void StateGroupEncoder::BindResource(const Binding& binding) {
 void StateGroupEncoder::WriteState(StateGroupBit bit, StateGroupIndex idx, const void* data, size_t len) {
     assert(data);
     int16_t* offset = &_currentHeader.offsets[static_cast<int16_t>(idx)];
-
+    
+    size_t padding = len % sizeof(void*);
+    
     if (!(_currentHeader.stateBitfield & static_cast<uint16_t>(bit))) {
         _currentHeader.stateBitfield |= static_cast<uint16_t>(bit);
         *offset = _groupStagingBuffer.WritePos();
@@ -213,6 +215,7 @@ void StateGroupEncoder::WriteState(StateGroupBit bit, StateGroupIndex idx, const
         // why are we using bytebuffer anyway, its a piece of shit
         memcpy(_groupStagingBuffer.GetDataPtr() + *offset, data, len);
     }
+    _groupStagingBuffer.WriteSkip(padding);
 }
 
 bool StateGroupEncoder::HasBinding(const Binding& binding) {

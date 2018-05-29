@@ -17,6 +17,9 @@
 #include "ShaderLibrary.h"
 #include "ShaderType.h"
 #include "VertexLayoutDesc.h"
+#include "ShaderStageFlags.h"
+#include "LoadAction.h"
+#include "StoreAction.h"
 
 namespace gfx {
 
@@ -57,6 +60,42 @@ namespace gfx {
         uint32_t width;
         uint32_t height;
     };
+    
+    struct FrameBuffer
+    {
+        TextureId color[8] { 0 };
+        uint32_t colorCount { 0 };
+        TextureId depth { 0 };
+        TextureId stencil { 0 };
+    };
+    
+    struct AttachmentDesc
+    {
+        PixelFormat format;
+        LoadAction loadAction;
+        StoreAction storeAction;
+    };
+    
+    struct RenderPassInfo
+    {
+        AttachmentDesc* attachments { nullptr };
+        uint32_t attachmentCount { 0 };
+    };
+    
+    class RenderPassCommandBuffer
+    {
+    public:
+        virtual void setPipelineState(PipelineStateId pipelineState) = 0;
+        virtual void setShaderBuffer(BufferId buffer, uint8_t index, ShaderStageFlags stages) = 0;
+        virtual void setShaderTexture(TextureId texture, uint8_t index, ShaderStageFlags stages) = 0;
+        virtual void drawIndexed(BufferId indexBufferId, uint32_t indexCount, uint32_t indexOffset) = 0;
+    };
+    
+    class CmdBuffer {
+    public:
+        virtual RenderPassCommandBuffer* beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer) = 0;
+        virtual void endRenderPass(RenderPassCommandBuffer* commandBuffer) = 0;
+    };
 
     class RenderDevice {
     public:
@@ -67,20 +106,20 @@ namespace gfx {
         virtual void PrintDisplayAdapterInfo() = 0;
 
         virtual BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr) = 0;
-
+        
         virtual ShaderId GetShader(ShaderType type, const std::string& functionName) = 0;
         virtual void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) = 0;
                 
         virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
+        
         virtual TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") = 0;
         virtual TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "") = 0;
-
         virtual TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "") = 0;
         virtual VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc) = 0;
 
         virtual void DestroyResource(ResourceId resourceId) = 0;
-
-        virtual CommandBuffer* CreateCommandBuffer()                       = 0;
+        
+        virtual void Submit(const std::vector<CmdBuffer*>& cmdBuffers) {}
         virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) = 0;
 
         virtual uint8_t* MapMemory(BufferId buffer, BufferAccess) = 0;
@@ -90,6 +129,12 @@ namespace gfx {
         
         [[deprecated("use submit")]]
         virtual void RenderFrame() = 0;
+        
+        [[deprecated("")]]
+        virtual CommandBuffer* CreateCommandBuffer()                       = 0;
+        
+        virtual CmdBuffer* CreateCommandBuffer2() { return nullptr; }
+        
         virtual uint32_t DrawCallCount() = 0;
         
         

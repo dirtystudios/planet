@@ -196,7 +196,7 @@ void App::OnStart() {
     playerViewport->width         = static_cast<float>(windowSize.width);
     playerViewport->height        = static_cast<float>(windowSize.height);
     playerView                    = new RenderView(&cam, playerViewport);
-    renderEngine                  = new RenderEngine(renderDevice, playerView);
+    renderEngine                  = new RenderEngine(renderDevice, swapchain, playerView);
     inputManager                  = new input::InputManager();
     animationManager              = new AnimationManager(renderEngine->Renderers().mesh.get());
     SetupUI(renderDevice, playerViewport);
