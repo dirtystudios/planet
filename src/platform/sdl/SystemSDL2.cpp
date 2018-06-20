@@ -189,7 +189,7 @@ int sys::Run(app::Application* app) {
                 subsystem = "Apple OS X";
 #ifndef _WIN32
                 if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
-                    _app->renderDevice = new gfx::GLDevice();
+//                    _app->renderDevice = new gfx::GLDevice();
                 } else if (deviceApi == gfx::RenderDeviceApi::Metal) {
                     backend.reset(new gfx::MetalBackend());
                     _app->renderDevice = new gfx::MetalDevice();
@@ -331,11 +331,8 @@ int sys::Run(app::Application* app) {
             }
         }
         
-        gfx::TextureId surface = _app->swapchain->begin();
-        gfx::TextureId surface2 = _app->swapchain->begin();
-        _app->swapchain->present(surface2);
-        _app->swapchain->present(surface);
-//        _app->OnFrame(inputValues, static_cast<float>(dt));
+    
+        _app->OnFrame(inputValues, static_cast<float>(dt));
         
         // is there a different way we can swapbuffer?
         if (renderDeviceConfig == "opengl") {

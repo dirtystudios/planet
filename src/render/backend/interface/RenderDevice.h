@@ -18,8 +18,8 @@
 #include "ShaderType.h"
 #include "VertexLayoutDesc.h"
 #include "ShaderStageFlags.h"
-#include "LoadAction.h"
-#include "StoreAction.h"
+#include "AttachmentDesc.h"
+#include "RenderPassInfo.h"
 
 namespace gfx {
 
@@ -70,23 +70,13 @@ namespace gfx {
         TextureId stencil { 0 };
     };
     
-    struct AttachmentDesc
-    {
-        PixelFormat format;
-        LoadAction loadAction;
-        StoreAction storeAction;
-    };
-    
-    struct RenderPassInfo
-    {
-        AttachmentDesc* attachments { nullptr };
-        uint32_t attachmentCount { 0 };
-    };
+   
     
     class RenderPassCommandBuffer
     {
     public:
-        virtual void setPipelineState(PipelineStateId pipelineState) = 0;        
+        virtual void setPipelineState(PipelineStateId pipelineState) = 0;
+        virtual void setVertexBuffer(BufferId vertexBuffer) = 0;        
         virtual void setShaderBuffer(BufferId buffer, uint8_t index, ShaderStageFlags stages) = 0;
         virtual void setShaderTexture(TextureId texture, uint8_t index, ShaderStageFlags stages) = 0;
         virtual void drawIndexed(BufferId indexBufferId, uint32_t indexCount, uint32_t indexOffset) = 0;
@@ -112,7 +102,7 @@ namespace gfx {
         virtual void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) = 0;
                 
         virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
-        virtual RenderPassId CreateRenderPassId(const RenderPassInfo& renderPassInfo) = 0;
+        virtual RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo) = 0;
         
         virtual TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") = 0;
         virtual TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "") = 0;
@@ -122,19 +112,17 @@ namespace gfx {
         virtual void DestroyResource(ResourceId resourceId) = 0;
         
         virtual void Submit(const std::vector<CmdBuffer*>& cmdBuffers) {}
-        virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) = 0;
+        
+        [[deprecated("")]]
+        virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) { }
 
         virtual uint8_t* MapMemory(BufferId buffer, BufferAccess) = 0;
         virtual void UnmapMemory(BufferId buffer) = 0;
 
         virtual void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) = 0;
         
-        [[deprecated("use submit")]]
-        virtual void RenderFrame() = 0;
-        
         [[deprecated("")]]
-        virtual CommandBuffer* CreateCommandBuffer()                       = 0;
-        
+        virtual CommandBuffer* CreateCommandBuffer() { return nullptr; }
         virtual CmdBuffer* CreateCommandBuffer2() { return nullptr; }
         
         virtual uint32_t DrawCallCount() = 0;

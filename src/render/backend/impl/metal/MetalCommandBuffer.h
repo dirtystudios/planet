@@ -40,7 +40,7 @@ namespace gfx
             [_encoder setDepthStencilState:pipelineState->mtlDepthStencilState];
             [_encoder setFrontFacingWinding:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.windingOrder)];
             [_encoder setCullMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.cullMode)];
-            [_encoder setTriangleFillMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.fillMode)];
+            [_encoder setTriangleFillMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.fillMode)];            
         }
         void setShaderBuffer(BufferId bufferId, uint8_t index, ShaderStageFlags stages) override
         {
@@ -78,7 +78,14 @@ namespace gfx
         {
             const MTLPrimitiveType primitiveType = MetalEnumAdapter::toMTL(_currentPipelineState->pipelineStateDesc.topology);
             MetalBuffer* indexBuffer = _resourceManager->GetResource<MetalBuffer>(indexBufferId);
-            [_encoder drawIndexedPrimitives:primitiveType indexCount:indexCount indexType:MTLIndexTypeUInt32 indexBuffer:indexBuffer->mtlBuffer indexBufferOffset:indexOffset];
+            [_encoder drawIndexedPrimitives:primitiveType
+                                indexCount:indexCount
+                                 indexType:MTLIndexTypeUInt32
+                               indexBuffer:indexBuffer->mtlBuffer
+                         indexBufferOffset:indexOffset * sizeof(uint32_t) // has to be in bytes when using this draw call i guess
+                             instanceCount:1
+                                baseVertex:0
+                              baseInstance:1];
         }
         void drawPrimitives(uint32_t startOffset, uint32_t vertexCount)
         {
@@ -86,7 +93,13 @@ namespace gfx
             [_encoder drawPrimitives:primitiveType
                          vertexStart:startOffset
                          vertexCount:vertexCount];
+            
         }
+        
+        void setVertexBuffer(BufferId vertexBuffer)
+        {
+            setShaderBuffer(vertexBuffer, 0, ShaderStageFlags::VertexBit);
+        }                
         
         id<MTLRenderCommandEncoder> getMTLEncoder()
         {
@@ -113,7 +126,15 @@ namespace gfx
                 return nullptr;
             }
             
-            MTLRenderPassDescriptor* renderPassDesc = nil;
+            
+            // TODO: Validate RenderPassId is valid with FrameBuffer
+            MetalRenderPass* renderPass = _resourceManager->GetResource<MetalRenderPass>(passId);
+            dg_assert_nm(renderPass);
+            if (renderPass == nullptr) {
+                return nullptr;
+            }
+            
+            MTLRenderPassDescriptor* renderPassDesc = getMTLRenderPassDescriptor(renderPass, frameBuffer);
             
             id<MTLRenderCommandEncoder> encoder = [_commandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
             _currentPass.reset(new MetalRenderPassCommandBuffer(encoder, _resourceManager));
@@ -141,6 +162,29 @@ namespace gfx
         {
             dg_assert_nm(_currentPass == nullptr);
             [_commandBuffer commit];
+        }
+        
+        MTLRenderPassDescriptor* getMTLRenderPassDescriptor(MetalRenderPass* renderPass, const FrameBuffer& frameBuffer)
+        {
+            MTLRenderPassDescriptor* renderPassDesc = [MTLRenderPassDescriptor new];
+            
+            const RenderPassInfo& info = renderPass->info;
+            dg_assert_nm(info.attachmentCount == frameBuffer.colorCount);
+            for (int i = 0; i < info.attachmentCount; ++i) {
+                AttachmentDesc* attachment = &info.attachments[i];
+                
+                // TODO: MetalSwapchainImage needs to inherit from MetalTexture
+                MetalTexture* texture = _resourceManager->GetResource<MetalTexture>(frameBuffer.color[i]);
+                dg_assert_nm(texture);
+                if (texture) {
+                    dg_assert_nm(attachment->format == texture->externalFormat);
+                    renderPassDesc.colorAttachments[i].texture = texture->mtlTexture;
+                    renderPassDesc.colorAttachments[i].loadAction = MetalEnumAdapter::toMTL(attachment->loadAction);
+                    renderPassDesc.colorAttachments[i].storeAction = MetalEnumAdapter::toMTL(attachment->storeAction);
+                }                
+            }
+            
+            return renderPassDesc;
         }
     };
     

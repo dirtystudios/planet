@@ -12,6 +12,8 @@ namespace gfx {
     using ResourceId      = size_t;
     using RenderPassId    = size_t;
     
+    constexpr size_t NULL_ID = 0;
+    
     enum class ResourceType : uint8_t {
         Texture = 0,
         ShaderParam,

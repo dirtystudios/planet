@@ -12,6 +12,8 @@
 #include "ShaderType.h"
 #include "VertexLayoutDesc.h"
 #include "WindingOrder.h"
+#include "StoreAction.h"
+#include "LoadAction.h"
 
 namespace gfx {
 class MetalEnumAdapter {
@@ -131,6 +133,24 @@ public:
                 dg_assert_fail_nm();
         }
         return MTLPixelFormatInvalid;
+    }
+    
+    static PixelFormat fromMTL(MTLPixelFormat format) {
+        switch (format) {
+            case MTLPixelFormatR32Float:
+                return PixelFormat::R32Float;
+            case MTLPixelFormatRGBA32Float:
+                return PixelFormat::RGBA32Float;
+            case MTLPixelFormatR8Unorm:
+                return PixelFormat::R8Unorm;            
+            case MTLPixelFormatRGBA8Unorm:
+                return PixelFormat::RGBA8Unorm;
+            case MTLPixelFormatBGRA8Unorm:
+                return PixelFormat::BGRA8Unorm;
+            default:
+                dg_assert_fail_nm();
+        }
+        return PixelFormat::Invalid;
     }
 
     static MTLBlendOperation toMTL(BlendMode mode) {
@@ -256,6 +276,34 @@ public:
         }
         dg_assert_fail_nm();
         return MTLCompareFunctionNever;
+    }
+    
+    static MTLStoreAction toMTL(StoreAction storeAction) {
+        switch (storeAction) {
+            case StoreAction::DontCare:
+                return MTLStoreActionDontCare;
+            case StoreAction::Store:
+                return MTLStoreActionStore;
+            default:
+                dg_assert_fail_nm();
+        }
+        dg_assert_fail_nm();
+        return MTLStoreActionDontCare;
+    }
+    
+    static MTLLoadAction toMTL(LoadAction loadAction) {
+        switch (loadAction) {
+            case LoadAction::DontCare:
+                return MTLLoadActionDontCare;
+            case LoadAction::Load:
+                return MTLLoadActionLoad;
+            case LoadAction::Clear:
+                return MTLLoadActionClear;
+            default:
+                dg_assert_fail_nm();
+        }
+        dg_assert_fail_nm();
+        return MTLLoadActionDontCare;
     }
 };
 }

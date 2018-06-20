@@ -51,6 +51,7 @@ namespace gfx
         
         virtual TextureId begin() final;
         virtual void present(TextureId surface) final;
+        virtual PixelFormat pixelFormat() const final;
         
     };
 }

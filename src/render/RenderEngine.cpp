@@ -26,8 +26,7 @@ struct ViewConstants {
 using ViewConstantsBuffer = TypedConstantBuffer<ViewConstants>;
 ConstantBuffer* viewConstantsBuffer;
 
-CommandBuffer* cmdbuf;
-RenderPassId baseRenderPass;
+
 
 RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, RenderView* view) : _device(device), _swapchain(swapchain), _view(view) {
     _renderers.sky.reset(new SkyRenderer());
@@ -62,7 +61,6 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _animationCache        = new AnimationCache(_device, assetDirPath);
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
-    cmdbuf              = _device->CreateCommandBuffer();
     
     gfx::AttachmentDesc backbufferAttachmentDesc;
     backbufferAttachmentDesc.format = swapchain->pixelFormat();
@@ -72,9 +70,8 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     baseRenderPassInfo.attachments = &backbufferAttachmentDesc;
     baseRenderPassInfo.attachmentCount = 1;
     
-    // TODO::
-    
-    baseRenderPass = _device->CreateRenderPassId(baseRenderPassInfo);
+    // TODO: Stencil + Depth
+    _baseRenderPass = _device->CreateRenderPass(baseRenderPassInfo);
     
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
@@ -107,18 +104,8 @@ RenderEngine::~RenderEngine() {
 }
 
 void RenderEngine::RenderFrame(const RenderScene* scene) {
-    cmdbuf->Reset();
-    TextureId backbuffer = _swapchain->begin();
-    gfx::CmdBuffer* commandBuffer = _device->CreateCommandBuffer2(); // TODO: how to clean these things up
-    
-    gfx::FrameBuffer frameBuffer;
-    frameBuffer.color[0] = backbuffer;
-    frameBuffer.colorCount = 1;
-    
-    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(baseRenderPass, frameBuffer);
-    
-    RenderQueue queue(cmdbuf);
-    queue.defaults = _stateGroupDefaults;
+    RenderQueue queue(_baseRenderPass, _stateGroupDefaults);
+    queue.defaults = _stateGroupDefaults;    
 
     assert(_view);
     FrameView view = _view->frameView();
@@ -130,13 +117,29 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     mapped->proj          = view.projection;
     mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
+    
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->isActive()) {
             p.second->Submit(&queue, &view);
         }
     }
 
-    queue.Submit(_device);
+    
+    
+    
+    
+    TextureId backbuffer = _swapchain->begin();
+    gfx::CmdBuffer* commandBuffer = _device->CreateCommandBuffer2(); // TODO: how to clean these things up
+    
+    gfx::FrameBuffer frameBuffer;
+    frameBuffer.color[0] = backbuffer;
+    frameBuffer.colorCount = 1;
+    
+    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_baseRenderPass, frameBuffer);
+    queue.Submit(renderPassCommandBuffer);
+    commandBuffer->endRenderPass(renderPassCommandBuffer);
+    
+    _device->Submit({commandBuffer});
     _swapchain->present(backbuffer);
     
 }

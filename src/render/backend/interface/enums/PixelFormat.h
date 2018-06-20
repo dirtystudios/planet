@@ -5,7 +5,8 @@
 namespace gfx {
 
 enum class PixelFormat : uint8_t {
-    R8Unorm = 0,
+    Invalid = 0,
+    R8Unorm,
     RGB8Unorm,
     RGBA8Unorm,
 

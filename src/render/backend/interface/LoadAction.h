@@ -13,6 +13,7 @@ namespace gfx
     enum class LoadAction
     {
         DontCare,
+        Load,
         Clear,
     };
 }

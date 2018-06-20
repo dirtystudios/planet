@@ -369,7 +369,6 @@ void MetalDevice::UnmapMemory(BufferId bufferId) {
     [buffer->mtlBuffer didModifyRange:range];
 }
 
-CommandBuffer* MetalDevice::CreateCommandBuffer() { return new CommandBuffer(); }
 CmdBuffer* MetalDevice::CreateCommandBuffer2()
 {
     // TODO: manage this
@@ -380,184 +379,15 @@ void MetalDevice::Submit(const std::vector<CmdBuffer*>& cmdBuffers)
 {
     for (CmdBuffer* cmdBuffer : cmdBuffers) {
         MetalCommandBuffer* metalCommandBuffer = reinterpret_cast<MetalCommandBuffer*>(cmdBuffer);
-        metalCommandBuffer->commit();        
+        metalCommandBuffer->commit();
     }
 }
 
-void MetalDevice::Submit(const FrameBuffer& framebuffer, CommandBuffer** commandBuffers, size_t bufferCount)
+RenderPassId MetalDevice::CreateRenderPass(const RenderPassInfo& renderPassInfo)
 {
-    if (bufferCount == 0) {
-        return;
-    }
-    
-    // problem, now we have command buffer per framebuffer per command buffer
-    
-    MTLRenderPassDescriptor* renderPassDesc = [MTLRenderPassDescriptor new];
-    
-    for (int i = 0; i < framebuffer.colorCount; ++i) {
-        TextureId targetId = framebuffer.color[i];
-        MetalTexture* renderTarget = _resourceManager->GetResource<MetalTexture>(targetId);
-        
-        MTLRenderPassColorAttachmentDescriptor* colorAttachment = [MTLRenderPassColorAttachmentDescriptor new];
-        colorAttachment.texture = renderTarget->mtlTexture;
-        //            colorAttachment.loadAction = attachmentDesc.loadAction;
-        //            colorAttachment.storeAction = attachmentDesc.storeAction;
-        //            colorAttachment.clearColor = attachmentDesc.clearColor;
-        [renderPassDesc.colorAttachments setObject:colorAttachment atIndexedSubscript:i];
-    }
-    
-    for (int i = 0; i < bufferCount; ++i) {
-        CommandBuffer* commandBuffer =  commandBuffers[i];
-        id<MTLCommandBuffer> mtlCommandBuffer = [_queue commandBuffer];
-        [mtlCommandBuffer enqueue];
-        
-        id<MTLRenderCommandEncoder> encoder = [mtlCommandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
-        for (const DrawItem* drawItem : *commandBuffer->GetDrawItems()) {
-            submit(encoder, drawItem);
-        }
-        [mtlCommandBuffer commit];
-    }
-}
-
-void MetalDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers)
-{    
-    _frameDrawCallCount = 0;
-    id<MTLCommandBuffer> mtlCmdBuff     = [_queue commandBuffer];
-    id<MTLRenderCommandEncoder> encoder = [mtlCmdBuff renderCommandEncoderWithDescriptor:nil];
-    [encoder pushDebugGroup:@"BeginFrame"];
-    
-    for (const CommandBuffer* cmdBuffer : cmdBuffers) {
-        const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
-        
-        for (const DrawItem* item : *items) {
-            submit(encoder, item);
-        }
-    }
-    [encoder popDebugGroup];
-    [encoder endEncoding];
-    
-    [mtlCmdBuff presentDrawable:nil];
-    [mtlCmdBuff commit];
-}
-
-void MetalDevice::RenderFrame() {
-}
-
-#pragma mark - Rawr
-
-void MetalDevice::submit(id<MTLRenderCommandEncoder> encoder, const DrawItem* drawItem)
-{
-    PipelineStateId pipelineStateId;
-    DrawCall        drawCall;
-    BufferId        indexBufferId;
-    std::vector<VertexStream> streams;
-    std::vector<Binding>      bindings;
-    
-    _frameDrawCallCount++;
-    DrawItemDecoder decoder(drawItem);
-    
-    size_t streamCount = decoder.GetStreamCount();
-    dg_assert(streamCount == 1, "> 1 stream count not supported");
-    size_t bindingCount = decoder.GetBindingCount();
-    
-    streams.clear();
-    bindings.clear();
-    streams.resize(streamCount);
-    bindings.resize(bindingCount);
-    
-    VertexStream* streamPtr  = streams.data();
-    Binding*      bindingPtr = bindings.data();
-    
-    dg_assert_nm(decoder.ReadDrawCall(&drawCall));
-    dg_assert_nm(decoder.ReadPipelineState(&pipelineStateId));
-    dg_assert_nm(decoder.ReadIndexBuffer(&indexBufferId));
-    dg_assert_nm(decoder.ReadVertexStreams(&streamPtr));
-    if (bindingCount > 0) {
-        dg_assert_nm(decoder.ReadBindings(&bindingPtr));
-    }
-    
-    MetalPipelineState* pipelineState = _resourceManager->GetResource<MetalPipelineState>(pipelineStateId);
-    MetalBuffer*        indexBuffer   = nullptr;
-    if (indexBufferId != 0) {
-        indexBuffer = _resourceManager->GetResource<MetalBuffer>(indexBufferId);
-    }
-    
-    [encoder setRenderPipelineState:pipelineState->mtlPipelineState];
-    [encoder setDepthStencilState:pipelineState->mtlDepthStencilState];
-    [encoder setFrontFacingWinding:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.windingOrder)];
-    [encoder setCullMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.cullMode)];
-    [encoder setTriangleFillMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.fillMode)];
-    
-    // TODO actually use vertex streams
-    MetalBuffer* vertexBuffer = _resourceManager->GetResource<MetalBuffer>(streamPtr[0].vertexBuffer);
-    [encoder setVertexBuffer:vertexBuffer->mtlBuffer offset:0 atIndex:0];
-    
-    for (const Binding& binding : bindings) {
-        if (binding.stageFlags & ShaderStageFlags::VertexBit) {
-            switch (binding.type) {
-                case Binding::Type::ConstantBuffer: {
-                    MetalBuffer* constantBuffer = _resourceManager->GetResource<MetalBuffer>(binding.resource);
-                    [encoder setVertexBuffer:constantBuffer->mtlBuffer offset:0 atIndex:binding.slot + 1];
-                    break;
-                }
-                case Binding::Type::Texture: {
-                    MetalTexture* texture = _resourceManager->GetResource<MetalTexture>(binding.resource);
-                    [encoder setVertexTexture:texture->mtlTexture atIndex:binding.slot];
-                    [encoder setVertexSamplerState:texture->mtlSamplerState atIndex:binding.slot];
-                    break;
-                }
-                default:
-                    dg_assert_fail_nm();
-            }
-        }
-        
-        if (binding.stageFlags & ShaderStageFlags::PixelBit) {
-            switch (binding.type) {
-                case Binding::Type::ConstantBuffer: {
-                    MetalBuffer* constantBuffer = _resourceManager->GetResource<MetalBuffer>(binding.resource);
-                    [encoder setFragmentBuffer:constantBuffer->mtlBuffer offset:0 atIndex:binding.slot + 1];
-                    break;
-                }
-                case Binding::Type::Texture: {
-                    MetalTexture* texture = _resourceManager->GetResource<MetalTexture>(binding.resource);
-                    [encoder setFragmentTexture:texture->mtlTexture atIndex:binding.slot];
-                    [encoder setFragmentSamplerState:texture->mtlSamplerState atIndex:binding.slot];
-                    break;
-                }
-                default:
-                    dg_assert_fail_nm();
-            }
-        }
-    }
-    
-    MTLPrimitiveType primitiveType = MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.topology);
-    switch (drawCall.type) {
-        case DrawCall::Type::Arrays: {
-            [encoder drawPrimitives:primitiveType
-                        vertexStart:drawCall.startOffset
-                        vertexCount:drawCall.primitiveCount];
-            break;
-        }
-        case DrawCall::Type::Indexed: {
-            [encoder drawIndexedPrimitives:primitiveType
-                                indexCount:drawCall.primitiveCount
-                                 indexType:MTLIndexTypeUInt32
-                               indexBuffer:indexBuffer->mtlBuffer
-                         indexBufferOffset:drawCall.startOffset * sizeof(uint32_t) // has to be in bytes when using this draw call i guess
-                             instanceCount:1
-                                baseVertex:drawCall.baseVertexOffset
-                              baseInstance:1];
-            
-            
-            break;
-        }
-        default:
-            dg_assert_fail_nm();
-    }
-}
-
-void MetalDevice::SubmitToGPU() {
-    
+    MetalRenderPass* renderPass = new MetalRenderPass();
+    renderPass->info = renderPassInfo;
+    return _resourceManager->AddResource(renderPass);
 }
 
 uint32_t MetalDevice::DrawCallCount() { return _frameDrawCallCount; }

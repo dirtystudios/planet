@@ -8,6 +8,7 @@
 #import "MetalSwapchain.h"
 #import "ResourceManager.h"
 #import <algorithm>
+#import "MetalEnumAdapter.h"
 using namespace gfx;
 
 
@@ -34,6 +35,11 @@ TextureId MetalSwapchain::begin()
         
     _imageIdx = (_imageIdx + 1) % kImageCount;
     return swapchainImage->resourceId;
+}
+
+PixelFormat MetalSwapchain::pixelFormat() const
+{
+    return MetalEnumAdapter::fromMTL(_metalLayer.pixelFormat);
 }
 
 void MetalSwapchain::present(TextureId surface)

@@ -28,7 +28,7 @@ namespace gfx {
         uint32_t        srcDataCount{0};
     };
     
-    class MetalDevice : public RenderDevice, public RenderDelegate {
+    class MetalDevice : public RenderDevice {
     private:
         id<MTLDevice>               _device{nil};
         id<MTLCommandQueue>         _queue{nil};
@@ -49,9 +49,8 @@ namespace gfx {
         ShaderId GetShader(ShaderType type, const std::string& functionName);
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-        CommandBuffer* CreateCommandBuffer();
+        RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo);
         CmdBuffer* CreateCommandBuffer2();
-        void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
         uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
         void RenderFrame();
         void ResizeWindow(uint32_t width, uint32_t height);
@@ -63,17 +62,14 @@ namespace gfx {
         void DestroyResource(ResourceId resourceId) {}
         void UnmapMemory(BufferId bufferId);
 
-        virtual void Submit(const FrameBuffer& frameBuffer, CommandBuffer** commandBuffers, size_t bufferCount);
+        
         virtual void Submit(const std::vector<CmdBuffer*>& cmdBuffers);
-        // RenderDelegate Interface
-        void SubmitToGPU();
         uint32_t DrawCallCount();
         
         // ----------
         id<MTLDevice> getMTLDevice();
         id<MTLCommandQueue> getMTLCommandQueue();
     private:
-        void submit(id<MTLRenderCommandEncoder> encoder, const DrawItem* drawItem);
         
     private:
         TextureId CreateTexture(const CreateTextureParams& params);

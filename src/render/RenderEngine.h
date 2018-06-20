@@ -95,7 +95,8 @@ public:
 
     Renderers& Renderers() { return _renderers; }
     void       RenderFrame(const RenderScene* scene);
-
+    RenderPassId _baseRenderPass;
+    
     ShaderCache*           shaderCache() override;
     PipelineStateCache*    pipelineStateCache() override;
     VertexLayoutCache*     vertexLayoutCache() override;
