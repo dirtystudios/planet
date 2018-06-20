@@ -27,6 +27,7 @@ using ViewConstantsBuffer = TypedConstantBuffer<ViewConstants>;
 ConstantBuffer* viewConstantsBuffer;
 
 CommandBuffer* cmdbuf;
+RenderPassId baseRenderPass;
 
 RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, RenderView* view) : _device(device), _swapchain(swapchain), _view(view) {
     _renderers.sky.reset(new SkyRenderer());
@@ -62,6 +63,19 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
     cmdbuf              = _device->CreateCommandBuffer();
+    
+    gfx::AttachmentDesc backbufferAttachmentDesc;
+    backbufferAttachmentDesc.format = swapchain->pixelFormat();
+    
+    
+    gfx::RenderPassInfo baseRenderPassInfo;
+    baseRenderPassInfo.attachments = &backbufferAttachmentDesc;
+    baseRenderPassInfo.attachmentCount = 1;
+    
+    // TODO::
+    
+    baseRenderPass = _device->CreateRenderPassId(baseRenderPassInfo);
+    
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
         p.second->Init(_device, this);
@@ -95,6 +109,14 @@ RenderEngine::~RenderEngine() {
 void RenderEngine::RenderFrame(const RenderScene* scene) {
     cmdbuf->Reset();
     TextureId backbuffer = _swapchain->begin();
+    gfx::CmdBuffer* commandBuffer = _device->CreateCommandBuffer2(); // TODO: how to clean these things up
+    
+    gfx::FrameBuffer frameBuffer;
+    frameBuffer.color[0] = backbuffer;
+    frameBuffer.colorCount = 1;
+    
+    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(baseRenderPass, frameBuffer);
+    
     RenderQueue queue(cmdbuf);
     queue.defaults = _stateGroupDefaults;
 
@@ -116,6 +138,7 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
 
     queue.Submit(_device);
     _swapchain->present(backbuffer);
+    
 }
 
 ShaderCache*           RenderEngine::shaderCache() { return _shaderCache; }

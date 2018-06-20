@@ -52,6 +52,7 @@ namespace gfx {
     public:
         virtual TextureId begin() = 0;
         virtual void present(TextureId surface) = 0;
+        virtual PixelFormat pixelFormat() const = 0;
     };
     
     struct SwapchainDesc
@@ -85,7 +86,7 @@ namespace gfx {
     class RenderPassCommandBuffer
     {
     public:
-        virtual void setPipelineState(PipelineStateId pipelineState) = 0;
+        virtual void setPipelineState(PipelineStateId pipelineState) = 0;        
         virtual void setShaderBuffer(BufferId buffer, uint8_t index, ShaderStageFlags stages) = 0;
         virtual void setShaderTexture(TextureId texture, uint8_t index, ShaderStageFlags stages) = 0;
         virtual void drawIndexed(BufferId indexBufferId, uint32_t indexCount, uint32_t indexOffset) = 0;
@@ -111,6 +112,7 @@ namespace gfx {
         virtual void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) = 0;
                 
         virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
+        virtual RenderPassId CreateRenderPassId(const RenderPassInfo& renderPassInfo) = 0;
         
         virtual TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") = 0;
         virtual TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "") = 0;
