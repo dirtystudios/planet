@@ -62,16 +62,28 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
     
+    _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, swapchain->width(), swapchain->height(), nullptr);
+    
     gfx::AttachmentDesc backbufferAttachmentDesc;
     backbufferAttachmentDesc.format = swapchain->pixelFormat();
+    backbufferAttachmentDesc.loadAction = LoadAction::Clear;
+    backbufferAttachmentDesc.storeAction = StoreAction::Store;
+    
+    gfx::AttachmentDesc depthBufferAttachmentDesc;
+    depthBufferAttachmentDesc.format = PixelFormat::Depth32Float;
+    depthBufferAttachmentDesc.loadAction = LoadAction::Clear;
+    depthBufferAttachmentDesc.storeAction = StoreAction::Store;
     
     
     gfx::RenderPassInfo baseRenderPassInfo;
-    baseRenderPassInfo.attachments = &backbufferAttachmentDesc;
+    baseRenderPassInfo.attachments[0] = backbufferAttachmentDesc;
     baseRenderPassInfo.attachmentCount = 1;
+    baseRenderPassInfo.depthAttachment = depthBufferAttachmentDesc;
+    baseRenderPassInfo.hasDepth = true;
     
-    // TODO: Stencil + Depth
     _baseRenderPass = _device->CreateRenderPass(baseRenderPassInfo);
+    
+    
     
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
@@ -134,6 +146,7 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     gfx::FrameBuffer frameBuffer;
     frameBuffer.color[0] = backbuffer;
     frameBuffer.colorCount = 1;
+    frameBuffer.depth = _depthBuffer;
     
     gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_baseRenderPass, frameBuffer);
     queue.Submit(renderPassCommandBuffer);

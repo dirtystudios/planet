@@ -32,7 +32,10 @@ TextureId MetalSwapchain::begin()
     @autoreleasepool {
         swapchainImage->drawable = [[_metalLayer nextDrawable] retain];
     }
-        
+    
+    swapchainImage->mtlTexture = [swapchainImage->drawable texture];
+    swapchainImage->externalFormat = MetalEnumAdapter::fromMTL(swapchainImage->mtlTexture.pixelFormat);
+    
     _imageIdx = (_imageIdx + 1) % kImageCount;
     return swapchainImage->resourceId;
 }
@@ -40,6 +43,16 @@ TextureId MetalSwapchain::begin()
 PixelFormat MetalSwapchain::pixelFormat() const
 {
     return MetalEnumAdapter::fromMTL(_metalLayer.pixelFormat);
+}
+
+uint32_t MetalSwapchain::width() const
+{
+    return _metalLayer.drawableSize.width;
+}
+
+uint32_t MetalSwapchain::height() const
+{
+    return _metalLayer.drawableSize.height;
 }
 
 void MetalSwapchain::present(TextureId surface)

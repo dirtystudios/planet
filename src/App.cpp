@@ -209,13 +209,13 @@ void App::OnStart() {
     cam.LookAt(0, 0, 0);
 
     SkyboxRenderObj* skybox = CreateSkybox();
-    renderEngine->Renderers().sky->Register(skybox);
+//    renderEngine->Renderers().sky->Register(skybox);
 
     terrain.reset(new FlatTerrain(10000));
-    renderEngine->Renderers().terrain->Register(terrain.get());
+//    renderEngine->Renderers().terrain->Register(terrain.get());
     
-    AddArthas();
-    //AddRoxas();
+    //AddArthas();
+    AddRoxas();
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {

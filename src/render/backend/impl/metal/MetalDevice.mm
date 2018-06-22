@@ -16,7 +16,8 @@ static const std::string kMetalGfxChannel = "MetalDevice";
 
 using namespace gfx;
 
-id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device) {
+id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device)
+{
     static id<MTLSamplerState> sampler = nil;
 
     if (!sampler) {
@@ -37,7 +38,8 @@ id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device) {
     return sampler;
 }
 
-uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width) {
+uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width)
+{
     switch (format) {
         case MTLPixelFormatR8Unorm:
             return width;
@@ -46,10 +48,24 @@ uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width) {
             return 4 * width;
         case MTLPixelFormatRGBA32Float:
             return 16 * width;
+        case MTLPixelFormatDepth32Float:
+            return 16 * width;
         default:
             dg_assert_fail_nm();
     }
     return 0;
+}
+
+constexpr bool isDepthFormat(MTLPixelFormat pixelFormat)
+{
+    return pixelFormat == MTLPixelFormatDepth16Unorm || pixelFormat == MTLPixelFormatDepth32Float || pixelFormat == MTLPixelFormatDepth24Unorm_Stencil8
+    || pixelFormat == MTLPixelFormatDepth32Float_Stencil8;
+}
+
+constexpr bool isStencilFormat(MTLPixelFormat pixelFormat)
+{
+    return pixelFormat == MTLPixelFormatStencil8 || pixelFormat == MTLPixelFormatX24_Stencil8 || pixelFormat == MTLPixelFormatX32_Stencil8
+    || pixelFormat == MTLPixelFormatDepth24Unorm_Stencil8 || pixelFormat == MTLPixelFormatDepth32Float_Stencil8;
 }
 
 MetalDevice::MetalDevice(id<MTLDevice> device, ResourceManager* resourceManager)
@@ -164,8 +180,11 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     rpd.vertexDescriptor                        = vertexLayout->mtlVertexDesc;
     rpd.vertexFunction                          = _resourceManager->GetResource<MetalLibraryFunction>(desc.vertexShader)->mtlFunction;
     rpd.fragmentFunction                        = _resourceManager->GetResource<MetalLibraryFunction>(desc.pixelShader)->mtlFunction;
-//    rpd.depthAttachmentPixelFormat              = _view.depthPixelFormat;
+    
+    // LOL
+    rpd.depthAttachmentPixelFormat              = MTLPixelFormatDepth32Float;
     rpd.colorAttachments[0].pixelFormat         = MTLPixelFormatBGRA8Unorm;
+    
     rpd.colorAttachments[0].blendingEnabled     = desc.blendState.enable;
     rpd.colorAttachments[0].alphaBlendOperation = MetalEnumAdapter::toMTL(desc.blendState.alphaMode);
     rpd.colorAttachments[0].rgbBlendOperation   = MetalEnumAdapter::toMTL(desc.blendState.rgbMode);
@@ -245,6 +264,8 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
         }
     }
 
+    const bool requireStorageModePrivate = isDepthFormat(mtlPixelFormat) || isStencilFormat(mtlPixelFormat);
+    
     MTLTextureDescriptor* desc = [[MTLTextureDescriptor alloc] init];
     desc.textureType           = params.textureType;
     desc.width                 = params.width;
@@ -255,7 +276,8 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
     desc.sampleCount           = params.sampleCount;
     desc.arrayLength           = params.arrayLength;
     desc.cpuCacheMode          = params.cpuCacheMode;
-    desc.storageMode           = params.storageMode;
+    desc.storageMode           = requireStorageModePrivate ? MTLStorageModePrivate : params.storageMode;
+    desc.usage                 = params.usage;
 
     MetalTexture* texture    = new MetalTexture();
     texture->mtlTexture      = [_device newTextureWithDescriptor:desc];
@@ -297,13 +319,14 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
     return _resourceManager->AddResource(texture);
 }
 
-TextureId MetalDevice::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* srcData, const std::string& debugName) {
+TextureId MetalDevice::CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* srcData, const std::string& debugName) {
     CreateTextureParams params;
     params.debugName   = debugName;
     params.format      = format;
     params.width       = width;
     params.height      = height;
     params.textureType = MTLTextureType2D;
+    params.usage       = MetalEnumAdapter::toMTL(usage);
     if (srcData) {
         params.srcData      = &srcData;
         params.srcDataCount = 1;

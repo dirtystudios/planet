@@ -15,8 +15,8 @@ namespace gfx
 {
     struct AttachmentDesc
     {
-        PixelFormat format;
-        LoadAction loadAction;
-        StoreAction storeAction;
+        PixelFormat format { PixelFormat::Invalid };
+        LoadAction loadAction { LoadAction::DontCare };
+        StoreAction storeAction { StoreAction::DontCare };
     };
 }

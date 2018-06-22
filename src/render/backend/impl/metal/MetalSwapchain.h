@@ -10,16 +10,15 @@
 
 #import "RenderDevice.h"
 #import <Metal/Metal.h>
-#import "Resource.h"
+#import "MetalResources.h"
 #import <QuartzCore/CAMetalLayer.h>
 
 namespace gfx
 {
     class ResourceManager;
-    class MetalSwapchainImage;
     class MetalSwapchain;
     
-    class MetalSwapchainImage : public Resource
+    class MetalSwapchainImage : public MetalTexture
     {
     private:
         MetalSwapchain* _swapchain { nullptr };
@@ -52,6 +51,8 @@ namespace gfx
         virtual TextureId begin() final;
         virtual void present(TextureId surface) final;
         virtual PixelFormat pixelFormat() const final;
+        virtual uint32_t width() const final;
+        virtual uint32_t height() const final;
         
     };
 }

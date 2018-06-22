@@ -61,6 +61,7 @@ public:
                 dg_assert_nm(decoder.ReadBindings(&bindingPtr));
             }
             
+            commandBuffer->setPipelineState(pipelineStateId);
             commandBuffer->setVertexBuffer(streamPtr[0].vertexBuffer);
             
             for (const Binding& binding : bindings) {

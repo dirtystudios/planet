@@ -14,10 +14,29 @@
 #include "WindingOrder.h"
 #include "StoreAction.h"
 #include "LoadAction.h"
+#include "TextureUsage.h"
 
 namespace gfx {
 class MetalEnumAdapter {
 public:
+    static MTLTextureUsage toMTL(TextureUsageFlags usage) {
+        MTLTextureUsage mtlUsage = 0;
+        
+        if (usage & TextureUsageFlags::ShaderRead) {
+            mtlUsage |= MTLTextureUsageShaderRead;
+        }
+        
+        if (usage & TextureUsageFlags::ShaderWrite) {
+            mtlUsage |= MTLTextureUsageShaderWrite;
+        }
+        
+        if (usage & TextureUsageFlags::RenderTarget) {
+            mtlUsage |= MTLTextureUsageRenderTarget;
+        }
+        
+        return mtlUsage;        
+    }
+    
     static ShaderType fromMTL(MTLFunctionType functionType) {
         switch (functionType) {
             case MTLFunctionTypeVertex: {
@@ -129,6 +148,10 @@ public:
                 return MTLPixelFormatRGBA8Unorm;
             case PixelFormat::BGRA8Unorm:
                 return MTLPixelFormatBGRA8Unorm;
+            case PixelFormat::Depth32Float:
+                return MTLPixelFormatDepth32Float;
+            case PixelFormat::Depth24FloatStencil8:
+                return MTLPixelFormatDepth32Float_Stencil8;
             default:
                 dg_assert_fail_nm();
         }
@@ -147,6 +170,10 @@ public:
                 return PixelFormat::RGBA8Unorm;
             case MTLPixelFormatBGRA8Unorm:
                 return PixelFormat::BGRA8Unorm;
+            case MTLPixelFormatDepth32Float:
+                return PixelFormat::Depth32Float;
+            case MTLPixelFormatDepth32Float_Stencil8:
+                return PixelFormat::Depth24FloatStencil8;
             default:
                 dg_assert_fail_nm();
         }

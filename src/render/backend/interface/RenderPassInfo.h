@@ -13,7 +13,7 @@ namespace gfx
 {
     struct RenderPassInfo
     {
-        AttachmentDesc* attachments { nullptr };
+        AttachmentDesc attachments[10];
         uint32_t attachmentCount { 0 };
         
         AttachmentDesc stencilAttachment;

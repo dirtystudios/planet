@@ -56,11 +56,11 @@ namespace gfx {
             [mtlSamplerState release];
         }
 
-        id<MTLTexture>      mtlTexture;
-        id<MTLSamplerState> mtlSamplerState;
-        PixelFormat         externalFormat;
-        uint32_t            bytesPerRow;
-        uint32_t            bytesPerImage;
+        id<MTLTexture>      mtlTexture { nil };
+        id<MTLSamplerState> mtlSamplerState { nil };
+        PixelFormat         externalFormat { PixelFormat::Invalid };
+        uint32_t            bytesPerRow { 0 };
+        uint32_t            bytesPerImage { 0 };
     };
     
     struct MetalRenderPass : public Resource {

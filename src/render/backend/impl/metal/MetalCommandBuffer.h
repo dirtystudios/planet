@@ -23,7 +23,7 @@ namespace gfx
     private:
         id<MTLRenderCommandEncoder> _encoder;
         ResourceManager* _resourceManager;
-        MetalPipelineState* _currentPipelineState;
+        MetalPipelineState* _currentPipelineState { nullptr };
     public:
         MetalRenderPassCommandBuffer(id<MTLRenderCommandEncoder> encoder, ResourceManager* resourceManager)
         : _encoder(encoder)
@@ -44,6 +44,7 @@ namespace gfx
         }
         void setShaderBuffer(BufferId bufferId, uint8_t index, ShaderStageFlags stages) override
         {
+            index += 1;
             MetalBuffer* buffer = _resourceManager->GetResource<MetalBuffer>(bufferId);
             if (stages & ShaderStageFlags::VertexBit) {
                 [_encoder setVertexBuffer:buffer->mtlBuffer offset:0 atIndex:index];
@@ -63,9 +64,12 @@ namespace gfx
             MetalTexture* texture = _resourceManager->GetResource<MetalTexture>(textureId);
             if (stages & ShaderStageFlags::VertexBit) {
                 [_encoder setVertexTexture:texture->mtlTexture atIndex:index];
+                [_encoder setVertexSamplerState:texture->mtlSamplerState atIndex:index];
+                
             }
             if (stages & ShaderStageFlags::PixelBit) {
                 [_encoder setFragmentTexture:texture->mtlTexture atIndex:index];
+                [_encoder setFragmentSamplerState:texture->mtlSamplerState atIndex:index];
             }
             if (stages & ShaderStageFlags::TessEvalBit) {
                 // todo
@@ -98,7 +102,8 @@ namespace gfx
         
         void setVertexBuffer(BufferId vertexBuffer)
         {
-            setShaderBuffer(vertexBuffer, 0, ShaderStageFlags::VertexBit);
+            MetalBuffer* buffer = _resourceManager->GetResource<MetalBuffer>(vertexBuffer);
+            [_encoder setVertexBuffer:buffer->mtlBuffer offset:0 atIndex:0];
         }                
         
         id<MTLRenderCommandEncoder> getMTLEncoder()
@@ -171,18 +176,37 @@ namespace gfx
             const RenderPassInfo& info = renderPass->info;
             dg_assert_nm(info.attachmentCount == frameBuffer.colorCount);
             for (int i = 0; i < info.attachmentCount; ++i) {
-                AttachmentDesc* attachment = &info.attachments[i];
+                const AttachmentDesc& attachment = info.attachments[i];
                 
-                // TODO: MetalSwapchainImage needs to inherit from MetalTexture
                 MetalTexture* texture = _resourceManager->GetResource<MetalTexture>(frameBuffer.color[i]);
                 dg_assert_nm(texture);
                 if (texture) {
-                    dg_assert_nm(attachment->format == texture->externalFormat);
-                    renderPassDesc.colorAttachments[i].texture = texture->mtlTexture;
-                    renderPassDesc.colorAttachments[i].loadAction = MetalEnumAdapter::toMTL(attachment->loadAction);
-                    renderPassDesc.colorAttachments[i].storeAction = MetalEnumAdapter::toMTL(attachment->storeAction);
+                    dg_assert_nm(attachment.format == texture->externalFormat);
+                    MTLRenderPassColorAttachmentDescriptor* colorAttachment = [MTLRenderPassColorAttachmentDescriptor new];
+                    colorAttachment.texture = texture->mtlTexture;;
+                    colorAttachment.loadAction = MetalEnumAdapter::toMTL(attachment.loadAction);
+                    colorAttachment.storeAction = MetalEnumAdapter::toMTL(attachment.storeAction);
+                    //colorAttachment.clearColor = attachmentDesc.clearColor;
+                    
+                    [renderPassDesc.colorAttachments setObject:colorAttachment atIndexedSubscript:i];
                 }                
             }
+            
+            if (info.hasDepth) {
+                MetalTexture* texture = _resourceManager->GetResource<MetalTexture>(frameBuffer.depth);
+                const AttachmentDesc& attachment = info.depthAttachment;
+                if (texture) {
+                    MTLRenderPassDepthAttachmentDescriptor* depthAttachment = [MTLRenderPassDepthAttachmentDescriptor new];
+                    depthAttachment.texture = texture->mtlTexture;
+                    depthAttachment.loadAction = MetalEnumAdapter::toMTL(attachment.loadAction);
+                    depthAttachment.storeAction = MetalEnumAdapter::toMTL(attachment.storeAction);
+                    //depthAttachment.clearDepth = attachmentDesc.clearDepth;
+                    
+                    renderPassDesc.depthAttachment = depthAttachment;
+                }
+            }
+            
+            dg_assert(info.hasStencil == false, "TODO");
             
             return renderPassDesc;
         }

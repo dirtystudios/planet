@@ -24,6 +24,7 @@ namespace gfx {
         MTLCPUCacheMode cpuCacheMode{MTLCPUCacheModeDefaultCache};
         MTLStorageMode  storageMode{MTLStorageModeManaged};
         MTLTextureType  textureType{MTLTextureType2D};
+        MTLTextureUsage usage{MTLTextureUsageShaderRead};
         void* const*    srcData{nullptr};
         uint32_t        srcDataCount{0};
     };
@@ -54,7 +55,7 @@ namespace gfx {
         uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
         void RenderFrame();
         void ResizeWindow(uint32_t width, uint32_t height);
-        TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "");
+        TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "");        
         TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "");
         TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "");
         void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData);

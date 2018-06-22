@@ -20,6 +20,7 @@
 #include "ShaderStageFlags.h"
 #include "AttachmentDesc.h"
 #include "RenderPassInfo.h"
+#include "TextureUsage.h"
 
 namespace gfx {
 
@@ -53,6 +54,8 @@ namespace gfx {
         virtual TextureId begin() = 0;
         virtual void present(TextureId surface) = 0;
         virtual PixelFormat pixelFormat() const = 0;
+        virtual uint32_t width() const = 0;
+        virtual uint32_t height() const = 0;
     };
     
     struct SwapchainDesc
@@ -104,7 +107,7 @@ namespace gfx {
         virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) = 0;
         virtual RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo) = 0;
         
-        virtual TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") = 0;
+        virtual TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") = 0;
         virtual TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "") = 0;
         virtual TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "") = 0;
         virtual VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc) = 0;

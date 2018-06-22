@@ -95,7 +95,8 @@ public:
 
     Renderers& Renderers() { return _renderers; }
     void       RenderFrame(const RenderScene* scene);
-    RenderPassId _baseRenderPass;
+    RenderPassId _baseRenderPass { gfx::NULL_ID };
+    gfx::TextureId _depthBuffer { gfx::NULL_ID };
     
     ShaderCache*           shaderCache() override;
     PipelineStateCache*    pipelineStateCache() override;

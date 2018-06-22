@@ -59,6 +59,7 @@ Swapchain* MetalBackend::createSwapchainForWindow(const SwapchainDesc& swapchain
     CAMetalLayer* metalLayer = (CAMetalLayer*)view.layer;
     metalLayer.device = metalDevice->getMTLDevice();
     metalLayer.pixelFormat = MetalEnumAdapter::toMTL(swapchainDesc.format);
+    metalLayer.drawableSize = CGSizeMake(swapchainDesc.width, swapchainDesc.height);
     
     MetalSwapchain* swapchain = new MetalSwapchain(metalDevice->getMTLCommandQueue(), _resourceManager.get(), metalLayer);
     
