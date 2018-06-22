@@ -78,7 +78,7 @@ namespace gfx
                 // todo
             }
         }
-        void drawIndexed(BufferId indexBufferId, uint32_t indexCount, uint32_t indexOffset) override
+        void drawIndexed(BufferId indexBufferId, uint32_t indexCount, uint32_t indexOffset, uint32_t baseVertexOffset) override
         {
             const MTLPrimitiveType primitiveType = MetalEnumAdapter::toMTL(_currentPipelineState->pipelineStateDesc.topology);
             MetalBuffer* indexBuffer = _resourceManager->GetResource<MetalBuffer>(indexBufferId);
@@ -88,7 +88,7 @@ namespace gfx
                                indexBuffer:indexBuffer->mtlBuffer
                          indexBufferOffset:indexOffset * sizeof(uint32_t) // has to be in bytes when using this draw call i guess
                              instanceCount:1
-                                baseVertex:0
+                                baseVertex:baseVertexOffset
                               baseInstance:1];
         }
         void drawPrimitives(uint32_t startOffset, uint32_t vertexCount)

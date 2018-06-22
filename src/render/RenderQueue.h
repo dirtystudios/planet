@@ -89,7 +89,7 @@ public:
                     break;
                 }
                 case DrawCall::Type::Indexed: {
-                    commandBuffer->drawIndexed(indexBufferId, drawCall.primitiveCount, drawCall.startOffset);
+                    commandBuffer->drawIndexed(indexBufferId, drawCall.primitiveCount, drawCall.startOffset, drawCall.baseVertexOffset);
                     break;
                 }
                 default:
