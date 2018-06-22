@@ -51,7 +51,7 @@ namespace gfx {
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
         RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo);
-        CmdBuffer* CreateCommandBuffer2();
+        CommandBuffer* CreateCommandBuffer2();
         uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
         void RenderFrame();
         void ResizeWindow(uint32_t width, uint32_t height);
@@ -64,7 +64,7 @@ namespace gfx {
         void UnmapMemory(BufferId bufferId);
 
         
-        virtual void Submit(const std::vector<CmdBuffer*>& cmdBuffers);
+        virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
         uint32_t DrawCallCount();
         
         // ----------

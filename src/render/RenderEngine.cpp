@@ -141,7 +141,7 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     
     
     TextureId backbuffer = _swapchain->begin();
-    gfx::CmdBuffer* commandBuffer = _device->CreateCommandBuffer2(); // TODO: how to clean these things up
+    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer2(); // TODO: how to clean these things up
     
     gfx::FrameBuffer frameBuffer;
     frameBuffer.color[0] = backbuffer;

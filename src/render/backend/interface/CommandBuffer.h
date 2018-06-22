@@ -1,19 +1,15 @@
 #pragma once
 
-#include "DrawItem.h"
+#include "ResourceTypes.h"
+#include "Framebuffer.h"
 
-namespace gfx {
-class CommandBuffer {
-private:
-    std::vector<const DrawItem*> _drawItems;
-
-public:
+namespace gfx
+{
+    class RenderPassCommandBuffer;
     
-    void DrawItem(const DrawItem* drawItem) { _drawItems.push_back(drawItem); }
-
-    const std::vector<const struct DrawItem*>* GetDrawItems() const { return &_drawItems; }
-
-    void Reset() { _drawItems.clear(); }
-};
-    
+    class CommandBuffer {
+    public:
+        virtual RenderPassCommandBuffer* beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer) = 0;
+        virtual void endRenderPass(RenderPassCommandBuffer* commandBuffer) = 0;
+    };
 }

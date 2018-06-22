@@ -8,10 +8,11 @@
 #ifndef MetalSwapchain_hpp
 #define MetalSwapchain_hpp
 
-#import "RenderDevice.h"
+#import "Swapchain.h"
 #import <Metal/Metal.h>
 #import "MetalResources.h"
 #import <QuartzCore/CAMetalLayer.h>
+#include <array>
 
 namespace gfx
 {

@@ -17,6 +17,7 @@
 #include "StateGroup.h"
 #include "TerrainRenderer.h"
 #include "VertexLayoutCache.h"
+#include "Swapchain.h"
 
  struct RenderScene {
     std::vector<RenderObj*> renderObjects;

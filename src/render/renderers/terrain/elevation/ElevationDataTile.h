@@ -5,6 +5,7 @@
 #include "MeshGeometry.h"
 #include "TerrainDataTile.h"
 #include "TileCache.h"
+#include "DrawItem.h"
 
 class GPUElevationDataTile : public TerrainDataTile {
 public:

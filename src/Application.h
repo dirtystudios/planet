@@ -2,6 +2,7 @@
 #define __application_h__
 
 #include "RenderDevice.h"
+#include "Swapchain.h"
 #include "input/InputCodes.h"
 
 namespace app {

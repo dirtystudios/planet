@@ -18,6 +18,7 @@
 #include "DGAssert.h"
 #include "Log.h"
 #include "RenderDeviceApi.h"
+#include "RenderBackend.h"
 
 SDL_Window*        _window = NULL;
 SDL_Event          _e;

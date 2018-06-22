@@ -1,10 +1,10 @@
-
 #pragma once
 
 #include <algorithm>
 #include <stdint.h>
 #include <vector>
 #include "CommandBuffer.h"
+#include "RenderPassCommandBuffer.h"
 #include "DrawItem.h"
 #include "RenderDevice.h"
 #include "StateGroup.h"

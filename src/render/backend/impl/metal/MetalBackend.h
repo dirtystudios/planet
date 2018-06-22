@@ -8,7 +8,7 @@
 #ifndef MetalBackend_h
 #define MetalBackend_h
 
-#import "RenderDevice.h"
+#import "RenderBackend.h"
 #import "MetalDevice.h"
 #import "MetalSwapchain.h"
 
@@ -17,6 +17,7 @@ namespace gfx
     class MetalSwapchain;
     class MetalDevice;
     class ResourceManager;
+    class RenderDevice;
     
     class MetalBackend : public RenderBackend
     {

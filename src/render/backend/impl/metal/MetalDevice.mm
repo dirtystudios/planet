@@ -392,15 +392,15 @@ void MetalDevice::UnmapMemory(BufferId bufferId) {
     [buffer->mtlBuffer didModifyRange:range];
 }
 
-CmdBuffer* MetalDevice::CreateCommandBuffer2()
+CommandBuffer* MetalDevice::CreateCommandBuffer2()
 {
     // TODO: manage this
     return new MetalCommandBuffer([_queue commandBuffer], _resourceManager);
 }
 
-void MetalDevice::Submit(const std::vector<CmdBuffer*>& cmdBuffers)
+void MetalDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers)
 {
-    for (CmdBuffer* cmdBuffer : cmdBuffers) {
+    for (CommandBuffer* cmdBuffer : cmdBuffers) {
         MetalCommandBuffer* metalCommandBuffer = reinterpret_cast<MetalCommandBuffer*>(cmdBuffer);
         metalCommandBuffer->commit();
     }

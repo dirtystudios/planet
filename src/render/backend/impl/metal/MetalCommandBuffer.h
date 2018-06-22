@@ -8,7 +8,8 @@
 #pragma once
 
 #include <Metal/Metal.h>
-#include "RenderDevice.h"
+#include "CommandBuffer.h"
+#include "RenderPassCommandBuffer.h"
 #include "ResourceManager.h"
 #import "MetalResources.h"
 #import "ShaderStageFlags.h"
@@ -17,7 +18,6 @@
 
 namespace gfx
 {
-    
     class MetalRenderPassCommandBuffer : public RenderPassCommandBuffer
     {
     private:
@@ -112,7 +112,7 @@ namespace gfx
         }
     };
     
-    class MetalCommandBuffer : public CmdBuffer
+    class MetalCommandBuffer : public CommandBuffer
     {
     private:
         id<MTLCommandBuffer> _commandBuffer;
