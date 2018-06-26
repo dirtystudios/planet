@@ -206,7 +206,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
 
             memcpy(ptr + drawCall.startOffset, _buffers.filled2D.data(), sizeof(DebugVertex) * _buffers.filled2D.size());
 
-            _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DfilledSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DfilledSG, renderQueue->defaults}));
             drawCall.startOffset += _buffers.filled2D.size();
             _buffers.filled2D.clear();
         }
@@ -216,7 +216,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
 
             memcpy(ptr + drawCall.startOffset, _buffers.wireframe2D.data(), sizeof(DebugVertex) * _buffers.wireframe2D.size());
 
-            _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DwireframeSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_2DwireframeSG, renderQueue->defaults}));
             drawCall.startOffset += _buffers.wireframe2D.size();
             _buffers.wireframe2D.clear();
         }
@@ -226,7 +226,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
 
             memcpy(ptr + drawCall.startOffset, _buffers.filled3D.data(), sizeof(DebugVertex) * _buffers.filled3D.size());
 
-            _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DfilledSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DfilledSG, renderQueue->defaults}));
             drawCall.startOffset += _buffers.filled3D.size();
             _buffers.filled3D.clear();
         }
@@ -236,7 +236,7 @@ void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
 
             memcpy(ptr + drawCall.startOffset, _buffers.wireframe3D.data(), sizeof(DebugVertex) * _buffers.wireframe3D.size());
 
-            _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DwireframeSG}));
+            _drawItems.push_back(encoder.Encode(device(), drawCall, {_3DwireframeSG, renderQueue->defaults}));
             drawCall.startOffset += _buffers.wireframe3D.size();
             _buffers.wireframe3D.clear();
         }

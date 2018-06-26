@@ -15,6 +15,7 @@ enum class StateGroupIndex : uint16_t {
     VertexLayout  = 7,
     PrimitiveType = 8,
     Bindings      = 9,
+    RenderPass    = 10,
 };
 
 enum class StateGroupBit : uint16_t {
@@ -28,6 +29,7 @@ enum class StateGroupBit : uint16_t {
     VertexLayout  = 1 << static_cast<uint16_t>(StateGroupIndex::VertexLayout),
     PrimitiveType = 1 << static_cast<uint16_t>(StateGroupIndex::PrimitiveType),
     Bindings      = 1 << static_cast<uint16_t>(StateGroupIndex::Bindings),
+    RenderPass      = 1 << static_cast<uint16_t>(StateGroupIndex::RenderPass),
 };
     
     

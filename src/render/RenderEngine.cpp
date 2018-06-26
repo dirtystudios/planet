@@ -96,6 +96,7 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     encoder.SetRasterState(RasterState());
     encoder.SetDepthState(DepthState());
     encoder.BindResource(viewConstantsBuffer->GetBinding(0));
+    encoder.SetRenderPass(_baseRenderPass);
     _stateGroupDefaults = encoder.End();
 }
 

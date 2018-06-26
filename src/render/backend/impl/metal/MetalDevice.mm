@@ -173,7 +173,13 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     auto   it = cache.find(h);
     if (it != end(cache))
         return it->second;
-
+    
+    MetalRenderPass* renderPass = _resourceManager->GetResource<MetalRenderPass>(desc.renderPass);
+    dg_assert_nm(renderPass);
+    if (renderPass == nullptr) {
+        return NULL_ID;
+    }
+    
     MTLRenderPipelineDescriptor* rpd = [[MTLRenderPipelineDescriptor alloc] init];
 
     MetalVertexLayout* vertexLayout             = _resourceManager->GetResource<MetalVertexLayout>(desc.vertexLayout);
@@ -181,19 +187,29 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     rpd.vertexFunction                          = _resourceManager->GetResource<MetalLibraryFunction>(desc.vertexShader)->mtlFunction;
     rpd.fragmentFunction                        = _resourceManager->GetResource<MetalLibraryFunction>(desc.pixelShader)->mtlFunction;
     
-    // LOL
-    rpd.depthAttachmentPixelFormat              = MTLPixelFormatDepth32Float;
-    rpd.colorAttachments[0].pixelFormat         = MTLPixelFormatBGRA8Unorm;
+    if (renderPass->info.hasDepth) {
+        rpd.depthAttachmentPixelFormat = MetalEnumAdapter::toMTL(renderPass->info.depthAttachment.format);
+    }
     
-    rpd.colorAttachments[0].blendingEnabled     = desc.blendState.enable;
-    rpd.colorAttachments[0].alphaBlendOperation = MetalEnumAdapter::toMTL(desc.blendState.alphaMode);
-    rpd.colorAttachments[0].rgbBlendOperation   = MetalEnumAdapter::toMTL(desc.blendState.rgbMode);
-    //    rpd.colorAttachments[0].writeMask =
-    rpd.colorAttachments[0].destinationAlphaBlendFactor = MetalEnumAdapter::toMTL(desc.blendState.dstAlphaFunc);
-    rpd.colorAttachments[0].destinationRGBBlendFactor   = MetalEnumAdapter::toMTL(desc.blendState.dstRgbFunc);
-    rpd.colorAttachments[0].sourceAlphaBlendFactor      = MetalEnumAdapter::toMTL(desc.blendState.srcAlphaFunc);
-    rpd.colorAttachments[0].sourceRGBBlendFactor        = MetalEnumAdapter::toMTL(desc.blendState.srcRgbFunc);
-
+    if (renderPass->info.hasStencil) {
+        rpd.stencilAttachmentPixelFormat = MetalEnumAdapter::toMTL(renderPass->info.stencilAttachment.format);
+    }
+    
+    for (int i = 0; i < renderPass->info.attachmentCount; ++i) {
+        rpd.colorAttachments[i].pixelFormat         = MetalEnumAdapter::toMTL(renderPass->info.attachments[i].format);
+        
+        // TODO: blendstate per attachment
+        rpd.colorAttachments[i].blendingEnabled     = desc.blendState.enable;
+        rpd.colorAttachments[i].alphaBlendOperation = MetalEnumAdapter::toMTL(desc.blendState.alphaMode);
+        rpd.colorAttachments[i].rgbBlendOperation   = MetalEnumAdapter::toMTL(desc.blendState.rgbMode);
+        //    rpd.colorAttachments[0].writeMask =
+        rpd.colorAttachments[i].destinationAlphaBlendFactor = MetalEnumAdapter::toMTL(desc.blendState.dstAlphaFunc);
+        rpd.colorAttachments[i].destinationRGBBlendFactor   = MetalEnumAdapter::toMTL(desc.blendState.dstRgbFunc);
+        rpd.colorAttachments[i].sourceAlphaBlendFactor      = MetalEnumAdapter::toMTL(desc.blendState.srcAlphaFunc);
+        rpd.colorAttachments[i].sourceRGBBlendFactor        = MetalEnumAdapter::toMTL(desc.blendState.srcRgbFunc);
+    }
+    
+    
     NSError*                     error            = nil;
     MTLRenderPipelineReflection* reflection       = nil;
     MTLPipelineOption            options          = MTLPipelineOptionBufferTypeInfo | MTLPipelineOptionArgumentInfo;

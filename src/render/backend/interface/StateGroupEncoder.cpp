@@ -11,12 +11,13 @@ size_t GetStateGroupFieldSize(const StateGroupHeader& header, StateGroupIndex in
         case StateGroupIndex::VertexShader:
         case StateGroupIndex::PixelShader:
         case StateGroupIndex::VertexLayout:
+        case StateGroupIndex::RenderPass:
             return sizeof(ResourceId);
         case StateGroupIndex::BlendState: return sizeof(BlendState);
         case StateGroupIndex::RasterState: return sizeof(RasterState);
         case StateGroupIndex::DepthState: return sizeof(DepthState);
         case StateGroupIndex::PrimitiveType: return sizeof(PrimitiveType);
-        case StateGroupIndex::Bindings: return header.bindingCount * sizeof(Binding);
+        case StateGroupIndex::Bindings: return header.bindingCount * sizeof(Binding);        
         default: assert(false); return 0;
     }
 }
@@ -102,6 +103,7 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
                 LZY(PixelShader)
                 LZY(DepthState)
                 LZY(PrimitiveType)
+                LZY(RenderPass)
                 case StateGroupBit::Bindings: {
 
                     std::vector<Binding> bindings(header.bindingCount);
@@ -123,6 +125,9 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
     return encoder.End();
 }
 
+void StateGroupEncoder::SetRenderPass(RenderPassId ps) {
+    WriteState(StateGroupBit::RenderPass, StateGroupIndex::RenderPass, &ps, sizeof(RenderPassId));
+}    
 void StateGroupEncoder::SetVertexBuffer(BufferId vb) {
     WriteState(StateGroupBit::VertexBuffer, StateGroupIndex::VertexBuffer, &vb, sizeof(BufferId));
 }

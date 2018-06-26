@@ -91,7 +91,7 @@ namespace gfx
                                 baseVertex:baseVertexOffset
                               baseInstance:1];
         }
-        void drawPrimitives(uint32_t startOffset, uint32_t vertexCount)
+        void drawPrimitives(uint32_t startOffset, uint32_t vertexCount) override
         {
             const MTLPrimitiveType primitiveType = MetalEnumAdapter::toMTL(_currentPipelineState->pipelineStateDesc.topology);
             [_encoder drawPrimitives:primitiveType

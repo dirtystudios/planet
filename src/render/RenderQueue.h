@@ -81,11 +81,7 @@ public:
             }
             switch (drawCall.type) {
                 case DrawCall::Type::Arrays: {
-                    // TODO
-//
-//                    [encoder drawPrimitives:primitiveType
-//                                vertexStart:drawCall.startOffset
-//                                vertexCount:drawCall.primitiveCount];
+                    commandBuffer->drawPrimitives(drawCall.startOffset, drawCall.primitiveCount);
                     break;
                 }
                 case DrawCall::Type::Indexed: {

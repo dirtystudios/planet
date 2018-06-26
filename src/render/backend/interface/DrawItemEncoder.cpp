@@ -11,11 +11,13 @@ namespace gfx {
 PipelineStateId GetPipelineState(gfx::RenderDevice* device, StateGroupDecoder& decoder) {
     gfx::PipelineStateDesc desc;
 
+    dg_assert_nm(decoder.ReadRenderPass(&desc.renderPass));
     dg_assert_nm(decoder.ReadPixelShader(&desc.pixelShader));
     dg_assert_nm(decoder.ReadVertexShader(&desc.vertexShader));
     dg_assert_nm(decoder.ReadVertexLayout(&desc.vertexLayout));
 
     // these can be defaulted so no assert
+    decoder.ReadRenderPass(&desc.renderPass);
     decoder.ReadBlendState(&desc.blendState);
     decoder.ReadRasterState(&desc.rasterState);
     decoder.ReadDepthState(&desc.depthState);
