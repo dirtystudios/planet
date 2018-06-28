@@ -17,6 +17,7 @@ namespace gfx
     {
     public:
         virtual RenderDevice* getRenderDevice() = 0;
+        virtual void printDeviceInfo() = 0;
         virtual Swapchain* createSwapchainForWindow(const SwapchainDesc& swapchainDesc, RenderDevice* device, void* windowHandle) = 0;
     };
 }

@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 
+#include <numeric>
+
 namespace gfx {
     
 ResourceId ResourceManager::AddResource(Resource* resource) {
@@ -7,16 +9,8 @@ ResourceId ResourceManager::AddResource(Resource* resource) {
         return 0;
     }
     _resources.push_back(resource);
+    dg_assert_nm(_resources.size() != std::numeric_limits<size_t>::max());
     resource->resourceId = _resources.size();
     return resource->resourceId;
-}
-
-bool ResourceManager::DestroyResource(ResourceId resourceId) {
-    dg_assert_nm(resourceId > 0 && resourceId <= _resources.size());
-    // lol this probably breaks everything since resourceids are direct indices
-    Resource* res = GetResource<Resource>(resourceId);
-    _resources.erase(begin(_resources) + (resourceId - 1));
-    delete res;
-    return true;
 }
 }

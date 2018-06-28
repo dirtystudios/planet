@@ -157,7 +157,7 @@ public:
                 return MTLPixelFormatBGRA8Unorm;
             case PixelFormat::Depth32Float:
                 return MTLPixelFormatDepth32Float;
-            case PixelFormat::Depth24FloatStencil8:
+            case PixelFormat::Depth32FloatStencil8:
                 return MTLPixelFormatDepth32Float_Stencil8;
             default:
                 dg_assert_fail_nm();
@@ -180,7 +180,7 @@ public:
             case MTLPixelFormatDepth32Float:
                 return PixelFormat::Depth32Float;
             case MTLPixelFormatDepth32Float_Stencil8:
-                return PixelFormat::Depth24FloatStencil8;
+                return PixelFormat::Depth32FloatStencil8;
             default:
                 dg_assert_fail_nm();
         }

@@ -5,7 +5,7 @@
 
 #ifdef _WIN32
 #include <GL/glew.h>
-#include "DX11Device.h"
+#include "DX11Backend.h"
 #endif
 
 #include "GLDevice.h"
@@ -147,7 +147,7 @@ int sys::Run(app::Application* app) {
     }
     printf("%s\n", SDL_GetError());
 
-    SDL_SysWMinfo info;
+    SDL_SysWMinfo info; 
     SDL_VERSION(&info.version);
     const char* subsystem = "Unknown System!";
     int         initRtn   = 0;
@@ -169,12 +169,11 @@ int sys::Run(app::Application* app) {
                     glewExperimental = GL_TRUE;
                     glewInit();
                     glGetError();
-                    _app->renderDevice = new gfx::GLDevice();
+                    //_app->renderDevice = new gfx::GLDevice();
                 } else if (deviceApi == gfx::RenderDeviceApi::D3D11) {
-                    _app->renderDevice                   = new gfx::DX11Device();
                     std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
-                    // TODO: should be DX11 specific function call IMO
-                    devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
+                    backend.reset(new gfx::DX11Backend(usePrebuiltShadersConfig == "y" ? true : false));
+                    windowHandle = info.info.win.window;
                 }
                 else {
                     assert(false);
@@ -210,7 +209,8 @@ int sys::Run(app::Application* app) {
     desc.format = gfx::PixelFormat::BGRA8Unorm;
     desc.width = _window_width;
     desc.height = _window_height;
-    
+
+    backend->printDeviceInfo();
     _app->renderDevice = backend->getRenderDevice();
     _app->swapchain = backend->createSwapchainForWindow(desc, _app->renderDevice, windowHandle);
 
@@ -222,8 +222,6 @@ int sys::Run(app::Application* app) {
         LOG_E("%s", "DeviceRender Init Failed.");
         return -1;
     }
-
-    _app->renderDevice->PrintDisplayAdapterInfo();
 
     int numJoysticks = SDL_NumJoysticks();
     LOG_D("SDL: Num Joysticks Connected : %d", numJoysticks);

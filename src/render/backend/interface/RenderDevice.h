@@ -23,15 +23,6 @@
 #include "TextureUsage.h"
 
 namespace gfx {
-
-    struct BackendConfiguration
-    {
-        std::string DeviceAbbreviation;
-        // Shader SubDirectory
-        std::string ShaderDir;
-        // Extension including dot
-        std::string ShaderExtension;
-    };
     
     struct DeviceConfiguration {
         std::string DeviceAbbreviation;
@@ -45,7 +36,6 @@ namespace gfx {
     public:
         DeviceConfiguration     DeviceConfig;
         virtual RenderDeviceApi GetDeviceApi() = 0;
-        virtual void PrintDisplayAdapterInfo() = 0;
 
         virtual BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr) = 0;
         
