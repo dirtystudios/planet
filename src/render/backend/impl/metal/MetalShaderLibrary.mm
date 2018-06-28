@@ -1,3 +1,10 @@
+//
+//  MetalShaderLibrary.mm
+//  planet
+//
+//  Created by Eugene Sturm on 8/8/16.
+//
+
 #include "MetalShaderLibrary.h"
 #import <Foundation/Foundation.h>
 #include <algorithm>

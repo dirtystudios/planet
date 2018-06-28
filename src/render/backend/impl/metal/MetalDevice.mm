@@ -1,3 +1,10 @@
+//
+//  MetalDevice.mm
+//  planet
+//
+//  Created by Eugene Sturm on 8/8/16.
+//
+
 #import "MetalDevice.h"
 #import <QuartzCore/CVDisplayLink.h>
 #include "DGAssert.h"

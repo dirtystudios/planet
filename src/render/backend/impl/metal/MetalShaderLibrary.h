@@ -1,3 +1,10 @@
+//
+//  MetalShaderLibrary.h
+//  planet
+//
+//  Created by Eugene Sturm on 8/8/16.
+//
+
 #pragma once
 
 #include <vector>
