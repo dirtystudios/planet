@@ -18,7 +18,7 @@ MetalCommandBuffer::MetalCommandBuffer(id<MTLCommandBuffer> commandBuffer, Resou
 , _resourceManager(resourceManager)
 {}
 
-RenderPassCommandBuffer* MetalCommandBuffer::beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer)
+RenderPassCommandBuffer* MetalCommandBuffer::beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer, const std::string& name)
 {
     if (_currentPass) {
         return nullptr;

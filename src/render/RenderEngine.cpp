@@ -26,8 +26,6 @@ struct ViewConstants {
 using ViewConstantsBuffer = TypedConstantBuffer<ViewConstants>;
 ConstantBuffer* viewConstantsBuffer;
 
-
-
 RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, RenderView* view) : _device(device), _swapchain(swapchain), _view(view) {
     _renderers.sky.reset(new SkyRenderer());
     _renderers.text.reset(new TextRenderer());
@@ -152,13 +150,12 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     frameBuffer.colorCount = 1;
     frameBuffer.depth = _depthBuffer;
     
-    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_baseRenderPass, frameBuffer);
+    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_baseRenderPass, frameBuffer, "MainPass");
     queue.Submit(renderPassCommandBuffer);
     commandBuffer->endRenderPass(renderPassCommandBuffer);
     
     _device->Submit({commandBuffer});
     _swapchain->present(backbuffer);
-    
 }
 
 ShaderCache*           RenderEngine::shaderCache() { return _shaderCache; }

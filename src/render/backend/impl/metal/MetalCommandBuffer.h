@@ -27,7 +27,7 @@ namespace gfx
     public:
         MetalCommandBuffer(id<MTLCommandBuffer> commandBuffer, ResourceManager* resourceManager);
         
-        virtual RenderPassCommandBuffer* beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer) override;
+        virtual RenderPassCommandBuffer* beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer, const std::string& name = "") override;
         virtual void endRenderPass(RenderPassCommandBuffer* commandBuffer) override;
         
         id<MTLCommandBuffer> getMTLCommandBuffer();

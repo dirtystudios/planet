@@ -28,6 +28,7 @@ namespace gfx
     public:
         MetalBackend();
         
+        virtual void printDeviceInfo() final {};
         virtual RenderDevice* getRenderDevice() final;
         virtual Swapchain* createSwapchainForWindow(const SwapchainDesc& swapchainDesc, RenderDevice* device, void* windowHandle) final;
     };

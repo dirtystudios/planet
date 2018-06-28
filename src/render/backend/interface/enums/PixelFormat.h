@@ -15,7 +15,7 @@ enum class PixelFormat : uint8_t {
     RGBA32Float,
     BGRA8Unorm,
     Depth32Float,
-    Depth24FloatStencil8,
+    Depth32FloatStencil8,
     Count,
 };
 }

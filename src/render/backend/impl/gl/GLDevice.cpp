@@ -445,7 +445,7 @@ VertexLayoutId GLDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
 }
 
 void GLDevice::DestroyResource(ResourceId resourceId) {
-    _resourceManager.DestroyResource(resourceId);
+    //_resourceManager.DestroyResource(resourceId);
 }
 
 size_t GLDevice::BuildKey(GLShaderProgram* vertexShader, GLBuffer* vertexBuffer, GLVertexLayout* vertexLayout) {

@@ -17,6 +17,5 @@ namespace gfx
         TextureId color[8] { 0 };
         uint32_t colorCount { 0 };
         TextureId depth { 0 };
-        TextureId stencil { 0 };
     };
 }

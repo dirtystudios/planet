@@ -4,62 +4,48 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <array>
 
 namespace gfx {
     struct DX11ContextState {
-        size_t indexBufferHandle;
-        ID3D11Buffer* indexBuffer;
+        ID3D11Buffer* indexBuffer{ nullptr };
 
-        size_t vertexShaderHandle;
-        ID3D11VertexShader* vertexShader;
+        ID3D11VertexShader* vertexShader{ nullptr };
 
         std::unordered_map<uint32_t, ID3D11Buffer*> vsCBuffers;
         std::unordered_set<uint32_t> vsCBufferDirtySlots;
 
         std::unordered_map<uint32_t, ID3D11ShaderResourceView*> vsTextures;
+        std::unordered_map<uint32_t, ID3D11SamplerState*> vsSamplers;
         std::unordered_set<uint32_t> vsDirtyTextureSlots;
 
         std::unordered_map<uint32_t, ID3D11Buffer*> psCBuffers;
         std::unordered_set<uint32_t> psCBufferDirtySlots;
 
         std::unordered_map<uint32_t, ID3D11ShaderResourceView*> psTextures;
+        std::unordered_map<uint32_t, ID3D11SamplerState*> psSamplers;
         std::unordered_set<uint32_t> psDirtyTextureSlots;
 
-        size_t pixelShaderHandle;
-        ID3D11PixelShader* pixelShader;
+        std::array<ID3D11RenderTargetView*, 8> rtvs{};
+        uint8_t rtv_count{ 0 };
 
-        size_t inputLayoutHandle;
-        ID3D11InputLayout* inputLayout;
+        ID3D11DepthStencilView* dsv;
+
+        ID3D11PixelShader* pixelShader{ nullptr };
+
+        ID3D11InputLayout* inputLayout{ nullptr };
         uint32_t inputLayoutStride;
 
-        size_t vertexBufferHandle;
-        ID3D11Buffer* vertexBuffer;
-        size_t vertexBufferStride;
+        ID3D11Buffer* vertexBuffer{ nullptr };
+        size_t vertexBufferStride{ 0 };
 
-        size_t blendStateHash;
-        ID3D11BlendState* blendState;
+        ID3D11BlendState* blendState{ nullptr };
+        ID3D11RasterizerState* rasterState{ nullptr };
+        ID3D11DepthStencilState* depthState{ nullptr };
 
-        size_t rasterStateHash;
-        ID3D11RasterizerState* rasterState;
+        size_t vphash{0};
+        D3D11_VIEWPORT vp;
 
-        size_t depthStateHash;
-        ID3D11DepthStencilState* depthState;
-
-        D3D11_PRIMITIVE_TOPOLOGY primitiveType;
-
-        DX11ContextState()
-            : vertexShaderHandle(0),
-            vertexShader(0),
-            pixelShaderHandle(0),
-            pixelShader(0),
-            inputLayoutHandle(0),
-            inputLayout(0),
-            blendState(0),
-            blendStateHash(0),
-            rasterState(0),
-            rasterStateHash(0),
-            depthState(0),
-            depthStateHash(0),
-            primitiveType(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED) {}
+        D3D11_PRIMITIVE_TOPOLOGY primitiveType{ D3D_PRIMITIVE_TOPOLOGY_UNDEFINED };
     };
 }

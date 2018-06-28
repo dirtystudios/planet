@@ -9,7 +9,7 @@ namespace gfx
     
     class CommandBuffer {
     public:
-        virtual RenderPassCommandBuffer* beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer) = 0;
+        virtual RenderPassCommandBuffer* beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer, const std::string& name) = 0;
         virtual void endRenderPass(RenderPassCommandBuffer* commandBuffer) = 0;
     };
 }
