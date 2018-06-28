@@ -5,14 +5,12 @@
 #include "Log.h"
 #include "MetalEnumAdapter.h"
 #include "MetalShaderLibrary.h"
-#import "MetalView.h"
 #include "TexConvert.h"
 #include "MetalCommandBuffer.h"
 
 static const std::string kMetalGfxChannel = "MetalDevice";
 #define GFXLog_D(fmt, ...) LOG(Log::Level::Debug, kMetalGfxChannel, fmt, ##__VA_ARGS__)
 #define GFXLog_W(fmt, ...) LOG(Log::Level::Warn, kMetalGfxChannel, fmt, ##__VA_ARGS__)
-#import "MetalView.h"
 
 using namespace gfx;
 

@@ -9,8 +9,8 @@
 #define MetalBackend_h
 
 #import "RenderBackend.h"
-#import "MetalDevice.h"
-#import "MetalSwapchain.h"
+#include <memory>
+#include <vector>
 
 namespace gfx
 {
