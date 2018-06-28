@@ -39,7 +39,6 @@ public:
     ~GLDevice();
 
     RenderDeviceApi GetDeviceApi();
-    int32_t InitializeDevice(const DeviceInitialization& deviceInit) { return 0; }
     uint32_t DrawCallCount() { return _drawCallCount; }
     void ResizeWindow(uint32_t width, uint32_t height);
     void PrintDisplayAdapterInfo();

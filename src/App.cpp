@@ -242,7 +242,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // render
     // todo: link skinnedmesh's somehow to this correctly
     RenderScene scene;
-    scene.renderObjects.push_back(terrain.get());
+//    scene.renderObjects.push_back(terrain.get());
     
     
     renderEngine->RenderFrame(&scene);
@@ -254,7 +254,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     if (taccumulate > 1.0) {
         debugUI->AddKeyValue("FPS", std::to_string(frame_count));
-        debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
+//        debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
         debugUI->AddKeyValue("U", ToString(cam.up));
         debugUI->AddKeyValue("L", ToString(cam.look));
         debugUI->AddKeyValue("R", ToString(cam.right));

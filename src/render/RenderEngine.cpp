@@ -84,7 +84,6 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _baseRenderPass = _device->CreateRenderPass(baseRenderPassInfo);
     
     
-    
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
         p.second->Init(_device, this);
@@ -136,13 +135,9 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
             p.second->Submit(&queue, &view);
         }
     }
-
-    
-    
-    
     
     TextureId backbuffer = _swapchain->begin();
-    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer2(); // TODO: how to clean these things up
+    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer(); // TODO: how to clean these things up
     
     gfx::FrameBuffer frameBuffer;
     frameBuffer.color[0] = backbuffer;

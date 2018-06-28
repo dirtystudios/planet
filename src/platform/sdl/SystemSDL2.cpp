@@ -152,12 +152,8 @@ int sys::Run(app::Application* app) {
     const char* subsystem = "Unknown System!";
     int         initRtn   = 0;
     
-    gfx::DeviceInitialization devInit;
-    devInit.windowHeight = _window_height;
-    devInit.windowWidth  = _window_width;
-    
     std::unique_ptr<gfx::RenderBackend> backend;
-    
+    void* windowHandle = nullptr;
     if (SDL_GetWindowWMInfo(_window, &info)) {
         switch (info.subsystem) {
             case SDL_SYSWM_UNKNOWN:
@@ -177,8 +173,7 @@ int sys::Run(app::Application* app) {
                 } else if (deviceApi == gfx::RenderDeviceApi::D3D11) {
                     _app->renderDevice                   = new gfx::DX11Device();
                     std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
-
-                    devInit.windowHandle       = info.info.win.window;
+                    // TODO: should be DX11 specific function call IMO
                     devInit.usePrebuiltShaders = usePrebuiltShadersConfig == "y" ? true : false;
                 }
                 else {
@@ -190,15 +185,13 @@ int sys::Run(app::Application* app) {
                 subsystem = "Apple OS X";
 #ifndef _WIN32
                 if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
-//                    _app->renderDevice = new gfx::GLDevice();
+                    dg_assert_fail("OpenGL isnt supported on MacOS");
                 } else if (deviceApi == gfx::RenderDeviceApi::Metal) {
                     backend.reset(new gfx::MetalBackend());
-                    _app->renderDevice = new gfx::MetalDevice();
                 } else {
                     dg_assert_fail_nm();
                 }
-                devInit.windowHandle       = info.info.cocoa.window;
-                devInit.usePrebuiltShaders = false;
+                windowHandle = info.info.cocoa.window;
                 break;
 #endif
             } break;
@@ -211,13 +204,15 @@ int sys::Run(app::Application* app) {
         LOG_E("Couldn't get window information: %s\n", SDL_GetError());
     }
 
+    dg_assert_nm(windowHandle);
+    
     gfx::SwapchainDesc desc;
     desc.format = gfx::PixelFormat::BGRA8Unorm;
     desc.width = _window_width;
     desc.height = _window_height;
     
     _app->renderDevice = backend->getRenderDevice();
-    _app->swapchain = backend->createSwapchainForWindow(desc, _app->renderDevice, devInit.windowHandle);
+    _app->swapchain = backend->createSwapchainForWindow(desc, _app->renderDevice, windowHandle);
 
     PopulateKeyMapping();
 
@@ -266,7 +261,9 @@ int sys::Run(app::Application* app) {
                 if (_e.window.event == SDL_WINDOWEVENT_RESIZED) {
                     _window_width = (unsigned)_e.window.data1;
                     _window_height = (unsigned)_e.window.data2;
-                    _app->renderDevice->ResizeWindow(_window_width, _window_height);
+                    
+                    // TODO
+                    dg_assert_fail("Resize swapchain and notify app");
                 }
             }
             else if (_e.type == SDL_KEYDOWN || _e.type == SDL_KEYUP) {

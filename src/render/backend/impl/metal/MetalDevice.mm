@@ -74,9 +74,7 @@ MetalDevice::MetalDevice(id<MTLDevice> device, ResourceManager* resourceManager)
     _queue  = [_device newCommandQueue];
     _resourceManager = resourceManager;
     _library = new MetalShaderLibrary(_resourceManager);
-}
-
-MetalDevice::MetalDevice() {
+    
     DeviceConfig.ShaderExtension    = ".metal";
     DeviceConfig.DeviceAbbreviation = "metal";
     DeviceConfig.ShaderDir          = "metal";
@@ -85,22 +83,6 @@ MetalDevice::MetalDevice() {
 MetalDevice::~MetalDevice() {}
 
 RenderDeviceApi MetalDevice::GetDeviceApi() { return RenderDeviceApi::Metal; }
-
-int32_t MetalDevice::InitializeDevice(const DeviceInitialization& deviceInit) {
-//    _window        = reinterpret_cast<NSWindow*>(deviceInit.windowHandle);
-//    _view          = [[MetalView alloc] initWithFrame:_window.contentView.frame];
-//    _view.delegate = this;
-//    [_window.contentView addSubview:_view];
-//
-//    _device = _view.device;
-//    _queue  = [_device newCommandQueue];
-//
-//    _view.depthPixelFormat = MTLPixelFormatDepth32Float;
-//    _inflightSemaphore     = dispatch_semaphore_create(1);
-   
-
-    return 0;
-}
 
 BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
     id<MTLBuffer>      mtlBuffer = nullptr;
@@ -408,7 +390,7 @@ void MetalDevice::UnmapMemory(BufferId bufferId) {
     [buffer->mtlBuffer didModifyRange:range];
 }
 
-CommandBuffer* MetalDevice::CreateCommandBuffer2()
+CommandBuffer* MetalDevice::CreateCommandBuffer()
 {
     // TODO: manage this
     return new MetalCommandBuffer([_queue commandBuffer], _resourceManager);
@@ -429,9 +411,10 @@ RenderPassId MetalDevice::CreateRenderPass(const RenderPassInfo& renderPassInfo)
     return _resourceManager->AddResource(renderPass);
 }
 
-uint32_t MetalDevice::DrawCallCount() { return _frameDrawCallCount; }
-
-void MetalDevice::ResizeWindow(uint32_t width, uint32_t height) { }
+void MetalDevice::DestroyResource(ResourceId resourceId)
+{
+    dg_assert_fail("lol");
+}
 
 id<MTLDevice> MetalDevice::getMTLDevice()
 {

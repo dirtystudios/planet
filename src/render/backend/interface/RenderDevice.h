@@ -40,20 +40,11 @@ namespace gfx {
         // Extension including dot
         std::string ShaderExtension;
     };
-
-    struct DeviceInitialization {
-        void*    windowHandle{0};
-        uint32_t windowHeight{0};
-        uint32_t windowWidth{0};
-        bool     usePrebuiltShaders{false};
-    };
     
     class RenderDevice {
     public:
         DeviceConfiguration     DeviceConfig;
-        virtual RenderDeviceApi GetDeviceApi()                                   = 0;
-        virtual int32_t InitializeDevice(const DeviceInitialization& deviceInit) = 0;
-        virtual void ResizeWindow(uint32_t width, uint32_t height) = 0;
+        virtual RenderDeviceApi GetDeviceApi() = 0;
         virtual void PrintDisplayAdapterInfo() = 0;
 
         virtual BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr) = 0;
@@ -78,8 +69,6 @@ namespace gfx {
 
         virtual void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) = 0;
                 
-        virtual CommandBuffer* CreateCommandBuffer2() { return nullptr; }
-        
-        virtual uint32_t DrawCallCount() = 0;
+        virtual CommandBuffer* CreateCommandBuffer() { return nullptr; }
     };
 }

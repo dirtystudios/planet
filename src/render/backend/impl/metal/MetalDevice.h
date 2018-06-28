@@ -10,24 +10,10 @@
 #import "RenderDelegate.h"
 #import "RenderDevice.h"
 #import "ResourceManager.h"
+#import "CreateTextureParams.h"
 
 namespace gfx {
-    struct CreateTextureParams {
-        std::string     debugName {""};
-        PixelFormat     format{PixelFormat::R8Unorm};
-        uint32_t        width{0};
-        uint32_t        height{0};
-        uint32_t        depth{1};
-        uint32_t        mips{1};
-        uint32_t        sampleCount{1};
-        uint32_t        arrayLength{1};
-        MTLCPUCacheMode cpuCacheMode{MTLCPUCacheModeDefaultCache};
-        MTLStorageMode  storageMode{MTLStorageModeManaged};
-        MTLTextureType  textureType{MTLTextureType2D};
-        MTLTextureUsage usage{MTLTextureUsageShaderRead};
-        void* const*    srcData{nullptr};
-        uint32_t        srcDataCount{0};
-    };
+
     
     class MetalDevice : public RenderDevice {
     private:
@@ -39,33 +25,26 @@ namespace gfx {
         uint64_t _frameDrawCallCount{0};
     public:
         MetalDevice(id<MTLDevice> device, ResourceManager* resourceManager);
-        MetalDevice();
         ~MetalDevice();
 
         // RenderDevice Interface
-        RenderDeviceApi GetDeviceApi();
-        int32_t InitializeDevice(const DeviceInitialization& deviceInit);
-        BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr);
-        VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& desc);
-        ShaderId GetShader(ShaderType type, const std::string& functionName);
-        void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
-        PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-        RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo);
-        CommandBuffer* CreateCommandBuffer2();
-        uint8_t* MapMemory(BufferId bufferId, BufferAccess access);
-        void RenderFrame();
-        void ResizeWindow(uint32_t width, uint32_t height);
-        TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "");        
-        TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "");
-        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "");
-        void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData);
+        virtual RenderDeviceApi GetDeviceApi() override;        
+        virtual BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData = nullptr) override;
+        virtual VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& desc) override;
+        virtual ShaderId GetShader(ShaderType type, const std::string& functionName) override;
+        virtual void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData) override;
+        virtual PipelineStateId CreatePipelineState(const PipelineStateDesc& desc) override;
+        virtual RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo) override;
+        virtual CommandBuffer* CreateCommandBuffer() override;
+        virtual uint8_t* MapMemory(BufferId bufferId, BufferAccess access) override;
+        virtual TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") override;
+        virtual TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName = "") override;
+        virtual TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName = "") override;
+        virtual void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) override;
         void PrintDisplayAdapterInfo() {}
-        void DestroyResource(ResourceId resourceId) {}
-        void UnmapMemory(BufferId bufferId);
-
-        
-        virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers);
-        uint32_t DrawCallCount();
+        virtual void DestroyResource(ResourceId resourceId) override;
+        virtual void UnmapMemory(BufferId bufferId) override;
+        virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) override;
         
         // ----------
         id<MTLDevice> getMTLDevice();
