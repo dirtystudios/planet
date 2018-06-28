@@ -8,7 +8,6 @@
 #pragma once
 
 #import <Metal/Metal.h>
-#import <QuartzCore/CAMetalLayer.h>
 #import <vector>
 #import "DGAssert.h"
 #import "MetalResources.h"

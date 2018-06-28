@@ -99,6 +99,14 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _stateGroupDefaults = encoder.End();
 }
 
+void RenderEngine::CreateRenderTargets()
+{
+    if (_depthBuffer != NULL_ID) {
+        // destroy
+    }
+    _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, _swapchain->width(), _swapchain->height(), nullptr);
+}
+
 RenderEngine::~RenderEngine() {
     if (_shaderCache) {
         delete _shaderCache;

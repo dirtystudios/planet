@@ -15,7 +15,8 @@ using namespace gfx;
 MetalRenderPassCommandBuffer::MetalRenderPassCommandBuffer(id<MTLRenderCommandEncoder> encoder, ResourceManager* resourceManager)
 : _encoder(encoder)
 , _resourceManager(resourceManager)
-{}
+{
+}
 
 void MetalRenderPassCommandBuffer::setPipelineState(PipelineStateId pipelineStateId)
 {

@@ -262,8 +262,8 @@ int sys::Run(app::Application* app) {
                     _window_width = (unsigned)_e.window.data1;
                     _window_height = (unsigned)_e.window.data2;
                     
-                    // TODO
-                    dg_assert_fail("Resize swapchain and notify app");
+                    _app->swapchain->resize(_window_width, _window_height);
+                    _app->OnWindowResize(_window_width, _window_height);
                 }
             }
             else if (_e.type == SDL_KEYDOWN || _e.type == SDL_KEYUP) {

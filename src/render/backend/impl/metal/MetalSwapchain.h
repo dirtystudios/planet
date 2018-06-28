@@ -8,10 +8,11 @@
 #ifndef MetalSwapchain_hpp
 #define MetalSwapchain_hpp
 
+#import <QuartzCore/CAMetalLayer.h>
 #import "Swapchain.h"
 #import <Metal/Metal.h>
 #import "MetalResources.h"
-#import <QuartzCore/CAMetalLayer.h>
+#import "MetalView.h"
 #include <array>
 
 namespace gfx
@@ -40,6 +41,7 @@ namespace gfx
         static constexpr uint32_t kImageCount = 2;
         
         dispatch_semaphore_t _inflightSemaphore;
+        MetalView* _metalView;
         CAMetalLayer* _metalLayer;
         id<CAMetalDrawable> _currentDrawable;
         id<MTLCommandQueue> _commandQueue;
@@ -47,13 +49,12 @@ namespace gfx
         std::array<MetalSwapchainImage*, kImageCount> _swapchainImages;
         uint32_t _imageIdx {0};
     public:
-        MetalSwapchain(id<MTLCommandQueue> commandQueue, ResourceManager* resourceManager, CAMetalLayer* metalLayer);
+        MetalSwapchain(const SwapchainDesc& desc, id<MTLCommandQueue> commandQueue, ResourceManager* resourceManager, MetalView* metalView);
         
         virtual TextureId begin() final;
         virtual void present(TextureId surface) final;
-        virtual PixelFormat pixelFormat() const final;
-        virtual uint32_t width() const final;
-        virtual uint32_t height() const final;
+    protected:
+        virtual void onSwapchainResize(uint32_t width, uint32_t height) final;
         
     };
 }

@@ -5,20 +5,23 @@
 //  Created by Eugene Sturm on 4/12/18.
 //
 
+#import <algorithm>
 #import "MetalSwapchain.h"
 #import "ResourceManager.h"
-#import <algorithm>
 #import "MetalEnumAdapter.h"
 using namespace gfx;
 
 
 
-MetalSwapchain::MetalSwapchain(id<MTLCommandQueue> commandQueue, ResourceManager* resourceManager, CAMetalLayer* metalLayer)
-: _metalLayer(metalLayer)
+MetalSwapchain::MetalSwapchain(const SwapchainDesc& desc, id<MTLCommandQueue> commandQueue, ResourceManager* resourceManager, MetalView* metalView)
+: Swapchain(desc)
+, _metalView(metalView)
+, _metalLayer((CAMetalLayer*)metalView.layer)
 , _commandQueue(commandQueue)
 , _inflightSemaphore(dispatch_semaphore_create(kImageCount))
 , _resourceManager(resourceManager)
 {
+    onSwapchainResize(width(), height());
     for (int idx = 0; idx < kImageCount; ++idx) {
         _swapchainImages[idx] = new MetalSwapchainImage(this);
         _resourceManager->AddResource(_swapchainImages[idx]);
@@ -38,21 +41,6 @@ TextureId MetalSwapchain::begin()
     
     _imageIdx = (_imageIdx + 1) % kImageCount;
     return swapchainImage->resourceId;
-}
-
-PixelFormat MetalSwapchain::pixelFormat() const
-{
-    return MetalEnumAdapter::fromMTL(_metalLayer.pixelFormat);
-}
-
-uint32_t MetalSwapchain::width() const
-{
-    return _metalLayer.drawableSize.width;
-}
-
-uint32_t MetalSwapchain::height() const
-{
-    return _metalLayer.drawableSize.height;
 }
 
 void MetalSwapchain::present(TextureId surface)
@@ -80,4 +68,15 @@ void MetalSwapchain::present(TextureId surface)
     
     [swapchainImage->drawable release];
     swapchainImage->drawable = nil;
+}
+
+void MetalSwapchain::onSwapchainResize(uint32_t width, uint32_t height)
+{
+    CGSize size = CGSizeMake(width, height);
+    
+    NSScreen* screen = _metalView.window.screen ?: [NSScreen mainScreen];
+    size.width *= screen.backingScaleFactor;
+    size.height *= screen.backingScaleFactor;
+    
+    _metalLayer.drawableSize = size;
 }

@@ -270,3 +270,8 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 }
 
 void App::OnShutdown() {}
+
+void App::OnWindowResize(uint32_t width, uint32_t height)
+{
+    renderEngine->CreateRenderTargets();
+}
