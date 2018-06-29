@@ -56,6 +56,7 @@ project "assimp"
     removefiles { "**/zlib/**" }
     removefiles { "**/gtest/**" }
     removefiles { "**/rapidjson/**" }
+    removefiles { "**/zip/test/**" }
 
     -- k im not figuring out how to code this stupid file for now
     local revStr = [[
