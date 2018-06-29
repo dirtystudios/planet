@@ -1,3 +1,10 @@
+//
+//  MetalResources.h
+//  planet
+//
+//  Created by Eugene Sturm on 8/8/16.
+//
+
 #pragma once
 
 #import <Metal/Metal.h>
@@ -7,58 +14,63 @@
 #include "Resource.h"
 #include "ShaderType.h"
 #include "VertexLayoutDesc.h"
+#include "RenderPassInfo.h"
 
 namespace gfx {
 
-struct MetalBuffer : public Resource {
-    ~MetalBuffer() { [mtlBuffer release]; }
+    struct MetalBuffer : public Resource {
+        ~MetalBuffer() { [mtlBuffer release]; }
 
-    BufferDesc    desc;
-    id<MTLBuffer> mtlBuffer;
-};
+        BufferDesc    desc;
+        id<MTLBuffer> mtlBuffer;
+    };
 
-struct MetalLibraryFunction : public Resource {
-    ~MetalLibraryFunction() {
-        [mtlLibrary release];
-        [mtlFunction release];
-    }
+    struct MetalLibraryFunction : public Resource {
+        ~MetalLibraryFunction() {
+            [mtlLibrary release];
+            [mtlFunction release];
+        }
 
-    id<MTLLibrary>  mtlLibrary;
-    id<MTLFunction> mtlFunction;
-    std::string     functionName;
-    ShaderType      type;
-};
+        id<MTLLibrary>  mtlLibrary;
+        id<MTLFunction> mtlFunction;
+        std::string     functionName;
+        ShaderType      type;
+    };
 
-struct MetalVertexLayout : public Resource {
-    ~MetalVertexLayout() { [mtlVertexDesc release]; }
+    struct MetalVertexLayout : public Resource {
+        ~MetalVertexLayout() { [mtlVertexDesc release]; }
 
-    VertexLayoutDesc     layoutDesc;
-    MTLVertexDescriptor* mtlVertexDesc;
-};
+        VertexLayoutDesc     layoutDesc;
+        MTLVertexDescriptor* mtlVertexDesc;
+    };
 
-struct MetalPipelineState : public Resource {
-    ~MetalPipelineState() {
-        [mtlPipelineState release];
-        [mtlDepthStencilState release];
-        [reflection release];
-    }
+    struct MetalPipelineState : public Resource {
+        ~MetalPipelineState() {
+            [mtlPipelineState release];
+            [mtlDepthStencilState release];
+            [reflection release];
+        }
 
-    id<MTLRenderPipelineState>   mtlPipelineState;
-    id<MTLDepthStencilState>     mtlDepthStencilState;
-    PipelineStateDesc            pipelineStateDesc;
-    MTLRenderPipelineReflection* reflection;
-};
+        id<MTLRenderPipelineState>   mtlPipelineState;
+        id<MTLDepthStencilState>     mtlDepthStencilState;
+        PipelineStateDesc            pipelineStateDesc;
+        MTLRenderPipelineReflection* reflection;
+    };
 
-struct MetalTexture : public Resource {
-    ~MetalTexture() {
-        [mtlTexture release];
-        [mtlSamplerState release];
-    }
+    struct MetalTexture : public Resource {
+        ~MetalTexture() {
+            [mtlTexture release];
+            [mtlSamplerState release];
+        }
 
-    id<MTLTexture>      mtlTexture;
-    id<MTLSamplerState> mtlSamplerState;
-    PixelFormat         externalFormat;
-    uint32_t            bytesPerRow;
-    uint32_t            bytesPerImage;
-};
+        id<MTLTexture>      mtlTexture { nil };
+        id<MTLSamplerState> mtlSamplerState { nil };
+        PixelFormat         externalFormat { PixelFormat::Invalid };
+        uint32_t            bytesPerRow { 0 };
+        uint32_t            bytesPerImage { 0 };
+    };
+    
+    struct MetalRenderPass : public Resource {
+        RenderPassInfo info;
+    };
 }

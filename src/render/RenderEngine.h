@@ -17,6 +17,7 @@
 #include "StateGroup.h"
 #include "TerrainRenderer.h"
 #include "VertexLayoutCache.h"
+#include "Swapchain.h"
 
  struct RenderScene {
     std::vector<RenderObj*> renderObjects;
@@ -73,6 +74,7 @@ struct Renderers {
 class RenderEngine : public RenderServiceLocator {
 private:
     gfx::RenderDevice* _device{nullptr};
+    gfx::Swapchain* _swapchain{nullptr};
     RenderView*        _view{nullptr};
     std::unordered_map<RendererType, Renderer*> _renderersByType;
     std::unordered_map<RenderObj*, Renderer*>   _renderObjLookup;
@@ -89,12 +91,15 @@ private:
     const gfx::StateGroup* _stateGroupDefaults{nullptr};
 
 public:
-    RenderEngine(gfx::RenderDevice* device, RenderView* view);
+    RenderEngine(gfx::RenderDevice* device, gfx::Swapchain* swapchain, RenderView* view);
     ~RenderEngine();
 
     Renderers& Renderers() { return _renderers; }
     void       RenderFrame(const RenderScene* scene);
-
+    void       CreateRenderTargets();
+    RenderPassId _baseRenderPass { gfx::NULL_ID };
+    gfx::TextureId _depthBuffer { gfx::NULL_ID };
+    
     ShaderCache*           shaderCache() override;
     PipelineStateCache*    pipelineStateCache() override;
     VertexLayoutCache*     vertexLayoutCache() override;

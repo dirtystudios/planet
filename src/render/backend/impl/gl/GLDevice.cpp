@@ -41,6 +41,8 @@ GLDevice::~GLDevice() {}
 
 void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
 
+#define GL_SILENCE_DEPRECATION 1
+    
 void GLDevice::PrintDisplayAdapterInfo() {
     LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
     LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -516,7 +518,7 @@ void GLDevice::UpdateTexture(TextureId texture, uint32_t slice, const void* srcD
 }
 
 CommandBuffer* GLDevice::CreateCommandBuffer() {
-    return new CommandBuffer();
+    return nullptr;//new CommandBuffer();
 }
 void GLDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) { _submittedBuffers.insert(end(_submittedBuffers), begin(cmdBuffers), end(cmdBuffers)); }
 
@@ -544,7 +546,7 @@ void GLDevice::BindResource(const Binding& binding) {
 
 
 void GLDevice::Execute(CommandBuffer* cmdBuffer) {
-    const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
+    const std::vector<const DrawItem*>* items = nullptr;//cmdBuffer->GetDrawItems();
     for (const DrawItem* item : *items) {
         //LOG_D("%s", "DrawItem");
 
@@ -624,7 +626,7 @@ void GLDevice::RenderFrame() {
     for (uint32_t idx = 0; idx < _submittedBuffers.size(); ++idx) {
         CommandBuffer* cmdBuffer = _submittedBuffers[idx];
         Execute(cmdBuffer);
-        cmdBuffer->Reset();
+//        cmdBuffer->Reset();
     }
     _submittedBuffers.clear();
 }

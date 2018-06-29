@@ -133,8 +133,6 @@ void UIRenderer::Register(UIFrameRenderObj* uiRenderObj) {
     encoder.BindResource(uiRenderObj->_frameData->GetBinding(2));
     uiRenderObj->_group = encoder.End();
 
-    uiRenderObj->_item = gfx::DrawItemEncoder::Encode(device(), uiRenderObj->_drawCall, &uiRenderObj->_group, 1);
-
     _objs.push_back(uiRenderObj);
 }
 
@@ -165,7 +163,11 @@ void UIRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
         if (!uiRenderObj->isRendered()) {
             continue;
         }
-
+        
+        if (uiRenderObj->_item == nullptr) {
+            uiRenderObj->_item = gfx::DrawItemEncoder::Encode(device(), uiRenderObj->_drawCall, { uiRenderObj->_group, renderQueue->defaults });
+        }
+        
         UIFrameConstants* frameConstants = uiRenderObj->_frameData->Map<UIFrameConstants>();
         frameConstants->bgColor          = uiRenderObj->_bgColor;
         frameConstants->borderColor      = uiRenderObj->_borderColor;

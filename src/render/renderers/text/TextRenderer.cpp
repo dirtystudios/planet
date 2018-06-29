@@ -135,7 +135,7 @@ void TextRenderer::OnInit() {
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
-    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
+    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
     assert(_glyphAtlas || "Failed to create glyph atlas");
 
     delete[] buffer;

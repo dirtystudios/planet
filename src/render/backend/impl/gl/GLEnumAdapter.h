@@ -36,13 +36,13 @@ namespace gfx {
 class GLEnumAdapter {
 public:
     static GLenum Convert(BufferUsageFlags flags) {
-        if (flags & BufferUsageFlags::VertexBufferBit)
-            return GL_ARRAY_BUFFER;
-        else if (flags & BufferUsageFlags::IndexBufferBit)
-            return GL_ELEMENT_ARRAY_BUFFER;
-        else if (flags & BufferUsageFlags::ConstantBufferBit)
-            return GL_UNIFORM_BUFFER;
-        else
+//        if (flags & BufferUsageFlags::VertexBufferBit)
+//            return GL_ARRAY_BUFFER;
+//        else if (flags & BufferUsageFlags::IndexBufferBit)
+//            return GL_ELEMENT_ARRAY_BUFFER;
+//        else if (flags & BufferUsageFlags::ConstantBufferBit)
+//            return GL_UNIFORM_BUFFER;
+//        else
             dg_assert_fail_nm();
     }
 

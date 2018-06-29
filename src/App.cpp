@@ -186,7 +186,7 @@ void App::OnStart() {
     playerViewport->width         = static_cast<float>(windowSize.width);
     playerViewport->height        = static_cast<float>(windowSize.height);
     playerView                    = new RenderView(&cam, playerViewport);
-    renderEngine                  = new RenderEngine(renderDevice, playerView);
+    renderEngine                  = new RenderEngine(renderDevice, swapchain, playerView);
     inputManager                  = new input::InputManager();
     
     SetupUI(renderDevice, playerViewport);
@@ -199,13 +199,13 @@ void App::OnStart() {
     cam.LookAt(0, 0, 0);
 
     SkyboxRenderObj* skybox = CreateSkybox();
-    renderEngine->Renderers().sky->Register(skybox);
+//    renderEngine->Renderers().sky->Register(skybox);
 
     terrain.reset(new FlatTerrain(10000));
     renderEngine->Renderers().terrain->Register(terrain.get());
     
     //AddArthas();
-    //AddRoxas();
+    AddRoxas();
 
     simulationManager.RegisterManager<AnimationManager>({ ComponentType::SkinnedMesh, ComponentType::Animation }, renderEngine->Renderers().mesh.get());
 }
@@ -233,9 +233,11 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // render
     // todo: link skinnedmesh's somehow to this correctly
     RenderScene scene;
-    scene.renderObjects.push_back(terrain.get());
+//    scene.renderObjects.push_back(terrain.get());
+    
+    
     renderEngine->RenderFrame(&scene);
-
+    
     // timers
     taccumulate += dt;
     ++frame_count;
@@ -243,7 +245,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     if (taccumulate > 1.0) {
         debugUI->AddKeyValue("FPS", std::to_string(frame_count));
-        debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
+//        debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
         debugUI->AddKeyValue("U", ToString(cam.up));
         debugUI->AddKeyValue("L", ToString(cam.look));
         debugUI->AddKeyValue("R", ToString(cam.right));
@@ -259,3 +261,8 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 }
 
 void App::OnShutdown() {}
+
+void App::OnWindowResize(uint32_t width, uint32_t height)
+{
+    renderEngine->CreateRenderTargets();
+}

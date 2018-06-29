@@ -28,6 +28,9 @@ public:
     bool HasState(StateGroupIndex index) { return HasState(1 << static_cast<uint16_t>(index)); }
     bool HasState(StateGroupBit bit) { return HasState(static_cast<uint16_t>(bit)); }
     bool HasState(uint16_t bit) { return (_header.stateBitfield & bit) > 0; }
+    bool ReadRenderPass(RenderPassId* passId) {
+        return ReadState(StateGroupIndex::RenderPass, passId);
+    }
     bool ReadVertexShader(ShaderId* shaderId) {
         return ReadState(StateGroupIndex::VertexShader, shaderId);
     }

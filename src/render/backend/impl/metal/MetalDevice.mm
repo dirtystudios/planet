@@ -1,3 +1,10 @@
+//
+//  MetalDevice.mm
+//  planet
+//
+//  Created by Eugene Sturm on 8/8/16.
+//
+
 #import "MetalDevice.h"
 #import <QuartzCore/CVDisplayLink.h>
 #include "DGAssert.h"
@@ -5,17 +12,17 @@
 #include "Log.h"
 #include "MetalEnumAdapter.h"
 #include "MetalShaderLibrary.h"
-#import "MetalView.h"
 #include "TexConvert.h"
+#include "MetalCommandBuffer.h"
 
 static const std::string kMetalGfxChannel = "MetalDevice";
 #define GFXLog_D(fmt, ...) LOG(Log::Level::Debug, kMetalGfxChannel, fmt, ##__VA_ARGS__)
 #define GFXLog_W(fmt, ...) LOG(Log::Level::Warn, kMetalGfxChannel, fmt, ##__VA_ARGS__)
-#import "MetalView.h"
 
-namespace gfx {
+using namespace gfx;
 
-id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device) {
+id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device)
+{
     static id<MTLSamplerState> sampler = nil;
 
     if (!sampler) {
@@ -36,7 +43,8 @@ id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device) {
     return sampler;
 }
 
-uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width) {
+uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width)
+{
     switch (format) {
         case MTLPixelFormatR8Unorm:
             return width;
@@ -45,13 +53,33 @@ uint32_t ComputeBytesPerRow(MTLPixelFormat format, uint32_t width) {
             return 4 * width;
         case MTLPixelFormatRGBA32Float:
             return 16 * width;
+        case MTLPixelFormatDepth32Float:
+            return 16 * width;
         default:
             dg_assert_fail_nm();
     }
     return 0;
 }
 
-MetalDevice::MetalDevice() {
+constexpr bool isDepthFormat(MTLPixelFormat pixelFormat)
+{
+    return pixelFormat == MTLPixelFormatDepth16Unorm || pixelFormat == MTLPixelFormatDepth32Float || pixelFormat == MTLPixelFormatDepth24Unorm_Stencil8
+    || pixelFormat == MTLPixelFormatDepth32Float_Stencil8;
+}
+
+constexpr bool isStencilFormat(MTLPixelFormat pixelFormat)
+{
+    return pixelFormat == MTLPixelFormatStencil8 || pixelFormat == MTLPixelFormatX24_Stencil8 || pixelFormat == MTLPixelFormatX32_Stencil8
+    || pixelFormat == MTLPixelFormatDepth24Unorm_Stencil8 || pixelFormat == MTLPixelFormatDepth32Float_Stencil8;
+}
+
+MetalDevice::MetalDevice(id<MTLDevice> device, ResourceManager* resourceManager)
+{
+    _device = device;
+    _queue  = [_device newCommandQueue];
+    _resourceManager = resourceManager;
+    _library = new MetalShaderLibrary(_resourceManager);
+    
     DeviceConfig.ShaderExtension    = ".metal";
     DeviceConfig.DeviceAbbreviation = "metal";
     DeviceConfig.ShaderDir          = "metal";
@@ -60,22 +88,6 @@ MetalDevice::MetalDevice() {
 MetalDevice::~MetalDevice() {}
 
 RenderDeviceApi MetalDevice::GetDeviceApi() { return RenderDeviceApi::Metal; }
-
-int32_t MetalDevice::InitializeDevice(const DeviceInitialization& deviceInit) {
-    _window        = reinterpret_cast<NSWindow*>(deviceInit.windowHandle);
-    _view          = [[MetalView alloc] initWithFrame:_window.contentView.frame];
-    _view.delegate = this;
-    [_window.contentView addSubview:_view];
-
-    _device = _view.device;
-    _queue  = [_device newCommandQueue];
-
-    _view.depthPixelFormat = MTLPixelFormatDepth32Float;
-    _inflightSemaphore     = dispatch_semaphore_create(1);
-    _library               = new MetalShaderLibrary(&_resourceManager);
-
-    return 0;
-}
 
 BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
     id<MTLBuffer>      mtlBuffer = nullptr;
@@ -112,7 +124,7 @@ BufferId MetalDevice::AllocateBuffer(const BufferDesc& desc, const void* initial
     buffer->mtlBuffer   = mtlBuffer;
     buffer->mtlBuffer.label = [NSString stringWithUTF8String: desc.debugName.c_str()];
 
-    return _resourceManager.AddResource(buffer);
+    return _resourceManager->AddResource(buffer);
 }
 
 VertexLayoutId MetalDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
@@ -138,7 +150,7 @@ VertexLayoutId MetalDevice::CreateVertexLayout(const VertexLayoutDesc& desc) {
     vertLayout->layoutDesc        = desc;
     vertLayout->mtlVertexDesc     = vertexDesc;
 
-    return _resourceManager.AddResource(vertLayout);
+    return _resourceManager->AddResource(vertLayout);
 }
 
 PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) {
@@ -148,24 +160,43 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     auto   it = cache.find(h);
     if (it != end(cache))
         return it->second;
-
+    
+    MetalRenderPass* renderPass = _resourceManager->GetResource<MetalRenderPass>(desc.renderPass);
+    dg_assert_nm(renderPass);
+    if (renderPass == nullptr) {
+        return NULL_ID;
+    }
+    
     MTLRenderPipelineDescriptor* rpd = [[MTLRenderPipelineDescriptor alloc] init];
 
-    MetalVertexLayout* vertexLayout             = _resourceManager.GetResource<MetalVertexLayout>(desc.vertexLayout);
+    MetalVertexLayout* vertexLayout             = _resourceManager->GetResource<MetalVertexLayout>(desc.vertexLayout);
     rpd.vertexDescriptor                        = vertexLayout->mtlVertexDesc;
-    rpd.vertexFunction                          = _resourceManager.GetResource<MetalLibraryFunction>(desc.vertexShader)->mtlFunction;
-    rpd.fragmentFunction                        = _resourceManager.GetResource<MetalLibraryFunction>(desc.pixelShader)->mtlFunction;
-    rpd.depthAttachmentPixelFormat              = _view.depthPixelFormat;
-    rpd.colorAttachments[0].pixelFormat         = _view.colorPixelFormat;
-    rpd.colorAttachments[0].blendingEnabled     = desc.blendState.enable;
-    rpd.colorAttachments[0].alphaBlendOperation = MetalEnumAdapter::toMTL(desc.blendState.alphaMode);
-    rpd.colorAttachments[0].rgbBlendOperation   = MetalEnumAdapter::toMTL(desc.blendState.rgbMode);
-    //    rpd.colorAttachments[0].writeMask =
-    rpd.colorAttachments[0].destinationAlphaBlendFactor = MetalEnumAdapter::toMTL(desc.blendState.dstAlphaFunc);
-    rpd.colorAttachments[0].destinationRGBBlendFactor   = MetalEnumAdapter::toMTL(desc.blendState.dstRgbFunc);
-    rpd.colorAttachments[0].sourceAlphaBlendFactor      = MetalEnumAdapter::toMTL(desc.blendState.srcAlphaFunc);
-    rpd.colorAttachments[0].sourceRGBBlendFactor        = MetalEnumAdapter::toMTL(desc.blendState.srcRgbFunc);
-
+    rpd.vertexFunction                          = _resourceManager->GetResource<MetalLibraryFunction>(desc.vertexShader)->mtlFunction;
+    rpd.fragmentFunction                        = _resourceManager->GetResource<MetalLibraryFunction>(desc.pixelShader)->mtlFunction;
+    
+    if (renderPass->info.hasDepth) {
+        rpd.depthAttachmentPixelFormat = MetalEnumAdapter::toMTL(renderPass->info.depthAttachment.format);
+    }
+    
+    if (renderPass->info.hasStencil) {
+        rpd.stencilAttachmentPixelFormat = MetalEnumAdapter::toMTL(renderPass->info.stencilAttachment.format);
+    }
+    
+    for (int i = 0; i < renderPass->info.attachmentCount; ++i) {
+        rpd.colorAttachments[i].pixelFormat         = MetalEnumAdapter::toMTL(renderPass->info.attachments[i].format);
+        
+        // TODO: blendstate per attachment
+        rpd.colorAttachments[i].blendingEnabled     = desc.blendState.enable;
+        rpd.colorAttachments[i].alphaBlendOperation = MetalEnumAdapter::toMTL(desc.blendState.alphaMode);
+        rpd.colorAttachments[i].rgbBlendOperation   = MetalEnumAdapter::toMTL(desc.blendState.rgbMode);
+        //    rpd.colorAttachments[0].writeMask =
+        rpd.colorAttachments[i].destinationAlphaBlendFactor = MetalEnumAdapter::toMTL(desc.blendState.dstAlphaFunc);
+        rpd.colorAttachments[i].destinationRGBBlendFactor   = MetalEnumAdapter::toMTL(desc.blendState.dstRgbFunc);
+        rpd.colorAttachments[i].sourceAlphaBlendFactor      = MetalEnumAdapter::toMTL(desc.blendState.srcAlphaFunc);
+        rpd.colorAttachments[i].sourceRGBBlendFactor        = MetalEnumAdapter::toMTL(desc.blendState.srcRgbFunc);
+    }
+    
+    
     NSError*                     error            = nil;
     MTLRenderPipelineReflection* reflection       = nil;
     MTLPipelineOption            options          = MTLPipelineOptionBufferTypeInfo | MTLPipelineOptionArgumentInfo;
@@ -187,7 +218,7 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
     [rpd release];
     [dsd release];
 
-    PipelineStateId pipelineStateId = _resourceManager.AddResource(pipelineState);
+    PipelineStateId pipelineStateId = _resourceManager->AddResource(pipelineState);
     cache.insert({h, pipelineStateId});
 
     return pipelineStateId;
@@ -236,6 +267,8 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
         }
     }
 
+    const bool requireStorageModePrivate = isDepthFormat(mtlPixelFormat) || isStencilFormat(mtlPixelFormat);
+    
     MTLTextureDescriptor* desc = [[MTLTextureDescriptor alloc] init];
     desc.textureType           = params.textureType;
     desc.width                 = params.width;
@@ -246,7 +279,8 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
     desc.sampleCount           = params.sampleCount;
     desc.arrayLength           = params.arrayLength;
     desc.cpuCacheMode          = params.cpuCacheMode;
-    desc.storageMode           = params.storageMode;
+    desc.storageMode           = requireStorageModePrivate ? MTLStorageModePrivate : params.storageMode;
+    desc.usage                 = params.usage;
 
     MetalTexture* texture    = new MetalTexture();
     texture->mtlTexture      = [_device newTextureWithDescriptor:desc];
@@ -285,16 +319,17 @@ TextureId MetalDevice::CreateTexture(const CreateTextureParams& params) {
     texture->mtlTexture.label = [NSString stringWithUTF8String:params.debugName.c_str()];
 
     [desc release];
-    return _resourceManager.AddResource(texture);
+    return _resourceManager->AddResource(texture);
 }
 
-TextureId MetalDevice::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* srcData, const std::string& debugName) {
+TextureId MetalDevice::CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* srcData, const std::string& debugName) {
     CreateTextureParams params;
     params.debugName   = debugName;
     params.format      = format;
     params.width       = width;
     params.height      = height;
     params.textureType = MTLTextureType2D;
+    params.usage       = MetalEnumAdapter::toMTL(usage);
     if (srcData) {
         params.srcData      = &srcData;
         params.srcDataCount = 1;
@@ -332,7 +367,7 @@ TextureId MetalDevice::CreateTextureCube(PixelFormat format, uint32_t width, uin
 void MetalDevice::UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) {
     dg_assert_nm(slice >= 0 && srcData != nullptr);
     // TOOD: doesnt properly support 24 bit textures
-    MetalTexture* texture = _resourceManager.GetResource<MetalTexture>(textureId);
+    MetalTexture* texture = _resourceManager->GetResource<MetalTexture>(textureId);
     dg_assert_nm(texture);
 
     MTLRegion region = MTLRegionMake2D(0, 0, texture->mtlTexture.width, texture->mtlTexture.height);
@@ -340,7 +375,7 @@ void MetalDevice::UpdateTexture(TextureId textureId, uint32_t slice, const void*
 }
 
 uint8_t* MetalDevice::MapMemory(BufferId bufferId, BufferAccess access) {
-    MetalBuffer* buffer = _resourceManager.GetResource<MetalBuffer>(bufferId);
+    MetalBuffer* buffer = _resourceManager->GetResource<MetalBuffer>(bufferId);
     if (!(buffer->desc.accessFlags & BufferAccessFlags::CpuWriteBit)) {
         return nullptr;
     }
@@ -351,7 +386,7 @@ uint8_t* MetalDevice::MapMemory(BufferId bufferId, BufferAccess access) {
 }
 
 void MetalDevice::UnmapMemory(BufferId bufferId) {
-    MetalBuffer* buffer = _resourceManager.GetResource<MetalBuffer>(bufferId);
+    MetalBuffer* buffer = _resourceManager->GetResource<MetalBuffer>(bufferId);
     if (!buffer) {
         return;
     }
@@ -360,149 +395,39 @@ void MetalDevice::UnmapMemory(BufferId bufferId) {
     [buffer->mtlBuffer didModifyRange:range];
 }
 
-CommandBuffer* MetalDevice::CreateCommandBuffer() { return new CommandBuffer(); }
-void MetalDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers) { _commandBuffers.insert(end(_commandBuffers), begin(cmdBuffers), end(cmdBuffers)); }
-void                                                        MetalDevice::RenderFrame() {
-    [_view display];
-    _commandBuffers.clear();
+CommandBuffer* MetalDevice::CreateCommandBuffer()
+{
+    // TODO: manage this
+    return new MetalCommandBuffer([_queue commandBuffer], _resourceManager);
 }
 
-#pragma mark - Rawr
-
-void MetalDevice::SubmitToGPU() {
-    _frameDrawCallCount = 0;
-    dispatch_semaphore_wait(_inflightSemaphore, DISPATCH_TIME_FOREVER);
-    id<MTLCommandBuffer> mtlCmdBuff     = [_queue commandBuffer];
-    id<MTLRenderCommandEncoder> encoder = [mtlCmdBuff renderCommandEncoderWithDescriptor:_view.renderPassDescriptor];
-    [encoder pushDebugGroup:@"BeginFrame"];
-
-    std::vector<VertexStream> streams;
-    std::vector<Binding>      bindings;
-
-    for (const CommandBuffer* cmdBuffer : _commandBuffers) {
-        const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
-
-        PipelineStateId pipelineStateId;
-        DrawCall        drawCall;
-        BufferId        indexBufferId;
-
-        for (const DrawItem* item : *items) {
-            _frameDrawCallCount++;
-            DrawItemDecoder decoder(item);
-
-            size_t streamCount = decoder.GetStreamCount();
-            dg_assert(streamCount == 1, "> 1 stream count not supported");
-            size_t bindingCount = decoder.GetBindingCount();
-
-            streams.clear();
-            bindings.clear();
-            streams.resize(streamCount);
-            bindings.resize(bindingCount);
-
-            VertexStream* streamPtr  = streams.data();
-            Binding*      bindingPtr = bindings.data();
-
-            dg_assert_nm(decoder.ReadDrawCall(&drawCall));
-            dg_assert_nm(decoder.ReadPipelineState(&pipelineStateId));
-            dg_assert_nm(decoder.ReadIndexBuffer(&indexBufferId));
-            dg_assert_nm(decoder.ReadVertexStreams(&streamPtr));
-            if (bindingCount > 0) {
-                dg_assert_nm(decoder.ReadBindings(&bindingPtr));
-            }
-
-            MetalPipelineState* pipelineState = _resourceManager.GetResource<MetalPipelineState>(pipelineStateId);
-            MetalBuffer*        indexBuffer   = nullptr;
-            if (indexBufferId != 0) {
-                indexBuffer = _resourceManager.GetResource<MetalBuffer>(indexBufferId);
-            }
-
-            [encoder setRenderPipelineState:pipelineState->mtlPipelineState];
-            [encoder setDepthStencilState:pipelineState->mtlDepthStencilState];
-            [encoder setFrontFacingWinding:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.windingOrder)];
-            [encoder setCullMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.cullMode)];
-            [encoder setTriangleFillMode:MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.rasterState.fillMode)];
-
-            // TODO actually use vertex streams
-            MetalBuffer* vertexBuffer = _resourceManager.GetResource<MetalBuffer>(streamPtr[0].vertexBuffer);
-            [encoder setVertexBuffer:vertexBuffer->mtlBuffer offset:0 atIndex:0];
-
-            for (const Binding& binding : bindings) {
-                if (binding.stageFlags & ShaderStageFlags::VertexBit) {
-                    switch (binding.type) {
-                        case Binding::Type::ConstantBuffer: {
-                            MetalBuffer* constantBuffer = _resourceManager.GetResource<MetalBuffer>(binding.resource);
-                            [encoder setVertexBuffer:constantBuffer->mtlBuffer offset:0 atIndex:binding.slot + 1];
-                            break;
-                        }
-                        case Binding::Type::Texture: {
-                            MetalTexture* texture = _resourceManager.GetResource<MetalTexture>(binding.resource);
-                            [encoder setVertexTexture:texture->mtlTexture atIndex:binding.slot];
-                            [encoder setVertexSamplerState:texture->mtlSamplerState atIndex:binding.slot];
-                            break;
-                        }
-                        default:
-                            dg_assert_fail_nm();
-                    }
-                }
-
-                if (binding.stageFlags & ShaderStageFlags::PixelBit) {
-                    switch (binding.type) {
-                        case Binding::Type::ConstantBuffer: {
-                            MetalBuffer* constantBuffer = _resourceManager.GetResource<MetalBuffer>(binding.resource);
-                            [encoder setFragmentBuffer:constantBuffer->mtlBuffer offset:0 atIndex:binding.slot + 1];
-                            break;
-                        }
-                        case Binding::Type::Texture: {
-                            MetalTexture* texture = _resourceManager.GetResource<MetalTexture>(binding.resource);
-                            [encoder setFragmentTexture:texture->mtlTexture atIndex:binding.slot];
-                            [encoder setFragmentSamplerState:texture->mtlSamplerState atIndex:binding.slot];
-                            break;
-                        }
-                        default:
-                            dg_assert_fail_nm();
-                    }
-                }
-            }
-
-            MTLPrimitiveType primitiveType = MetalEnumAdapter::toMTL(pipelineState->pipelineStateDesc.topology);
-            switch (drawCall.type) {
-                case DrawCall::Type::Arrays: {
-                    [encoder drawPrimitives:primitiveType
-                                vertexStart:drawCall.startOffset
-                                vertexCount:drawCall.primitiveCount];
-                    break;
-                }
-                case DrawCall::Type::Indexed: {
-                    [encoder drawIndexedPrimitives:primitiveType
-                                        indexCount:drawCall.primitiveCount
-                                         indexType:MTLIndexTypeUInt32
-                                       indexBuffer:indexBuffer->mtlBuffer
-                                 indexBufferOffset:drawCall.startOffset * sizeof(uint32_t) // has to be in bytes when using this draw call i guess
-                                     instanceCount:1
-                                        baseVertex:drawCall.baseVertexOffset
-                                      baseInstance:1];
-                    
-                    
-                    break;
-                }
-                default:
-                    dg_assert_fail_nm();
-            }
-        }
+void MetalDevice::Submit(const std::vector<CommandBuffer*>& cmdBuffers)
+{
+    for (CommandBuffer* cmdBuffer : cmdBuffers) {
+        MetalCommandBuffer* metalCommandBuffer = reinterpret_cast<MetalCommandBuffer*>(cmdBuffer);
+        metalCommandBuffer->commit();
     }
-    [encoder popDebugGroup];
-    [encoder endEncoding];
-
-    __block dispatch_semaphore_t blockSemaphore = _inflightSemaphore;
-    [mtlCmdBuff addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-      dispatch_semaphore_signal(blockSemaphore);
-    }];
-
-    [mtlCmdBuff presentDrawable:_view.currentDrawable];
-    [mtlCmdBuff commit];
 }
 
-uint32_t MetalDevice::DrawCallCount() { return _frameDrawCallCount; }
-
-void MetalDevice::ResizeWindow(uint32_t width, uint32_t height) { [_view shouldResize]; }
+RenderPassId MetalDevice::CreateRenderPass(const RenderPassInfo& renderPassInfo)
+{
+    MetalRenderPass* renderPass = new MetalRenderPass();
+    renderPass->info = renderPassInfo;
+    return _resourceManager->AddResource(renderPass);
 }
+
+void MetalDevice::DestroyResource(ResourceId resourceId)
+{
+    dg_assert_fail("lol");
+}
+
+id<MTLDevice> MetalDevice::getMTLDevice()
+{
+    return _device;
+}
+
+id<MTLCommandQueue> MetalDevice::getMTLCommandQueue()
+{
+    return _queue;
+}
+

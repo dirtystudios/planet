@@ -26,9 +26,9 @@ struct ViewConstants {
 using ViewConstantsBuffer = TypedConstantBuffer<ViewConstants>;
 ConstantBuffer* viewConstantsBuffer;
 
-CommandBuffer* cmdbuf;
 
-RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(device), _view(view) {
+
+RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, RenderView* view) : _device(device), _swapchain(swapchain), _view(view) {
     _renderers.sky.reset(new SkyRenderer());
     _renderers.text.reset(new TextRenderer());
     _renderers.ui.reset(new UIRenderer());
@@ -61,7 +61,29 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     _animationCache        = new AnimationCache(_device, assetDirPath);
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
-    cmdbuf              = _device->CreateCommandBuffer();
+    
+    _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, swapchain->width(), swapchain->height(), nullptr);
+    
+    gfx::AttachmentDesc backbufferAttachmentDesc;
+    backbufferAttachmentDesc.format = swapchain->pixelFormat();
+    backbufferAttachmentDesc.loadAction = LoadAction::Clear;
+    backbufferAttachmentDesc.storeAction = StoreAction::Store;
+    
+    gfx::AttachmentDesc depthBufferAttachmentDesc;
+    depthBufferAttachmentDesc.format = PixelFormat::Depth32Float;
+    depthBufferAttachmentDesc.loadAction = LoadAction::Clear;
+    depthBufferAttachmentDesc.storeAction = StoreAction::Store;
+    
+    
+    gfx::RenderPassInfo baseRenderPassInfo;
+    baseRenderPassInfo.attachments[0] = backbufferAttachmentDesc;
+    baseRenderPassInfo.attachmentCount = 1;
+    baseRenderPassInfo.depthAttachment = depthBufferAttachmentDesc;
+    baseRenderPassInfo.hasDepth = true;
+    
+    _baseRenderPass = _device->CreateRenderPass(baseRenderPassInfo);
+    
+    
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
         p.second->Init(_device, this);
@@ -73,7 +95,16 @@ RenderEngine::RenderEngine(RenderDevice* device, RenderView* view) : _device(dev
     encoder.SetRasterState(RasterState());
     encoder.SetDepthState(DepthState());
     encoder.BindResource(viewConstantsBuffer->GetBinding(0));
+    encoder.SetRenderPass(_baseRenderPass);
     _stateGroupDefaults = encoder.End();
+}
+
+void RenderEngine::CreateRenderTargets()
+{
+    if (_depthBuffer != NULL_ID) {
+        // destroy
+    }
+    _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, _swapchain->width(), _swapchain->height(), nullptr);
 }
 
 RenderEngine::~RenderEngine() {
@@ -93,9 +124,8 @@ RenderEngine::~RenderEngine() {
 }
 
 void RenderEngine::RenderFrame(const RenderScene* scene) {
-    cmdbuf->Reset();
-    RenderQueue queue(cmdbuf);
-    queue.defaults = _stateGroupDefaults;
+    RenderQueue queue(_baseRenderPass, _stateGroupDefaults);
+    queue.defaults = _stateGroupDefaults;    
 
     assert(_view);
     FrameView view = _view->frameView();
@@ -107,14 +137,28 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     mapped->proj          = view.projection;
     mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
+    
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->isActive()) {
             p.second->Submit(&queue, &view);
         }
     }
-
-    queue.Submit(_device);
-    _device->RenderFrame();
+    
+    TextureId backbuffer = _swapchain->begin();
+    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer(); // TODO: how to clean these things up
+    
+    gfx::FrameBuffer frameBuffer;
+    frameBuffer.color[0] = backbuffer;
+    frameBuffer.colorCount = 1;
+    frameBuffer.depth = _depthBuffer;
+    
+    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_baseRenderPass, frameBuffer);
+    queue.Submit(renderPassCommandBuffer);
+    commandBuffer->endRenderPass(renderPassCommandBuffer);
+    
+    _device->Submit({commandBuffer});
+    _swapchain->present(backbuffer);
+    
 }
 
 ShaderCache*           RenderEngine::shaderCache() { return _shaderCache; }

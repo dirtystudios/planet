@@ -40,7 +40,7 @@ public:
             LOG_E("Invalid Directory Path given for AssetDirectory.");
         }
         if (matData.diffuseData.data != nullptr) {
-            textureid = device->CreateTexture2D(matData.diffuseData.pixelFormat == dimg::PixelFormat::RGBA8Unorm ? gfx::PixelFormat::RGBA8Unorm : gfx::PixelFormat::RGB8Unorm, matData.diffuseData.width, matData.diffuseData.height, matData.diffuseData.data, matData.diffuseMap);
+            textureid = device->CreateTexture2D(matData.diffuseData.pixelFormat == dimg::PixelFormat::RGBA8Unorm ? gfx::PixelFormat::RGBA8Unorm : gfx::PixelFormat::RGB8Unorm, gfx::TextureUsageFlags::ShaderRead, matData.diffuseData.width, matData.diffuseData.height, matData.diffuseData.data, matData.diffuseMap);
         }
         else {
             // just log for now
@@ -48,7 +48,7 @@ public:
             // euge said to use a 16x16 white texture
             // and yes, this *is* a new texture everytime
             std::vector<uint32_t> whiteImageData(16 * 16, 0xFFFFFFFF);
-            textureid = device->CreateTexture2D(gfx::PixelFormat::RGBA8Unorm, 16, 16, whiteImageData.data(), "MeshMatDiffuseWhite");
+            textureid = device->CreateTexture2D(gfx::PixelFormat::RGBA8Unorm, gfx::TextureUsageFlags::ShaderRead, 16, 16, whiteImageData.data(), "MeshMatDiffuseWhite");
         }
         assert(matData.specularMap == "");
 

@@ -26,6 +26,7 @@ public:
     void Begin(const StateGroup* inherit = nullptr);
     const StateGroup* End();
 
+    void SetRenderPass(RenderPassId ps);
     void SetVertexBuffer(BufferId vb);
     void SetIndexBuffer(BufferId ib);
     void SetVertexLayout(VertexLayoutId vl);

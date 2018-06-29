@@ -1,3 +1,10 @@
+//
+//  MetalEnumAdapter.h
+//  planet
+//
+//  Created by Eugene Sturm on 8/8/16.
+//
+
 #pragma once
 
 #import <Metal/Metal.h>
@@ -12,10 +19,31 @@
 #include "ShaderType.h"
 #include "VertexLayoutDesc.h"
 #include "WindingOrder.h"
+#include "StoreAction.h"
+#include "LoadAction.h"
+#include "TextureUsage.h"
 
 namespace gfx {
 class MetalEnumAdapter {
 public:
+    static MTLTextureUsage toMTL(TextureUsageFlags usage) {
+        MTLTextureUsage mtlUsage = 0;
+        
+        if (usage & TextureUsageFlags::ShaderRead) {
+            mtlUsage |= MTLTextureUsageShaderRead;
+        }
+        
+        if (usage & TextureUsageFlags::ShaderWrite) {
+            mtlUsage |= MTLTextureUsageShaderWrite;
+        }
+        
+        if (usage & TextureUsageFlags::RenderTarget) {
+            mtlUsage |= MTLTextureUsageRenderTarget;
+        }
+        
+        return mtlUsage;        
+    }
+    
     static ShaderType fromMTL(MTLFunctionType functionType) {
         switch (functionType) {
             case MTLFunctionTypeVertex: {
@@ -125,10 +153,38 @@ public:
                 return MTLPixelFormatInvalid;
             case PixelFormat::RGBA8Unorm:
                 return MTLPixelFormatRGBA8Unorm;
+            case PixelFormat::BGRA8Unorm:
+                return MTLPixelFormatBGRA8Unorm;
+            case PixelFormat::Depth32Float:
+                return MTLPixelFormatDepth32Float;
+            case PixelFormat::Depth24FloatStencil8:
+                return MTLPixelFormatDepth32Float_Stencil8;
             default:
                 dg_assert_fail_nm();
         }
         return MTLPixelFormatInvalid;
+    }
+    
+    static PixelFormat fromMTL(MTLPixelFormat format) {
+        switch (format) {
+            case MTLPixelFormatR32Float:
+                return PixelFormat::R32Float;
+            case MTLPixelFormatRGBA32Float:
+                return PixelFormat::RGBA32Float;
+            case MTLPixelFormatR8Unorm:
+                return PixelFormat::R8Unorm;            
+            case MTLPixelFormatRGBA8Unorm:
+                return PixelFormat::RGBA8Unorm;
+            case MTLPixelFormatBGRA8Unorm:
+                return PixelFormat::BGRA8Unorm;
+            case MTLPixelFormatDepth32Float:
+                return PixelFormat::Depth32Float;
+            case MTLPixelFormatDepth32Float_Stencil8:
+                return PixelFormat::Depth24FloatStencil8;
+            default:
+                dg_assert_fail_nm();
+        }
+        return PixelFormat::Invalid;
     }
 
     static MTLBlendOperation toMTL(BlendMode mode) {
@@ -254,6 +310,34 @@ public:
         }
         dg_assert_fail_nm();
         return MTLCompareFunctionNever;
+    }
+    
+    static MTLStoreAction toMTL(StoreAction storeAction) {
+        switch (storeAction) {
+            case StoreAction::DontCare:
+                return MTLStoreActionDontCare;
+            case StoreAction::Store:
+                return MTLStoreActionStore;
+            default:
+                dg_assert_fail_nm();
+        }
+        dg_assert_fail_nm();
+        return MTLStoreActionDontCare;
+    }
+    
+    static MTLLoadAction toMTL(LoadAction loadAction) {
+        switch (loadAction) {
+            case LoadAction::DontCare:
+                return MTLLoadActionDontCare;
+            case LoadAction::Load:
+                return MTLLoadActionLoad;
+            case LoadAction::Clear:
+                return MTLLoadActionClear;
+            default:
+                dg_assert_fail_nm();
+        }
+        dg_assert_fail_nm();
+        return MTLLoadActionDontCare;
     }
 };
 }
