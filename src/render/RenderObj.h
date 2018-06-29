@@ -1,9 +1,8 @@
 #pragma once
 
-#include "IdObj.h"
 #include "RendererType.h"
 
-class RenderObj : public IdObj {
+class RenderObj {
 private:
     RendererType _type;
 

@@ -8,7 +8,6 @@
 #include "noise/noise.h"
 
 #include <glm/gtx/transform.hpp>
-#include "ChunkedTerrain.h"
 #include "Config.h"
 #include "ConsoleUI.h"
 #include "DebugUI.h"
@@ -16,10 +15,9 @@
 #include "InputManager.h"
 #include "LabelUI.h"
 #include "PlayerController.h"
-#include "Simulation.h"
+#include "SimulationManager.h"
 #include "SkyRenderer.h"
 #include "MeshRenderer.h"
-#include "Skybox.h"
 #include "Spatial.h"
 #include "TaskScheduler.h"
 #include "UI.h"
@@ -28,6 +26,7 @@
 #include "AnimationManager.h"
 #include "SkinnedMesh.h"
 #include "AnimationComponent.h"
+#include "ComponentManager.h"
 
 uint32_t frame_count = 0;
 double taccumulate = 0;
@@ -36,11 +35,10 @@ Camera cam;
 input::InputManager* inputManager;
 controllers::PlayerController* playerController;
 RenderEngine* renderEngine;
-Simulation simulation;
 RenderView* playerView;
 Viewport* playerViewport;
-ui::UIManager* uiManager;
-AnimationManager* animationManager;
+
+SimulationManager simulationManager;
 
 ui::ConsoleUI* consoleUI;
 ui::DebugUI* debugUI;
@@ -131,18 +129,13 @@ void SetupInputBindings() {
 
 void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     input::InputContext* uiContext = inputManager->CreateNewContext(input::InputManager::ContextPriority::CONTEXT_MENU);
-    uiManager                      = new ui::UIManager(inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport);
 
-    SimObj*  worldFrame = simulation.AddSimObj();
-    UI*      ui         = worldFrame->AddComponent<UI>(ComponentType::UI);
+    SimObj* worldFrame  = simulationManager.CreateSimObj();
+    UI*      ui         = worldFrame->AddComponent<UI>();
     ui->isWorldFrame = true;
-    Spatial* spatial    = worldFrame->AddComponent<Spatial>(ComponentType::Spatial);
+    Spatial* spatial    = worldFrame->AddComponent<Spatial>();
     spatial->pos        = glm::vec3(0.f, 0.f, 0.f);
     spatial->direction  = glm::vec3(0.f, 0.f, 0.f);
-
-    uiManager->SetUIRenderer(renderEngine->Renderers().ui.get());
-    uiManager->SetTextRenderer(renderEngine->Renderers().text.get());
-    uiManager->SetDebugRenderer(renderEngine->debugDraw());
 
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);
@@ -151,43 +144,40 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     // Show/Hide sample text test with this call
     ui::LabelUI::AttachLabel(ui, "hey look im a label");
 
-    uiManager->AddFrameObj(worldFrame);
+    simulationManager.RegisterManager<ui::UIManager>({ ComponentType::UI, ComponentType::Spatial }, inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport,
+        renderEngine->Renderers().text.get(), renderEngine->Renderers().ui.get(), renderEngine->debugDraw());
 }
 
 void AddWorldText() {
     // Attempt to add 3d world space text
-    SimObj* worldText = simulation.AddSimObj();
-    UI* ui = worldText->AddComponent<UI>(ComponentType::UI);
-    Spatial* spatial = worldText->AddComponent<Spatial>(ComponentType::Spatial);
+    SimObj* worldText = simulationManager.CreateSimObj();
+    UI* ui = worldText->AddComponent<UI>();
+    Spatial* spatial = worldText->AddComponent<Spatial>();
     spatial->pos = glm::vec3(100.f, 0.f, 0.f);
     spatial->direction = glm::vec3(0.f, 0.f, 0.f);
 
     ui::LabelUI::AttachLabel(ui, "Roxas");
-
-    uiManager->AddFrameObj(worldText);
 }
 
 void AddArthas() {
-    SimObj* arthas = simulation.AddSimObj();
-    SkinnedMesh* mesh = arthas->AddComponent<SkinnedMesh>(ComponentType::SkinnedMesh);
+    SimObj* arthas = simulationManager.CreateSimObj();
+    SkinnedMesh* mesh = arthas->AddComponent<SkinnedMesh>();
     mesh->mesh = renderEngine->meshCache()->Create("arthas", "arthas/arthas.fbx");
     mesh->mat = renderEngine->materialCache()->Create("arthas", "arthas/arthas.fbx");
 
-    AnimationComponent* anim = arthas->AddComponent<AnimationComponent>(ComponentType::Animation);
+    AnimationComponent* anim = arthas->AddComponent<AnimationComponent>();
     anim->animData = renderEngine->animationCache()->Create("arthas", "arthas/arthas.fbx")->animData.begin()->second;
-    animationManager->AddAnimationObj(arthas);
 }
 
 void AddRoxas() {
-    SimObj* roxas = simulation.AddSimObj();
-    SkinnedMesh* mesh = roxas->AddComponent<SkinnedMesh>(ComponentType::SkinnedMesh);
+    SimObj* roxas = simulationManager.CreateSimObj();
+    SkinnedMesh* mesh = roxas->AddComponent<SkinnedMesh>();
     mesh->mesh = renderEngine->meshCache()->Create("roxasps3", "roxasps3/roxasps3.fbx");
     mesh->mat = renderEngine->materialCache()->Create("roxasps3", "roxasps3/roxasps3.fbx");
     mesh->scale = 0.05f;
 
-    AnimationComponent* anim = roxas->AddComponent<AnimationComponent>(ComponentType::Animation);
+    AnimationComponent* anim = roxas->AddComponent<AnimationComponent>();
     anim->animData = renderEngine->animationCache()->Create("roxasps3", "roxasps3/roxasps3.fbx")->animData.begin()->second;
-    animationManager->AddAnimationObj(roxas);
 }
 
 void App::OnStart() {
@@ -198,7 +188,7 @@ void App::OnStart() {
     playerView                    = new RenderView(&cam, playerViewport);
     renderEngine                  = new RenderEngine(renderDevice, swapchain, playerView);
     inputManager                  = new input::InputManager();
-    animationManager              = new AnimationManager(renderEngine->Renderers().mesh.get());
+    
     SetupUI(renderDevice, playerViewport);
     AddWorldText();
 
@@ -216,6 +206,8 @@ void App::OnStart() {
     
     //AddArthas();
     AddRoxas();
+
+    simulationManager.RegisterManager<AnimationManager>({ ComponentType::SkinnedMesh, ComponentType::Animation }, renderEngine->Renderers().mesh.get());
 }
 
 void App::OnFrame(const std::vector<float>& inputValues, float dt) {
@@ -226,7 +218,7 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
         playerViewport->width = static_cast<float>(windowSize.width);
         playerViewport->height = static_cast<float>(windowSize.height);
 
-        uiManager->UpdateViewport(*playerViewport);
+        simulationManager.UpdateViewport(*playerViewport);
     }
 
     // input
@@ -235,10 +227,9 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     // update
     playerController->DoUpdate(dt);
-    uiManager->DoUpdate(dt * 1000);
-    animationManager->DoUpdate(dt * 1000);
-    simulation.Update(dt);
-    
+
+    simulationManager.DoUpdate(dt * 1000);
+
     // render
     // todo: link skinnedmesh's somehow to this correctly
     RenderScene scene;

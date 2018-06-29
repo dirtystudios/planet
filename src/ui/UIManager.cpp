@@ -57,31 +57,34 @@ bool UIManager::HandleMouse2(const input::InputContextCallbackArgs& args) {
     return false;
 }
 
-void UIManager::UpdateViewport(Viewport viewport) {
-    m_viewport = viewport;
+void UIManager::UpdateViewport(const Viewport& vp) {
+    m_viewport = vp;
     // TODO: update framescales
 }
 
-void UIManager::AddFrameObj(SimObj* frameObj) {
-    UI* ui = frameObj->GetComponent<UI>(ComponentType::UI);
-    Spatial* spatial = frameObj->GetComponent<Spatial>(ComponentType::Spatial);
+void UIManager::AddFrameObj(uint64_t key, UI* ui, Spatial* spatial) {
     assert(ui);
     assert(spatial);
 
+    std::vector<UIFrame*> frames;
     for (auto& uiFrameUP : ui->frames) {
         UIFrame* uiFrame = uiFrameUP.get();
 
         if (uiFrame->GetParent()) {
-            m_domTrees.back().get()->InsertFrame(uiFrame);
+            m_domTrees.back()->InsertFrame(uiFrame);
         }
         else {
             m_domTrees.push_back(std::make_unique<UIDomTree>(m_textRenderer, m_uiRenderer, m_viewport, ui->isWorldFrame));
-            m_domTrees.back().get()->SetRoot(uiFrame);
-            m_domTrees.back().get()->SetPos(spatial->pos, spatial->direction);
+            m_domTrees.back()->SetRoot(uiFrame);
+            m_domTrees.back()->SetPos(spatial->pos, spatial->direction);
         }
-        m_uiFrames.emplace_back(uiFrame);
-        uiFrame->InitializeScriptHandler(&m_scriptApi);
+        frames.emplace_back(uiFrame);
     }
+    m_uiFrames[key] = std::move(frames);
+
+    // initialize frames
+    for (auto& frame : m_uiFrames[key])
+        frame->InitializeScriptHandler(&m_scriptApi);
 }
 
 void UIManager::ProcessFrames() {
@@ -89,21 +92,25 @@ void UIManager::ProcessFrames() {
     // Dumb way to handle edit box focus', oldest frame gets it first
     // If we ignore a 'wantsfocus' it will assume it has it after we call 'doupdate'
     bool wantsFocus = false;
-    for (auto& uiFrame : m_uiFrames) {
-        if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
-            if (!wantsFocus && ((EditBox*)uiFrame)->WantsFocus()) {
-                wantsFocus       = true;
-                m_focusedEditBox = (EditBox*)uiFrame;
-                m_drawCaret      = true;
-                m_keyboardManager->RestartCapture(m_focusedEditBox->GetText(), m_focusedEditBox->GetCursor());
-                m_cursorBlink = m_focusedEditBox->GetBlinkRate();
+    for (auto& p : m_uiFrames) {
+        for (auto& uiFrame : p.second) {
+            if (uiFrame->GetFrameType() == FrameType::EDITBOX) {
+                if (!wantsFocus && ((EditBox*)uiFrame)->WantsFocus()) {
+                    wantsFocus = true;
+                    m_focusedEditBox = (EditBox*)uiFrame;
+                    m_drawCaret = true;
+                    m_keyboardManager->RestartCapture(m_focusedEditBox->GetText(), m_focusedEditBox->GetCursor());
+                    m_cursorBlink = m_focusedEditBox->GetBlinkRate();
+                }
             }
         }
     }
     if (wantsFocus) {
-        for (auto& uiFrame : m_uiFrames) {
-            if (uiFrame->GetFrameType() == FrameType::EDITBOX && uiFrame != m_focusedEditBox) {
-                ((EditBox*)uiFrame)->ClearFocus();
+        for (auto& p : m_uiFrames) {
+            for (auto& uiFrame : p.second) {
+                if (uiFrame->GetFrameType() == FrameType::EDITBOX && uiFrame != m_focusedEditBox) {
+                    ((EditBox*)uiFrame)->ClearFocus();
+                }
             }
         }
     }
@@ -112,11 +119,14 @@ void UIManager::ProcessFrames() {
 // This returns first frame with given name
 // todo: deal with multiple somehow, or don't do this
 UIFrame* UIManager::GetFrame(const std::string& name) {
-    for (auto& uiFrame : m_uiFrames) {
-        if (uiFrame->GetFrameName() == name) {
-            return uiFrame;
+    for (auto& p : m_uiFrames) {
+        for (auto& uiFrame : p.second) {
+            if (uiFrame->GetFrameName() == name) {
+                return uiFrame;
+            }
         }
     }
+    LOG_D("UIManager::GetFrame: '%s' not found!", name.c_str())
     return nullptr;
 }
 
@@ -176,14 +186,29 @@ void UIManager::PostProcess(float ms) {
     }
 }
 
-void UIManager::DoUpdate(float ms) {
+void UIManager::DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) {
+    assert(components[ComponentType::UI] != nullptr);
+    assert(components[ComponentType::Spatial] != nullptr);
+    auto& uis = *reinterpret_cast<const std::array<std::unique_ptr<UI>, MAX_SIM_OBJECTS>*>(components[ComponentType::UI]);
+    auto& spatials = *reinterpret_cast<const std::array<std::unique_ptr<Spatial>, MAX_SIM_OBJECTS>*>(components[ComponentType::Spatial]);
+    for (size_t i = 0; i < MAX_SIM_OBJECTS; ++i) {
+        UI* ui = uis[i].get();
+        Spatial* spatial = spatials[i].get();
+        if (ui != nullptr && spatial != nullptr) {
+            // todo: handle updates from components
+            if (m_uiFrames.find(i) == m_uiFrames.end())
+                AddFrameObj((uint64_t)i, ui, spatial);
+        }
+    }
+
     PreProcess();
 
     // Process hide/show/focus and render
     ProcessFrames();
 
-    for (auto& uiFrame : m_uiFrames) {
-        uiFrame->DoUpdate(ms);
+    for (auto& p : m_uiFrames) {
+        for(auto& frame : p.second)
+            frame->DoUpdate(ms);
     }
 
     PostProcess(ms);

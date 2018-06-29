@@ -15,9 +15,7 @@
 #include <algorithm>
 #include <queue>
 
-void AnimationManager::AddAnimationObj(SimObj* animObj) {
-    SkinnedMesh* skinnedMesh = animObj->GetComponent<SkinnedMesh>(ComponentType::SkinnedMesh);
-    AnimationComponent* anim = animObj->GetComponent<AnimationComponent>(ComponentType::Animation);
+void AnimationManager::AddAnimationObj(uint64_t key, SkinnedMesh* skinnedMesh, AnimationComponent* anim) {
     dg_assert_nm(skinnedMesh != nullptr);
     dg_assert_nm(anim != nullptr);
 
@@ -36,7 +34,7 @@ void AnimationManager::AddAnimationObj(SimObj* animObj) {
     }
 
     m_meshRenderer->Register(managedAnim.meshRenderObj.get());
-    m_managedAnimations.emplace_back(std::move(managedAnim));
+    m_managedAnimations[key] = std::move(managedAnim);
 }
 
 glm::vec3 AnimationManager::CalcInterpolatedScaling(float animTime, const AnimationData::AnimationNode& animNode) {
@@ -75,9 +73,33 @@ glm::vec3 AnimationManager::CalcInterpolatedTrans(float animTime, const Animatio
     return glm::lerp(animNode.translations[idx].scale, animNode.translations[nextIdx].scale, (float)((animTime - animNode.translations[idx].time) / deltaTime));
 }
 
+void AnimationManager::DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) {
+    assert(components[ComponentType::SkinnedMesh] != nullptr);
+    assert(components[ComponentType::Animation] != nullptr);
+
+    auto& meshs = *reinterpret_cast<const std::array<std::unique_ptr<SkinnedMesh>, MAX_SIM_OBJECTS>*>(components[ComponentType::SkinnedMesh]);
+    auto& anims = *reinterpret_cast<const std::array<std::unique_ptr<AnimationComponent>, MAX_SIM_OBJECTS>*>(components[ComponentType::Animation]);
+    for (size_t i = 0; i < MAX_SIM_OBJECTS; ++i) {
+        SkinnedMesh* mesh = meshs[i].get();
+        AnimationComponent* anim = anims[i].get();
+        
+        if (mesh != nullptr && anim != nullptr) {
+            auto it = m_managedAnimations.find(i);
+            if (it == m_managedAnimations.end())
+                AddAnimationObj(i, mesh, anim);
+        }
+        else {
+            m_managedAnimations.erase(i);
+        }
+    }
+
+    DoUpdate(ms);
+}
+
 void AnimationManager::DoUpdate(float ms) {
     m_runningTime += ms;
-    for (auto& anim : m_managedAnimations) {
+    for (auto& p : m_managedAnimations) {
+        auto& anim = p.second;
         const AnimationData* animData = anim.animData;
 
         // todo: theres probly a way to cache this instead, but maybe it wouldnt matter much
@@ -86,7 +108,6 @@ void AnimationManager::DoUpdate(float ms) {
 
         const BoneOffsetData& bones = anim.mesh->GetBones();
         const MeshTreeData& tree = anim.mesh->GetTree();
-        //const auto& parts = anim.mesh->GetParts();
         const auto& meshNodes = anim.mesh->GetNodes();
 
         float tps = animData->ticksPerSecond == 0.f ? 25.f : (float)animData->ticksPerSecond;

@@ -14,16 +14,18 @@
 #include "Viewport.h"
 #include "UIDomTree.h"
 
+#include "SimulationManager.h"
+#include "ComponentManager.h"
+
 #include <memory>
-#include <set>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 namespace ui {
-class UIManager {
+class UIManager : public ComponentManager {
 private:
     std::vector<std::unique_ptr<UIDomTree>> m_domTrees;
-    std::vector<UIFrame*> m_uiFrames;
+    std::map<uint64_t, std::vector<UIFrame*>> m_uiFrames;
 
     UIRenderer*         m_uiRenderer;
     TextRenderer*       m_textRenderer;
@@ -43,8 +45,10 @@ private:
     ScriptApi               m_scriptApi;
 
 public:
-    UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, input::InputContext* debugContext, Viewport viewport)
-        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext), m_scriptApi(this) {
+    UIManager(input::KeyboardManager* keyboardManager, input::InputContext* inputContext, input::InputContext* debugContext, Viewport viewport, 
+        TextRenderer* textRenderer, UIRenderer* uiRenderer, DebugDrawInterface* debug)
+        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext), m_scriptApi(this),
+          m_textRenderer(textRenderer), m_uiRenderer(uiRenderer), m_debugRenderer(debug) {
 
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", std::bind(&UIManager::HandleMouseX, this, std::placeholders::_1));
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", std::bind(&UIManager::HandleMouseY, this, std::placeholders::_1));
@@ -56,17 +60,11 @@ public:
     };
     ~UIManager() {}
 
-    void UpdateViewport(Viewport viewport);
+    void UpdateViewport(const Viewport& vp) override;
 
-    void AddFrameObj(SimObj* uiFrame);
-    void DoUpdate(float ms);
+    void DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) override;
 
     UIFrame* GetFrame(const std::string& name);
-
-    // hackish for now
-    void SetTextRenderer(TextRenderer* textRenderer) { m_textRenderer = textRenderer; };
-    void SetUIRenderer(UIRenderer* uiRenderer) { m_uiRenderer = uiRenderer; };
-    void SetDebugRenderer(DebugDrawInterface* debug) { m_debugRenderer = debug; };
 
     // Callbacks from inputmanager
 
@@ -76,9 +74,11 @@ public:
     bool HandleMouse2(const input::InputContextCallbackArgs& args);
 
     bool ToggleDebugDraw(const input::InputContextCallbackArgs& args) { m_debugDrawFocus = !m_debugDrawFocus; return false; }
-    std::string ToggleDebugDrawConsole(const std::vector<std::string>&) { m_debugDrawFocus = !m_debugDrawFocus; return "Editbox Focus debug " + m_debugDrawFocus ? "on" : "off"; }
+    std::string ToggleDebugDrawConsole(const std::vector<std::string>&) { m_debugDrawFocus = !m_debugDrawFocus; return "Editbox Focus debug " + std::string(m_debugDrawFocus ? "on" : "off"); }
 
 private:
+    void AddFrameObj(uint64_t key, UI* ui, Spatial* spatial);
+
     void PreProcess();
     void PostProcess(float ms);
     void ProcessFrames();
