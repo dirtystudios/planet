@@ -72,6 +72,10 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
     
     for (uint32_t idx = 1; idx < count; ++idx) {
         const StateGroup* candidateSG = stateGroups[idx];
+        if (candidateSG == nullptr) {
+            continue;
+        }
+        
         StateGroupDecoder candidateDecoder(candidateSG);
         const StateGroupHeader& header = candidateDecoder.GetHeader();
 

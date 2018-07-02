@@ -297,7 +297,7 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj, size_t offset) {
     device()->UnmapMemory(_vertexBuffer);
 }
 
-const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
+const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj, const gfx::StateGroup* defaults) {
 
     // 'loop' around the vertexBuffer, this is currently to fix directx, and as this buffer fills,
     //  im sure it's going to break again
@@ -322,10 +322,10 @@ const gfx::DrawItem* TextRenderer::CreateDrawItem(TextRenderObj* renderObj) {
         LOG_E("TextBuffer overwriting itself");
     }
 
-    return gfx::DrawItemEncoder::Encode(device(), drawCall, &renderObj->_group, 1);
+    return gfx::DrawItemEncoder::Encode(device(), drawCall, { renderObj->_group, defaults });
 }
 
-const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj) {
+const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj, const gfx::StateGroup* defaults) {
 
     uint32_t cursorPos = renderObj->_cursorPos;
     if (cursorPos > renderObj->_text.length()) {
@@ -351,7 +351,7 @@ const gfx::DrawItem* TextRenderer::CreateCursorDrawItem(TextRenderObj* renderObj
     drawCall.primitiveCount = 2;
     drawCall.startOffset = 0;
 
-    return gfx::DrawItemEncoder::Encode(device(), drawCall, &renderObj->_cursorGroup, 1);
+    return gfx::DrawItemEncoder::Encode(device(), drawCall, { renderObj->_cursorGroup, defaults });
 }
 
 void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
@@ -372,12 +372,12 @@ void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
         text->_constantBuffer->Map<TextConstants>()->textColor = text->_textColor;
         text->_constantBuffer->Unmap();
 
-        text->_drawItem.reset(CreateDrawItem(text));
+        text->_drawItem.reset(CreateDrawItem(text, queue->defaults));
         queue->AddDrawItem(3, text->_drawItem.get()); // TODO:: sortkeys based on pass....text needs to be rendered after sky
         if (text->_cursorEnabled) {
             if (drewCursor)
                 LOG_D("[Text] Multiple Cursors detected and unsupported.");
-            text->_cursorDrawItem.reset(CreateCursorDrawItem(text));
+            text->_cursorDrawItem.reset(CreateCursorDrawItem(text, queue->defaults));
             queue->AddDrawItem(2, text->_cursorDrawItem.get());
             drewCursor = true;
         }
