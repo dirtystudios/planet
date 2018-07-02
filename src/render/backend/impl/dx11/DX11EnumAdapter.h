@@ -28,7 +28,6 @@
 #define SafeGet(id, idx) id[(uint32_t)idx]
 
 namespace gfx {
-<<<<<<< HEAD
     static DXGI_FORMAT GetVertexAttributeFormatDX11(VertexAttributeType type, VertexAttributeStorage storage) {
         switch (type) {
         case VertexAttributeType::Float: {
@@ -67,14 +66,6 @@ namespace gfx {
         dg_assert_fail("implement vertexattribute type for dx11.");
         // silence warning
         return DXGI_FORMAT_R32_FLOAT; 
-=======
-using namespace Microsoft::WRL;
-    static DXGI_FORMAT VertexAttributeTypeDX11[(uint32_t)VertexAttributeType::Count] = {
-        DXGI_FORMAT_R32_FLOAT,
-        DXGI_FORMAT_R32G32_FLOAT,
-        DXGI_FORMAT_R32G32B32_FLOAT,
-        DXGI_FORMAT_R32G32B32A32_FLOAT,
->>>>>>> add fence?
     };
 
     static UINT GetBindFlagsDX11(TextureUsageFlags flags, PixelFormat format) {
