@@ -1,3 +1,16 @@
+#define Blinn_RootSig \
+    "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT)," \
+	"CBV(b0)," \
+	"CBV(b1)," \
+	"CBV(b2)," \
+	"DescriptorTable(SRV(t0, numDescriptors = 1)), " \
+	"StaticSampler(s0, filter = FILTER_MIN_MAG_MIP_LINEAR," \
+					   "addressU = TEXTURE_ADDRESS_CLAMP," \
+					   "addressV = TEXTURE_ADDRESS_CLAMP," \
+					   "addressw = TEXTURE_ADDRESS_CLAMP)"
+
+    
+
 cbuffer viewConstants : register(b0) {
   	float3 eyePos;
     float4x4 view;
@@ -35,6 +48,7 @@ struct VS_OUTPUT {
     float4 vPosition : SV_POSITION;
 };
 
+[RootSignature(Blinn_RootSig)]
 VS_OUTPUT VSMain( VS_INPUT Input ) {  
     VS_OUTPUT output;
 	
@@ -55,6 +69,7 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
     return output;
 }
 
+[RootSignature(Blinn_RootSig)]
 float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {    
     
 	float3 L = normalize(float3(1.f, 1.f, 1.f));

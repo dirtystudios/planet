@@ -6,6 +6,7 @@
 #ifdef _WIN32
 #include <GL/glew.h>
 #include "DX11Backend.h"
+#include "DX12Backend.h"
 #endif
 
 #include "GLDevice.h"
@@ -173,6 +174,12 @@ int sys::Run(app::Application* app) {
                 } else if (deviceApi == gfx::RenderDeviceApi::D3D11) {
                     std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
                     backend.reset(new gfx::DX11Backend(usePrebuiltShadersConfig == "y" ? true : false));
+                    windowHandle = info.info.win.window;
+                }
+                else if (deviceApi == gfx::RenderDeviceApi::D3D12) {
+                    std::string usePrebuiltShadersConfig =
+                        config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
+
                     windowHandle = info.info.win.window;
                 }
                 else {

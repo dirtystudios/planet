@@ -409,7 +409,7 @@ namespace gfx {
         std::unique_ptr<byte> dataByteRef;
         D3D11_SUBRESOURCE_DATA srd;
         if (data) {
-            srd.pSysMem = TextureDataConverter(tdesc, format, data, dataByteRef);;
+            srd.pSysMem = TextureDataConverter(tdesc, format, data, dataByteRef);
             srd.SysMemPitch = GetFormatByteSize(tdesc.Format) * tdesc.Width;
             srd.SysMemSlicePitch = 0;
         }

@@ -1,3 +1,8 @@
+#define UI_RootSig \
+    "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT)," \
+	"CBV(b1)," \
+	"CBV(b2),"
+
 cbuffer cbConstant : register(b1) {
     float4x4 projection : PROJECTION;
     float4x4 viewCbConstant;
@@ -20,6 +25,7 @@ struct VS_OUTPUT {
     float4 vPosition : SV_POSITION;
 };
 
+[RootSignature(UI_RootSig)]
 VS_OUTPUT VSMain( VS_INPUT Input ) {  
     VS_OUTPUT output;
 	/*float4x4 tmp = mul (projection, rotation);
@@ -30,6 +36,7 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
     return output;
 }
 
+[RootSignature(UI_RootSig)]
 float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {
     float2 within_border = saturate(
                             (Input.vTexCoords * Input.vTexCoords - Input.vTexCoords)
