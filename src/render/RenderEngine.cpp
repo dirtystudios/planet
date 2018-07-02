@@ -44,8 +44,8 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _renderers.mesh->SetActive(true);
     _renderers.sky->SetActive(false);
     _renderers.terrain->SetActive(true);
-    _renderers.text->SetActive(false);
-    _renderers.ui->SetActive(false);
+    _renderers.text->SetActive(true);
+    _renderers.ui->SetActive(true);
 
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     std::string assetDirPath  = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");

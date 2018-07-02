@@ -4,7 +4,7 @@
 using namespace metal;
 
 struct VertexIn {
-    float2 position[[attribute(0)]];
+    float3 position[[attribute(0)]];
     float2 texture[[attribute(1)]];
 };
 
@@ -15,6 +15,7 @@ struct VertexOut {
 
 struct ViewConstants {
     float4x4 proj;
+    float4x4 viewCbConstant;
 };
 
 struct ObjConstants {
@@ -23,7 +24,7 @@ struct ObjConstants {
 
 vertex VertexOut text_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(2)]]) {
     VertexOut outputValue;
-    outputValue.position = view.proj * float4(attributes.position.x, attributes.position.y, 0, 1);
+    outputValue.position = view.proj * view.viewCbConstant * float4(attributes.position.x, attributes.position.y, 0, 1);
     outputValue.texture  = attributes.texture;
     return outputValue;
 }
