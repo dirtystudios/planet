@@ -9,10 +9,12 @@
 #include "Log.h"
 #include "StateGroupEncoder.h"
 #include "DrawItemEncoder.h"
+#include <cmath>
 
 struct TextViewConstants {
     glm::mat4 projection;
     glm::mat4 view;
+    glm::vec3 eyeDir;
 };
 
 struct TextConstants {
@@ -36,10 +38,10 @@ static const std::string kFontPath = "/Library/Fonts/Arial.ttf";
 static const std::string kDefaultGlyphSet =
     " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 // font parameters
-static constexpr double kFontSize           = 12;
+static constexpr double kFontSize           = 32;
 static constexpr FT_UInt kDpi               = 96;
-static constexpr uint32_t kAtlasWidth       = 128;
-static constexpr uint32_t kAtlasHeight      = 128;
+static constexpr uint32_t kAtlasWidth       = 1024;
+static constexpr uint32_t kAtlasHeight      = 1024;
 static constexpr size_t kVerticesPerQuad    = 6;
 static constexpr size_t kBufferedQuadsCount = 4096; // Maximum number of characters to buffer.
 static constexpr size_t kVertexBufferSize   = kBufferedQuadsCount * kVerticesPerQuad * sizeof(GlyphVertex);
@@ -78,8 +80,11 @@ void TextRenderer::OnInit() {
 
     uint32_t pixelCount = kAtlasHeight * kAtlasWidth;
     uint8_t* buffer = new uint8_t[pixelCount];
+    uint8_t* sdfBuffer = new uint8_t[pixelCount];
     memset(buffer, 0, sizeof(uint8_t) * pixelCount);
-
+    memset(sdfBuffer, 0, sizeof(uint8_t) * pixelCount);
+    const uint32_t padding = 16;
+    
     for (char c : kDefaultGlyphSet) {
         res = FT_Load_Char(face, c, FT_LOAD_RENDER);
         if (res != FT_Err_Ok) {
@@ -94,9 +99,11 @@ void TextRenderer::OnInit() {
             continue;
         }
 
+        
+        
         // get and update texture region
-        uint32_t regionWidth  = g->bitmap.width;
-        uint32_t regionHeight = g->bitmap.rows;
+        uint32_t regionWidth  = g->bitmap.width + (padding * 2);
+        uint32_t regionHeight = g->bitmap.rows + (padding * 2);
         if (_xOffset + regionWidth >= kAtlasWidth) {
             if (_yOffset + _currentRowHeight >= kAtlasHeight) {
                 LOG_E("%s", "texture can't fit anymore glyphs");
@@ -115,11 +122,30 @@ void TextRenderer::OnInit() {
 
         // copy to temporary texture buffer
         for (uint32_t row = 0; row < g->bitmap.rows; ++row) {
-            uint8_t* offsetBufferPtr = buffer + (kAtlasWidth * (_yOffset + row)) + (_xOffset);
+            uint8_t* offsetBufferPtr = buffer + (kAtlasWidth * (_yOffset + padding + row)) + (_xOffset + padding);
 
             // glyphs are upside down, need to flip them
             memcpy(offsetBufferPtr, g->bitmap.buffer + (((g->bitmap.rows - 1) - row) * g->bitmap.pitch), sizeof(uint8_t) * g->bitmap.pitch);
         }
+        
+        for (int i = _yOffset; i < _yOffset + regionHeight; ++i) {
+            for (int j = _xOffset; j < _xOffset + regionWidth; ++j) {
+                uint8_t val = buffer[i * kAtlasWidth + j];
+                if (val > 32) {
+                    sdfBuffer[i * kAtlasWidth + j] = 255;
+                    
+                    for (int ii = _yOffset; ii < _yOffset + regionHeight; ++ii) {
+                        for (int jj = _xOffset; jj < _xOffset + regionWidth; ++jj) {
+                            uint32_t v = sdfBuffer[ii * kAtlasWidth + jj];
+                            uint32_t d = std::abs(ii - i) + std::abs(jj - j) * 10;
+                            sdfBuffer[ii * kAtlasWidth + jj] = std::max<uint8_t>(v, (uint8_t)std::max<int32_t>(255 - d, 0));
+                        }
+                    }
+                }
+            }
+        }
+        
+        
 
         // set glyph parameters
         glyph.xOffset     = static_cast<float>(g->bitmap_left);
@@ -136,6 +162,7 @@ void TextRenderer::OnInit() {
     }
 
     _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
+    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, sdfBuffer, "SDFTextGlyphAtlas");
     assert(_glyphAtlas || "Failed to create glyph atlas");
 
     delete[] buffer;
@@ -210,6 +237,8 @@ void TextRenderer::OnInit() {
     delete cursorBaseBind;
     delete bind2D;
     delete bind3D;
+    
+    
 }
 
 TextRenderer::~TextRenderer() {}
@@ -358,11 +387,13 @@ void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
     TextViewConstants* viewConstants = _viewData->Map<TextViewConstants>();
     viewConstants->projection = view->ortho; // TODO: this should be set by renderView
     viewConstants->view = glm::mat4();
+    viewConstants->eyeDir = view->look;
     _viewData->Unmap();
 
     TextViewConstants* viewConstants3d = _viewData3D->Map<TextViewConstants>();
     viewConstants3d->view = view->view;
     viewConstants3d->projection = view->projection;
+    viewConstants3d->eyeDir = view->look;
     _viewData3D->Unmap();
 
     bool drewCursor = false;

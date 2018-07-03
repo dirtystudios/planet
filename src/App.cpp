@@ -139,10 +139,10 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);
-    debugUI = new ui::DebugUI(ui);
+//    debugUI = new ui::DebugUI(ui);
 
     // Show/Hide sample text test with this call
-    ui::LabelUI::AttachLabel(ui, "hey look im a label");
+//    ui::LabelUI::AttachLabel(ui, "hey look im a label");
 
     simulationManager.RegisterManager<ui::UIManager>({ ComponentType::UI, ComponentType::Spatial }, inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport,
         renderEngine->Renderers().text.get(), renderEngine->Renderers().ui.get(), renderEngine->debugDraw());
@@ -153,10 +153,10 @@ void AddWorldText() {
     SimObj* worldText = simulationManager.CreateSimObj();
     UI* ui = worldText->AddComponent<UI>();
     Spatial* spatial = worldText->AddComponent<Spatial>();
-    spatial->pos = glm::vec3(100.f, 0.f, 0.f);
+    spatial->pos = glm::vec3(0.f, 0.f, 0.f);
     spatial->direction = glm::vec3(0.f, 0.f, 0.f);
 
-    ui::LabelUI::AttachLabel(ui, "Roxas");
+    ui::LabelUI::AttachLabel(ui, "San Francisco");
 }
 
 void AddArthas() {
@@ -195,7 +195,7 @@ void App::OnStart() {
     SetupInputBindings();
 
     // cam.MoveTo(-2826, 1620, 1600);
-    cam.MoveTo(0, 0, 2000);
+    cam.MoveTo(0, 0, 500);
     cam.LookAt(0, 0, 0);
 
     SkyboxRenderObj* skybox = CreateSkybox();
@@ -205,7 +205,7 @@ void App::OnStart() {
     renderEngine->Renderers().terrain->Register(terrain.get());
     
     //AddArthas();
-    AddRoxas();
+//    AddRoxas();
 
     simulationManager.RegisterManager<AnimationManager>({ ComponentType::SkinnedMesh, ComponentType::Animation }, renderEngine->Renderers().mesh.get());
 }
@@ -244,11 +244,11 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     ++total_frame_count;
 
     if (taccumulate > 1.0) {
-        debugUI->AddKeyValue("FPS", std::to_string(frame_count));
-//        debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
-        debugUI->AddKeyValue("U", ToString(cam.up));
-        debugUI->AddKeyValue("L", ToString(cam.look));
-        debugUI->AddKeyValue("R", ToString(cam.right));
+//        debugUI->AddKeyValue("FPS", std::to_string(frame_count));
+////        debugUI->AddKeyValue("DrawCalls", std::to_string(renderDevice->DrawCallCount()));
+//        debugUI->AddKeyValue("U", ToString(cam.up));
+//        debugUI->AddKeyValue("L", ToString(cam.look));
+//        debugUI->AddKeyValue("R", ToString(cam.right));
 
         std::stringstream ss;
         ss << "gfx Device: " << renderDevice->DeviceConfig.DeviceAbbreviation;
