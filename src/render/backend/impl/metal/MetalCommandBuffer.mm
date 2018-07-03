@@ -79,7 +79,7 @@ MTLRenderPassDescriptor* MetalCommandBuffer::getMTLRenderPassDescriptor(MetalRen
             colorAttachment.texture = texture->mtlTexture;;
             colorAttachment.loadAction = MetalEnumAdapter::toMTL(attachment.loadAction);
             colorAttachment.storeAction = MetalEnumAdapter::toMTL(attachment.storeAction);
-            //colorAttachment.clearColor = attachmentDesc.clearColor;
+            colorAttachment.clearColor = MTLClearColorMake(.25, .25, .25, 1);
             
             [renderPassDesc.colorAttachments setObject:colorAttachment atIndexedSubscript:i];
         }

@@ -43,6 +43,7 @@ SimulationManager simulationManager;
 ui::ConsoleUI* consoleUI;
 ui::DebugUI* debugUI;
 std::unique_ptr<FlatTerrain> terrain;
+SkyboxRenderObj* skybox { nullptr };
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -142,7 +143,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 //    debugUI = new ui::DebugUI(ui);
 
     // Show/Hide sample text test with this call
-//    ui::LabelUI::AttachLabel(ui, "hey look im a label");
+    ui::LabelUI::AttachLabel(ui, "hey look im a label");
 
     simulationManager.RegisterManager<ui::UIManager>({ ComponentType::UI, ComponentType::Spatial }, inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport,
         renderEngine->Renderers().text.get(), renderEngine->Renderers().ui.get(), renderEngine->debugDraw());
@@ -153,10 +154,10 @@ void AddWorldText() {
     SimObj* worldText = simulationManager.CreateSimObj();
     UI* ui = worldText->AddComponent<UI>();
     Spatial* spatial = worldText->AddComponent<Spatial>();
-    spatial->pos = glm::vec3(0.f, 0.f, 0.f);
-    spatial->direction = glm::vec3(0.f, 0.f, 0.f);
+    spatial->pos = glm::vec3(-250.f, 250.f, 500.f);
+    spatial->direction = glm::vec3(0.f, 0.f, 0.f);    
 
-    ui::LabelUI::AttachLabel(ui, "San Francisco");
+    ui::LabelUI::AttachLabel(ui, "Aa Bb Cc Dd Ee");
 }
 
 void AddArthas() {
@@ -195,10 +196,10 @@ void App::OnStart() {
     SetupInputBindings();
 
     // cam.MoveTo(-2826, 1620, 1600);
-    cam.MoveTo(0, 0, 500);
+    cam.MoveTo(0, 0, 2000);
     cam.LookAt(0, 0, 0);
 
-    SkyboxRenderObj* skybox = CreateSkybox();
+//    skybox = CreateSkybox();
 //    renderEngine->Renderers().sky->Register(skybox);
 
     terrain.reset(new FlatTerrain(10000));
@@ -227,6 +228,14 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     // update
     playerController->DoUpdate(dt);
+//    float x = 500 * sin(sys::GetTime());
+//    float y = 500 * cos(sys::GetTime());
+//    float z = 0;
+//    float x2 = 1000 * sin(sys::GetTime());
+//    float y2 = 1000 * cos(sys::GetTime());
+//    float z2 = 1000 * cos(sys::GetTime()) * sin(sys::GetTime());
+//    cam.MoveTo(x, y, 2000 + z);
+//    cam.LookAt(x2, y2, z2);
 
     simulationManager.DoUpdate(dt * 1000);
 
@@ -234,6 +243,9 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     // todo: link skinnedmesh's somehow to this correctly
     RenderScene scene;
 //    scene.renderObjects.push_back(terrain.get());
+    if (skybox) {
+//        scene.renderObjects.push_back(skybox);
+    }
     
     
     renderEngine->RenderFrame(&scene);

@@ -193,7 +193,7 @@ PipelineStateId MetalDevice::CreatePipelineState(const PipelineStateDesc& desc) 
         rpd.colorAttachments[i].destinationAlphaBlendFactor = MetalEnumAdapter::toMTL(desc.blendState.dstAlphaFunc);
         rpd.colorAttachments[i].destinationRGBBlendFactor   = MetalEnumAdapter::toMTL(desc.blendState.dstRgbFunc);
         rpd.colorAttachments[i].sourceAlphaBlendFactor      = MetalEnumAdapter::toMTL(desc.blendState.srcAlphaFunc);
-        rpd.colorAttachments[i].sourceRGBBlendFactor        = MetalEnumAdapter::toMTL(desc.blendState.srcRgbFunc);
+        rpd.colorAttachments[i].sourceRGBBlendFactor        = MetalEnumAdapter::toMTL(desc.blendState.srcRgbFunc);        
     }
     
     

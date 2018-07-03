@@ -9,7 +9,7 @@ namespace controllers {
         moveInput        = {0.0f, 0.0f, 0.0f};
         m_mouseLookInput = {0.f, 0.f};
         walkSpeed        = 550.0f;
-        lookSpeed = 1.f;
+        lookSpeed = .1;
         m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveForward", std::bind(&PlayerController::MoveForward, this, std::placeholders::_1));
         m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveBackward", std::bind(&PlayerController::MoveBackward, this, std::placeholders::_1));
         m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveLeft", std::bind(&PlayerController::MoveLeft, this, std::placeholders::_1));

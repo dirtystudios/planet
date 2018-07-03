@@ -38,6 +38,8 @@ static const std::string kFontPath = "/Library/Fonts/Arial.ttf";
 static const std::string kDefaultGlyphSet =
     " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 // font parameters
+static constexpr float normalizationFactor = 1;
+static constexpr uint32_t padding           = 16;
 static constexpr double kFontSize           = 32;
 static constexpr FT_UInt kDpi               = 96;
 static constexpr uint32_t kAtlasWidth       = 1024;
@@ -48,6 +50,155 @@ static constexpr size_t kVertexBufferSize   = kBufferedQuadsCount * kVerticesPer
 static constexpr size_t quadSizeInBytes = 6 * sizeof(GlyphVertex);
 
 static constexpr size_t kCursorBufferSize = 2 * sizeof(CursorPosVertex);
+
+
+static float *createResampledData(float *inData, size_t width, size_t height, size_t scaleFactor)
+{
+    size_t scaledWidth = width / scaleFactor;
+    size_t scaledHeight = height / scaleFactor;
+    float *outData = (float*)malloc(scaledWidth * scaledHeight * sizeof(float));
+    
+    for (int y = 0; y < height; y += scaleFactor)
+    {
+        for (int x = 0; x < width; x += scaleFactor)
+        {
+            float accum = 0;
+            for (int ky = 0; ky < scaleFactor; ++ky)
+            {
+                for (int kx = 0; kx < scaleFactor; ++kx)
+                {
+                    accum += inData[(y + ky) * width + (x + kx)];
+                }
+            }
+            accum = accum / (scaleFactor * scaleFactor);
+            
+            outData[(y / scaleFactor) * scaledWidth + (x / scaleFactor)] = accum;
+        }
+    }
+    
+    return outData;
+}
+
+static float* createSignedDistanceFieldForGrayscaleImage(const uint8_t *imageData, size_t width, size_t height)
+{
+    if (imageData == NULL || width == 0 || height == 0)
+        return NULL;
+    
+    typedef struct { unsigned short x, y; } intpoint_t;
+    
+    float *distanceMap = (float*)malloc(width * height * sizeof(float)); // distance to nearest boundary point map
+    glm::u16vec2 *boundaryPointMap = (glm::u16vec2*)malloc(width * height * sizeof(glm::u16vec2)); // nearest boundary point map
+    
+    // Some helpers for manipulating the above arrays
+#define image(_x, _y) (imageData[(_y) * width + (_x)] > 0x7f)
+#define distance(_x, _y) distanceMap[(_y) * width + (_x)]
+#define nearestpt(_x, _y) boundaryPointMap[(_y) * width + (_x)]
+    
+    const float maxDist = hypot(width, height);
+    const float distUnit = 1;
+    const float distDiag = sqrt(2);
+    
+    // Initialization phase: set all distances to "infinity"; zero out nearest boundary point map
+    for (long y = 0; y < height; ++y)
+    {
+        for (long x = 0; x < width; ++x)
+        {
+            distance(x, y) = maxDist;
+            nearestpt(x, y) = (glm::u16vec2){ 0, 0 };
+        }
+    }
+    
+    // Immediate interior/exterior phase: mark all points along the boundary as such
+    for (long y = 1; y < height - 1; ++y)
+    {
+        for (long x = 1; x < width - 1; ++x)
+        {
+            bool inside = image(x, y);
+            if (image(x - 1, y) != inside ||
+                image(x + 1, y) != inside ||
+                image(x, y - 1) != inside ||
+                image(x, y + 1) != inside)
+            {
+                distance(x, y) = 0;
+                nearestpt(x, y) = (glm::u16vec2){ x, y };
+            }
+        }
+    }
+    
+    // Forward dead-reckoning pass
+    for (long y = 1; y < height - 2; ++y)
+    {
+        for (long x = 1; x < width - 2; ++x)
+        {
+            if (distanceMap[(y - 1) * width + (x - 1)] + distDiag < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x - 1, y - 1);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+            if (distance(x, y - 1) + distUnit < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x, y - 1);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+            if (distance(x + 1, y - 1) + distDiag < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x + 1, y - 1);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+            if (distance(x - 1, y) + distUnit < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x - 1, y);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+        }
+    }
+    
+    // Backward dead-reckoning pass
+    for (long y = height - 2; y >= 1; --y)
+    {
+        for (long x = width - 2; x >= 1; --x)
+        {
+            if (distance(x + 1, y) + distUnit < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x + 1, y);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+            if (distance(x - 1, y + 1) + distDiag < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x - 1, y + 1);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+            if (distance(x, y + 1) + distUnit < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x, y + 1);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+            if (distance(x + 1, y + 1) + distDiag < distance(x, y))
+            {
+                nearestpt(x, y) = nearestpt(x + 1, y + 1);
+                distance(x, y) = hypot(x - nearestpt(x, y).x, y - nearestpt(x, y).y);
+            }
+        }
+    }
+    
+    // Interior distance negation pass; distances outside the figure are considered negative
+    for (long y = 0; y < height; ++y)
+    {
+        for (long x = 0; x < width; ++x)
+        {
+            if (!image(x, y))
+                distance(x, y) = -distance(x, y);
+                }
+    }
+    
+    free(boundaryPointMap);
+    
+    return distanceMap;
+    
+#undef image
+#undef distance
+#undef nearestpt
+}
 
 TextRenderer::TextRenderer(float scaleX, float scaleY)
 : TypedRenderer<TextRenderObj>(RendererType::Text)
@@ -83,7 +234,6 @@ void TextRenderer::OnInit() {
     uint8_t* sdfBuffer = new uint8_t[pixelCount];
     memset(buffer, 0, sizeof(uint8_t) * pixelCount);
     memset(sdfBuffer, 0, sizeof(uint8_t) * pixelCount);
-    const uint32_t padding = 16;
     
     for (char c : kDefaultGlyphSet) {
         res = FT_Load_Char(face, c, FT_LOAD_RENDER);
@@ -119,7 +269,7 @@ void TextRenderer::OnInit() {
         glm::vec2 tr = bl + glm::vec2((float)regionWidth / kAtlasWidth, (float)regionHeight / kAtlasHeight);
 
         Glyph glyph({bl, tr});
-
+        
         // copy to temporary texture buffer
         for (uint32_t row = 0; row < g->bitmap.rows; ++row) {
             uint8_t* offsetBufferPtr = buffer + (kAtlasWidth * (_yOffset + padding + row)) + (_xOffset + padding);
@@ -127,24 +277,6 @@ void TextRenderer::OnInit() {
             // glyphs are upside down, need to flip them
             memcpy(offsetBufferPtr, g->bitmap.buffer + (((g->bitmap.rows - 1) - row) * g->bitmap.pitch), sizeof(uint8_t) * g->bitmap.pitch);
         }
-        
-        for (int i = _yOffset; i < _yOffset + regionHeight; ++i) {
-            for (int j = _xOffset; j < _xOffset + regionWidth; ++j) {
-                uint8_t val = buffer[i * kAtlasWidth + j];
-                if (val > 32) {
-                    sdfBuffer[i * kAtlasWidth + j] = 255;
-                    
-                    for (int ii = _yOffset; ii < _yOffset + regionHeight; ++ii) {
-                        for (int jj = _xOffset; jj < _xOffset + regionWidth; ++jj) {
-                            uint32_t v = sdfBuffer[ii * kAtlasWidth + jj];
-                            uint32_t d = std::abs(ii - i) + std::abs(jj - j) * 10;
-                            sdfBuffer[ii * kAtlasWidth + jj] = std::max<uint8_t>(v, (uint8_t)std::max<int32_t>(255 - d, 0));
-                        }
-                    }
-                }
-            }
-        }
-        
         
 
         // set glyph parameters
@@ -154,6 +286,7 @@ void TextRenderer::OnInit() {
         glyph.yAdvance    = static_cast<float>(g->advance.y >> 6); // 26.6 fractional pixels (1/64th pixels)
         glyph.width       = static_cast<float>(g->bitmap.width);
         glyph.height      = static_cast<float>(g->bitmap.rows);
+        
 
         _maxGlyphHeight   = std::max(_maxGlyphHeight, g->bitmap.rows);
         _currentRowHeight = std::max(_currentRowHeight, regionHeight);
@@ -161,10 +294,28 @@ void TextRenderer::OnInit() {
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
+    float* f = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
+    
+    
+    
+    for (int y = 0; y < kAtlasHeight; ++y)
+    {
+        for (int x = 0; x < kAtlasWidth; ++x)
+        {
+            float dist = f[y * kAtlasWidth + x];
+            float clampDist = fmax(-normalizationFactor, fmin(dist, normalizationFactor));
+            float scaledDist = clampDist / normalizationFactor;
+            uint8_t value = ((scaledDist + 1) / 2) * UINT8_MAX;
+            sdfBuffer[y * kAtlasWidth + x] = value;
+        }
+    }
+    
+    
+    
     _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
     _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, sdfBuffer, "SDFTextGlyphAtlas");
     assert(_glyphAtlas || "Failed to create glyph atlas");
-
+    free(f);
     delete[] buffer;
     FT_Done_Face(face);
     FT_Done_FreeType(library);
@@ -190,8 +341,10 @@ void TextRenderer::OnInit() {
     bs.enable       = true;
     bs.srcRgbFunc   = gfx::BlendFunc::SrcAlpha;
     bs.dstRgbFunc   = gfx::BlendFunc::OneMinusSrcAlpha;
-    bs.srcAlphaFunc = gfx::BlendFunc::One;
-    bs.dstAlphaFunc = gfx::BlendFunc::Zero;
+    bs.rgbMode      = gfx::BlendMode::Add;
+    bs.srcAlphaFunc = gfx::BlendFunc::SrcAlpha;
+    bs.dstAlphaFunc = gfx::BlendFunc::OneMinusSrcAlpha;
+    bs.alphaMode    = gfx::BlendMode::Add;
 
     gfx::DepthState depthState;
     depthState.enable = false;
@@ -387,7 +540,7 @@ void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
     TextViewConstants* viewConstants = _viewData->Map<TextViewConstants>();
     viewConstants->projection = view->ortho; // TODO: this should be set by renderView
     viewConstants->view = glm::mat4();
-    viewConstants->eyeDir = view->look;
+    viewConstants->eyeDir = view->eyePos;
     _viewData->Unmap();
 
     TextViewConstants* viewConstants3d = _viewData3D->Map<TextViewConstants>();
