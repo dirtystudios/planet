@@ -36,14 +36,15 @@ static const std::string kFontPath = "C:/Windows/Fonts/Arial.ttf";
 static const std::string kFontPath = "/Library/Fonts/Arial.ttf";
 #endif
 static const std::string kDefaultGlyphSet =
-    " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+//    " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+" ASG";
 // font parameters
-static constexpr float normalizationFactor = 1;
-static constexpr uint32_t padding           = 16;
-static constexpr double kFontSize           = 32;
+static constexpr float normalizationFactor = 128;
+static constexpr uint32_t padding           = 128;
+static constexpr double kFontSize           = 512;
 static constexpr FT_UInt kDpi               = 96;
-static constexpr uint32_t kAtlasWidth       = 1024;
-static constexpr uint32_t kAtlasHeight      = 1024;
+static constexpr uint32_t kAtlasWidth       = 4096;
+static constexpr uint32_t kAtlasHeight      = 4096;
 static constexpr size_t kVerticesPerQuad    = 6;
 static constexpr size_t kBufferedQuadsCount = 4096; // Maximum number of characters to buffer.
 static constexpr size_t kVertexBufferSize   = kBufferedQuadsCount * kVerticesPerQuad * sizeof(GlyphVertex);
@@ -231,9 +232,7 @@ void TextRenderer::OnInit() {
 
     uint32_t pixelCount = kAtlasHeight * kAtlasWidth;
     uint8_t* buffer = new uint8_t[pixelCount];
-    uint8_t* sdfBuffer = new uint8_t[pixelCount];
     memset(buffer, 0, sizeof(uint8_t) * pixelCount);
-    memset(sdfBuffer, 0, sizeof(uint8_t) * pixelCount);
     
     for (char c : kDefaultGlyphSet) {
         res = FT_Load_Char(face, c, FT_LOAD_RENDER);
@@ -294,29 +293,36 @@ void TextRenderer::OnInit() {
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
-    float* f = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
+    size_t height = 512;
+    size_t width = 512;
+    size_t scaleFactor = kAtlasWidth / height;
+    float* ff = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
+    float* f = createResampledData(ff, kAtlasWidth, kAtlasHeight, scaleFactor);
     
-    
-    
-    for (int y = 0; y < kAtlasHeight; ++y)
+    uint32_t sdfpixelCount = height * width;
+    uint8_t* sdfBuffer = new uint8_t[sdfpixelCount];
+    memset(sdfBuffer, 0, sizeof(uint8_t) * sdfpixelCount);
+    for (int y = 0; y < height; ++y)
     {
-        for (int x = 0; x < kAtlasWidth; ++x)
+        for (int x = 0; x < width; ++x)
         {
-            float dist = f[y * kAtlasWidth + x];
+            float dist = f[y * width + x];
             float clampDist = fmax(-normalizationFactor, fmin(dist, normalizationFactor));
             float scaledDist = clampDist / normalizationFactor;
             uint8_t value = ((scaledDist + 1) / 2) * UINT8_MAX;
-            sdfBuffer[y * kAtlasWidth + x] = value;
+            sdfBuffer[y * width + x] = value;
         }
     }
     
     
     
     _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
-    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, sdfBuffer, "SDFTextGlyphAtlas");
+    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, width, height, sdfBuffer, "SDFTextGlyphAtlas");
     assert(_glyphAtlas || "Failed to create glyph atlas");
     free(f);
+    free(ff);
     delete[] buffer;
+    delete[] sdfBuffer;
     FT_Done_Face(face);
     FT_Done_FreeType(library);
 
@@ -544,9 +550,9 @@ void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
     _viewData->Unmap();
 
     TextViewConstants* viewConstants3d = _viewData3D->Map<TextViewConstants>();
-    viewConstants3d->view = view->view;
+    viewConstants3d->view = view->view * glm::scale(glm::mat4(), glm::vec3(0.25, 0.25, 0.25));
     viewConstants3d->projection = view->projection;
-    viewConstants3d->eyeDir = view->look;
+    viewConstants3d->eyeDir = view->eyePos;
     _viewData3D->Unmap();
 
     bool drewCursor = false;

@@ -143,7 +143,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 //    debugUI = new ui::DebugUI(ui);
 
     // Show/Hide sample text test with this call
-    ui::LabelUI::AttachLabel(ui, "hey look im a label");
+//    ui::LabelUI::AttachLabel(ui, "hey look im a label");
 
     simulationManager.RegisterManager<ui::UIManager>({ ComponentType::UI, ComponentType::Spatial }, inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport,
         renderEngine->Renderers().text.get(), renderEngine->Renderers().ui.get(), renderEngine->debugDraw());
@@ -154,10 +154,10 @@ void AddWorldText() {
     SimObj* worldText = simulationManager.CreateSimObj();
     UI* ui = worldText->AddComponent<UI>();
     Spatial* spatial = worldText->AddComponent<Spatial>();
-    spatial->pos = glm::vec3(-250.f, 250.f, 500.f);
+    spatial->pos = glm::vec3(0, 0.f, 0.f);
     spatial->direction = glm::vec3(0.f, 0.f, 0.f);    
 
-    ui::LabelUI::AttachLabel(ui, "Aa Bb Cc Dd Ee");
+    ui::LabelUI::AttachLabel(ui, "A S G");
 }
 
 void AddArthas() {
@@ -196,7 +196,7 @@ void App::OnStart() {
     SetupInputBindings();
 
     // cam.MoveTo(-2826, 1620, 1600);
-    cam.MoveTo(0, 0, 2000);
+    cam.MoveTo(0, 0, 221);
     cam.LookAt(0, 0, 0);
 
 //    skybox = CreateSkybox();
