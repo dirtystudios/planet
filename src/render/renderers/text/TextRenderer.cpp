@@ -14,6 +14,7 @@
 struct TextViewConstants {
     glm::mat4 projection;
     glm::mat4 view;
+    glm::mat4 normalMat;
     glm::vec3 eyeDir;
 };
 
@@ -39,8 +40,8 @@ static const std::string kDefaultGlyphSet =
 //    " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 " ASG";
 // font parameters
-static constexpr float normalizationFactor = 128;
-static constexpr uint32_t padding           = 128;
+static constexpr float normalizationFactor = 64;
+static constexpr uint32_t padding           = 64;
 static constexpr double kFontSize           = 512;
 static constexpr FT_UInt kDpi               = 96;
 static constexpr uint32_t kAtlasWidth       = 4096;
@@ -293,11 +294,11 @@ void TextRenderer::OnInit() {
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
-    size_t height = 512;
-    size_t width = 512;
+    size_t height = kAtlasWidth;
+    size_t width = kAtlasWidth;
     size_t scaleFactor = kAtlasWidth / height;
-    float* ff = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
-    float* f = createResampledData(ff, kAtlasWidth, kAtlasHeight, scaleFactor);
+    float* f = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
+    //float* f = createResampledData(ff, kAtlasWidth, kAtlasHeight, scaleFactor);
     
     uint32_t sdfpixelCount = height * width;
     uint8_t* sdfBuffer = new uint8_t[sdfpixelCount];
@@ -320,7 +321,7 @@ void TextRenderer::OnInit() {
     _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, width, height, sdfBuffer, "SDFTextGlyphAtlas");
     assert(_glyphAtlas || "Failed to create glyph atlas");
     free(f);
-    free(ff);
+    //free(ff);
     delete[] buffer;
     delete[] sdfBuffer;
     FT_Done_Face(face);
@@ -553,6 +554,7 @@ void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
     viewConstants3d->view = view->view * glm::scale(glm::mat4(), glm::vec3(0.25, 0.25, 0.25));
     viewConstants3d->projection = view->projection;
     viewConstants3d->eyeDir = view->eyePos;
+    viewConstants3d->normalMat = glm::transpose(glm::inverse(viewConstants3d->view));
     _viewData3D->Unmap();
 
     bool drewCursor = false;
