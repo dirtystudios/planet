@@ -67,21 +67,8 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
                           constant ObjConstants& obj[[buffer(3)]], constant ViewConstants& view[[buffer(2)]]) {
 
     float2 T = varyingInput.texture;
-    float parallaxScale = -0.015f;
+    float parallaxScale = -0.0015f;
     float3 V = normalize(varyingInput.eye);
-    
-    float initialHeight = atlas.sample(atlasSampler, varyingInput.texture).r;
-    
-    // calculate amount of offset for Parallax Mapping
-    float2 texCoordOffset = parallaxScale * V.xy / V.z * initialHeight;
-    
-    // calculate amount of offset for Parallax Mapping With Offset Limiting
-    texCoordOffset = parallaxScale * V.xy * initialHeight;
-    
-    // retunr modified texture coordinates
-    T = varyingInput.texture - texCoordOffset;
-    
-//------
     
     
     // determine number of layers from angle between V and N
@@ -101,6 +88,7 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
     
     // get first depth from heightmap
     float heightFromTexture =  atlas.sample(atlasSampler, currentTextureCoords).r;
+    heightFromTexture = step(0.5f, heightFromTexture);
     
     // while point is above surface
     while(heightFromTexture > currentLayerHeight)
@@ -111,6 +99,43 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
         currentTextureCoords -= dtex;
         // get new depth from heightmap
         heightFromTexture =  atlas.sample(atlasSampler, currentTextureCoords).r;
+        heightFromTexture = step(0.5f, heightFromTexture);
+    }
+    
+    ///////////////////////////////////////////////////////////
+    // Start of Relief Parallax Mapping
+    
+    // decrease shift and height of layer by half
+    float2 deltaTexCoord = dtex / 2;
+    float deltaHeight = layerHeight / 2;
+    
+    // return to the mid point of previous layer
+    currentTextureCoords += deltaTexCoord;
+    currentLayerHeight -= deltaHeight;
+    
+    // binary search to increase precision of Steep Paralax Mapping
+    const int numSearches = 5;
+    for(int i=0; i<numSearches; i++)
+    {
+        // decrease shift and height of layer by half
+        deltaTexCoord /= 2;
+        deltaHeight /= 2;
+        
+        // new depth from heightmap
+        heightFromTexture = atlas.sample(atlasSampler, currentTextureCoords).r;
+        heightFromTexture = step(0.5f, heightFromTexture);
+        
+        // shift along or agains vector V
+        if(heightFromTexture > currentLayerHeight) // below the surface
+        {
+            currentTextureCoords -= deltaTexCoord;
+            currentLayerHeight += deltaHeight;
+        }
+        else // above the surface
+        {
+            currentTextureCoords += deltaTexCoord;
+            currentLayerHeight -= deltaHeight;
+        }
     }
     
     // return results
@@ -122,6 +147,7 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
     
     
     float sampleDistance = atlas.sample(atlasSampler, T).r;
+    sampleDistance = step(0.5f, sampleDistance);
     
     
     
@@ -161,7 +187,7 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
 //    sampleDistance = atlas.sample(atlasSampler, varyingInput.texture + float2(ve.x, ve.y)).x;
 
     bool outline = false;
-    bool softEdges = false;
+    bool softEdges = true;
     bool dropShadow = false;
     
     if (softEdges) {
@@ -219,5 +245,6 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
     
     
     
-    return float4(sampleDistance, sampleDistance, sampleDistance, 1.0);
+//    return float4(sampleDistance, sampleDistance, sampleDistance, 1.0);
+    return color;
 };

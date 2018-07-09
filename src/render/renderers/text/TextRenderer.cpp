@@ -294,11 +294,11 @@ void TextRenderer::OnInit() {
         _loadedGlyphs.insert(std::make_pair(c, glyph));
     }
 
-    size_t height = kAtlasWidth;
-    size_t width = kAtlasWidth;
+    size_t height = 512;
+    size_t width = 512;
     size_t scaleFactor = kAtlasWidth / height;
-    float* f = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
-    //float* f = createResampledData(ff, kAtlasWidth, kAtlasHeight, scaleFactor);
+    float* ff = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
+    float* f = createResampledData(ff, kAtlasWidth, kAtlasHeight, scaleFactor);
     
     uint32_t sdfpixelCount = height * width;
     uint8_t* sdfBuffer = new uint8_t[sdfpixelCount];
@@ -321,7 +321,7 @@ void TextRenderer::OnInit() {
     _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, width, height, sdfBuffer, "SDFTextGlyphAtlas");
     assert(_glyphAtlas || "Failed to create glyph atlas");
     free(f);
-    //free(ff);
+    free(ff);
     delete[] buffer;
     delete[] sdfBuffer;
     FT_Done_Face(face);
@@ -461,10 +461,10 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj, size_t offset) {
 
         Glyph& glyph = it->second;
 
-        const float vx      = penX + glyph.xOffset * _scaleX;
+        const float vx      = penX + glyph.xOffset * _scaleX * 2;
         const float vy      = penY - (glyph.height - glyph.yOffset) * _scaleY;
-        const float quadW   = glyph.width * _scaleX;
-        const float quadH   = glyph.height * _scaleY;
+        const float quadW   = glyph.width * _scaleX * 2;
+        const float quadH   = glyph.height * _scaleY * 2;
         const float s       = glyph.region.bl().x;
         const float t       = glyph.region.bl().y;
         const float regionW = glyph.region.width();
@@ -477,7 +477,7 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj, size_t offset) {
         vertices[idx++] = {{vx, vy + quadH, penZ}, {s, t + regionH}};                   // tl
         vertices[idx++] = {{vx, vy, penZ}, {s, t}};                                     // bl
 
-        penX += glyph.xAdvance * _scaleX;
+        penX += glyph.xAdvance * _scaleX * 2;
         penY += glyph.yAdvance * _scaleY;
 
         renderObj->_glyphXOffsets.emplace_back(penX);
