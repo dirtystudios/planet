@@ -12,6 +12,8 @@ struct VertexOut {
     float4 position[[position]];
     float2 texture;
     float3 toCamera;
+    float3 normal;
+    float3 eye;
 };
 
 struct ViewConstants {
@@ -26,9 +28,23 @@ struct ObjConstants {
 
 vertex VertexOut text_vertex(VertexIn attributes[[stage_in]], constant ViewConstants& view[[buffer(2)]]) {
     VertexOut outputValue;
-    outputValue.position = view.proj * view.viewCbConstant * float4(attributes.position.x, attributes.position.y, attributes.position.z, 1);
+    
+    float4x4 world = view.viewCbConstant;
+    float4 worldPosition = world * float4(attributes.position.x, attributes.position.y, attributes.position.z, 1);
+    float3 eye = worldPosition.xyz - view.eyePos;
+    float3 normal = float3(0, 0, -1);
+    
+    float3x3 tangentToWorld;
+    tangentToWorld[0] = (world * float4( 1,  0,  0, 1)).xyz;
+    tangentToWorld[1] = (world * float4( 0,  1,  0, 1)).xyz;
+    tangentToWorld[2] = (world * float4( 0,  0, -1, 1)).xyz;
+    float3x3 worldToTangent = transpose(tangentToWorld);
+    
+    outputValue.eye = worldToTangent * eye;
+    outputValue.normal = worldToTangent * normal;
+    
+    outputValue.position = view.proj * worldPosition;
     outputValue.texture  = attributes.texture;
-    outputValue.toCamera = normalize(view.eyePos - float3(outputValue.position.x, outputValue.position.y, outputValue.position.z));
     return outputValue;
 }
 
@@ -43,7 +59,7 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
 
     bool outline = false;
     bool softEdges = true;
-    bool dropShadow = true;
+    bool dropShadow = false;
     
     if (softEdges) {
         float edgeDistance = 0.5;
@@ -100,5 +116,5 @@ fragment float4 text_frag(VertexOut varyingInput[[stage_in]], texture2d<float> a
     
     
     
-    return color;
+    return float4(varyingInput.eye.x, varyingInput.eye.y, varyingInput.eye.z, 1.0);
 };
