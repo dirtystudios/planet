@@ -14,11 +14,12 @@
 struct TextViewConstants {
     glm::mat4 projection;
     glm::mat4 view;
-    glm::mat4 normalMat;
     glm::vec3 eyeDir;
 };
 
 struct TextConstants {
+    glm::mat4 world;
+    glm::mat4 norm;
     glm::vec3 textColor;
 };
 
@@ -41,7 +42,7 @@ static const std::string kDefaultGlyphSet =
 " ASG";
 // font parameters
 static constexpr float normalizationFactor = 64;
-static constexpr uint32_t padding           = 64;
+static constexpr uint32_t padding           = 128;
 static constexpr double kFontSize           = 512;
 static constexpr FT_UInt kDpi               = 96;
 static constexpr uint32_t kAtlasWidth       = 4096;
@@ -300,9 +301,25 @@ void TextRenderer::OnInit() {
     float* ff = createSignedDistanceFieldForGrayscaleImage(buffer, kAtlasWidth, kAtlasHeight);
     float* f = createResampledData(ff, kAtlasWidth, kAtlasHeight, scaleFactor);
     
+    
+    auto getIndex = [&](int32_t i, int32_t j) ->  int32_t {
+        const glm::uvec2& resolution = {width, height};
+        int32_t           k          = (i >= (int32_t)resolution.x) ? resolution.x - 1 : ((i < 0) ? 0 : i);
+        int32_t           p          = (j >= (int32_t)resolution.y) ? resolution.y - 1 : ((j < 0) ? 0 : j);
+        // LOG_D("%d %d %d -> %d %d", j >= resolution.y, i, j, k, p);
+        return k * resolution.y + p;
+    };
+    
+    auto scaled = [&](float f) -> float {
+        float clampDist = fmax(-normalizationFactor, fmin(f, normalizationFactor));
+        return clampDist / normalizationFactor;
+    };
+    
     uint32_t sdfpixelCount = height * width;
     uint8_t* sdfBuffer = new uint8_t[sdfpixelCount];
     memset(sdfBuffer, 0, sizeof(uint8_t) * sdfpixelCount);
+    uint8_t* data = new uint8_t[width * height * 4];
+    memset(data, 0, width * height * 4 * sizeof(uint8_t));
     for (int y = 0; y < height; ++y)
     {
         for (int x = 0; x < width; ++x)
@@ -310,18 +327,50 @@ void TextRenderer::OnInit() {
             float dist = f[y * width + x];
             float clampDist = fmax(-normalizationFactor, fmin(dist, normalizationFactor));
             float scaledDist = clampDist / normalizationFactor;
+            
+            
+            float tl = scaled(f[getIndex(y - 1, x - 1)]);
+            float t  = scaled(f[getIndex(y - 1, x)]);
+            float tr = scaled(f[getIndex(y - 1, x + 1)]);
+            float r  = scaled(f[getIndex(y, x + 1)]);
+            float br = scaled(f[getIndex(y + 1, x + 1)]);
+            float b  = scaled(f[getIndex(y + 1, x)]);
+            float bl = scaled(f[getIndex(y + 1, x - 1)]);
+            float l  = scaled(f[getIndex(y, x - 1)]);
+            
+            int32_t idx = getIndex(y, x) * 4;
+            if (scaledDist >= 0) {
+                data[idx] = 0;
+                data[idx+1] = 0;
+                data[idx+2] = 255;
+                data[idx+3] = 255;
+            } else {
+                float x = -((br - bl) + (2.f * (r - l)) + (tr - tl)); // x
+                float y = -((tl - bl) + (2.f * (t - b)) + (tr - br)); // y
+                glm::vec2 ned = glm::normalize(glm::vec2(x, y));
+                data[idx] = ((ned.x + 1) / 2) * UINT8_MAX;
+                data[idx+1] = ((-ned.y + 1) / 2) * UINT8_MAX;
+                data[idx+2] = 0; // z
+                data[idx+3] = 255; // a
+            }
+            
             uint8_t value = ((scaledDist + 1) / 2) * UINT8_MAX;
             sdfBuffer[y * width + x] = value;
         }
     }
     
     
+  
     
-    _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
+    
+    
+                  device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, kAtlasWidth, kAtlasHeight, buffer, "TextGlyphAtlas");
     _glyphAtlas = device()->CreateTexture2D(gfx::PixelFormat::R8Unorm, gfx::TextureUsageFlags::ShaderRead, width, height, sdfBuffer, "SDFTextGlyphAtlas");
+    _glyphAtlasNormals = device()->CreateTexture2D(gfx::PixelFormat::RGBA8Unorm, gfx::TextureUsageFlags::ShaderRead, width, height, data, "SDFTextGlyphAtlasNormals");
     assert(_glyphAtlas || "Failed to create glyph atlas");
     free(f);
     free(ff);
+    delete[] data;
     delete[] buffer;
     delete[] sdfBuffer;
     FT_Done_Face(face);
@@ -373,6 +422,7 @@ void TextRenderer::OnInit() {
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "text"));
     encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "text"));
     encoder.BindTexture(0, _glyphAtlas, gfx::ShaderStageFlags::AllStages);
+    encoder.BindTexture(1, _glyphAtlasNormals, gfx::ShaderStageFlags::AllStages);
     encoder.SetVertexBuffer(_vertexBuffer);
     encoder.SetPrimitiveType(gfx::PrimitiveType::Triangles);
     const gfx::StateGroup* baseBind = encoder.End();
@@ -551,17 +601,19 @@ void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
     _viewData->Unmap();
 
     TextViewConstants* viewConstants3d = _viewData3D->Map<TextViewConstants>();
-    viewConstants3d->view = view->view * glm::scale(glm::mat4(), glm::vec3(0.25, 0.25, 0.25));
     viewConstants3d->projection = view->projection;
+    viewConstants3d->view = view->view;
     viewConstants3d->eyeDir = view->eyePos;
-    viewConstants3d->normalMat = glm::transpose(glm::inverse(viewConstants3d->view));
     _viewData3D->Unmap();
 
     bool drewCursor = false;
     _vertexBufferOffsetCheck = _vertexBufferOffset;
 
     for (auto& text : _objs) {
-        text->_constantBuffer->Map<TextConstants>()->textColor = text->_textColor;
+        TextConstants* write = text->_constantBuffer->Map<TextConstants>();
+        write->world = glm::scale(glm::mat4(), glm::vec3(0.25, 0.25, 0.25));
+        write->norm = glm::transpose(glm::inverse(write->world));
+        write->textColor = text->_textColor;;
         text->_constantBuffer->Unmap();
 
         text->_drawItem.reset(CreateDrawItem(text, queue->defaults));

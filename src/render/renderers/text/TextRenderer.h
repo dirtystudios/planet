@@ -45,6 +45,7 @@ private:
 
     // gfx resources
     gfx::TextureId  _glyphAtlas{0};
+    gfx::TextureId  _glyphAtlasNormals{0};
     gfx::BufferId   _vertexBuffer{0};
     gfx::BufferId   _cursorBuffer{0};
     size_t          _vertexBufferOffset{0};
