@@ -147,6 +147,8 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
 
     simulationManager.RegisterManager<ui::UIManager>({ ComponentType::UI, ComponentType::Spatial }, inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport,
         renderEngine->Renderers().text.get(), renderEngine->Renderers().ui.get(), renderEngine->debugDraw());
+    
+    renderEngine->_debugContext = inputManager->GetDebugContext();
 }
 
 void AddWorldText() {
@@ -228,13 +230,13 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     // update
     playerController->DoUpdate(dt);
-//    float x = 500 * sin(sys::GetTime());
-//    float y = 500 * cos(sys::GetTime());
-//    float z = 0;
+//    float x = 500 * sin(sys::GetTime() / 1.4);
+//    float y = 500 * cos(sys::GetTime() / 1.2);
+//    float z = x + y;
 //    float x2 = 1000 * sin(sys::GetTime());
 //    float y2 = 1000 * cos(sys::GetTime());
 //    float z2 = 1000 * cos(sys::GetTime()) * sin(sys::GetTime());
-//    cam.MoveTo(x, y, 2000 + z);
+//    cam.MoveTo(x, y, 1500 + z);
 //    cam.LookAt(x2, y2, z2);
 
     simulationManager.DoUpdate(dt * 1000);

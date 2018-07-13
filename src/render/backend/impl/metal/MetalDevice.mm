@@ -33,7 +33,7 @@ id<MTLSamplerState> GetDefaultSampler(id<MTLDevice> device)
         sd.minFilter             = MTLSamplerMinMagFilterLinear;
         sd.magFilter             = MTLSamplerMinMagFilterLinear;
         sd.mipFilter             = MTLSamplerMipFilterNotMipmapped;
-        sd.maxAnisotropy         = 1;
+        sd.maxAnisotropy         = 16;        
         sd.normalizedCoordinates = YES;
 
         sampler = [device newSamplerStateWithDescriptor:sd];

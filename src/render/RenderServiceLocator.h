@@ -10,6 +10,7 @@
 #include "ShaderCache.h"
 #include "VertexLayoutCache.h"
 #include "AnimationCache.h"
+#include "InputContext.h"
 
 class RenderServiceLocator {
 public:
@@ -22,4 +23,5 @@ public:
     virtual ConstantBufferManager* constantBufferManager() = 0;
     virtual DebugDrawInterface*    debugDraw()             = 0;
     virtual AnimationCache*        animationCache()        = 0;
+    virtual input::InputContext*          debugContext()          = 0;
 };

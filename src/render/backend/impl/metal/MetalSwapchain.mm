@@ -74,9 +74,9 @@ void MetalSwapchain::onSwapchainResize(uint32_t width, uint32_t height)
 {
     CGSize size = CGSizeMake(width, height);
     
-    NSScreen* screen = _metalView.window.screen ?: [NSScreen mainScreen];
-    size.width *= screen.backingScaleFactor;
-    size.height *= screen.backingScaleFactor;
+//    NSScreen* screen = _metalView.window.screen ?: [NSScreen mainScreen];
+//    size.width *= screen.backingScaleFactor;
+//    size.height *= screen.backingScaleFactor;
     
     _metalLayer.drawableSize = size;
 }

@@ -166,3 +166,4 @@ ConstantBufferManager* RenderEngine::constantBufferManager() { return _constantB
 MaterialCache*         RenderEngine::materialCache() { return _materialCache; }
 DebugDrawInterface*    RenderEngine::debugDraw() { return _renderers.debug.get(); }
 AnimationCache*        RenderEngine::animationCache() { return _animationCache; }
+input::InputContext*   RenderEngine::debugContext() { return _debugContext; };

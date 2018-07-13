@@ -59,13 +59,15 @@ private:
     void SetVertices(TextRenderObj* renderObj, size_t offset);
     const gfx::DrawItem* CreateDrawItem(TextRenderObj* renderObj, const gfx::StateGroup* defaults = nullptr);
     const gfx::DrawItem* CreateCursorDrawItem(TextRenderObj* renderObj, const gfx::StateGroup* defaults = nullptr);
-
+    
 public:
     TextRenderer(float scaleX = 1.f, float scaleY = 1.f);
     ~TextRenderer();
 
     void OnInit() final;
-
+    
+    float heightScale = 0.015;
+    void upScale() { heightScale += 0.001; }
     void Register(TextRenderObj* textRO);
     void Unregister(TextRenderObj* textRO);
 

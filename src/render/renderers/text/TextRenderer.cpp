@@ -20,7 +20,9 @@ struct TextViewConstants {
 struct TextConstants {
     glm::mat4 world;
     glm::mat4 norm;
-    glm::vec3 textColor;
+    glm::vec4 textColor;
+    glm::vec4 lightPos;
+    float heightScale;
 };
 
 struct GlyphVertex {
@@ -202,6 +204,7 @@ static float* createSignedDistanceFieldForGrayscaleImage(const uint8_t *imageDat
 #undef distance
 #undef nearestpt
 }
+#include "InputContext.h"
 
 TextRenderer::TextRenderer(float scaleX, float scaleY)
 : TypedRenderer<TextRenderObj>(RendererType::Text)
@@ -339,12 +342,7 @@ void TextRenderer::OnInit() {
             float l  = scaled(f[getIndex(y, x - 1)]);
             
             int32_t idx = getIndex(y, x) * 4;
-            if (scaledDist >= 0) {
-                data[idx] = 0;
-                data[idx+1] = 0;
-                data[idx+2] = 255;
-                data[idx+3] = 255;
-            } else {
+            {
                 float x = -((br - bl) + (2.f * (r - l)) + (tr - tl)); // x
                 float y = -((tl - bl) + (2.f * (t - b)) + (tr - br)); // y
                 glm::vec2 ned = glm::normalize(glm::vec2(x, y));
@@ -613,7 +611,9 @@ void TextRenderer::Submit(RenderQueue* queue, const FrameView* view) {
         TextConstants* write = text->_constantBuffer->Map<TextConstants>();
         write->world = glm::scale(glm::mat4(), glm::vec3(0.25, 0.25, 0.25));
         write->norm = glm::transpose(glm::inverse(write->world));
-        write->textColor = text->_textColor;;
+        write->textColor = glm::vec4(text->_textColor, 1.0);;
+        write->lightPos = glm::vec4(0, 0, 0, 100);
+        write->heightScale = 0.015;
         text->_constantBuffer->Unmap();
 
         text->_drawItem.reset(CreateDrawItem(text, queue->defaults));

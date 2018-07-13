@@ -52,7 +52,7 @@
 //    std::unique_ptr<PlayerRenderView> player;
 //    std::unique_ptr<HUDRenderView> hud;
 //};
-
+#include "InputContext.h"
 
 class SkyRenderer;
 class TextRenderer;
@@ -72,6 +72,8 @@ struct Renderers {
 
 
 class RenderEngine : public RenderServiceLocator {
+public:
+    input::InputContext*           _debugContext;
 private:
     gfx::RenderDevice* _device{nullptr};
     gfx::Swapchain* _swapchain{nullptr};
@@ -85,7 +87,7 @@ private:
     ConstantBufferManager* _constantBufferManager{nullptr};
     MaterialCache*         _materialCache;
     AnimationCache*        _animationCache;
-
+    
     Renderers _renderers;
 
     const gfx::StateGroup* _stateGroupDefaults{nullptr};
@@ -108,6 +110,7 @@ public:
     MaterialCache*         materialCache() override;
     DebugDrawInterface*    debugDraw() override;
     AnimationCache*        animationCache() override;
+    input::InputContext*          debugContext() override;
 
 private:
 };
