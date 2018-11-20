@@ -8,6 +8,7 @@ enum class ComponentType : uint8_t {
     UI,
     SkinnedMesh,
     Animation,
+    PlayerControlled,
     COUNT
 };
 

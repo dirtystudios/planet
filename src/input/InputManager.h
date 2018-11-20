@@ -4,6 +4,7 @@
 #include "InputContext.h"
 #include "InputCodes.h"
 #include "KeyboardManager.h"
+#include "EventManager.h"
 
 /*
 ----------------------
@@ -70,8 +71,9 @@ namespace input {
         KeyboardManager m_keyboardManager;
         bool m_showCursor = true;
 
+        EventManager* m_eventManager;
     public:
-        InputManager();
+        InputManager(EventManager* em);
 
         void AddActionMapping(std::string actionName, const InputCode& inputCode, const ActionConfig& actionConfig);
         void AddAxisMapping(std::string axisName, const InputCode& inputCode, const AxisConfig& axisConfig);

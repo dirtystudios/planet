@@ -127,6 +127,7 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
         }
     }
     return encoder.End();
+#undef LZY
 }
 
 void StateGroupEncoder::SetRenderPass(RenderPassId ps) {

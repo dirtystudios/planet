@@ -3,7 +3,9 @@
 
 namespace input {
 
-    InputManager::InputManager() {
+    InputManager::InputManager(EventManager* em) {
+        m_eventManager = em;
+
         for (int x = 0; x < (uint32_t)InputCode::COUNT; ++x) {
             actionCache.emplace_back(0);
         }

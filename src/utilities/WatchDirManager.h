@@ -1,5 +1,6 @@
 #pragma once
 #include "File.h"
+#include <functional>
 #include <vector>
 #include <unordered_map>
 #include <memory>

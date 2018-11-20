@@ -3,7 +3,10 @@
 
 #include <type_traits>
 
-SimulationManager::SimulationManager() = default;
+SimulationManager::SimulationManager(EventManager* em)
+    : eventManager(em)
+{}
+
 SimulationManager::~SimulationManager() = default;
 
 SimObj* SimulationManager::CreateSimObj() {
@@ -36,6 +39,9 @@ void SimulationManager::DoUpdate(float ms) {
             case ComponentType::Animation:
 				components[ComponentType::Animation] = reinterpret_cast<const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>(&animations);
 				break;
+            case ComponentType::PlayerControlled:
+                components[ComponentType::PlayerControlled] = reinterpret_cast<const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>(&playerControlled);
+                break;
             default:
                 dg_assert_fail("Unhandled ComponentType");
                 break;
@@ -52,6 +58,7 @@ bool SimulationManager::HasComponent(uint64_t key, ComponentType t) {
         case ComponentType::UI: return uis[key] != nullptr;
         case ComponentType::SkinnedMesh: return skinnedMeshs[key] != nullptr;
         case ComponentType::Animation: return animations[key] != nullptr;
+        case ComponentType::PlayerControlled: return playerControlled[key] != nullptr;
         default: dg_assert_fail("type not accounted for."); break;
     }
     return false;
@@ -71,6 +78,7 @@ Component* SimulationManager::AddComponent(uint64_t key, ComponentType t) {
         case ComponentType::UI: return checkAddComp(uis, key);
         case ComponentType::SkinnedMesh: return checkAddComp(skinnedMeshs, key);
         case ComponentType::Animation: return checkAddComp(animations, key);
+        case ComponentType::PlayerControlled: return checkAddComp(playerControlled, key);
         default: dg_assert_fail("type not accounted for."); break;
     }
     return nullptr;
@@ -83,6 +91,7 @@ void SimulationManager::RemoveComponent(uint64_t key, ComponentType t) {
         case ComponentType::UI: return uis[key].reset();
         case ComponentType::SkinnedMesh: return skinnedMeshs[key].reset();
         case ComponentType::Animation: return animations[key].reset();
+        case ComponentType::PlayerControlled: return playerControlled[key].reset();
         default: dg_assert_fail("type not accounted for."); break;
     }
 }
