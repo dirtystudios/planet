@@ -4,6 +4,25 @@
 
 namespace ui {
 
+bool UIManager::HandleInputEvent(const InputEvent& ev) {
+
+    if (ev.context == input::InputManager::ContextPriority::CONTEXT_MENU) {
+        if (ev.type == input::ContextBindingType::Axis) {
+            if (ev.name == "MousePosX")
+                return HandleMouseX(ev.args);
+            else if (ev.name == "MousePosY")
+                return HandleMouseY(ev.args);
+        }
+        else {
+            if (ev.name == "MouseKey1")
+                return HandleMouse1(ev.args);
+            else if (ev.name == "MouseKey2")
+                return HandleMouse2(ev.args);
+        }
+    }
+    return true;
+}
+
 bool UIManager::HandleMouseX(const input::InputContextCallbackArgs& xArgs) {
     // x is fine
     m_mouseX = xArgs.value;

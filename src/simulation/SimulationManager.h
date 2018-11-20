@@ -5,6 +5,8 @@
 #include "SkinnedMesh.h"
 #include "AnimationComponent.h"
 #include "ComponentManager.h"
+#include "EventManager.h"
+#include "PlayerControlled.h"
 
 #include <vector>
 #include <array>
@@ -21,14 +23,18 @@ private:
     std::array<std::unique_ptr<UI>, MAX_SIM_OBJECTS> uis;
     std::array<std::unique_ptr<SkinnedMesh>, MAX_SIM_OBJECTS> skinnedMeshs;
     std::array<std::unique_ptr<AnimationComponent>, MAX_SIM_OBJECTS> animations;
+    std::array<std::unique_ptr<PlayerControlled>, MAX_SIM_OBJECTS> playerControlled;
 
     std::array<std::unique_ptr<SimObj>, MAX_SIM_OBJECTS> _simObjs;
 
     std::vector<std::pair<std::unique_ptr<ComponentManager>, std::vector<ComponentType>>> managers;
 
     uint64_t nextObjId{0};
+
+    EventManager* eventManager;
+
 public:
-    SimulationManager();
+    SimulationManager(EventManager* em);
     ~SimulationManager();
     template <class T, typename... Args>
     void RegisterManager(const std::vector<ComponentType>& types, Args&&... args) {
@@ -54,6 +60,7 @@ private:
             case ComponentType::UI:          return uis[key];
             case ComponentType::SkinnedMesh: return skinnedMeshs[key];
             case ComponentType::Animation:   return animations[key];
+            case ComponentType::PlayerControlled: return playerControlled[key];
             default:
                 dg_assert_fail("type not accounted for.");
             break;

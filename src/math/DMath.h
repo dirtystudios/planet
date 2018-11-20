@@ -34,6 +34,7 @@ public:
 
     void rotateDegrees(Degrees degrees, const glm::vec3& axis) { rotateRadians(toRadians(degrees), axis); }
     void rotateRadians(Radians radians, const glm::vec3& axis) { _rotation = glm::rotate(_rotation, radians, axis); }
+    void lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) { _rotation = glm::lookAt(eye, center, up); }
     void scale(const glm::vec3& factors) { _scale = glm::scale(_scale, factors); }
     void scale(float scalar) { scale({scalar, scalar, scalar}); };
     void translate(const glm::vec3& translation) { _translation = glm::translate(_translation, translation); }
@@ -50,10 +51,5 @@ public:
 template <typename T>
 constexpr T lerp(const T& a, const T& b, double t) {
     return ((1.f - t) * a) + (t * b);
-}
-
-template <typename T>
-constexpr T clamp(const T& val, const T& min, const T& max) {
-    return val > max ? max : (val < min ? min : val);
 }
 }
