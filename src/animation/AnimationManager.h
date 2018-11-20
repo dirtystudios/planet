@@ -4,6 +4,9 @@
 #include "AnimationData.h"
 #include "ComponentManager.h"
 #include "SimulationManager.h"
+#include "Animation.h"
+#include "AnimationCache.h"
+#include "EventManager.h"
 #include <vector>
 #include <unordered_map>
 
@@ -14,25 +17,32 @@ class AnimationManager : public ComponentManager {
 private:
     struct ManagedAnimation {
         std::unique_ptr<MeshRenderObj> meshRenderObj;
-        AnimationData* animData;
+        AnimationPtr animation;
         MeshPtr mesh;
+        float runningTime;
         std::unordered_map<std::string, size_t> boneMapping;
+        std::string cacheKey;
+        AnimationType type;
+        glm::dvec3 pos;
+        glm::dvec3 dir;
     };
 
     MeshRenderer* m_meshRenderer;
+    AnimationCache* m_animationCache;
     std::map<uint64_t, ManagedAnimation> m_managedAnimations;
-    float m_runningTime{ 0.f };
 
 public:
-    AnimationManager(MeshRenderer* meshRenderer)
-        : m_meshRenderer(meshRenderer) {
+    AnimationManager(EventManager* em, MeshRenderer* meshRenderer, AnimationCache* animationCache)
+        : m_meshRenderer(meshRenderer)
+        , m_animationCache(animationCache)
+    {}
 
-    }
     void UpdateViewport(const Viewport& vp) override {}
     void DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) override;
 
 private:
-    void AddAnimationObj(uint64_t key, SkinnedMesh* skinnedMesh, AnimationComponent* anim);
+    void AddAnimationObj(uint64_t key, SkinnedMesh* skinnedMesh, AnimationComponent* anim, Spatial* spatial);
+    void UpdateAnimationObj(uint64_t key, SkinnedMesh* skinnedMesh, AnimationComponent* anim, Spatial* spatial);
     void DoUpdate(float ms);
 
     glm::vec3 CalcInterpolatedScaling(float animTime, const AnimationData::AnimationNode& animNode);

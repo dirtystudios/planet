@@ -16,7 +16,7 @@ init:
 
 before_build:
   - cmd: git submodule update --init --recursive
-  - ps: Start-FileDownload 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha12/premake-5.0.0-alpha12-windows.zip' 'premake.zip'
+  - ps: Start-FileDownload 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-windows.zip' 'premake.zip'
     # Extract it in-place; premake5.exe is at the top level.
   - 7z x premake.zip
   - cmd: premake5 vs2015

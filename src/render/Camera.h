@@ -24,9 +24,6 @@ struct Camera {
     void LookAt(glm::vec3 target);
     void LookAt(float x, float y, float z);
 
-    float GetHorizontalFieldOfView();
-    float GetVerticalFieldOfView();
-
     glm::mat4 BuildView();
     glm::mat4 BuildProjection();
 };
