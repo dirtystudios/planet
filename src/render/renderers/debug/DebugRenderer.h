@@ -69,6 +69,7 @@ public:
     virtual void AddLine3D(const glm::vec3& start, const glm::vec3& end, glm::vec3 color) final;
     virtual void AddRect3D(const dm::Rect3Df& rect, const glm::vec3& color, bool filled = false) final;
     virtual void AddSphere3D(const glm::vec3& origin, float radius) final;
+    virtual void AddCube(const dm::BoundingBox& box, const glm::vec3& color, bool filled = false) final;
 
 private:
     virtual void OnInit() final;

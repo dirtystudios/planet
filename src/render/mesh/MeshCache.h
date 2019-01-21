@@ -41,7 +41,7 @@ public:
 
     CacheItemType ConstructCacheItem(FileDataType&& data) {
         auto meshGeom = UploadGetMeshsToGpu(data.nodes, data.geomData);
-        return std::make_shared<Mesh>(std::move(data.nodes), std::move(meshGeom), std::move(data.boneInfo), std::move(data.gimt), std::move(data.tree));
+        return std::make_shared<Mesh>(std::move(data.nodes), std::move(meshGeom), std::move(data.boneInfo), std::move(data.gimt), std::move(data.tree), std::move(data.bboxs));
     }
 
 private:

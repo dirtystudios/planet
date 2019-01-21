@@ -17,6 +17,7 @@
 
 #include "MeshNode.h"
 #include "MeshGeometryData.h"
+#include "BoundingBox.h"
 
 static glm::mat4 ConvertMat4(aiMatrix4x4& im) {
     return{
@@ -27,7 +28,7 @@ static glm::mat4 ConvertMat4(aiMatrix4x4& im) {
     };
 }
 
-MeshGeometryData ProcessMesh(const aiMesh* mesh, const aiScene* scene, std::vector<std::pair<std::string, glm::mat4>>& boneOffsets) {
+MeshGeometryData ProcessMesh(const aiMesh* mesh, std::vector<std::pair<std::string, glm::mat4>>& boneOffsets, std::vector<dm::BoundingBox>& bboxs) {
     MeshGeometryData geometryData;
 	geometryData.isSkinned = true;
 
@@ -70,6 +71,7 @@ MeshGeometryData ProcessMesh(const aiMesh* mesh, const aiScene* scene, std::vect
             else {
                 boneIndex = boneOffsets.size();
                 boneOffsets.emplace_back(bName, ConvertMat4(mesh->mBones[i]->mOffsetMatrix));
+                bboxs.emplace_back();
             }
             for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; ++j) {
                 uint32_t vertId = mesh->mBones[i]->mWeights[j].mVertexId;
@@ -77,13 +79,28 @@ MeshGeometryData ProcessMesh(const aiMesh* mesh, const aiScene* scene, std::vect
                     if (geometryData.weights[vertId][c] == 0.f) {
                         geometryData.boneIds[vertId][c] = boneIndex;
                         geometryData.weights[vertId][c] = mesh->mBones[i]->mWeights[j].mWeight;
+
+                        // todo: bounding box without bones
+                        // calculate bounding box for meshs without bone
+
+                        auto& bbox = bboxs[boneIndex];
+                        auto& v = mesh->mVertices[vertId];
+                        bbox.min.x = std::fmin(bbox.min.x, v.x);
+                        bbox.min.y = std::fmin(bbox.min.y, v.y);
+                        bbox.min.z = std::fmin(bbox.min.z, v.z);
+
+
+                        bbox.max.x = std::fmax(bbox.max.x, v.x);
+                        bbox.max.y = std::fmax(bbox.max.y, v.y);
+                        bbox.max.z = std::fmax(bbox.max.z, v.z);
+
                         break;
                     }
                 }
             }
         }
     }
-    
+
     // Process indices
     for(uint32_t i = 0; i < mesh->mNumFaces; ++i) {
         const aiFace& face = mesh->mFaces[i];
@@ -112,6 +129,7 @@ meshImport::MeshData meshImport::LoadMeshDataFromFile(const std::string& fpath) 
     std::vector<MeshNode> meshNodes;
     std::vector<MeshGeometryData> meshGeomData;
     std::vector<std::pair<std::string, glm::mat4>> boneInfo;
+    std::vector<dm::BoundingBox> boundingBoxs;
     std::map<uint32_t, std::vector<uint32_t>> tree;
     Assimp::Importer import;
 
@@ -138,7 +156,7 @@ meshImport::MeshData meshImport::LoadMeshDataFromFile(const std::string& fpath) 
     for (uint32_t i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
         LOG_D("Mesh:%s", mesh->mName.C_Str());
-        meshGeomData.emplace_back(ProcessMesh(mesh, scene, boneInfo));
+        meshGeomData.emplace_back(ProcessMesh(mesh, boneInfo, boundingBoxs));
     }
 
     std::queue<aiNode*> dfsQueue;
@@ -176,5 +194,5 @@ meshImport::MeshData meshImport::LoadMeshDataFromFile(const std::string& fpath) 
         tree.insert({ currentIdx, std::move(children) });
     }
 
-    return{ meshNodes, meshGeomData, boneInfo, gimt, tree };
+    return{ meshNodes, meshGeomData, boneInfo, gimt, tree, boundingBoxs };
 }

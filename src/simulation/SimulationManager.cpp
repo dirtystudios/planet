@@ -42,6 +42,9 @@ void SimulationManager::DoUpdate(float ms) {
             case ComponentType::PlayerControlled:
                 components[ComponentType::PlayerControlled] = reinterpret_cast<const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>(&playerControlled);
                 break;
+            case ComponentType::BoundingBox:
+                components[ComponentType::BoundingBox] = reinterpret_cast<const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>(&bboxs);
+                break;
             default:
                 dg_assert_fail("Unhandled ComponentType");
                 break;
@@ -59,6 +62,7 @@ bool SimulationManager::HasComponent(uint64_t key, ComponentType t) {
         case ComponentType::SkinnedMesh: return skinnedMeshs[key] != nullptr;
         case ComponentType::Animation: return animations[key] != nullptr;
         case ComponentType::PlayerControlled: return playerControlled[key] != nullptr;
+        case ComponentType::BoundingBox: return bboxs[key] != nullptr;
         default: dg_assert_fail("type not accounted for."); break;
     }
     return false;
@@ -79,6 +83,7 @@ Component* SimulationManager::AddComponent(uint64_t key, ComponentType t) {
         case ComponentType::SkinnedMesh: return checkAddComp(skinnedMeshs, key);
         case ComponentType::Animation: return checkAddComp(animations, key);
         case ComponentType::PlayerControlled: return checkAddComp(playerControlled, key);
+        case ComponentType::BoundingBox: return checkAddComp(bboxs, key);
         default: dg_assert_fail("type not accounted for."); break;
     }
     return nullptr;
@@ -92,6 +97,7 @@ void SimulationManager::RemoveComponent(uint64_t key, ComponentType t) {
         case ComponentType::SkinnedMesh: return skinnedMeshs[key].reset();
         case ComponentType::Animation: return animations[key].reset();
         case ComponentType::PlayerControlled: return playerControlled[key].reset();
+        case ComponentType::BoundingBox: return bboxs[key].reset();
         default: dg_assert_fail("type not accounted for."); break;
     }
 }

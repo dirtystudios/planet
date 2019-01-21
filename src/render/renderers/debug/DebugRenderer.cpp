@@ -173,6 +173,58 @@ void DebugRenderer::AddRect3D(const Rect3Df& rect, const glm::vec3& color, bool 
     }
 }
 
+void DebugRenderer::AddCube(const dm::BoundingBox& box, const glm::vec3& color, bool filled) {
+    DebugVertexVec& buffer = filled ? _buffers.filled3D : _buffers.wireframe3D;
+    const auto& c = box.corners();
+    if (filled) {
+        buffer.push_back({ c[0], {0,0}, color });
+        buffer.push_back({ c[1], {0,0}, color });
+        buffer.push_back({ c[2], {0,0}, color });
+        buffer.push_back({ c[3], {0,0}, color });
+        buffer.push_back({ c[4], {0,0}, color });
+        buffer.push_back({ c[5], {0,0}, color });
+        buffer.push_back({ c[6], {0,0}, color });
+        buffer.push_back({ c[7], {0,0}, color });
+    }
+    else {
+        buffer.push_back({ c[0], {0,0}, color }); // min x/y 
+        buffer.push_back({ c[1], {0,0}, color });
+
+        buffer.push_back({ c[2], {0,0}, color }); // min x max y
+        buffer.push_back({ c[6], {0,0}, color });
+        
+        buffer.push_back({ c[5], {0,0}, color }); // max x min y
+        buffer.push_back({ c[3], {0,0}, color });
+
+        buffer.push_back({ c[4], {0,0}, color }); // max x max y
+        buffer.push_back({ c[7], {0,0}, color });
+
+        buffer.push_back({ c[0], {0,0}, color }); // min x min z
+        buffer.push_back({ c[2], {0,0}, color });
+
+        buffer.push_back({ c[1], {0,0}, color }); // min x max z
+        buffer.push_back({ c[6], {0,0}, color });
+
+        buffer.push_back({ c[3], {0,0}, color }); // max x min z
+        buffer.push_back({ c[4], {0,0}, color });
+
+        buffer.push_back({ c[5], {0,0}, color }); // max x max z
+        buffer.push_back({ c[7], {0,0}, color });
+
+        buffer.push_back({ c[0], {0,0}, color }); // min y min z
+        buffer.push_back({ c[3], {0,0}, color });
+
+        buffer.push_back({ c[1], {0,0}, color }); // min y max z
+        buffer.push_back({ c[5], {0,0}, color });
+
+        buffer.push_back({ c[2], {0,0}, color }); // max y min z
+        buffer.push_back({ c[4], {0,0}, color });
+
+        buffer.push_back({ c[6], {0,0}, color }); // max y max z
+        buffer.push_back({ c[7], {0,0}, color });
+    }
+}
+
 void DebugRenderer::Submit(RenderQueue* renderQueue, const FrameView* view) {
     for (const gfx::DrawItem* item : _drawItems) {
         delete item;

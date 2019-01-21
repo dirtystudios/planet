@@ -7,6 +7,7 @@
 #include "ComponentManager.h"
 #include "EventManager.h"
 #include "PlayerControlled.h"
+#include "BoundingBoxComponent.h"
 
 #include <vector>
 #include <array>
@@ -24,6 +25,7 @@ private:
     std::array<std::unique_ptr<SkinnedMesh>, MAX_SIM_OBJECTS> skinnedMeshs;
     std::array<std::unique_ptr<AnimationComponent>, MAX_SIM_OBJECTS> animations;
     std::array<std::unique_ptr<PlayerControlled>, MAX_SIM_OBJECTS> playerControlled;
+    std::array<std::unique_ptr<BoundingBoxComponent>, MAX_SIM_OBJECTS> bboxs;
 
     std::array<std::unique_ptr<SimObj>, MAX_SIM_OBJECTS> _simObjs;
 
@@ -61,6 +63,7 @@ private:
             case ComponentType::SkinnedMesh: return skinnedMeshs[key];
             case ComponentType::Animation:   return animations[key];
             case ComponentType::PlayerControlled: return playerControlled[key];
+            case ComponentType::BoundingBox: return bboxs[key];
             default:
                 dg_assert_fail("type not accounted for.");
             break;

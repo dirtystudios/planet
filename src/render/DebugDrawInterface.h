@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include "Rectangle.h"
+#include "BoundingBox.h"
 
 class DebugDrawInterface {
 public:
@@ -14,4 +15,6 @@ public:
     virtual void AddRect3D(const dm::Rect3Df& rect, const glm::vec3& color, bool filled = false) = 0;
 
     virtual void AddSphere3D(const glm::vec3& origin, float radius) = 0;
+
+    virtual void AddCube(const dm::BoundingBox& box, const glm::vec3& color, bool filled = false) = 0;
 };

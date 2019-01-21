@@ -7,6 +7,7 @@
 #include "Animation.h"
 #include "AnimationCache.h"
 #include "EventManager.h"
+#include "BoundingBox.h"
 #include <vector>
 #include <unordered_map>
 
@@ -25,6 +26,7 @@ private:
         AnimationType type;
         glm::dvec3 pos;
         glm::dvec3 dir;
+        std::vector<dm::BoundingBox>* bboxs{ nullptr };
     };
 
     MeshRenderer* m_meshRenderer;

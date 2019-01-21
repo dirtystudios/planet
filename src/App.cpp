@@ -27,6 +27,7 @@
 #include "AnimationManager.h"
 #include "SkinnedMesh.h"
 #include "AnimationComponent.h"
+#include "BoundingBoxComponent.h"
 #include "ComponentManager.h"
 
 uint32_t frame_count = 0;
@@ -45,6 +46,8 @@ ui::ConsoleUI* consoleUI;
 ui::DebugUI* debugUI;
 std::unique_ptr<FlatTerrain> terrain;
 input::InputContext* inputContextPlayer;
+
+BoundingBoxComponent* bbox = nullptr;
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -194,6 +197,7 @@ void AddRoxas() {
     anim->cacheKey = "roxasps3";
 
     auto pc = roxas->AddComponent<PlayerControlled>();
+    bbox = roxas->AddComponent<BoundingBoxComponent>();
 
     renderEngine->animationCache()->Create("roxasps3", "roxasps3/roxasps3.fbx");
 }
@@ -229,7 +233,7 @@ void App::OnStart() {
 
     simulationManager->RegisterManager<PlayerCtrlManager>({ ComponentType::PlayerControlled, ComponentType::Spatial, ComponentType::Animation }, &cam, inputContextPlayer);
 
-    simulationManager->RegisterManager<AnimationManager>({ ComponentType::SkinnedMesh, ComponentType::Spatial, ComponentType::Animation },
+    simulationManager->RegisterManager<AnimationManager>({ ComponentType::SkinnedMesh, ComponentType::Spatial, ComponentType::Animation, ComponentType::BoundingBox },
         eventManager, renderEngine->Renderers().mesh.get(), renderEngine->animationCache());
 }
 
@@ -256,7 +260,15 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 //    scene.renderObjects.push_back(terrain.get());
     
     renderEngine->RenderFrame(&scene);
-    
+
+    // debugrender bbox animation
+    if (bbox != nullptr) {
+        for (auto& bbox : bbox->bboxs) {
+            renderEngine->debugDraw()->AddCube(bbox, { 0.f, 1.f, 0.f });
+            break;
+        }
+    }
+
     // timers
     taccumulate += dt;
     ++frame_count;

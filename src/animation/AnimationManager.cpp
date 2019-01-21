@@ -111,15 +111,18 @@ void AnimationManager::DoUpdate(std::map<ComponentType, const std::array<std::un
     assert(components[ComponentType::SkinnedMesh] != nullptr);
     assert(components[ComponentType::Animation] != nullptr);
     assert(components[ComponentType::Spatial] != nullptr);
+    assert(components[ComponentType::BoundingBox] != nullptr);
 
     auto& meshs = *reinterpret_cast<const std::array<std::unique_ptr<SkinnedMesh>, MAX_SIM_OBJECTS>*>(components[ComponentType::SkinnedMesh]);
     auto& anims = *reinterpret_cast<const std::array<std::unique_ptr<AnimationComponent>, MAX_SIM_OBJECTS>*>(components[ComponentType::Animation]);
     auto& spatials = *reinterpret_cast<const std::array<std::unique_ptr<Spatial>, MAX_SIM_OBJECTS>*>(components[ComponentType::Spatial]);
+    auto& bboxs = *reinterpret_cast<const std::array<std::unique_ptr<BoundingBoxComponent>, MAX_SIM_OBJECTS>*>(components[ComponentType::BoundingBox]);
 
     for (size_t i = 0; i < MAX_SIM_OBJECTS; ++i) {
         SkinnedMesh* mesh = meshs[i].get();
         AnimationComponent* anim = anims[i].get();
         auto spatial = spatials[i].get();
+        auto bbox = bboxs[i].get();
         
         if (mesh != nullptr && anim != nullptr && spatial != nullptr) {
             auto it = m_managedAnimations.find(i);
@@ -127,6 +130,9 @@ void AnimationManager::DoUpdate(std::map<ComponentType, const std::array<std::un
                 AddAnimationObj(i, mesh, anim, spatial);
             else 
                 UpdateAnimationObj(i, mesh, anim, spatial);
+
+            if (bbox != nullptr)
+                bbox->bboxs = mesh->mesh->GetBBoxs();
         }
         else {
             m_managedAnimations.erase(i);
