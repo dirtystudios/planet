@@ -23,6 +23,7 @@ private:
     std::vector<std::unique_ptr<MeshGeometry>> meshGeometry;
     std::vector<glm::mat4> _boneOffsets;
     ConstantBuffer* perObject{ nullptr };
+    ConstantBuffer* lighting{ nullptr };
     std::unique_ptr<const gfx::StateGroup>   stateGroup;
     
     dm::Transform _transform;

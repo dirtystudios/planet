@@ -15,6 +15,42 @@ struct MeshConstants {
     std::array<glm::mat4, 255> boneOffsets;
 };
 
+struct PointLight {
+    glm::vec3 pos;
+    float p1;
+
+    float constant;
+    float linear;
+    float quadratic;
+    float p2;
+
+    glm::vec3 ambient;
+    float p3;
+    glm::vec3 diffuse;
+    float p4;
+    glm::vec3 specular;
+    float p5;
+};
+
+struct DirLight {
+    glm::vec3 direction;
+    float p1;
+
+    glm::vec3 ambient;
+    float p2;
+    glm::vec3 diffuse;
+    float p3;
+    glm::vec3 specular;
+    float p4;
+};
+
+struct Lighting {
+    PointLight pointLights[4];
+    DirLight dirLight;
+    int numPointLights;
+    glm::vec3 p1;
+};
+
 MeshRenderer::~MeshRenderer() {
     // TODO: Cleanup renderObjs
     assert(false);
@@ -24,7 +60,8 @@ void MeshRenderer::OnInit() {
 }
 
 void MeshRenderer::Register(MeshRenderObj* meshObj) {
-    meshObj->perObject = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");    
+    meshObj->perObject = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");
+    meshObj->lighting = services()->constantBufferManager()->GetConstantBuffer(sizeof(Lighting), "Lighting");
 
 
     gfx::RasterState rs;
@@ -41,6 +78,7 @@ void MeshRenderer::Register(MeshRenderObj* meshObj) {
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
     encoder.BindResource(meshObj->perObject->GetBinding(1));
+    encoder.BindResource(meshObj->lighting->GetBinding(3));
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "blinn"));
     //encoder.SetRasterState(rs);
     encoder.SetBlendState(blendState);
@@ -67,6 +105,12 @@ void MeshRenderer::Register(MeshRenderObj* meshObj) {
 void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView) {
     _drawItems.clear();
     sortedMatCache.clear();
+
+    DirLight dirLight{};
+    dirLight.direction = glm::vec3(-0.2f, -0.3f, -1.f);
+    dirLight.ambient = glm::vec3(0.5f, 0.5f, 0.5f);
+    dirLight.diffuse = glm::vec3(0.9f, 0.9f, 0.9f);
+    dirLight.specular = glm::vec3(0.3f, 0.3f, 0.3f);
     
     // todo: switch this back to renderview
     for (RenderObj* baseRO : meshRenderObjs) {
@@ -80,6 +124,7 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView)
         assert(renderObj->perObject);
         assert(renderObj->mat);
         assert(renderObj->mesh);
+        assert(renderObj->lighting);
 
         MeshConstants* meshBuffer = renderObj->perObject->Map<MeshConstants>();
         assert(renderObj->_boneOffsets.size() <= meshBuffer->boneOffsets.size());
@@ -87,6 +132,11 @@ void MeshRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView)
         std::memcpy(meshBuffer->boneOffsets.data(), renderObj->_boneOffsets.data(), std::min(renderObj->_boneOffsets.size(), meshBuffer->boneOffsets.size()) * sizeof(glm::mat4));
         meshBuffer->world = world;
         renderObj->perObject->Unmap();
+
+        auto* lighting = renderObj->lighting->Map<Lighting>();
+        std::memcpy(&lighting->dirLight, &dirLight, sizeof(DirLight));
+        lighting->numPointLights = 0;
+        renderObj->lighting->Unmap();
 
         for (const auto& mg : renderObj->mesh->GetMeshGeometry()) {
             gfx::DrawItemEncoder encoder;

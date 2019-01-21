@@ -129,7 +129,7 @@ using Rect3Dd = Rect3D<double>;
 template <typename T>
 static std::string ToString(const Rect3D<T>& rect) {
     std::stringstream ss;
-    ss << "Rect[bl:" << rect.bl() << " br:" << rect.br() << " tr:" << rect.tr() << " tr:" << rect.tr() << "]";
+    ss << "Rect[bl:" << rect.bl() << " br:" << rect.br() << " tl:" << rect.tl() << " tr:" << rect.tr() << "]";
     return ss.str();
 }
 }

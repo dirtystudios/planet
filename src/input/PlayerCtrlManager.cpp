@@ -169,7 +169,7 @@ void PlayerCtrlManager::DoUpdate(std::map<ComponentType, const std::array<std::u
     auto& spatials = *reinterpret_cast<const std::array<std::unique_ptr<Spatial>, MAX_SIM_OBJECTS>*>(components[ComponentType::Spatial]);
     auto& anims = *reinterpret_cast<const std::array<std::unique_ptr<AnimationComponent>, MAX_SIM_OBJECTS>*>(components[ComponentType::Animation]);
 
-    HandleCameraMovement(ms);
+    HandleCameraMovement(ms / 1000.f);
 
     for (size_t i = 0; i < MAX_SIM_OBJECTS; ++i) {
         PlayerControlled* pc = pcs[i].get();
