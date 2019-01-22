@@ -26,9 +26,6 @@ namespace gfx {
         DX11RenderPassCommandBuffer(Microsoft::WRL::ComPtr<ID3D11Device> dev, Microsoft::WRL::ComPtr<ID3D11DeviceContext> ctx, ResourceManager* rm, DX11Cache* cache);
 
         ID3D11DeviceContext *GetCtx() { return _cmdBuf->GetD3D11Context(); }
-        ID3D11InputLayout* CreateInputLayout(InputLayoutDX11* state, ShaderId shaderId);
-
-        void SetViewPort(uint32_t height, uint32_t width);
         void SetupRenderTargets(const FrameBuffer& frameBuffer, const RenderPassDX11& renderPass);
 
         void setPipelineState(PipelineStateId psId) final;
@@ -37,5 +34,9 @@ namespace gfx {
         void setShaderTexture(TextureId texture, uint8_t index, ShaderStageFlags stages) final;
         void drawPrimitives(uint32_t startOffset, uint32_t vertexCount) final;
         void drawIndexed(BufferId indexBufferId, uint32_t indexCount, uint32_t indexOffset, uint32_t baseVertexOffset) final;
+
+    private:
+        ID3D11InputLayout* CreateInputLayout(InputLayoutDX11* state, ShaderId shaderId);
+        void SetViewPort(uint32_t height, uint32_t width);
     };
 }

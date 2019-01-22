@@ -46,6 +46,7 @@ namespace gfx {
 
         void SetVertexCBuffer(uint32_t slot, ID3D11Buffer* buffer);
         void SetPixelCBuffer(uint32_t slot, ID3D11Buffer* buffer);
+        void SetComputeCBuffer(uint32_t slot, ID3D11Buffer* buffer);
 
         void SetVertexBuffer(ID3D11Buffer* buffer);
         void SetIndexBuffer(ID3D11Buffer* buffer);
@@ -58,6 +59,8 @@ namespace gfx {
 
         void SetVertexShaderTexture(uint32_t slot, ID3D11ShaderResourceView* srv, ID3D11SamplerState* sampler);
         void SetPixelShaderTexture(uint32_t slot, ID3D11ShaderResourceView* srv, ID3D11SamplerState* sampler);
+        void SetComputeShaderTexture(uint32_t slot, ID3D11ShaderResourceView* srv, ID3D11SamplerState* sampler);
+        void SetComputeShaderUAV(uint32_t slot, ID3D11UnorderedAccessView* uav);
 
         void SetVertexShader(ID3D11VertexShader* shader);
         void SetPixelShader(ID3D11PixelShader* shader);
@@ -69,6 +72,7 @@ namespace gfx {
         void SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY top);
 
         void DrawPrimitive(uint32_t startVertex, uint32_t numVertices, bool indexed, uint32_t baseVertexLocation = 0);
+        void Dispatch(uint32_t x, uint32_t y, uint32_t z);
 
         void ExecuteCommandList(ID3D11CommandList *pCommandList, BOOL RestoreContextState);
     };

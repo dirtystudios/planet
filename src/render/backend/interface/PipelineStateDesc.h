@@ -30,9 +30,9 @@ struct hash<gfx::PipelineStateDesc> {
     typedef std::size_t result_type;
     size_t operator()(argument_type const& s) const {
         return HashCombine(s.renderPass, s.vertexShader,
-                           s.pixelShader, s.vertexLayout,
+                           s.pixelShader, s.computeShader, s.vertexLayout,
                            s.topology, s.blendState,
-                           s.rasterState, s.depthState, s.computeShader);
+                           s.rasterState, s.depthState);
     }
 };
 }

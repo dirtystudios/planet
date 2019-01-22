@@ -31,6 +31,8 @@
 DerivedData/
 
 # Visual Studio Stuff
+.vs/*
+.vscode/*
 *.opensdf
 *.opendb
 *.db

@@ -33,12 +33,13 @@ namespace gfx {
 
         ID3D11VertexShader* vertexShader{ 0 };
         ID3D11PixelShader* pixelShader{ 0 };
+        ID3D11ComputeShader* computeShader{ 0 };
         ID3D11InputLayout* vertexLayout{ 0 };
-        uint32_t vertexLayoutStride;
-        D3D11_PRIMITIVE_TOPOLOGY topology;
-        ID3D11BlendState* blendState;
-        ID3D11RasterizerState* rasterState;
-        ID3D11DepthStencilState* depthState;
+        uint32_t vertexLayoutStride{ 0 };
+        D3D11_PRIMITIVE_TOPOLOGY topology{};
+        ID3D11BlendState* blendState{ 0 };
+        ID3D11RasterizerState* rasterState{ 0 };
+        ID3D11DepthStencilState* depthState{ 0 };
     };
 
     struct InputLayoutDX11 : public Resource {
@@ -49,6 +50,8 @@ namespace gfx {
 
     struct BufferDX11 : public Resource {
         Microsoft::WRL::ComPtr<ID3D11Buffer> buffer;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> uav;
     };
 
     struct TextureDX11 : public Resource {
@@ -57,6 +60,7 @@ namespace gfx {
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
         Microsoft::WRL::ComPtr<ID3D11DepthStencilView> dsv;
+        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> uav;
         DXGI_FORMAT format;
         PixelFormat requestedFormat;
         uint32_t width;

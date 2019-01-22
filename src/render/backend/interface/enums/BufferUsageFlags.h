@@ -8,7 +8,7 @@ enum class BufferUsageFlags : uint16_t {
     VertexBufferBit   = 1 << 0,
     IndexBufferBit    = 1 << 1,
     ConstantBufferBit = 1 << 2,
-    UnorderedAccessViewBit = 1 << 3,
+    ShaderBufferBit = 1 << 3,
 };
 }
 

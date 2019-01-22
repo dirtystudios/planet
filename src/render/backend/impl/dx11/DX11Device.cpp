@@ -13,8 +13,6 @@ namespace gfx {
     using namespace Microsoft::WRL;
 
     BufferId DX11Device::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
-        ComPtr<ID3D11Buffer> buffer = NULL;
-
         D3D11_BUFFER_DESC bufferDesc = { 0 };
 
         if ((desc.accessFlags & BufferAccessFlags::GpuReadCpuWriteBits) == BufferAccessFlags::GpuReadCpuWriteBits) {
@@ -28,15 +26,10 @@ namespace gfx {
         }
 
         switch (desc.usageFlags) {
-        case BufferUsageFlags::VertexBufferBit:
-            bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-            break;
-        case BufferUsageFlags::IndexBufferBit:
-            bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-            break;
-        case BufferUsageFlags::ConstantBufferBit:
-            bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-            break;
+        case BufferUsageFlags::VertexBufferBit:   bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER; break;
+        case BufferUsageFlags::IndexBufferBit:    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER; break;
+        case BufferUsageFlags::ConstantBufferBit: bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER; break;
+        case BufferUsageFlags::ShaderBufferBit:   bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; break;
         default:
             assert(false);
         }
@@ -50,6 +43,12 @@ namespace gfx {
                 buffSize += (16 - sizeCheck);
             }
         }
+        else if (bufferDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) {
+            bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+            //bufferDesc.StructureByteStride = 4; // ??? assume output is rgba 8 bit channel
+            if (desc.accessFlags & (BufferAccessFlags::GpuWriteBit))
+                bufferDesc.BindFlags &= D3D11_BIND_UNORDERED_ACCESS;
+        }
 
         bufferDesc.ByteWidth = static_cast<UINT>(buffSize);
 
@@ -57,7 +56,6 @@ namespace gfx {
             bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
         else
             bufferDesc.CPUAccessFlags = 0;
-        bufferDesc.MiscFlags = 0;
 
         D3D11_SUBRESOURCE_DATA initData;
         if (initialData) {
@@ -66,11 +64,36 @@ namespace gfx {
             initData.SysMemSlicePitch = 0;
         }
 
+        ComPtr<ID3D11Buffer> buffer = NULL;
+
         DX11_CHECK_RET0(m_dev->CreateBuffer(&bufferDesc, initialData ? &initData : NULL, &buffer));
         if (desc.debugName != "")
             D3D_SET_OBJECT_NAME_A(buffer, desc.debugName.c_str());
-        BufferDX11 *bufferdx11 = new BufferDX11();;
+
+        ComPtr<ID3D11ShaderResourceView> srv = NULL;
+        ComPtr<ID3D11UnorderedAccessView> uav = NULL;
+        if ((bufferDesc.BindFlags & (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) == (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) {
+            D3D11_UNORDERED_ACCESS_VIEW_DESC desc{};
+            desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+            desc.Format = DXGI_FORMAT_R32_TYPELESS;
+            desc.Buffer.FirstElement = 0;
+            desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
+            desc.Buffer.NumElements = buffSize / 4;
+            DX11_CHECK(m_dev->CreateUnorderedAccessView(buffer.Get(), &desc, &uav));
+        }
+        else if ((bufferDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) == D3D11_BIND_SHADER_RESOURCE) {
+            D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
+            srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+            //srvDesc.BufferEx.FirstElement = 0;
+            //srvDesc.BufferEx.NumElements = buffSize / bufferDesc.StructureByteStride;
+            DX11_CHECK(m_dev->CreateShaderResourceView(buffer.Get(), &srvDesc, &srv));
+        }
+
+        BufferDX11 *bufferdx11 = new BufferDX11();
         bufferdx11->buffer.Swap(buffer);
+        bufferdx11->srv.Swap(srv);
+        bufferdx11->uav.Swap(uav);
         return m_resourceManager->AddResource(bufferdx11);
     }
 
@@ -272,6 +295,9 @@ namespace gfx {
         stateDx11->vertexShader = vs->vertexShader;
         stateDx11->vertexShaderHandle = desc.vertexShader;
 
+        ShaderDX11* cs = m_resourceManager->GetResource<ShaderDX11>(desc.computeShader);
+        stateDx11->computeShader = vs->computeShader;
+
         stateDx11->topology = SafeGet(PrimitiveTypeDX11, desc.topology);
 
         auto layout = m_resourceManager->GetResource<InputLayoutDX11>(desc.vertexLayout);
@@ -446,7 +472,7 @@ namespace gfx {
         ComPtr<ID3D11DepthStencilView> dsv;
 
         if ((tdesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) != 0) {
-            D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+            D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc{};
             viewDesc.Format = tdesc.Format;
             viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
             viewDesc.Texture2D.MipLevels = 1;
@@ -696,7 +722,8 @@ namespace gfx {
         //InitDX11DebugLayer(m_dev.Get());
 
         char *dxLevel = "Unknown";
-        switch (m_dev->GetFeatureLevel()) {
+        auto flvl = m_dev->GetFeatureLevel();
+        switch (flvl) {
         case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_1:
             dxLevel = "11.1";
             break;
@@ -715,6 +742,15 @@ namespace gfx {
 
         LOG_D("CommandListSupport: %s", feat.DriverCommandLists ? "True" : "False");
         LOG_D("ConcurrentCreateSupport: %s", feat.DriverConcurrentCreates ? "True" : "False");
+
+        if (flvl < D3D_FEATURE_LEVEL_11_0) {
+            D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS hwopts{};
+            m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &hwopts, sizeof(hwopts));
+            if (!hwopts.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x)
+            {
+                LOG_E("No Compute Shader Support!");
+            }
+        }
 
         m_immediateContext.reset(new DX11Context(context));
 

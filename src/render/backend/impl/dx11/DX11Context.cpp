@@ -113,6 +113,18 @@ namespace gfx {
         }
     }
 
+    void DX11Context::SetComputeCBuffer(uint32_t slot, ID3D11Buffer* buffer) {
+        auto it = m_currentState.csCBuffers.find(slot);
+        if (it == m_currentState.csCBuffers.end()) {
+            m_pendingState.csCBuffers.emplace(slot, buffer);
+            m_pendingState.csCBufferDirtySlots.emplace(slot);
+        }
+        else if (it->second != buffer) {
+            m_pendingState.csCBuffers[slot] = buffer;
+            m_pendingState.csCBufferDirtySlots.emplace(slot);
+        }
+    }
+
     void DX11Context::SetInputLayout(uint32_t stride, ID3D11InputLayout* layout) {
         m_pendingState.inputLayout = layout;
         m_pendingState.inputLayoutStride = stride;
@@ -168,14 +180,38 @@ namespace gfx {
         }
     }
 
+    void DX11Context::SetComputeShaderTexture(uint32_t slot, ID3D11ShaderResourceView* srv, ID3D11SamplerState* sampler) {
+        auto it = m_currentState.csTextures.find(slot);
+        auto its = m_currentState.csSamplers.find(slot);
+        if (it == m_currentState.csTextures.end() || its == m_currentState.csSamplers.end()) {
+            m_pendingState.csTextures.emplace(slot, srv);
+            m_pendingState.csSamplers.emplace(slot, sampler);
+            m_pendingState.csDirtyTextureSlots.emplace(slot);
+        }
+        else if (it->second != srv || its->second != sampler) {
+            m_pendingState.csTextures[slot] = srv;
+            m_pendingState.csSamplers[slot] = sampler;
+            m_pendingState.csDirtyTextureSlots.emplace(slot);
+        }
+    }
+
+    void DX11Context::SetComputeShaderUAV(uint32_t slot, ID3D11UnorderedAccessView* uav) {
+        auto it = m_currentState.csUavs.find(slot);
+        if (it == m_currentState.csUavs.end()) {
+            m_pendingState.csUavs.emplace(slot, uav);
+            m_pendingState.csDirtyUavSlots.emplace(slot);
+        }
+        else if (it->second != uav) {
+            m_pendingState.csUavs[slot] = uav;
+            m_pendingState.csDirtyUavSlots.emplace(slot);
+        }
+    }
+
     void DX11Context::SetPrimitiveType(D3D11_PRIMITIVE_TOPOLOGY top) {
         m_pendingState.primitiveType = top;
     }
 
     void DX11Context::DrawPrimitive(uint32_t startVertex, uint32_t numVertices, bool indexed, uint32_t baseVertexLocation) {
-
-        if (m_pendingState.computeShader != nullptr && m_currentState.computeShader != m_pendingState.computeShader)
-            m_devcon->CSSetShader(m_pendingState.computeShader, 0, 0);
 
         if (m_pendingState.vertexShader != nullptr && m_currentState.vertexShader != m_pendingState.vertexShader)
             m_devcon->VSSetShader(m_pendingState.vertexShader, 0, 0);
@@ -196,25 +232,25 @@ namespace gfx {
         if (m_pendingState.vertexBuffer != nullptr && m_currentState.vertexBuffer != m_pendingState.vertexBuffer) {
             uint32_t offset = 0;
             uint32_t stride = static_cast<UINT>(m_pendingState.inputLayoutStride);
-            m_devcon->IASetVertexBuffers(0, 1, &m_pendingState.vertexBuffer, &stride, &offset);
+            m_devcon->IASetVertexBuffers(0, 1u, &m_pendingState.vertexBuffer, &stride, &offset);
         }
 
         for (uint32_t slot : m_pendingState.vsDirtyTextureSlots) {
             // todo: batch these calls
-            m_devcon->VSSetShaderResources(slot, 1, &m_pendingState.vsTextures[slot]);
-            m_devcon->VSSetSamplers(slot, 1, &m_pendingState.vsSamplers[slot]);
+            m_devcon->VSSetShaderResources(slot, 1u, &m_pendingState.vsTextures[slot]);
+            m_devcon->VSSetSamplers(slot, 1u, &m_pendingState.vsSamplers[slot]);
         }
 
         for (uint32_t slot : m_pendingState.psDirtyTextureSlots) {
-            m_devcon->PSSetShaderResources(slot, 1, &m_pendingState.psTextures[slot]);
-            m_devcon->PSSetSamplers(slot, 1, &m_pendingState.psSamplers[slot]);
+            m_devcon->PSSetShaderResources(slot, 1u, &m_pendingState.psTextures[slot]);
+            m_devcon->PSSetSamplers(slot, 1u, &m_pendingState.psSamplers[slot]);
         }
 
         if (m_pendingState.pixelShader != nullptr && m_currentState.pixelShader != m_pendingState.pixelShader)
             m_devcon->PSSetShader(m_pendingState.pixelShader, 0, 0);
 
         for (uint32_t slot : m_pendingState.psCBufferDirtySlots)
-            m_devcon->PSSetConstantBuffers(slot, static_cast<UINT>(1), &m_pendingState.psCBuffers[slot]);
+            m_devcon->PSSetConstantBuffers(slot, 1u, &m_pendingState.psCBuffers[slot]);
 
         if (m_pendingState.rasterState != nullptr && m_currentState.rasterState != m_pendingState.rasterState)
             m_devcon->RSSetState(m_pendingState.rasterState);
@@ -248,6 +284,31 @@ namespace gfx {
         m_pendingState.psDirtyTextureSlots.clear();
         m_pendingState.vsCBufferDirtySlots.clear();
         m_pendingState.vsDirtyTextureSlots.clear();
+        m_currentState = m_pendingState;
+    }
+
+    void DX11Context::Dispatch(uint32_t x, uint32_t y, uint32_t z) {
+        if (m_pendingState.computeShader != nullptr && m_currentState.computeShader != m_pendingState.computeShader)
+            m_devcon->CSSetShader(m_pendingState.computeShader, 0, 0);
+
+        for (uint32_t slot : m_pendingState.csDirtyTextureSlots) {
+            // todo: batch these calls
+            m_devcon->CSSetShaderResources(slot, 1u, &m_pendingState.vsTextures[slot]);
+            m_devcon->CSSetSamplers(slot, 1u, &m_pendingState.vsSamplers[slot]);
+        }
+
+        for (uint32_t slot : m_pendingState.csDirtyUavSlots)
+            m_devcon->CSSetUnorderedAccessViews(slot, 1u, &m_pendingState.csUavs[slot], nullptr);
+
+        for (uint32_t slot : m_pendingState.csCBufferDirtySlots)
+            m_devcon->CSSetConstantBuffers(slot, 1u, &m_pendingState.csCBuffers[slot]);
+
+        m_devcon->Dispatch(x, y, z);
+
+        //cleanup state before set
+        m_pendingState.csCBufferDirtySlots.clear();
+        m_pendingState.csDirtyTextureSlots.clear();
+        m_pendingState.csDirtyUavSlots.clear();
         m_currentState = m_pendingState;
     }
 

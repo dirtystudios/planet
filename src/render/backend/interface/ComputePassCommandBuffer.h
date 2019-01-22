@@ -9,8 +9,9 @@ namespace gfx
     {
     public:
         virtual void setPipelineState(PipelineStateId pipelineState) = 0;
-        virtual void setShaderBuffer(BufferId buffer, uint8_t index, ShaderStageFlags stages) = 0;
-        virtual void setShaderTexture(TextureId texture, uint8_t index, ShaderStageFlags stages) = 0;
-        virtual void doTheComputeStuff(void* unk) = 0;
+        virtual void setCBuffer(BufferId buffer, uint8_t index) = 0;
+        virtual void setBuffer(BufferId buffer, uint8_t index) = 0;
+        virtual void setTexture(TextureId texture, uint8_t index) = 0;
+        virtual void dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;
     };
 }
