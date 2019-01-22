@@ -214,7 +214,7 @@ void App::OnStart() {
     simulationManager             = new SimulationManager(eventManager);
 
     SetupUI(renderDevice, playerViewport);
-    AddWorldText();
+    //AddWorldText();
 
     SetupInputBindings();
 
@@ -229,7 +229,7 @@ void App::OnStart() {
     renderEngine->Renderers().terrain->Register(terrain.get());
     
     //AddArthas();
-    AddRoxas();
+    //AddRoxas();
 
     simulationManager->RegisterManager<PlayerCtrlManager>({ ComponentType::PlayerControlled, ComponentType::Spatial, ComponentType::Animation }, &cam, inputContextPlayer);
 

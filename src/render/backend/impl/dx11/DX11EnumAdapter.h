@@ -87,8 +87,7 @@ namespace gfx {
         }
         if (flags & TextureUsageFlags::ShaderWrite) {
             rtn |= D3D11_BIND_UNORDERED_ACCESS;
-            //check &= ~((uint32_t)TextureUsageFlags::ShaderWrite);
-            assert(false);
+            check &= ~((uint32_t)TextureUsageFlags::ShaderWrite);
         }
         dg_assert(check == 0, "unhandled usage flag");
         return rtn;

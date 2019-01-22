@@ -18,4 +18,5 @@ public:
 
     void OnInit() override;
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
+    void Submit(ComputeQueue* renderQueue) final {};
 };

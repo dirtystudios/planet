@@ -69,4 +69,5 @@ public:
     void Unregister(TextRenderObj* textRO);
 
     void Submit(RenderQueue* queue, const FrameView* view) final;
+    void Submit(ComputeQueue* renderQueue) final {};
 };

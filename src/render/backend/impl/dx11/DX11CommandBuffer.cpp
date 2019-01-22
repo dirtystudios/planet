@@ -22,6 +22,7 @@ namespace gfx {
         ComPtr<ID3D11DeviceContext> defCtx;
         DX11_CHECK_RET(_dev->CreateDeferredContext(0, &defCtx));
         _cmdBuf.reset(new DX11RenderPassCommandBuffer(_dev, defCtx, resourceManager, cache));
+        _ccmdBuf.reset(new DX11ComputePassCommandBuffer(_dev, defCtx, resourceManager, cache));
     }
 
     ComPtr<ID3D11CommandList> DX11CommandBuffer::GetCmdList() {
@@ -44,11 +45,34 @@ namespace gfx {
 
         return _cmdBuf.get();
     }
+
     void DX11CommandBuffer::endRenderPass(RenderPassCommandBuffer* commandBuffer) {
         dg_assert_nm(_cmdBuf != nullptr);
         dg_assert_nm(_inPass);
 
         DX11_CHECK_RET(_cmdBuf->GetCtx()->FinishCommandList(FALSE, &_cmdList));
+
+        D3D_SET_OBJECT_NAME_A(_cmdList, _passName.c_str());
+
+        _inPass = false;
+    }
+
+    ComputePassCommandBuffer* DX11CommandBuffer::beginComputePass(const std::string& name) {
+        dg_assert_nm(_ccmdBuf != nullptr);
+        dg_assert_nm(_cmdList == nullptr); // not supporting multiple passes with same command buf for now
+        dg_assert_nm(_inPass == false);
+
+        _passName = name;
+        _inPass = true;
+
+        return _ccmdBuf.get();
+    }
+
+    void DX11CommandBuffer::endComputePass(ComputePassCommandBuffer* commandBuffer) {
+        dg_assert_nm(_ccmdBuf != nullptr);
+        dg_assert_nm(_inPass);
+
+        DX11_CHECK_RET(_ccmdBuf->GetCtx()->FinishCommandList(FALSE, &_cmdList));
 
         D3D_SET_OBJECT_NAME_A(_cmdList, _passName.c_str());
 

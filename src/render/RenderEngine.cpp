@@ -7,11 +7,13 @@
 #include "DebugRenderer.h"
 #include "DebugRenderer.h"
 #include "MeshRenderer.h"
+#include "RayTraceRenderer.h"
 #include "SkyRenderer.h"
 #include "StateGroupEncoder.h"
 #include "TerrainRenderer.h"
 #include "TextRenderer.h"
 #include "UIRenderer.h"
+#include "RayTraceRenderer.h"
 
 using namespace gfx;
 
@@ -33,6 +35,7 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _renderers.mesh.reset(new MeshRenderer());
     _renderers.debug.reset(new DebugRenderer());
     _renderers.terrain.reset(new TerrainRenderer());
+    _renderers.raytrace.reset(new RayTraceRenderer());
 
     _renderersByType.insert({RendererType::Skybox, _renderers.sky.get()});
     _renderersByType.insert({RendererType::Mesh, _renderers.mesh.get()});
@@ -40,12 +43,14 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _renderersByType.insert({RendererType::Text, _renderers.text.get()});
     _renderersByType.insert({RendererType::Debug, _renderers.debug.get()});
     _renderersByType.insert({RendererType::Terrain, _renderers.terrain.get()});
+    _renderersByType.insert({RendererType::RayTrace, _renderers.raytrace.get() });
 
-    _renderers.mesh->SetActive(true);
+    _renderers.mesh->SetActive(false);
     _renderers.sky->SetActive(false);
-    _renderers.terrain->SetActive(true);
+    _renderers.terrain->SetActive(false);
     _renderers.text->SetActive(true);
     _renderers.ui->SetActive(true);
+    _renderers.raytrace->SetActive(true);
 
     std::string shaderDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "ShaderDirectory");
     std::string assetDirPath  = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -101,6 +106,7 @@ void RenderEngine::CreateRenderTargets()
 {
     if (_depthBuffer != NULL_ID) {
         // destroy
+        _device->DestroyResource(_depthBuffer);
     }
     _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, _swapchain->width(), _swapchain->height(), nullptr);
 }
@@ -123,7 +129,7 @@ RenderEngine::~RenderEngine() {
 
 void RenderEngine::RenderFrame(const RenderScene* scene) {
     RenderQueue queue(_baseRenderPass, _stateGroupDefaults);
-    queue.defaults = _stateGroupDefaults;    
+    ComputeQueue cqueue(_stateGroupDefaults); 
 
     assert(_view);
     FrameView view = _view->frameView();
@@ -138,23 +144,29 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->isActive()) {
+            p.second->Submit(&cqueue);
             p.second->Submit(&queue, &view);
         }
     }
     
     TextureId backbuffer = _swapchain->begin();
-    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer(); // TODO: how to clean these things up
     
     gfx::FrameBuffer frameBuffer;
     frameBuffer.color[0] = backbuffer;
     frameBuffer.colorCount = 1;
     frameBuffer.depth = _depthBuffer;
-    
+
+    auto* ccommandBuffer = _device->CreateCommandBuffer(); // TODO: how to clean these things up
+    auto* cPassCommandBuffer = ccommandBuffer->beginComputePass("MainComputePass");
+    cqueue.Submit(cPassCommandBuffer);
+    ccommandBuffer->endComputePass(cPassCommandBuffer);
+
+    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer();
     gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_baseRenderPass, frameBuffer, "MainPass");
     queue.Submit(renderPassCommandBuffer);
     commandBuffer->endRenderPass(renderPassCommandBuffer);
     
-    _device->Submit({commandBuffer});
+    _device->Submit({ ccommandBuffer, commandBuffer});
     _swapchain->present(backbuffer);
 }
 

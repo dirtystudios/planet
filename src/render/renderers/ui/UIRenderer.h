@@ -29,4 +29,5 @@ public:
     // Renderer Interface
     void OnInit() final;
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
+    void Submit(ComputeQueue* renderQueue) final {};
 };

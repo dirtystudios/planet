@@ -470,6 +470,7 @@ namespace gfx {
         ComPtr<ID3D11ShaderResourceView> srv;
         ComPtr<ID3D11RenderTargetView> rtv;
         ComPtr<ID3D11DepthStencilView> dsv;
+        ComPtr<ID3D11UnorderedAccessView> uav;
 
         if ((tdesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) != 0) {
             D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc{};
@@ -481,6 +482,19 @@ namespace gfx {
             DX11_CHECK_RET0(m_dev->CreateShaderResourceView(texture.Get(), &viewDesc, &srv));
 
             std::string tmp = debugName + "SRV";
+            D3D_SET_OBJECT_NAME_A(srv, tmp.c_str());
+        }
+
+        if ((tdesc.BindFlags & D3D11_BIND_UNORDERED_ACCESS) != 0) {
+            D3D11_UNORDERED_ACCESS_VIEW_DESC desc{};
+            desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+            desc.Format = DXGI_FORMAT_R32_TYPELESS;
+            desc.Buffer.FirstElement = 0;
+            desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
+            desc.Buffer.NumElements = GetFormatByteSize(tdesc.Format) * tdesc.Width / 4;
+            DX11_CHECK_RET0(m_dev->CreateUnorderedAccessView(texture.Get(), &desc, &uav));
+
+            std::string tmp = debugName + "UAV";
             D3D_SET_OBJECT_NAME_A(srv, tmp.c_str());
         }
 
@@ -506,6 +520,7 @@ namespace gfx {
         textureDX11->srv.Swap(srv);
         textureDX11->rtv.Swap(rtv);
         textureDX11->dsv.Swap(dsv);
+        textureDX11->uav.Swap(uav);
         textureDX11->format = tdesc.Format;
         textureDX11->requestedFormat = format;
         textureDX11->width = width;

@@ -44,10 +44,16 @@ namespace gfx {
         dg_assert(rtv, "rtv creation failed for backbuffer");
         D3D_SET_OBJECT_NAME_A(rtv, std::string("BackbufferRTV").c_str());
 
+        ComPtr<ID3D11UnorderedAccessView> uav;
+        DX11_CHECK_RET(_dev->GetID3D11Dev()->CreateUnorderedAccessView(backbuffer.Get(), NULL, &uav));
+        dg_assert(rtv, "rtv creation failed for backbuffer");
+        D3D_SET_OBJECT_NAME_A(rtv, std::string("BackbufferUAV").c_str());
+
         TextureDX11 *backBufferTex = new TextureDX11();
         backBufferTex->texture.Swap(backbuffer);
         backBufferTex->srv.Swap(srv);
         backBufferTex->rtv.Swap(rtv);
+        backBufferTex->uav.Swap(uav);
         backBufferTex->format = _format;
         backBufferTex->requestedFormat = _reqFormat;
         backBufferTex->width = width;

@@ -55,4 +55,5 @@ public:
     void Register(TerrainRenderObj* renderObj) final;
     void Unregister(TerrainRenderObj* renderObj) final { assert(false); }
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
+    void Submit(ComputeQueue* renderQueue) final {};
 };

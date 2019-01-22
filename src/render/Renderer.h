@@ -2,6 +2,7 @@
 
 #include "RenderObj.h"
 #include "RenderQueue.h"
+#include "ComputeQueue.h"
 #include "RenderServiceLocator.h"
 #include "RenderView.h"
 
@@ -34,6 +35,7 @@ protected:
 private:
     void Init(gfx::RenderDevice* device, RenderServiceLocator* serviceLocator);
     virtual void Submit(RenderQueue* renderQueue, const FrameView* view) = 0;
+    virtual void Submit(ComputeQueue* renderQueue) = 0;
 };
 
 template <typename T>

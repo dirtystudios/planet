@@ -6,6 +6,7 @@
 #include "DebugDrawInterface.h"
 #include "MeshCache.h"
 #include "PipelineStateCache.h"
+#include "RayTraceRenderer.h"
 #include "RenderDevice.h"
 #include "RenderObj.h"
 #include "RenderServiceLocator.h"
@@ -22,37 +23,6 @@
  struct RenderScene {
     std::vector<RenderObj*> renderObjects;
 };
-//
-
-// enum class RenderLayerType : uint8_t {
-//    World,
-//    HUD
-//};
-//
-// constexpr uint32_t kRenderLayerCount = 2;
-//
-//// RenderViews support RenderStages
-//// Renderers support RenderViews
-//// RenderObjects are registered with RenderStages
-//
-//
-// class RenderSceneManager {
-// public:
-//    std::array<std::vector<RenderObj*>, kRenderLayerCount> _objsByLayer;
-// public:
-//    void Register(RenderObj* renderObj, RenderLayerType layer);
-//    void Unregister(RenderObj* renderObj);
-//
-//    void Render() {
-//
-//    }
-//};
-//
-// struct RenderViews {
-//    std::unique_ptr<PlayerRenderView> player;
-//    std::unique_ptr<HUDRenderView> hud;
-//};
-
 
 class SkyRenderer;
 class TextRenderer;
@@ -60,6 +30,7 @@ class MeshRenderer;
 class UIRenderer;
 class DebugRenderer;
 class TerrainRenderer;
+class RayTraceRenderer;
 
 struct Renderers {
     std::unique_ptr<SkyRenderer>     sky;
@@ -68,6 +39,7 @@ struct Renderers {
     std::unique_ptr<UIRenderer>      ui;
     std::unique_ptr<DebugRenderer>   debug;
     std::unique_ptr<TerrainRenderer> terrain;
+    std::unique_ptr<RayTraceRenderer> raytrace;
 };
 
 

@@ -15,6 +15,8 @@ namespace gfx
         ShaderRead = 1 << 1,
         ShaderWrite = 1 << 2,
         RenderTarget = 1 << 3,
+
+        ShaderRW = ShaderRead | ShaderWrite,
     };
 }
 ALLOW_FLAGS_FOR_ENUM(gfx::TextureUsageFlags);

@@ -12,10 +12,12 @@
 #include "DMath.h"
 
 class MeshRenderer;
+class RayTraceRenderer;
 
 class MeshRenderObj : public RenderObj {
 private:
     friend MeshRenderer;
+    friend RayTraceRenderer;
 
     MaterialPtr mat{ nullptr };
     MeshPtr mesh{ nullptr };

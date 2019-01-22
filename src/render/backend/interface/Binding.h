@@ -6,7 +6,7 @@
 
 namespace gfx {
 struct Binding {
-    enum class Type : uint8_t { ConstantBuffer, Texture };
+    enum class Type : uint8_t { ConstantBuffer, Buffer, Texture };
 
     Type type{Type::ConstantBuffer};
     ResourceId resource{0};

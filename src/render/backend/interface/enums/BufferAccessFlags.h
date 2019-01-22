@@ -11,6 +11,7 @@ enum class BufferAccessFlags : uint16_t {
     CpuWriteBit = 1 << 3,
 
     GpuReadCpuWriteBits = GpuReadBit | CpuWriteBit,
+    GpuReadGpuWriteBits = GpuReadBit | GpuWriteBit
 };
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "CommandBuffer.h"
 #include "DX11RenderPassCommandBuffer.h"
+#include "DX11ComputePassCommandBuffer.h"
 #include "DX11Context.h"
 #include "DX11Resources.h"
 #include "DX11Cache.h"
@@ -16,6 +17,7 @@ namespace gfx {
     private:
         Microsoft::WRL::ComPtr<ID3D11Device> _dev{ nullptr };
         std::unique_ptr<DX11RenderPassCommandBuffer> _cmdBuf{ nullptr };
+        std::unique_ptr<DX11ComputePassCommandBuffer> _ccmdBuf{ nullptr };
         Microsoft::WRL::ComPtr<ID3D11CommandList> _cmdList{ nullptr };
 
         ResourceManager* _resourceManager{ nullptr };
@@ -31,5 +33,8 @@ namespace gfx {
 
         RenderPassCommandBuffer *beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer, const std::string& name = "") final;
         void endRenderPass(RenderPassCommandBuffer* commandBuffer) final;
+
+        ComputePassCommandBuffer* beginComputePass(const std::string& name = "") final;
+        void endComputePass(ComputePassCommandBuffer* commandBuffer) final;
     };
 }

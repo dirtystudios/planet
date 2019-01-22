@@ -12,6 +12,7 @@ enum class RendererType : uint8_t
     Text,
     Mesh,
     Debug,
+    RayTrace,
 };
 
 static std::string ToString(RendererType type) {
@@ -26,6 +27,10 @@ static std::string ToString(RendererType type) {
             return "Text";
         case RendererType::Skybox:
             return "Sky";
+        case RendererType::Debug:
+            return "Debug";
+        case RendererType::RayTrace:
+            return "RayTrace";
         default:
             return "unknown";
     }
