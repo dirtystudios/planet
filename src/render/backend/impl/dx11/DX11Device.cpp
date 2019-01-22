@@ -125,6 +125,26 @@ namespace gfx {
                     assert(false);
                 }
             }
+            {
+                ShaderType shaderType = ShaderType::ComputeShader;
+
+                ShaderId existingShaderId = m_shaderLibrary.GetShader(shaderType, funcName);
+                ShaderId newID = CreateShader(shaderType, std::string(reinterpret_cast<const char*>(shaderData.data), shaderData.len), funcName + "CS");
+
+                assert(newID);
+
+                ShaderFunctionDesc desc;
+                desc.entryPoint = "";
+                desc.functionName = funcName;
+                desc.type = shaderType;
+
+                if (existingShaderId == 0) {
+                    m_shaderLibrary.AddShader(newID, desc);
+                }
+                else {
+                    assert(false);
+                }
+            }
         }
     }
 
@@ -173,6 +193,15 @@ namespace gfx {
             return m_resourceManager->AddResource(shaderDX11);
             break;
         }
+        case ShaderType::ComputeShader:
+        {
+            ID3D11ComputeShader* computeShader;
+            DX11_CHECK_RET0(m_dev->CreateComputeShader(bufPtr, bufSize, NULL, &computeShader));
+            shaderDX11->computeShader = computeShader;
+            D3D_SET_OBJECT_NAME_A(computeShader, name.c_str());
+            return m_resourceManager->AddResource(shaderDX11);
+            break;
+        }
         default:
             LOG_E("DX11RenderDev: Invalid/Unimplemented Shader Type to compile.");
             return 0;
@@ -185,27 +214,20 @@ namespace gfx {
         ComPtr<ID3DBlob> errorBlob;
         char *entryPoint;
         char *target;
-
-        HRESULT hr;
-
-        // ---- Compile Shader Source 
-        // ifdef is for xbox, which only advertises 4_0 support
+        
+        auto featLvl = m_dev->GetFeatureLevel();
         switch (shaderType) {
         case ShaderType::PixelShader:
             entryPoint = "PSMain";
-#ifdef DX11_3_API
-            target = "ps_4_0";
-#else      
-            target = "ps_5_0";
-#endif
+            target = featLvl >= D3D_FEATURE_LEVEL_11_0 ? "ps_5_0" : "ps_4_0";
             break;
         case ShaderType::VertexShader:
             entryPoint = "VSMain";
-#ifdef DX11_3_API
-            target = "vs_4_0";
-#else      
-            target = "vs_5_0";
-#endif
+            target = featLvl >= D3D_FEATURE_LEVEL_11_0 ? "vs_5_0" : "vs_4_0";
+            break;
+        case ShaderType::ComputeShader:
+            entryPoint = "CSMain";
+            target = featLvl >= D3D_FEATURE_LEVEL_11_0 ? "cs_5_0" : "cs_4_0";
             break;
         default:
             LOG_E("DX11RenderDev: Unsupported shader type supplied. Type: %d", shaderType);
@@ -217,7 +239,7 @@ namespace gfx {
         flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
 #endif 
 
-        hr = D3DCompile(&source[0], source.length(), NULL, NULL, NULL, entryPoint, target, flags, 0, &blob, &errorBlob);
+        HRESULT hr = D3DCompile(&source[0], source.length(), NULL, NULL, NULL, entryPoint, target, flags, 0, &blob, &errorBlob);
 
         if (FAILED(hr)) {
             if (errorBlob) {

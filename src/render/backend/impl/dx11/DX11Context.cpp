@@ -134,6 +134,10 @@ namespace gfx {
         m_pendingState.pixelShader = shader;
     }
 
+    void DX11Context::SetComputeShader(ID3D11ComputeShader* shader) {
+        m_pendingState.computeShader = shader;
+    }
+
     void DX11Context::SetPixelShaderTexture(uint32_t slot, ID3D11ShaderResourceView* srv, ID3D11SamplerState* sampler) {
         auto it = m_currentState.psTextures.find(slot);
         auto its = m_currentState.psSamplers.find(slot);
@@ -169,6 +173,9 @@ namespace gfx {
     }
 
     void DX11Context::DrawPrimitive(uint32_t startVertex, uint32_t numVertices, bool indexed, uint32_t baseVertexLocation) {
+
+        if (m_pendingState.computeShader != nullptr && m_currentState.computeShader != m_pendingState.computeShader)
+            m_devcon->CSSetShader(m_pendingState.computeShader, 0, 0);
 
         if (m_pendingState.vertexShader != nullptr && m_currentState.vertexShader != m_pendingState.vertexShader)
             m_devcon->VSSetShader(m_pendingState.vertexShader, 0, 0);

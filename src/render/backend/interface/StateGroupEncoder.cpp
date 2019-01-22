@@ -12,6 +12,7 @@ size_t GetStateGroupFieldSize(const StateGroupHeader& header, StateGroupIndex in
         case StateGroupIndex::PixelShader:
         case StateGroupIndex::VertexLayout:
         case StateGroupIndex::RenderPass:
+        case StateGroupIndex::ComputeShader:
             return sizeof(ResourceId);
         case StateGroupIndex::BlendState: return sizeof(BlendState);
         case StateGroupIndex::RasterState: return sizeof(RasterState);
@@ -108,6 +109,7 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
                 LZY(DepthState)
                 LZY(PrimitiveType)
                 LZY(RenderPass)
+                LZY(ComputeShader)
                 case StateGroupBit::Bindings: {
 
                     std::vector<Binding> bindings(header.bindingCount);
@@ -147,6 +149,9 @@ void StateGroupEncoder::SetVertexShader(ShaderId vs) {
 }
 void StateGroupEncoder::SetPixelShader(ShaderId ps) {
     WriteState(StateGroupBit::PixelShader, StateGroupIndex::PixelShader, &ps, sizeof(ShaderId));
+}
+void StateGroupEncoder::SetComputeShader(ShaderId cs) {
+    WriteState(StateGroupBit::ComputeShader, StateGroupIndex::ComputeShader, &cs, sizeof(ShaderId));
 }
 void StateGroupEncoder::SetBlendState(const BlendState& bs) {
     WriteState(StateGroupBit::BlendState, StateGroupIndex::BlendState, &bs, sizeof(BlendState));

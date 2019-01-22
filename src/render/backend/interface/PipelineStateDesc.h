@@ -14,6 +14,7 @@ struct PipelineStateDesc {
     RenderPassId renderPass{NULL_ID};
     ShaderId vertexShader{NULL_ID};
     ShaderId pixelShader{NULL_ID};
+    ShaderId computeShader{ NULL_ID };
     VertexLayoutId vertexLayout{NULL_ID};
     PrimitiveType topology{PrimitiveType::Triangles};
     BlendState blendState;
@@ -31,7 +32,7 @@ struct hash<gfx::PipelineStateDesc> {
         return HashCombine(s.renderPass, s.vertexShader,
                            s.pixelShader, s.vertexLayout,
                            s.topology, s.blendState,
-                           s.rasterState, s.depthState);
+                           s.rasterState, s.depthState, s.computeShader);
     }
 };
 }

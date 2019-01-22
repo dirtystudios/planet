@@ -37,6 +37,9 @@ public:
     bool ReadPixelShader(ShaderId* shaderId) {
         return ReadState(StateGroupIndex::PixelShader, shaderId);
     }
+    bool ReadComputeShader(ShaderId* shaderId) {
+        return ReadState(StateGroupIndex::ComputeShader, shaderId);
+    }
     bool ReadVertexLayout(VertexLayoutId* vertexLayoutId) {
         return ReadState(StateGroupIndex::VertexLayout, vertexLayoutId);
     }

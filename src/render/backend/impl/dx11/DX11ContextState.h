@@ -31,6 +31,8 @@ namespace gfx {
 
         ID3D11DepthStencilView* dsv;
 
+        ID3D11ComputeShader* computeShader{ nullptr };
+
         ID3D11PixelShader* pixelShader{ nullptr };
 
         ID3D11InputLayout* inputLayout{ nullptr };

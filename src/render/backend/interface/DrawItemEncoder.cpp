@@ -15,9 +15,9 @@ PipelineStateId GetPipelineState(gfx::RenderDevice* device, StateGroupDecoder& d
     dg_assert_nm(decoder.ReadPixelShader(&desc.pixelShader));
     dg_assert_nm(decoder.ReadVertexShader(&desc.vertexShader));
     dg_assert_nm(decoder.ReadVertexLayout(&desc.vertexLayout));
+    dg_assert_nm(decoder.ReadComputeShader(&desc.computeShader));
 
     // these can be defaulted so no assert
-    decoder.ReadRenderPass(&desc.renderPass);
     decoder.ReadBlendState(&desc.blendState);
     decoder.ReadRasterState(&desc.rasterState);
     decoder.ReadDepthState(&desc.depthState);

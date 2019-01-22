@@ -11,6 +11,7 @@ enum class ShaderType : uint8_t {
     TessControlShader,
     TessEvalShader,
     PixelShader,
+    ComputeShader,
     Count,
 };
 }
@@ -20,6 +21,7 @@ static std::string ToString(gfx::ShaderType type) {
         {gfx::ShaderType::VertexShader, "VertexShader"},
         {gfx::ShaderType::TessControlShader, "TessControlShader"},
         {gfx::ShaderType::TessEvalShader, "TessEvalShader"},
-        {gfx::ShaderType::PixelShader, "PixelShader"}};
+        {gfx::ShaderType::PixelShader, "PixelShader"},
+        {gfx::ShaderType::ComputeShader, "ComputeShader"}};
     return ShaderTypeStringMap.find(type)->second;
 }

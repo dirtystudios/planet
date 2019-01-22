@@ -68,6 +68,7 @@ namespace gfx {
         ShaderType shaderType;
         ID3D11VertexShader *vertexShader;
         ID3D11PixelShader *pixelShader;
+        ID3D11ComputeShader *computeShader;
     };
 
     struct RenderPassDX11 : public Resource {

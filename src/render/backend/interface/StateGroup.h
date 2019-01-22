@@ -16,6 +16,8 @@ enum class StateGroupIndex : uint16_t {
     PrimitiveType = 8,
     Bindings      = 9,
     RenderPass    = 10,
+
+    ComputeShader = 11,
 };
 
 enum class StateGroupBit : uint16_t {
@@ -30,8 +32,8 @@ enum class StateGroupBit : uint16_t {
     PrimitiveType = 1 << static_cast<uint16_t>(StateGroupIndex::PrimitiveType),
     Bindings      = 1 << static_cast<uint16_t>(StateGroupIndex::Bindings),
     RenderPass    = 1 << static_cast<uint16_t>(StateGroupIndex::RenderPass),
+    ComputeShader = 1 << static_cast<uint16_t>(StateGroupIndex::ComputeShader),
 };
-    
     
 static uint16_t AsBit(StateGroupIndex index) {
     return 1 << static_cast<uint16_t>(index);

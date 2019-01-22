@@ -90,7 +90,11 @@ private:
             *typeOut = gfx::ShaderType::VertexShader;
         } else if (ext == "ps" || ext == "fs") {
             *typeOut = gfx::ShaderType::PixelShader;
-        } else {
+        }
+        else if (ext == "cs") {
+            *typeOut = gfx::ShaderType::ComputeShader;
+        }
+        else {
             return false;
         }
         return true;

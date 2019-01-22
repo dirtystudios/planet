@@ -61,6 +61,7 @@ namespace gfx {
 
         void SetVertexShader(ID3D11VertexShader* shader);
         void SetPixelShader(ID3D11PixelShader* shader);
+        void SetComputeShader(ID3D11ComputeShader* shader);
 
         void SetRenderTargets(std::array<ID3D11RenderTargetView*,8> rtvs, uint8_t rtvCount, ID3D11DepthStencilView* depthStencil);
         void SetViewport(const D3D11_VIEWPORT& vp);
