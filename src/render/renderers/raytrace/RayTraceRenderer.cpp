@@ -6,10 +6,13 @@
 #include "StateGroupEncoder.h"
 #include "MeshGeometry.h"
 #include "DrawItemEncoder.h"
+#include "DispatchItemEncoder.h"
 #include "Image.h"
 #include "Config.h"
 #include "MeshRenderObj.h"
 #include "MeshGeneration.h"
+
+#include <memory>
 
 struct MeshVertex {
     glm::vec3 position;
@@ -133,12 +136,34 @@ void RayTraceRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderV
 }
 
 void RayTraceRenderer::Submit(ComputeQueue* cQueue) {
+    _dispatchItems.clear();
 
     DirLight dirLight{};
     dirLight.direction = glm::vec3(-0.2f, -0.3f, -1.f);
     dirLight.ambient = glm::vec3(0.5f, 0.5f, 0.5f);
     dirLight.diffuse = glm::vec3(0.9f, 0.9f, 0.9f);
     dirLight.specular = glm::vec3(0.3f, 0.3f, 0.3f);
+
+    DispatchItemEncoder die;
+    std::unique_ptr<const gfx::DispatchItem> di;
+
+    std::vector<const gfx::StateGroup*> groups = {
+        stateGroup,
+        cQueue->defaults
+    };
+
+    DispatchCall dc;
+    dc.groupX = 1280 / 8;
+    dc.groupY = 720 / 8;
+    dc.groupZ = 1;
+
+
+    di.reset(die.Encode(device(), dc, groups.data(), groups.size()));
+
+    _dispatchItems.emplace_back(std::move(di));
+
+    cQueue->AddDispatchItem(0, _dispatchItems.back().get());
+
     /*
     // todo: switch this back to renderview
     for (RenderObj* baseRO : meshRenderObjs) {

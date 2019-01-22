@@ -13,6 +13,8 @@ private:
     BufferId vertBuffer{ NULL_ID };
     TextureId resultTex{ NULL_ID };
     const gfx::StateGroup* stateGroup{ nullptr };
+
+    std::vector<std::unique_ptr<const gfx::DispatchItem>> _dispatchItems;
 public:
     RayTraceRenderer() : Renderer(RendererType::RayTrace) {}
     ~RayTraceRenderer();
