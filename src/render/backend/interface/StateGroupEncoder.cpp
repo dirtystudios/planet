@@ -168,7 +168,7 @@ void StateGroupEncoder::SetPrimitiveType(PrimitiveType pt) {
 void StateGroupEncoder::BindTexture(uint32_t slot, TextureId tex, ShaderStageFlags flags) {
     BindResource(slot, Binding::Type::Texture, tex, flags);
 }
-void StateGroupEncoder::BindBuffer(uint32_t slot, BufferId tex, ShaderStageFlags flags = ShaderStageFlags::AllStages) {
+void StateGroupEncoder::BindBuffer(uint32_t slot, BufferId tex, ShaderStageFlags flags) {
     BindResource(slot, Binding::Type::Buffer, tex, flags);
 }
 void StateGroupEncoder::BindConstantBuffer(uint32_t slot, BufferId cb, ShaderStageFlags flags) {

@@ -8,7 +8,7 @@
 
 namespace gfx {
 
-PipelineStateId GetPipelineState(gfx::RenderDevice* device, StateGroupDecoder& decoder) {
+static PipelineStateId GetPipelineState(gfx::RenderDevice* device, StateGroupDecoder& decoder) {
     gfx::PipelineStateDesc desc;
 
     dg_assert_nm(decoder.ReadRenderPass(&desc.renderPass));

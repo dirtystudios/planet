@@ -7,22 +7,19 @@ cbuffer viewConstants : register(b0) {
 RWTexture2D<float4> result : register(u0);
 ByteAddressBuffer vertBuff : register(t0);
 
-struct Ray
-{
+struct Ray {
     float3 origin;
     float3 direction;
 };
 
-Ray CreateRay(float3 origin, float3 direction)
-{
+Ray CreateRay(float3 origin, float3 direction) {
     Ray ray;
     ray.origin = origin;
     ray.direction = direction;
     return ray;
 }
 
-Ray CreateCameraRay(float2 uv)
-{
+Ray CreateCameraRay(float2 uv) {
     // Transform the camera origin to world space
     float3 origin = mul(view, float4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
     
@@ -35,8 +32,7 @@ Ray CreateCameraRay(float2 uv)
 }
 
 [numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
+void CSMain(uint3 id : SV_DispatchThreadID) {
     // Get the dimensions of the RenderTexture
     uint width, height;
     result.GetDimensions(width, height);

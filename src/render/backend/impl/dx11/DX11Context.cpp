@@ -293,8 +293,9 @@ namespace gfx {
 
         for (uint32_t slot : m_pendingState.csDirtyTextureSlots) {
             // todo: batch these calls
-            m_devcon->CSSetShaderResources(slot, 1u, &m_pendingState.vsTextures[slot]);
-            m_devcon->CSSetSamplers(slot, 1u, &m_pendingState.vsSamplers[slot]);
+            m_devcon->CSSetShaderResources(slot, 1u, &m_pendingState.csTextures[slot]);
+            if (auto sampler = m_pendingState.csSamplers[slot])
+                m_devcon->CSSetSamplers(slot, 1u, &sampler);
         }
 
         for (uint32_t slot : m_pendingState.csDirtyUavSlots)

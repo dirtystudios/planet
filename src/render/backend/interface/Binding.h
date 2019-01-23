@@ -12,5 +12,6 @@ struct Binding {
     ResourceId resource{0};
     uint32_t slot{0};
     ShaderStageFlags stageFlags{ShaderStageFlags::None};
+    bool readonly{ true };
 };
 }

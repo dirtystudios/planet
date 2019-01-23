@@ -75,18 +75,21 @@ namespace gfx {
         if ((bufferDesc.BindFlags & (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) == (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) {
             D3D11_UNORDERED_ACCESS_VIEW_DESC desc{};
             desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-            desc.Format = DXGI_FORMAT_R32_TYPELESS;
+            desc.Format = DXGI_FORMAT_R32_FLOAT;
             desc.Buffer.FirstElement = 0;
             desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
             desc.Buffer.NumElements = buffSize / 4;
             DX11_CHECK(m_dev->CreateUnorderedAccessView(buffer.Get(), &desc, &uav));
         }
         else if ((bufferDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) == D3D11_BIND_SHADER_RESOURCE) {
+            // todo: implement read only 'buffers', this will probly clash with cbuffers currently
+
             D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
             srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
-            srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-            //srvDesc.BufferEx.FirstElement = 0;
-            //srvDesc.BufferEx.NumElements = buffSize / bufferDesc.StructureByteStride;
+            srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+            srvDesc.BufferEx.Flags = D3D11_BUFFEREX_SRV_FLAG_RAW;
+            srvDesc.BufferEx.FirstElement = 0;
+            srvDesc.BufferEx.NumElements = buffSize / 4;
             DX11_CHECK(m_dev->CreateShaderResourceView(buffer.Get(), &srvDesc, &srv));
         }
 
@@ -108,6 +111,9 @@ namespace gfx {
             assert(shaderData.type == ShaderDataType::Source);
 
             std::string funcName = shaderData.name.substr(0, shaderData.name.length() - 5);
+            // todo: hack, change this
+            bool isCompute = funcName.find("Kernel") != std::string::npos;
+            if (!isCompute)
             {
                 ShaderType shaderType = ShaderType::PixelShader;
 
@@ -128,6 +134,7 @@ namespace gfx {
                     assert(false);
                 }
             }
+            if (!isCompute)
             {
                 ShaderType shaderType = ShaderType::VertexShader;
 
@@ -148,6 +155,7 @@ namespace gfx {
                     assert(false);
                 }
             }
+            if (isCompute)
             {
                 ShaderType shaderType = ShaderType::ComputeShader;
 
@@ -286,50 +294,54 @@ namespace gfx {
 
         PipelineStateDX11* stateDx11 = new PipelineStateDX11();
 
-        stateDx11->renderPassHandle = desc.renderPass;
+        if (desc.computeShader == 0) {
+            // assume renderpass
+            stateDx11->renderPassHandle = desc.renderPass;
 
-        ShaderDX11* ps = m_resourceManager->GetResource<ShaderDX11>(desc.pixelShader);
-        stateDx11->pixelShader = ps->pixelShader;
+            ShaderDX11* ps = m_resourceManager->GetResource<ShaderDX11>(desc.pixelShader);
+            stateDx11->pixelShader = ps->pixelShader;
 
-        ShaderDX11* vs = m_resourceManager->GetResource<ShaderDX11>(desc.vertexShader);
-        stateDx11->vertexShader = vs->vertexShader;
-        stateDx11->vertexShaderHandle = desc.vertexShader;
+            ShaderDX11* vs = m_resourceManager->GetResource<ShaderDX11>(desc.vertexShader);
+            stateDx11->vertexShader = vs->vertexShader;
+            stateDx11->vertexShaderHandle = desc.vertexShader;
 
-        ShaderDX11* cs = m_resourceManager->GetResource<ShaderDX11>(desc.computeShader);
-        stateDx11->computeShader = vs->computeShader;
+            stateDx11->topology = SafeGet(PrimitiveTypeDX11, desc.topology);
 
-        stateDx11->topology = SafeGet(PrimitiveTypeDX11, desc.topology);
+            auto layout = m_resourceManager->GetResource<InputLayoutDX11>(desc.vertexLayout);
+            stateDx11->vertexLayout = layout->inputLayout.Get();
+            stateDx11->vertexLayoutHandle = desc.vertexLayout;
+            stateDx11->vertexLayoutStride = layout->stride;
 
-        auto layout = m_resourceManager->GetResource<InputLayoutDX11>(desc.vertexLayout);
-        stateDx11->vertexLayout = layout->inputLayout.Get();
-        stateDx11->vertexLayoutHandle = desc.vertexLayout;
-        stateDx11->vertexLayoutStride = layout->stride;
+            size_t hash = std::hash<BlendState>()(desc.blendState);
+            auto blendState = m_cache.bsCache.find(hash);
+            if (blendState == m_cache.bsCache.end()) {
+                stateDx11->blendState = CreateBlendState(desc.blendState);
+            }
+            else {
+                stateDx11->blendState = blendState->second.bs.Get();
+            }
 
-        size_t hash = std::hash<BlendState>()(desc.blendState);
-        auto blendState = m_cache.bsCache.find(hash);
-        if (blendState == m_cache.bsCache.end()) {
-            stateDx11->blendState = CreateBlendState(desc.blendState);
+            hash = std::hash<DepthState>()(desc.depthState);
+            auto depthState = m_cache.dsCache.find(hash);
+            if (depthState == m_cache.dsCache.end()) {
+                stateDx11->depthState = CreateDepthState(desc.depthState);
+            }
+            else {
+                stateDx11->depthState = depthState->second.ds.Get();
+            }
+
+            hash = std::hash<RasterState>()(desc.rasterState);
+            auto rasterState = m_cache.rsCache.find(hash);
+            if (rasterState == m_cache.rsCache.end()) {
+                stateDx11->rasterState = CreateRasterState(desc.rasterState);
+            }
+            else {
+                stateDx11->rasterState = rasterState->second.rs.Get();
+            }
         }
         else {
-            stateDx11->blendState = blendState->second.bs.Get();
-        }
-
-        hash = std::hash<DepthState>()(desc.depthState);
-        auto depthState = m_cache.dsCache.find(hash);
-        if (depthState == m_cache.dsCache.end()) {
-            stateDx11->depthState = CreateDepthState(desc.depthState);
-        }
-        else {
-            stateDx11->depthState = depthState->second.ds.Get();
-        }
-
-        hash = std::hash<RasterState>()(desc.rasterState);
-        auto rasterState = m_cache.rsCache.find(hash);
-        if (rasterState == m_cache.rsCache.end()) {
-            stateDx11->rasterState = CreateRasterState(desc.rasterState);
-        }
-        else {
-            stateDx11->rasterState = rasterState->second.rs.Get();
+            ShaderDX11* cs = m_resourceManager->GetResource<ShaderDX11>(desc.computeShader);
+            stateDx11->computeShader = cs->computeShader;
         }
 
         auto id = m_resourceManager->AddResource(stateDx11);
@@ -487,8 +499,8 @@ namespace gfx {
 
         if ((tdesc.BindFlags & D3D11_BIND_UNORDERED_ACCESS) != 0) {
             D3D11_UNORDERED_ACCESS_VIEW_DESC desc{};
-            desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-            desc.Format = DXGI_FORMAT_R32_TYPELESS;
+            desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+            desc.Format = tdesc.Format;
             desc.Buffer.FirstElement = 0;
             desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
             desc.Buffer.NumElements = GetFormatByteSize(tdesc.Format) * tdesc.Width / 4;

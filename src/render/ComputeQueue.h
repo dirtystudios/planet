@@ -48,6 +48,9 @@ public:
 
             dg_assert_nm(decoder.ReadDispatchCall(&dispatchCall));
             dg_assert_nm(decoder.ReadPipelineState(&pipelineStateId));
+            if (bindingCount > 0) {
+                dg_assert_nm(decoder.ReadBindings(&bindingPtr));
+            }
 
             commandBuffer->setPipelineState(pipelineStateId);
 

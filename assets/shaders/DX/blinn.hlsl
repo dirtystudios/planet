@@ -76,7 +76,7 @@ VS_OUTPUT VSMain( VS_INPUT Input ) {
 	
 	output.vToCamera = normalize(eyePos - worldPos.xyz);
 	
-	output.vNormal = mul(world, mul(float4(Input.vNorm, 0.f), skin));
+	output.vNormal = mul(world, mul(float4(Input.vNorm, 0.f), skin)).rgb;
     output.vTex = Input.vTexCoords;
     return output;
 }
@@ -131,7 +131,7 @@ float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {
 	float3 col = CalcDirLight(dirLight, N, V, Input.vTex);
 
 	for (int x = 0; x < numPointLights; ++x) {
-		col += CalcPointLight(pointLights[x], N, Input.vPosition, V, Input.vTex);
+		col += CalcPointLight(pointLights[x], N, Input.vPosition.rgb, V, Input.vTex);
 	}
 
 	return float4(col, 1.f);

@@ -73,29 +73,21 @@ void RayTraceRenderer::OnInit() {
     dgen::GenerateIcoSphere(5, &geometryData);
     sphereGeom.reset(new MeshGeometry(device(), { geometryData }));
 
-    gfx::BufferDesc desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, kDefaultVertexBufferSize, "rayTraceVB");
-    vertBuffer = device()->AllocateBuffer(desc);
+    csVertBuffer = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, kDefaultVertexBufferSize, "rayTraceVB"));
+    fakeVertBuff = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize, "rayTraceFakeVB"));
 
-    resultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1280, 800, nullptr, "rayTraceResultTex");
+    resultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1280, 720, nullptr, "rayTraceResultTex");
 
     gfx::StateGroupEncoder encoder;
 
     encoder.Begin();
-    encoder.BindBuffer(0, vertBuffer, ShaderStageFlags::ComputeBit);
+    encoder.BindBuffer(0, csVertBuffer, ShaderStageFlags::ComputeBit);
     encoder.BindTexture(0, resultTex, ShaderStageFlags::ComputeBit);
     encoder.SetComputeShader(services()->shaderCache()->Get(gfx::ShaderType::ComputeShader, "rayTraceKernel"));
-
-    stateGroup = encoder.End();
-}
-
-void RayTraceRenderer::Register(MeshRenderObj* meshObj) {
-    /*meshObj->perObject = services()->constantBufferManager()->GetConstantBuffer(sizeof(MeshConstants), "MeshWorld");
-    meshObj->lighting = services()->constantBufferManager()->GetConstantBuffer(sizeof(Lighting), "Lighting");
-
+    csStateGroup = encoder.End();
 
     gfx::RasterState rs;
-    rs.cullMode = gfx::CullMode::None;  
-    rs.windingOrder = gfx::WindingOrder::FrontCW;
+    rs.cullMode = gfx::CullMode::None;
 
     gfx::BlendState blendState;
     blendState.enable = true;
@@ -103,36 +95,41 @@ void RayTraceRenderer::Register(MeshRenderObj* meshObj) {
     blendState.srcAlphaFunc = blendState.srcRgbFunc;
     blendState.dstRgbFunc = gfx::BlendFunc::OneMinusSrcAlpha;
     blendState.dstAlphaFunc = blendState.dstRgbFunc;
-    
-    gfx::StateGroupEncoder encoder;
+
+    gfx::DepthState ds;
+    ds.enable = false;
+
     encoder.Begin();
-    encoder.BindResource(meshObj->perObject->GetBinding(1));
-    encoder.BindResource(meshObj->lighting->GetBinding(3));
-    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "blinn"));
-    //encoder.SetRasterState(rs);
+    encoder.BindTexture(0, resultTex, ShaderStageFlags::PixelBit);
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuad"));
+    encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
+    encoder.SetVertexBuffer(fakeVertBuff);
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuad"));
     encoder.SetBlendState(blendState);
-    meshObj->stateGroup.reset(encoder.End());
+    encoder.SetRasterState(rs);
+    encoder.SetDepthState(ds);
+    renderStateGroup = encoder.End();
+}
 
-    for (const MaterialData& matdata : meshObj->mat->matData) {
-        std::string shaderName;
-        switch (matdata.shadingModel) {
-            // oh how convienient, they're all blinn
-        default:
-            shaderName = "blinn";
-        }
-        gfx::ShaderId ps = services()->shaderCache()->Get(gfx::ShaderType::PixelShader, shaderName);
-        meshObj->meshMaterial.push_back(std::make_unique<MeshMaterial>(device(), matdata, ps));
-    }
-
-    for (const auto& boneInfo : meshObj->mesh->GetBones()) {
-        meshObj->_boneOffsets.emplace_back(boneInfo.second);
-    }
-
-    meshRenderObjs.push_back(meshObj);*/
+void RayTraceRenderer::Register(MeshRenderObj* meshObj) {
 }
 
 void RayTraceRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView) {
-    
+    _drawItems.clear();
+
+    gfx::DrawCall drawCall;
+    drawCall.type = gfx::DrawCall::Type::Arrays;
+    drawCall.startOffset = 0;
+    drawCall.primitiveCount = 3;
+
+    std::vector<const gfx::StateGroup*> groups = {
+        renderStateGroup,
+        renderQueue->defaults
+    };
+
+    _drawItems.emplace_back(DrawItemEncoder::Encode(device(), drawCall, groups.data(), groups.size()));
+
+    renderQueue->AddDrawItem(0, _drawItems.back().get());
 }
 
 void RayTraceRenderer::Submit(ComputeQueue* cQueue) {
@@ -148,7 +145,7 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue) {
     std::unique_ptr<const gfx::DispatchItem> di;
 
     std::vector<const gfx::StateGroup*> groups = {
-        stateGroup,
+        csStateGroup,
         cQueue->defaults
     };
 
@@ -156,7 +153,6 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue) {
     dc.groupX = 1280 / 8;
     dc.groupY = 720 / 8;
     dc.groupZ = 1;
-
 
     di.reset(die.Encode(device(), dc, groups.data(), groups.size()));
 

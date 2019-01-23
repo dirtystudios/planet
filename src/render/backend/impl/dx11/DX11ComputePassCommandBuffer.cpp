@@ -18,7 +18,9 @@ namespace gfx {
 
     void DX11ComputePassCommandBuffer::setBuffer(BufferId buffer, uint8_t index) {
         BufferDX11* cbuffer = _rm->GetResource<BufferDX11>(buffer);
-        _cmdBuf->SetComputeShaderUAV(index, cbuffer->uav.Get());
+        // todo: hack
+        //_cmdBuf->SetComputeShaderUAV(index, cbuffer->uav.Get());
+        _cmdBuf->SetComputeShaderTexture(index, cbuffer->srv.Get(), nullptr);
     }
 
     void DX11ComputePassCommandBuffer::setCBuffer(BufferId buffer, uint8_t index) {
@@ -26,9 +28,11 @@ namespace gfx {
         _cmdBuf->SetComputeCBuffer(index, cbuffer->buffer.Get());
     }
 
-    void DX11ComputePassCommandBuffer::setTexture(BufferId buffer, uint8_t index) {
+    void DX11ComputePassCommandBuffer::setTexture(TextureId buffer, uint8_t index) {
         auto* tex = _rm->GetResource<TextureDX11>(buffer);
-        _cmdBuf->SetComputeShaderTexture(index, tex->srv.Get(), tex->sampler.Get());
+        // todo: hack
+        //_cmdBuf->SetComputeShaderTexture(index, tex->srv.Get(), tex->sampler.Get());
+        _cmdBuf->SetComputeShaderUAV(index, tex->uav.Get());
     }
 
     void DX11ComputePassCommandBuffer::dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
