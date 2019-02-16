@@ -144,7 +144,7 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->isActive()) {
-            p.second->Submit(&cqueue);
+            p.second->Submit(&cqueue, &view);
             p.second->Submit(&queue, &view);
         }
     }

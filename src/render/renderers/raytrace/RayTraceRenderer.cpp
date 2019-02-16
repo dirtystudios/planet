@@ -11,6 +11,7 @@
 #include "Config.h"
 #include "MeshRenderObj.h"
 #include "MeshGeneration.h"
+#include "Image.h"
 
 #include <memory>
 
@@ -69,9 +70,23 @@ RayTraceRenderer::~RayTraceRenderer() {
 }
 
 void RayTraceRenderer::OnInit() {
-    MeshGeometryData geometryData;
-    dgen::GenerateIcoSphere(5, &geometryData);
-    sphereGeom.reset(new MeshGeometry(device(), { geometryData }));
+
+    std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
+    if (!fs::IsPathDirectory(assetDirPath)) {
+        LOG_E("Invalid Directory Path given for AssetDirectory.");
+    }
+
+    std::string imagepath = assetDirPath + "/skyboxcape/cape_hill_1k.hdr";
+
+    dimg::Image skyboxImage;
+    if (!dimg::LoadImageFromFile(imagepath.c_str(), &skyboxImage)) {
+        LOG_E("Failed to load image: %s", imagepath.c_str());
+    }
+
+    uint32_t width = skyboxImage.width;
+    uint32_t height = skyboxImage.height;
+    skyboxTextureId = device()->CreateTexture2D(PixelFormat::RGB8Unorm, TextureUsageFlags::ShaderRead, width, height, skyboxImage.data, "rayTraceSkybox");
+    assert(skyboxTextureId);
 
     csVertBuffer = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, kDefaultVertexBufferSize, "rayTraceVB"));
     fakeVertBuff = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize, "rayTraceFakeVB"));
@@ -82,7 +97,8 @@ void RayTraceRenderer::OnInit() {
 
     encoder.Begin();
     encoder.BindBuffer(0, csVertBuffer, ShaderStageFlags::ComputeBit);
-    encoder.BindTexture(0, resultTex, ShaderStageFlags::ComputeBit);
+    encoder.BindTexture(0, resultTex, ShaderStageFlags::ComputeBit, ShaderBindingFlags::ReadWrite);
+    encoder.BindTexture(1, skyboxTextureId, ShaderStageFlags::ComputeBit);
     encoder.SetComputeShader(services()->shaderCache()->Get(gfx::ShaderType::ComputeShader, "rayTraceKernel"));
     csStateGroup = encoder.End();
 
@@ -100,7 +116,7 @@ void RayTraceRenderer::OnInit() {
     ds.enable = false;
 
     encoder.Begin();
-    encoder.BindTexture(0, resultTex, ShaderStageFlags::PixelBit);
+    encoder.BindTexture(0, resultTex, ShaderStageFlags::PixelBit, ShaderBindingFlags::SampleRead);
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuad"));
     encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
     encoder.SetVertexBuffer(fakeVertBuff);
@@ -132,7 +148,7 @@ void RayTraceRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderV
     renderQueue->AddDrawItem(0, _drawItems.back().get());
 }
 
-void RayTraceRenderer::Submit(ComputeQueue* cQueue) {
+void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView) {
     _dispatchItems.clear();
 
     DirLight dirLight{};
@@ -150,8 +166,8 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue) {
     };
 
     DispatchCall dc;
-    dc.groupX = 1280 / 8;
-    dc.groupY = 720 / 8;
+    dc.groupX = renderView->viewport.width / 8;
+    dc.groupY = renderView->viewport.height / 8;
     dc.groupZ = 1;
 
     di.reset(die.Encode(device(), dc, groups.data(), groups.size()));

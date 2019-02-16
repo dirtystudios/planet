@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "ResourceTypes.h"
 #include "ShaderStageFlags.h"
+#include "ShaderBindingFlags.h"
 
 namespace gfx {
 struct Binding {
@@ -12,6 +13,6 @@ struct Binding {
     ResourceId resource{0};
     uint32_t slot{0};
     ShaderStageFlags stageFlags{ShaderStageFlags::None};
-    bool readonly{ true };
+    ShaderBindingFlags bindingFlags{ ShaderBindingFlags::SampleRead };
 };
 }

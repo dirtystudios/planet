@@ -73,13 +73,15 @@ namespace gfx {
         ComPtr<ID3D11ShaderResourceView> srv = NULL;
         ComPtr<ID3D11UnorderedAccessView> uav = NULL;
         if ((bufferDesc.BindFlags & (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) == (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) {
-            D3D11_UNORDERED_ACCESS_VIEW_DESC desc{};
-            desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-            desc.Format = DXGI_FORMAT_R32_FLOAT;
-            desc.Buffer.FirstElement = 0;
-            desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
-            desc.Buffer.NumElements = buffSize / 4;
-            DX11_CHECK(m_dev->CreateUnorderedAccessView(buffer.Get(), &desc, &uav));
+            D3D11_UNORDERED_ACCESS_VIEW_DESC descuav{};
+            descuav.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+            descuav.Format = DXGI_FORMAT_R32_FLOAT;
+            descuav.Buffer.FirstElement = 0;
+            descuav.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
+            descuav.Buffer.NumElements = buffSize / 4;
+            DX11_CHECK(m_dev->CreateUnorderedAccessView(buffer.Get(), &descuav, &uav));
+            std::string tmp = desc.debugName + "UAV";
+            D3D_SET_OBJECT_NAME_A(buffer, tmp.c_str());
         }
         else if ((bufferDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) == D3D11_BIND_SHADER_RESOURCE) {
             // todo: implement read only 'buffers', this will probly clash with cbuffers currently
@@ -91,6 +93,8 @@ namespace gfx {
             srvDesc.BufferEx.FirstElement = 0;
             srvDesc.BufferEx.NumElements = buffSize / 4;
             DX11_CHECK(m_dev->CreateShaderResourceView(buffer.Get(), &srvDesc, &srv));
+            std::string tmp = desc.debugName + "SRV";
+            D3D_SET_OBJECT_NAME_A(buffer, tmp.c_str());
         }
 
         BufferDX11 *bufferdx11 = new BufferDX11();
@@ -433,6 +437,9 @@ namespace gfx {
         D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(CD3D11_DEFAULT());
         //samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
         samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+        samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
         DX11_CHECK(m_dev->CreateSamplerState(&samplerDesc, &m_defaultSampler));
     }
 

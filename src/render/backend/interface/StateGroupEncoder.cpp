@@ -117,7 +117,7 @@ const StateGroup* StateGroupEncoder::Merge(const StateGroup* const* stateGroups,
                     candidateDecoder.ReadBindings(&ptr);
 
                     for (const Binding& binding : bindings) {
-                        encoder.BindResource(binding.slot, binding.type, binding.resource, binding.stageFlags);
+                        encoder.BindResource(binding.slot, binding.type, binding.resource, binding.stageFlags, binding.bindingFlags);
                     }
                     break;
                 }
@@ -165,14 +165,14 @@ void StateGroupEncoder::SetDepthState(const DepthState& ds) {
 void StateGroupEncoder::SetPrimitiveType(PrimitiveType pt) {
     WriteState(StateGroupBit::PrimitiveType, StateGroupIndex::PrimitiveType, &pt, sizeof(PrimitiveType));
 }
-void StateGroupEncoder::BindTexture(uint32_t slot, TextureId tex, ShaderStageFlags flags) {
-    BindResource(slot, Binding::Type::Texture, tex, flags);
+void StateGroupEncoder::BindTexture(uint32_t slot, TextureId tex, ShaderStageFlags flags, ShaderBindingFlags bindingFlags) {
+    BindResource(slot, Binding::Type::Texture, tex, flags, bindingFlags);
 }
-void StateGroupEncoder::BindBuffer(uint32_t slot, BufferId tex, ShaderStageFlags flags) {
-    BindResource(slot, Binding::Type::Buffer, tex, flags);
+void StateGroupEncoder::BindBuffer(uint32_t slot, BufferId tex, ShaderStageFlags flags, ShaderBindingFlags bindingFlags) {
+    BindResource(slot, Binding::Type::Buffer, tex, flags, bindingFlags);
 }
 void StateGroupEncoder::BindConstantBuffer(uint32_t slot, BufferId cb, ShaderStageFlags flags) {
-    BindResource(slot, Binding::Type::ConstantBuffer, cb, flags);
+    BindResource(slot, Binding::Type::ConstantBuffer, cb, flags, ShaderBindingFlags::ReadOnly);
 }
 
 const StateGroup* StateGroupEncoder::End() {
@@ -203,12 +203,13 @@ const StateGroup* StateGroupEncoder::End() {
     return sg;
 }
 
-void StateGroupEncoder::BindResource(uint32_t slot, Binding::Type type, ResourceId resource, ShaderStageFlags flags) {
+void StateGroupEncoder::BindResource(uint32_t slot, Binding::Type type, ResourceId resource, ShaderStageFlags flags, ShaderBindingFlags bindingFlags) {
     Binding binding;
     binding.type       = type;
     binding.slot       = slot;
     binding.resource   = resource;
     binding.stageFlags = flags;
+    binding.bindingFlags = bindingFlags;
 
     BindResource(binding);
 }

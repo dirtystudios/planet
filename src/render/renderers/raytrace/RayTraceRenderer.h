@@ -9,10 +9,10 @@
 class RayTraceRenderer : public Renderer {
 private:
     std::vector<MeshRenderObj*> meshRenderObjs;
-    std::unique_ptr<MeshGeometry> sphereGeom{ nullptr };
     BufferId csVertBuffer{ NULL_ID };
     BufferId fakeVertBuff{ NULL_ID };
     TextureId resultTex{ NULL_ID };
+    TextureId skyboxTextureId{ NULL_ID };
     const gfx::StateGroup* csStateGroup{ nullptr };
     const gfx::StateGroup* renderStateGroup{ nullptr };
 
@@ -26,5 +26,5 @@ public:
     void Register(MeshRenderObj* renderObj);
     void Unregister(MeshRenderObj* renderObj) { assert(false); }
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
-    void Submit(ComputeQueue*) final;
+    void Submit(ComputeQueue* renderQueue, const FrameView* view) final;
 };

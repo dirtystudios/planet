@@ -2,6 +2,7 @@
 
 #include "ResourceTypes.h"
 #include "ShaderStageFlags.h"
+#include "ShaderBindingFlags.h"
 
 namespace gfx
 {
@@ -10,8 +11,8 @@ namespace gfx
     public:
         virtual void setPipelineState(PipelineStateId pipelineState) = 0;
         virtual void setCBuffer(BufferId buffer, uint8_t index) = 0;
-        virtual void setBuffer(BufferId buffer, uint8_t index) = 0;
-        virtual void setTexture(TextureId texture, uint8_t index) = 0;
+        virtual void setBuffer(BufferId buffer, uint8_t index, ShaderBindingFlags bindingflags) = 0;
+        virtual void setTexture(TextureId texture, uint8_t index, ShaderBindingFlags bindingflags) = 0;
         virtual void dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;
     };
 }

@@ -21,5 +21,5 @@ public:
     void Register(MeshRenderObj* renderObj);
     void Unregister(MeshRenderObj* renderObj) { assert(false); }
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
-    void Submit(ComputeQueue* renderQueue) final {};
+    void Submit(ComputeQueue* renderQueue, const FrameView* view) final {};
 };

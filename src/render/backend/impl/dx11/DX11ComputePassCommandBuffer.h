@@ -28,8 +28,8 @@ namespace gfx {
 
         void setPipelineState(PipelineStateId pipelineState) final;
         void setCBuffer(BufferId buffer, uint8_t index) final;
-        void setBuffer(BufferId buffer, uint8_t index) final;
-        void setTexture(TextureId texture, uint8_t index) final;
+        void setBuffer(BufferId buffer, uint8_t index, ShaderBindingFlags bindingflags) final;
+        void setTexture(TextureId texture, uint8_t index, ShaderBindingFlags bindingflags) final;
         void dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) final;
     };
 }

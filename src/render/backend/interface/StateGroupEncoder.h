@@ -37,11 +37,11 @@ public:
     void SetBlendState(const BlendState& bs);
     void SetRasterState(const RasterState& rs);
     void SetDepthState(const DepthState& ds);
-    void BindTexture(uint32_t slot, TextureId tex, ShaderStageFlags flags = ShaderStageFlags::AllStages);
-    void BindBuffer(uint32_t slot, BufferId tex, ShaderStageFlags flags = ShaderStageFlags::AllStages);
+    void BindTexture(uint32_t slot, TextureId tex, ShaderStageFlags flags = ShaderStageFlags::AllStages, ShaderBindingFlags bindingFlags = ShaderBindingFlags::SampleRead);
+    void BindBuffer(uint32_t slot, BufferId tex, ShaderStageFlags flags = ShaderStageFlags::AllStages, ShaderBindingFlags bindingFlags = ShaderBindingFlags::ReadOnly);
     void BindConstantBuffer(uint32_t slot, BufferId cb, ShaderStageFlags flags = ShaderStageFlags::AllStages);
     void BindResource(uint32_t slot, Binding::Type type, ResourceId resource,
-                      ShaderStageFlags flags = ShaderStageFlags::AllStages);
+                      ShaderStageFlags flags, ShaderBindingFlags bindingflags);
     void BindResource(const Binding& binding);
 
 private:

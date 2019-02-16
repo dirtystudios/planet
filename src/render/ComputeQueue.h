@@ -61,11 +61,11 @@ public:
                     break;
                 }
                 case Binding::Type::Texture: {
-                    commandBuffer->setTexture(binding.resource, binding.slot);
+                    commandBuffer->setTexture(binding.resource, binding.slot, binding.bindingFlags);
                     break;
                 }
                 case Binding::Type::Buffer: {
-                    commandBuffer->setBuffer(binding.resource, binding.slot);
+                    commandBuffer->setBuffer(binding.resource, binding.slot, binding.bindingFlags);
                     break;
                 }
                 default: {

@@ -6,6 +6,10 @@ cbuffer viewConstants : register(b0) {
 
 RWTexture2D<float4> result : register(u0);
 ByteAddressBuffer vertBuff : register(t0);
+Texture2D<float4> skyboxtex : register(t1);
+SamplerState samplerSky : register(s1);
+
+static const float PI = 3.14159265f;
 
 struct Ray {
     float3 origin;
@@ -40,6 +44,11 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
     float2 uv = float2((id.xy + float2(0.5f, 0.5f)) / float2(width, height) * 2.0f - 1.0f);
     // Get a ray for the UVs
     Ray ray = CreateCameraRay(uv);
-    // Write some colors
-    result[id.xy] = float4(ray.direction * 0.5f + 0.5f, 1.0f);
+    
+    // write skybox tex
+
+    float theta = acos(ray.direction.y) / -PI;
+    float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+    result[id.xy] = float4(skyboxtex.SampleLevel(samplerSky, float2(phi, theta), 0).rgb, 1.f);
 }

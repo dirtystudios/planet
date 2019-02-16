@@ -35,7 +35,7 @@ protected:
 private:
     void Init(gfx::RenderDevice* device, RenderServiceLocator* serviceLocator);
     virtual void Submit(RenderQueue* renderQueue, const FrameView* view) = 0;
-    virtual void Submit(ComputeQueue* renderQueue) = 0;
+    virtual void Submit(ComputeQueue* renderQueue, const FrameView* view) = 0;
 };
 
 template <typename T>

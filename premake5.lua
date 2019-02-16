@@ -97,6 +97,7 @@ project "planet"
         removefiles { "src/**/osx/**" }
         removefiles { "src/**/uwp/**" }
         removefiles { "src/**/metal/**"}
+        removefiles { "assets/shaders/**"}
     filter "system:macosx"
         files { "src/**.mm" }
         removefiles { "src/**/win32/**" }
