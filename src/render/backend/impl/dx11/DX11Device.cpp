@@ -8,6 +8,10 @@
 #include <d3dcompiler.h>
 #include <d3dcompiler.inl>
 
+extern "C" { // Hint to Hybrid laptop drivers that our app would really rather use the NVidia/AMD GPU that you've got sitting over there rather than Intel Graphics...
+    _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+    _declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
 
 namespace gfx {
     using namespace Microsoft::WRL;

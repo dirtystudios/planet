@@ -29,8 +29,15 @@ struct MeshConstants {
     std::array<glm::mat4, 255> boneOffsets;
 };
 
+struct DirLight {
+    glm::vec3 direction;
+    float intensity;
+};
+
 struct RTPerObject {
     glm::vec2 pixOffsets;
+    glm::vec2 p1;
+    DirLight dirLight;
 };
 
 struct PointLight {
@@ -48,18 +55,6 @@ struct PointLight {
     float p4;
     glm::vec3 specular;
     float p5;
-};
-
-struct DirLight {
-    glm::vec3 direction;
-    float p1;
-
-    glm::vec3 ambient;
-    float p2;
-    glm::vec3 diffuse;
-    float p3;
-    glm::vec3 specular;
-    float p4;
 };
 
 struct Lighting {
@@ -97,7 +92,7 @@ void RayTraceRenderer::OnInit() {
     fakeVertBuff = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize, "rayTraceFakeVB"));
     cbPerObj = services()->constantBufferManager()->GetConstantBuffer(sizeof(RTPerObject), "rayTracePerObj");
 
-    computeResultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1280, 720, nullptr, "rayTraceImmResultTex");
+    computeResultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1200, 800, nullptr, "rayTraceImmResultTex");
 
     gfx::StateGroupEncoder encoder;
 
@@ -170,13 +165,9 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView)
 
     auto perObj = cbPerObj->Map<RTPerObject>();
     perObj->pixOffsets = glm::vec2(0.5f, 0.5f);//glm::vec2(glm::linearRand(0.f, 1.f), glm::linearRand(0.f, 1.f));
+    perObj->dirLight.direction = glm::vec3(0.0f, -0.3f, -1.f);
+    perObj->dirLight.intensity = 0.8f;
     cbPerObj->Unmap();
-
-    DirLight dirLight{};
-    dirLight.direction = glm::vec3(-0.2f, -0.3f, -1.f);
-    dirLight.ambient = glm::vec3(0.5f, 0.5f, 0.5f);
-    dirLight.diffuse = glm::vec3(0.9f, 0.9f, 0.9f);
-    dirLight.specular = glm::vec3(0.3f, 0.3f, 0.3f);
 
     std::vector<const gfx::StateGroup*> groups = {
         csStateGroup,
@@ -184,8 +175,8 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView)
     };
 
     DispatchCall dc;
-    dc.groupX = 1280 / 8;//renderView->viewport.width / 8;
-    dc.groupY = 720 / 8;// renderView->viewport.height / 8;
+    dc.groupX = 1200 / 8;//renderView->viewport.width / 8;
+    dc.groupY = 800 / 8;// renderView->viewport.height / 8;
     dc.groupZ = 1;
 
     DispatchItemEncoder die;

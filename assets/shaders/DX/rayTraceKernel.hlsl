@@ -6,6 +6,7 @@ cbuffer viewConstants : register(b0) {
 
 cbuffer cbPerObj : register(b2) {
     float2 pixOffset;
+    float4 dirLight;
 }
 
 RWTexture2D<float4> result : register(u0);
@@ -26,6 +27,8 @@ struct RayHit
     float3 position;
     float distance;
     float3 normal;
+    float3 albedo;
+    float3 specular;
 };
 
 RayHit CreateRayHit()
@@ -34,6 +37,8 @@ RayHit CreateRayHit()
     hit.position = float3(0.0f, 0.0f, 0.0f);
     hit.distance = 1.#INF;
     hit.normal = float3(0.0f, 0.0f, 0.0f);
+    hit.albedo = float3(0.f, 0.f, 0.f);
+    hit.specular = float3(0.f, 0.f, 0.f);
     return hit;
 }
 
@@ -75,17 +80,35 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, float4 sphere)
     }
 }
 
+RayHit Trace(Ray ray)
+{
+    RayHit bestHit = CreateRayHit();
+    IntersectGroundPlane(ray, bestHit);
+    int n = 18;
+    for (int i = -n; i <= n; ++i)
+        for (int j = -n; j <= n; ++j)
+            IntersectSphere(ray, bestHit, float4(i * 10.0f, 3.0f, j * 10.0f, 3.0f));
+    return bestHit;
+}
+
+
 float3 Shade(inout Ray ray, RayHit hit)
 {
     if (hit.distance < 1.#INF)
     {
-        float3 specular = float3(0.6f, 0.6f, 0.6f);
+        float3 specular = float3(0.04f, 0.04f, 0.04f);
+        float3 albedo = float3(0.8f, 0.8f, 0.8f);
         // Reflect the ray and multiply energy with specular reflection
         ray.origin = hit.position + hit.normal * 0.001f;
         ray.direction = reflect(ray.direction, hit.normal);
         ray.energy *= specular;
-        // Return nothing
-        return float3(0.0f, 0.0f, 0.0f);
+        
+        bool shadow = false;
+        Ray shadowRay = CreateRay(hit.position + hit.normal * 0.001f, -1 * dirLight.xyz);
+        RayHit shadowHit = Trace(shadowRay);
+        if (shadowHit.distance != 1.#INF) 
+            return float3(0.f, 0.f, 0.f);
+        return saturate(dot(hit.normal, dirLight.xyz) * -1) * dirLight.w * albedo;
     }
     else
     {
@@ -96,17 +119,6 @@ float3 Shade(inout Ray ray, RayHit hit)
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
         return skyboxtex.SampleLevel(samplerSky, float2(phi, theta), 0).xyz * 1.8f;
     }
-}
-
-RayHit Trace(Ray ray)
-{
-    RayHit bestHit = CreateRayHit();
-    IntersectGroundPlane(ray, bestHit);
-    int n = 18;
-    for (int i = -n; i <= n; ++i)
-        for (int j = -n; j <= n; ++j)
-            IntersectSphere(ray, bestHit, float4(i * 10.0f, 3.0f, j * 10.0f, 3.0f));
-    return bestHit;
 }
 
 Ray CreateCameraRay(float2 uv) {

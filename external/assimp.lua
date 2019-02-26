@@ -103,7 +103,7 @@ project "assimp-zlib"
 	kind        "StaticLib"
 	targetname  "zlibstatic"
 	defines     { "NO_FSEEKO", "_CRT_SECURE_NO_DEPRECATE"}
-	StaticRuntime "On"
+	staticruntime "On"
 
 	files {
 		"assimp/contrib/zlib/**.h",
