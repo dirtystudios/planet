@@ -16,6 +16,37 @@ struct FrameView {
     const Viewport  viewport;
     
     std::vector<RenderObj*> _visibleObjects;
+
+    FrameView() = default;
+
+    FrameView(glm::vec3 ep, glm::mat4 proj, glm::mat4 v, glm::mat4 o, glm::vec3 l, Frustum f, Viewport vp) :
+        eyePos(ep),
+        projection(proj),
+        view(v),
+        ortho(o),
+        look(l),
+        frustum(proj, v),
+        viewport(vp)
+    {}
+
+    FrameView(const FrameView& o) :
+        eyePos(o.eyePos),
+        projection(o.projection),
+        view(o.view),
+        ortho(o.ortho),
+        look(o.look),
+        frustum(o.projection, o.view),
+        viewport(o.viewport)
+    {}
+
+    bool operator==(const FrameView& other) const {
+        return eyePos == other.eyePos &&
+            projection == other.projection &&
+            view == other.view &&
+            ortho == other.ortho &&
+            look == other.look &&
+            viewport == other.viewport;
+    }
 };
 
 struct RenderView {
@@ -28,6 +59,6 @@ struct RenderView {
         glm::mat4 proj  = camera->BuildProjection();
         glm::mat4 view  = camera->BuildView();
         glm::mat4 ortho = glm::ortho(0.0f, viewport->width, 0.0f, viewport->height);
-        return {camera->pos, proj, view, ortho, camera->look, {proj, view}, *viewport};
+        return FrameView{camera->pos, proj, view, ortho, camera->look, {proj, view}, *viewport};
     }
 };

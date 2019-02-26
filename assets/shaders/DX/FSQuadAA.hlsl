@@ -10,6 +10,10 @@ VS_OUTPUT VSMain(uint VertexID: SV_VertexID) {
 	return Out;
 }
 
+/*cbuffer cbPerObject : register(b2) {
+    uint currentSample;
+}*/
+
 Texture2D<float4> tex : register(t0);
 SamplerState texSampler : register(s0);
 

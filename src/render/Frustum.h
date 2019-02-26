@@ -9,6 +9,7 @@ private:
     std::array<dm::Plane3Dd, 6> _planes;
 
 public:
+    Frustum() = default;
     Frustum(const glm::mat4& projection, const glm::mat4& view);
 
     bool IsPointInFrustum(const glm::dvec3& p) const;

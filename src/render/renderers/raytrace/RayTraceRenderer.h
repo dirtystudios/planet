@@ -11,10 +11,14 @@ private:
     std::vector<MeshRenderObj*> meshRenderObjs;
     BufferId csVertBuffer{ NULL_ID };
     BufferId fakeVertBuff{ NULL_ID };
-    TextureId resultTex{ NULL_ID };
+    ConstantBuffer* cbPerObj{ nullptr };
+    TextureId computeResultTex{ NULL_ID };
     TextureId skyboxTextureId{ NULL_ID };
     const gfx::StateGroup* csStateGroup{ nullptr };
     const gfx::StateGroup* renderStateGroup{ nullptr };
+
+    std::unique_ptr<FrameView> lastFrameView = std::make_unique<FrameView>();
+    unsigned int currentSample = 0;
 
     std::vector<std::unique_ptr<const gfx::DispatchItem>> _dispatchItems;
     std::vector<std::unique_ptr<const gfx::DrawItem>> _drawItems;

@@ -1,6 +1,7 @@
 #include "RayTraceRenderer.h"
 #include "Log.h"
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/random.hpp>
 #include "ConstantBuffer.h"
 #include "ConstantBufferManager.h"
 #include "StateGroupEncoder.h"
@@ -26,6 +27,10 @@ constexpr size_t kDefaultVertexBufferSize = sizeof(MeshVertex) * 4096;
 struct MeshConstants {
     glm::mat4 world;
     std::array<glm::mat4, 255> boneOffsets;
+};
+
+struct RTPerObject {
+    glm::vec2 pixOffsets;
 };
 
 struct PointLight {
@@ -90,14 +95,16 @@ void RayTraceRenderer::OnInit() {
 
     csVertBuffer = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, kDefaultVertexBufferSize, "rayTraceVB"));
     fakeVertBuff = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize, "rayTraceFakeVB"));
+    cbPerObj = services()->constantBufferManager()->GetConstantBuffer(sizeof(RTPerObject), "rayTracePerObj");
 
-    resultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1280, 720, nullptr, "rayTraceResultTex");
+    computeResultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1280, 720, nullptr, "rayTraceImmResultTex");
 
     gfx::StateGroupEncoder encoder;
 
     encoder.Begin();
     encoder.BindBuffer(0, csVertBuffer, ShaderStageFlags::ComputeBit);
-    encoder.BindTexture(0, resultTex, ShaderStageFlags::ComputeBit, ShaderBindingFlags::ReadWrite);
+    encoder.BindResource(cbPerObj->GetBinding(2));
+    encoder.BindTexture(0, computeResultTex, ShaderStageFlags::ComputeBit, ShaderBindingFlags::ReadWrite);
     encoder.BindTexture(1, skyboxTextureId, ShaderStageFlags::ComputeBit);
     encoder.SetComputeShader(services()->shaderCache()->Get(gfx::ShaderType::ComputeShader, "rayTraceKernel"));
     csStateGroup = encoder.End();
@@ -116,11 +123,11 @@ void RayTraceRenderer::OnInit() {
     ds.enable = false;
 
     encoder.Begin();
-    encoder.BindTexture(0, resultTex, ShaderStageFlags::PixelBit, ShaderBindingFlags::SampleRead);
-    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuad"));
+    encoder.BindTexture(0, computeResultTex, ShaderStageFlags::PixelBit, ShaderBindingFlags::SampleRead);
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuadAA"));
     encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
     encoder.SetVertexBuffer(fakeVertBuff);
-    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuad"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuadAA"));
     encoder.SetBlendState(blendState);
     encoder.SetRasterState(rs);
     encoder.SetDepthState(ds);
@@ -149,7 +156,21 @@ void RayTraceRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderV
 }
 
 void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView) {
+    assert(cbPerObj);
+
     _dispatchItems.clear();
+
+    bool hasChanged = !(*renderView == *lastFrameView);
+    if (hasChanged) {
+        currentSample = 0;
+        lastFrameView = std::make_unique<FrameView>(*renderView);
+    }
+    else
+        currentSample++;
+
+    auto perObj = cbPerObj->Map<RTPerObject>();
+    perObj->pixOffsets = glm::vec2(0.5f, 0.5f);//glm::vec2(glm::linearRand(0.f, 1.f), glm::linearRand(0.f, 1.f));
+    cbPerObj->Unmap();
 
     DirLight dirLight{};
     dirLight.direction = glm::vec3(-0.2f, -0.3f, -1.f);
@@ -157,18 +178,18 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView)
     dirLight.diffuse = glm::vec3(0.9f, 0.9f, 0.9f);
     dirLight.specular = glm::vec3(0.3f, 0.3f, 0.3f);
 
-    DispatchItemEncoder die;
-    std::unique_ptr<const gfx::DispatchItem> di;
-
     std::vector<const gfx::StateGroup*> groups = {
         csStateGroup,
         cQueue->defaults
     };
 
     DispatchCall dc;
-    dc.groupX = renderView->viewport.width / 8;
-    dc.groupY = renderView->viewport.height / 8;
+    dc.groupX = 1280 / 8;//renderView->viewport.width / 8;
+    dc.groupY = 720 / 8;// renderView->viewport.height / 8;
     dc.groupZ = 1;
+
+    DispatchItemEncoder die;
+    std::unique_ptr<const gfx::DispatchItem> di;
 
     di.reset(die.Encode(device(), dc, groups.data(), groups.size()));
 

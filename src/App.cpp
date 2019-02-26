@@ -203,6 +203,9 @@ void AddRoxas() {
 }
 
 void App::OnStart() {
+    // seed rand for good measure, its used by glm
+    srand(time(0));
+
     sys::SysWindowSize windowSize = sys::GetWindowSize();
     playerViewport                = new Viewport();
     playerViewport->width         = static_cast<float>(windowSize.width);
@@ -219,7 +222,8 @@ void App::OnStart() {
     SetupInputBindings();
 
     // cam.MoveTo(-2826, 1620, 1600);
-    cam.MoveTo(0, 0, 2000);
+    //cam.MoveTo(0, 0, 2000);
+    cam.MoveTo(0, 3.f, 5);
     cam.LookAt(0, 0, 0);
 
     SkyboxRenderObj* skybox = CreateSkybox();
