@@ -223,8 +223,11 @@ void App::OnStart() {
 
     // cam.MoveTo(-2826, 1620, 1600);
     //cam.MoveTo(0, 0, 2000);
-    cam.MoveTo(0, 3.f, 5);
-    cam.LookAt(0, 0, 0);
+    cam.aspect_ratio = 1920 / 1080.f;
+    cam.fov_degrees = 30.f;
+    //cam.zfar = 1000.f;
+    cam.MoveTo(0, 3.f, 5.f);
+    cam.LookAt(-1.f, 3.f, 0.f);
 
     SkyboxRenderObj* skybox = CreateSkybox();
 //    renderEngine->Renderers().sky->Register(skybox);

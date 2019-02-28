@@ -22,6 +22,7 @@ struct ViewConstants {
     float     padding0;
     glm::mat4 view;
     glm::mat4 proj;
+    glm::mat4 invProj;
 };
 
 // Todo::Where should view constantbuffer be...renderview?
@@ -69,7 +70,7 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     
     gfx::AttachmentDesc backbufferAttachmentDesc;
     backbufferAttachmentDesc.format = swapchain->pixelFormat();
-    backbufferAttachmentDesc.loadAction = LoadAction::Clear;
+    backbufferAttachmentDesc.loadAction = LoadAction::Load;
     backbufferAttachmentDesc.storeAction = StoreAction::Store;
     
     gfx::AttachmentDesc depthBufferAttachmentDesc;
@@ -85,7 +86,6 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     baseRenderPassInfo.hasDepth = true;
     
     _baseRenderPass = _device->CreateRenderPass(baseRenderPassInfo);
-    
     
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
@@ -139,6 +139,7 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     ViewConstants* mapped = viewConstantsBuffer->Map<ViewConstants>();
     mapped->eye           = view.eyePos;
     mapped->proj          = view.projection;
+    mapped->invProj       = glm::inverse(view.projection);
     mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
     

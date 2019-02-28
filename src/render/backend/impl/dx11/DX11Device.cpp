@@ -48,10 +48,14 @@ namespace gfx {
             }
         }
         else if (bufferDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) {
-            bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-            //bufferDesc.StructureByteStride = 4; // ??? assume output is rgba 8 bit channel
-            if (desc.accessFlags & (BufferAccessFlags::GpuWriteBit))
+            if (desc.accessFlags & BufferAccessFlags::GpuWriteBit)
                 bufferDesc.BindFlags &= D3D11_BIND_UNORDERED_ACCESS;
+            if (desc.stride == 0)
+                bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+            else {
+                bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+                bufferDesc.StructureByteStride = desc.stride;
+            }
         }
 
         bufferDesc.ByteWidth = static_cast<UINT>(buffSize);
@@ -79,23 +83,36 @@ namespace gfx {
         if ((bufferDesc.BindFlags & (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) == (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS)) {
             D3D11_UNORDERED_ACCESS_VIEW_DESC descuav{};
             descuav.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-            descuav.Format = DXGI_FORMAT_R32_FLOAT;
             descuav.Buffer.FirstElement = 0;
-            descuav.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
-            descuav.Buffer.NumElements = buffSize / 4;
+            if (desc.stride == 0) {
+                descuav.Format = DXGI_FORMAT_R32_TYPELESS;
+                descuav.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
+                descuav.Buffer.NumElements = buffSize / 4;
+            }
+            else {
+                descuav.Format = DXGI_FORMAT_UNKNOWN;
+                descuav.Buffer.NumElements = desc.size / desc.stride;
+            }
+            
             DX11_CHECK(m_dev->CreateUnorderedAccessView(buffer.Get(), &descuav, &uav));
             std::string tmp = desc.debugName + "UAV";
             D3D_SET_OBJECT_NAME_A(buffer, tmp.c_str());
         }
         else if ((bufferDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) == D3D11_BIND_SHADER_RESOURCE) {
-            // todo: implement read only 'buffers', this will probly clash with cbuffers currently
 
             D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
             srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
-            srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-            srvDesc.BufferEx.Flags = D3D11_BUFFEREX_SRV_FLAG_RAW;
             srvDesc.BufferEx.FirstElement = 0;
-            srvDesc.BufferEx.NumElements = buffSize / 4;
+            if (desc.stride == 0) {
+                srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+                srvDesc.BufferEx.Flags = D3D11_BUFFEREX_SRV_FLAG_RAW;
+                srvDesc.BufferEx.NumElements = buffSize / 4;
+            }
+            else {
+                srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+                srvDesc.BufferEx.NumElements = desc.size/ desc.stride;
+            }
+            
             DX11_CHECK(m_dev->CreateShaderResourceView(buffer.Get(), &srvDesc, &srv));
             std::string tmp = desc.debugName + "SRV";
             D3D_SET_OBJECT_NAME_A(buffer, tmp.c_str());

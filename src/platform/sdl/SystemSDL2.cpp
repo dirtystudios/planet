@@ -22,8 +22,8 @@
 
 SDL_Window*        _window = NULL;
 SDL_Event          _e;
-uint32_t           _window_width  = 1200;
-uint32_t           _window_height = 800;
+uint32_t           _window_width  = 1920;
+uint32_t           _window_height = 1080;
 const char*        _window_title  = "dirty";
 app::Application*  _app           = {nullptr};
 bool               shouldQuit     = false;

@@ -2,6 +2,7 @@
 #include "Log.h"
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/random.hpp>
+#include <glm/gtx/norm.hpp>
 #include "ConstantBuffer.h"
 #include "ConstantBufferManager.h"
 #include "StateGroupEncoder.h"
@@ -38,6 +39,13 @@ struct RTPerObject {
     glm::vec2 pixOffsets;
     glm::vec2 p1;
     DirLight dirLight;
+};
+
+struct RTSphere {
+    glm::vec3 pos;
+    float radius;
+    glm::vec3 albedo;
+    glm::vec3 specular;
 };
 
 struct PointLight {
@@ -91,13 +99,18 @@ void RayTraceRenderer::OnInit() {
     csVertBuffer = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, kDefaultVertexBufferSize, "rayTraceVB"));
     fakeVertBuff = device()->AllocateBuffer(gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::VertexBufferBit, kDefaultVertexBufferSize, "rayTraceFakeVB"));
     cbPerObj = services()->constantBufferManager()->GetConstantBuffer(sizeof(RTPerObject), "rayTracePerObj");
+    rpCbPerObj = services()->constantBufferManager()->GetConstantBuffer(sizeof(unsigned int), "rayTraceAAPerObj");
 
-    computeResultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1200, 800, nullptr, "rayTraceImmResultTex");
+    SetupSpheres();
+    assert(sphereBuff != NULL_ID);
+    
+    computeResultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1920, 1080, nullptr, "rayTraceImmResultTex");
 
     gfx::StateGroupEncoder encoder;
 
     encoder.Begin();
     encoder.BindBuffer(0, csVertBuffer, ShaderStageFlags::ComputeBit);
+    encoder.BindBuffer(2, sphereBuff, ShaderStageFlags::ComputeBit);
     encoder.BindResource(cbPerObj->GetBinding(2));
     encoder.BindTexture(0, computeResultTex, ShaderStageFlags::ComputeBit, ShaderBindingFlags::ReadWrite);
     encoder.BindTexture(1, skyboxTextureId, ShaderStageFlags::ComputeBit);
@@ -119,6 +132,7 @@ void RayTraceRenderer::OnInit() {
 
     encoder.Begin();
     encoder.BindTexture(0, computeResultTex, ShaderStageFlags::PixelBit, ShaderBindingFlags::SampleRead);
+    encoder.BindResource(rpCbPerObj->GetBinding(2));
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuadAA"));
     encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
     encoder.SetVertexBuffer(fakeVertBuff);
@@ -129,11 +143,61 @@ void RayTraceRenderer::OnInit() {
     renderStateGroup = encoder.End();
 }
 
+void RayTraceRenderer::SetupSpheres() {
+    auto sphereRadius = glm::vec2(3.f, 10.f);
+    int spheresmax = 400;
+    float placementRadius = 80.f;
+
+    std::vector<RTSphere> spheres;
+    spheres.reserve(spheresmax);
+
+    for (int i = 0; i < spheresmax; ++i) {
+        RTSphere s;
+        s.radius = sphereRadius.x + glm::linearRand(0.f, 1.f) * (sphereRadius.y - sphereRadius.x);
+        glm::vec2 randPos = glm::sphericalRand(1.f) * placementRadius;
+        s.pos = glm::vec3(randPos.x, s.radius, randPos.y);
+
+        // reject spheres that intersec tothers
+        bool reject = false;
+        for (auto o : spheres) {
+            float minDist = s.radius + o.radius;
+            if (glm::length2(s.pos - o.pos) < minDist * minDist) {
+                reject = true;
+                break;
+            }
+        }
+
+        if (reject) continue;
+
+        glm::vec4 color = glm::linearRand(glm::vec4(0.f), glm::vec4(1.f));
+        bool metal = glm::linearRand(0.f, 1.f) < 0.5f;
+        s.albedo = metal ? glm::vec3(0.f) : glm::vec3(color.r, color.g, color.b);
+        s.specular = metal ? glm::vec3(color.r, color.g, color.b) : glm::vec3(1.f) * 0.04f;
+        spheres.push_back(std::move(s));
+    }
+
+    auto desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, sizeof(RTSphere) * spheresmax, "rayTraceSpheres");
+    desc.stride = sizeof(RTSphere);
+    sphereBuff = device()->AllocateBuffer(desc, spheres.data());
+}
+
 void RayTraceRenderer::Register(MeshRenderObj* meshObj) {
 }
 
 void RayTraceRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView) {
     _drawItems.clear();
+
+    bool hasChanged = !(*renderView == *lastFrameView);
+    if (hasChanged) {
+        currentSample = 0;
+        lastFrameView = std::make_unique<FrameView>(*renderView);
+    }
+    else
+        currentSample++;
+
+    auto perObj = rpCbPerObj->Map<unsigned int>();
+    *perObj = currentSample;
+    rpCbPerObj->Unmap();
 
     gfx::DrawCall drawCall;
     drawCall.type = gfx::DrawCall::Type::Arrays;
@@ -155,17 +219,9 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView)
 
     _dispatchItems.clear();
 
-    bool hasChanged = !(*renderView == *lastFrameView);
-    if (hasChanged) {
-        currentSample = 0;
-        lastFrameView = std::make_unique<FrameView>(*renderView);
-    }
-    else
-        currentSample++;
-
     auto perObj = cbPerObj->Map<RTPerObject>();
-    perObj->pixOffsets = glm::vec2(0.5f, 0.5f);//glm::vec2(glm::linearRand(0.f, 1.f), glm::linearRand(0.f, 1.f));
-    perObj->dirLight.direction = glm::vec3(0.0f, -0.3f, -1.f);
+    perObj->pixOffsets = glm::vec2(glm::linearRand(0.f, 1.f), glm::linearRand(0.f, 1.f));
+    perObj->dirLight.direction = glm::vec3(0.5f, -1.f, 0.f);
     perObj->dirLight.intensity = 0.8f;
     cbPerObj->Unmap();
 
@@ -175,8 +231,8 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView)
     };
 
     DispatchCall dc;
-    dc.groupX = 1200 / 8;//renderView->viewport.width / 8;
-    dc.groupY = 800 / 8;// renderView->viewport.height / 8;
+    dc.groupX = 1920 / 8;//renderView->viewport.width / 8;
+    dc.groupY = 1080 / 8;// renderView->viewport.height / 8;
     dc.groupZ = 1;
 
     DispatchItemEncoder die;

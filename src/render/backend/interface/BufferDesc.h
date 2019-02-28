@@ -13,6 +13,7 @@ struct BufferDesc {
     BufferAccessFlags accessFlags{BufferAccessFlags::GpuReadCpuWriteBits}; // how will this buffer be accessed
     BufferLifetime lifetime{BufferLifetime::Persistent};
     bool isDynamic{false}; // will you be writing to the buffer while the gpu is using it
+    size_t stride{ 0 };
     size_t size{0};
     std::string debugName{""};
 
