@@ -8,13 +8,16 @@ cbuffer viewConstants : register(b0) {
 cbuffer cbPerObj : register(b2) {
     float2 pixOffset;
     float4 dirLight;
+    float seed;
 }
 
 struct Sphere {
     float3 position;
     float radius;
     float3 albedo;
+    float p0;
     float3 specular;
+    float p1;
 };
 
 RWTexture2D<float4> result : register(u0);
@@ -58,6 +61,20 @@ Ray CreateRay(float3 origin, float3 direction) {
     return ray;
 }
 
+static float2 _Pixel;
+static float2 _Seed;
+float rand()
+{
+    float result = frac(sin(_Seed / 100.0f * dot(_Pixel, float2(12.9898f, 78.233f))) * 43758.5453f);
+    _Seed += 1.0f;
+    return result;
+}
+
+float sdot(float3 x, float3 y, float f = 1.0f)
+{
+    return saturate(dot(x, y) * f);
+}
+
 void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
 {
     // Calculate distance along the ray where the ground plane is intersected
@@ -92,6 +109,29 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, Sphere sphere)
     }
 }
 
+float3x3 GetTangentSpace(float3 normal)
+{
+    // Choose a helper vector for the cross product
+    float3 helper = float3(1, 0, 0);
+    if (abs(normal.x) > 0.99f)
+        helper = float3(0, 0, 1);
+    // Generate vectors
+    float3 tangent = normalize(cross(normal, helper));
+    float3 binormal = normalize(cross(normal, tangent));
+    return float3x3(tangent, binormal, normal);
+}
+
+float3 SampleHemisphere(float3 normal)
+{
+    // Uniformly sample hemisphere direction
+    float cosTheta = rand();
+    float sinTheta = sqrt(max(0.0f, 1.0f - cosTheta * cosTheta));
+    float phi = 2 * PI * rand();
+    float3 tangentSpaceDir = float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+    // Transform direction to world space
+    return mul(tangentSpaceDir, GetTangentSpace(normal));
+}
+
 RayHit Trace(Ray ray)
 {
     RayHit bestHit = CreateRayHit();
@@ -109,16 +149,11 @@ float3 Shade(inout Ray ray, RayHit hit)
 {
     if (hit.distance < 1.#INF)
     {
-        // Reflect the ray and multiply energy with specular reflection
+        // Diffuse shading
         ray.origin = hit.position + hit.normal * 0.001f;
-        ray.direction = reflect(ray.direction, hit.normal);
-        ray.energy *= hit.specular;
-        
-        Ray shadowRay = CreateRay(hit.position + hit.normal * 0.001f, -1 * dirLight.xyz);
-        RayHit shadowHit = Trace(shadowRay);
-        if (shadowHit.distance != 1.#INF) 
-            return float3(0.f, 0.f, 0.f);
-        return saturate(dot(hit.normal, dirLight.xyz) * -1) * dirLight.w * hit.albedo;
+        ray.direction = SampleHemisphere(hit.normal);
+        ray.energy *= 2 * hit.albedo * sdot(hit.normal, ray.direction);
+        return 0.0f;
     }
     else
     {
@@ -146,6 +181,8 @@ Ray CreateCameraRay(float2 uv) {
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
+    _Pixel = id.xy;
+    _Seed = seed;
     // Get the dimensions of the RenderTexture
     uint width, height;
     result.GetDimensions(width, height);

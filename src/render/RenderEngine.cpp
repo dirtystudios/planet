@@ -65,12 +65,10 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _animationCache        = new AnimationCache(_device, assetDirPath);
 
     viewConstantsBuffer = _constantBufferManager->GetConstantBuffer(sizeof(ViewConstants), "ViewConstants");
-    
-    _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, swapchain->width(), swapchain->height(), nullptr);
-    
+   
     gfx::AttachmentDesc backbufferAttachmentDesc;
     backbufferAttachmentDesc.format = swapchain->pixelFormat();
-    backbufferAttachmentDesc.loadAction = LoadAction::Load;
+    backbufferAttachmentDesc.loadAction = LoadAction::Clear;
     backbufferAttachmentDesc.storeAction = StoreAction::Store;
     
     gfx::AttachmentDesc depthBufferAttachmentDesc;
@@ -86,20 +84,40 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     baseRenderPassInfo.hasDepth = true;
     
     _baseRenderPass = _device->CreateRenderPass(baseRenderPassInfo);
-    
+
+    gfx::RenderPassInfo aaRenderPassInfo;
+    aaRenderPassInfo.attachments[0] = { swapchain->pixelFormat(), LoadAction::Clear, StoreAction::Store };
+    aaRenderPassInfo.attachmentCount = 1;
+    aaRenderPassInfo.hasDepth = false;
+
+    _renderPassAA = _device->CreateRenderPass(aaRenderPassInfo);
+
     for (auto p : _renderersByType) {
         LOG_D("Initializing Renderer: %d", p.first);
         p.second->Init(_device, this);
     }
 
+    CreateRenderTargets();
+}
+
+void RenderEngine::CreateRenderPasses() {
     StateGroupEncoder encoder;
     encoder.Begin();
     encoder.SetBlendState(BlendState());
     encoder.SetRasterState(RasterState());
     encoder.SetDepthState(DepthState());
     encoder.BindResource(viewConstantsBuffer->GetBinding(0));
+    encoder.BindTexture(10, offScreenRT); // random hack
     encoder.SetRenderPass(_baseRenderPass);
-    _stateGroupDefaults = encoder.End();
+    _stateGroupDefaultsBase.reset(encoder.End());
+
+    encoder.Begin();
+    encoder.SetBlendState(BlendState());
+    encoder.SetRasterState(RasterState());
+    encoder.SetDepthState(DepthState());
+    encoder.BindResource(viewConstantsBuffer->GetBinding(0));
+    encoder.SetRenderPass(_renderPassAA);
+    _stateGroupDefaultsAA.reset(encoder.End());
 }
 
 void RenderEngine::CreateRenderTargets()
@@ -108,7 +126,14 @@ void RenderEngine::CreateRenderTargets()
         // destroy
         _device->DestroyResource(_depthBuffer);
     }
+
+    if (offScreenRT != NULL_ID)
+        _device->DestroyResource(offScreenRT);
+
     _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, _swapchain->width(), _swapchain->height(), nullptr);
+    offScreenRT = _device->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::RenderTargetShaderRead, _swapchain->width(), _swapchain->height(), "offScreenRT");
+
+    CreateRenderPasses();
 }
 
 RenderEngine::~RenderEngine() {
@@ -122,14 +147,13 @@ RenderEngine::~RenderEngine() {
     }
 
     _renderersByType.clear();
-
-    if (_stateGroupDefaults)
-        delete _stateGroupDefaults;
 }
 
 void RenderEngine::RenderFrame(const RenderScene* scene) {
-    RenderQueue queue(_baseRenderPass, _stateGroupDefaults);
-    ComputeQueue cqueue(_stateGroupDefaults); 
+    RenderQueue queue(_baseRenderPass, _stateGroupDefaultsBase.get());
+    ComputeQueue cqueue(_stateGroupDefaultsBase.get());
+
+    RenderQueue queueAA(_renderPassAA, _stateGroupDefaultsAA.get());
 
     assert(_view);
     FrameView view = _view->frameView();
@@ -142,32 +166,48 @@ void RenderEngine::RenderFrame(const RenderScene* scene) {
     mapped->invProj       = glm::inverse(view.projection);
     mapped->view          = view.view;
     viewConstantsBuffer->Unmap();
-    
+
+    // slight hack
+    auto rtrenderer = _renderersByType[RendererType::RayTrace];
+    if (rtrenderer->isActive()) {
+        rtrenderer->Submit(&cqueue, &view);
+        rtrenderer->Submit(&queueAA, &view);
+    }
+
     for (const std::pair<RendererType, Renderer*>& p : _renderersByType) {
         if (p.second->isActive()) {
-            p.second->Submit(&cqueue, &view);
+            //p.second->Submit(&cqueue, &view);
             p.second->Submit(&queue, &view);
         }
     }
-    
+
     TextureId backbuffer = _swapchain->begin();
-    
+
     gfx::FrameBuffer frameBuffer;
     frameBuffer.color[0] = backbuffer;
     frameBuffer.colorCount = 1;
     frameBuffer.depth = _depthBuffer;
+
+    gfx::FrameBuffer aaFb;
+    aaFb.color[0] = offScreenRT;
+    aaFb.colorCount = 1;
 
     auto* ccommandBuffer = _device->CreateCommandBuffer(); // TODO: how to clean these things up
     auto* cPassCommandBuffer = ccommandBuffer->beginComputePass("MainComputePass");
     cqueue.Submit(cPassCommandBuffer);
     ccommandBuffer->endComputePass(cPassCommandBuffer);
 
+    gfx::CommandBuffer* rtAAPass = _device->CreateCommandBuffer();
+    gfx::RenderPassCommandBuffer* aaPassCb = rtAAPass->beginRenderPass(_renderPassAA, aaFb, "RTPreColorPass");
+    queueAA.Submit(aaPassCb);
+    rtAAPass->endRenderPass(aaPassCb);
+
     gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer();
     gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_baseRenderPass, frameBuffer, "MainPass");
     queue.Submit(renderPassCommandBuffer);
     commandBuffer->endRenderPass(renderPassCommandBuffer);
     
-    _device->Submit({ ccommandBuffer, commandBuffer});
+    _device->Submit({ ccommandBuffer, rtAAPass, commandBuffer});
     _swapchain->present(backbuffer);
 }
 

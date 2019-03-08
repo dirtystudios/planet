@@ -16,8 +16,9 @@ private:
     TextureId computeResultTex{ NULL_ID };
     TextureId skyboxTextureId{ NULL_ID };
     BufferId sphereBuff{ NULL_ID };
-    const gfx::StateGroup* csStateGroup{ nullptr };
-    const gfx::StateGroup* renderStateGroup{ nullptr };
+    std::unique_ptr<const gfx::StateGroup> csStateGroup{ nullptr };
+    std::unique_ptr<const gfx::StateGroup> renderStateGroupColor{ nullptr };
+    std::unique_ptr<const gfx::StateGroup> renderStateGroupBlit{ nullptr };
 
     std::unique_ptr<FrameView> lastFrameView = std::make_unique<FrameView>();
     unsigned int currentSample = 0;
@@ -26,6 +27,8 @@ private:
     std::vector<std::unique_ptr<const gfx::DrawItem>> _drawItems;
 
     void SetupSpheres();
+
+    bool firstColorPass = true;
 public:
     RayTraceRenderer() : Renderer(RendererType::RayTrace) {}
     ~RayTraceRenderer();
@@ -35,4 +38,6 @@ public:
     void Unregister(MeshRenderObj* renderObj) { assert(false); }
     void Submit(RenderQueue* renderQueue, const FrameView* view) final;
     void Submit(ComputeQueue* renderQueue, const FrameView* view) final;
+private:
+    void OnResizeViewport(uint32_t width, uint32_t height);
 };

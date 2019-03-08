@@ -60,7 +60,8 @@ private:
 
     Renderers _renderers;
 
-    const gfx::StateGroup* _stateGroupDefaults{nullptr};
+    std::unique_ptr<const gfx::StateGroup> _stateGroupDefaultsBase{nullptr};
+    std::unique_ptr<const gfx::StateGroup> _stateGroupDefaultsAA{ nullptr };
 
 public:
     RenderEngine(gfx::RenderDevice* device, gfx::Swapchain* swapchain, RenderView* view);
@@ -70,7 +71,9 @@ public:
     void       RenderFrame(const RenderScene* scene);
     void       CreateRenderTargets();
     RenderPassId _baseRenderPass { gfx::NULL_ID };
+    RenderPassId _renderPassAA { gfx::NULL_ID };
     gfx::TextureId _depthBuffer { gfx::NULL_ID };
+    gfx::TextureId offScreenRT { gfx::NULL_ID };
     
     ShaderCache*           shaderCache() override;
     PipelineStateCache*    pipelineStateCache() override;
@@ -82,4 +85,6 @@ public:
     AnimationCache*        animationCache() override;
 
 private:
+
+    void CreateRenderPasses();
 };

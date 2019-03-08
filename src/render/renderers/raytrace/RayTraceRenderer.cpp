@@ -39,13 +39,16 @@ struct RTPerObject {
     glm::vec2 pixOffsets;
     glm::vec2 p1;
     DirLight dirLight;
+    float seed;
 };
 
 struct RTSphere {
     glm::vec3 pos;
     float radius;
     glm::vec3 albedo;
+    float p0;
     glm::vec3 specular;
+    float p1;
 };
 
 struct PointLight {
@@ -103,19 +106,8 @@ void RayTraceRenderer::OnInit() {
 
     SetupSpheres();
     assert(sphereBuff != NULL_ID);
-    
-    computeResultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, 1920, 1080, nullptr, "rayTraceImmResultTex");
 
-    gfx::StateGroupEncoder encoder;
-
-    encoder.Begin();
-    encoder.BindBuffer(0, csVertBuffer, ShaderStageFlags::ComputeBit);
-    encoder.BindBuffer(2, sphereBuff, ShaderStageFlags::ComputeBit);
-    encoder.BindResource(cbPerObj->GetBinding(2));
-    encoder.BindTexture(0, computeResultTex, ShaderStageFlags::ComputeBit, ShaderBindingFlags::ReadWrite);
-    encoder.BindTexture(1, skyboxTextureId, ShaderStageFlags::ComputeBit);
-    encoder.SetComputeShader(services()->shaderCache()->Get(gfx::ShaderType::ComputeShader, "rayTraceKernel"));
-    csStateGroup = encoder.End();
+    OnResizeViewport(1920, 1080);
 
     gfx::RasterState rs;
     rs.cullMode = gfx::CullMode::None;
@@ -130,8 +122,8 @@ void RayTraceRenderer::OnInit() {
     gfx::DepthState ds;
     ds.enable = false;
 
+    gfx::StateGroupEncoder encoder;
     encoder.Begin();
-    encoder.BindTexture(0, computeResultTex, ShaderStageFlags::PixelBit, ShaderBindingFlags::SampleRead);
     encoder.BindResource(rpCbPerObj->GetBinding(2));
     encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuadAA"));
     encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
@@ -140,12 +132,12 @@ void RayTraceRenderer::OnInit() {
     encoder.SetBlendState(blendState);
     encoder.SetRasterState(rs);
     encoder.SetDepthState(ds);
-    renderStateGroup = encoder.End();
+    renderStateGroupBlit.reset(encoder.End());
 }
 
 void RayTraceRenderer::SetupSpheres() {
     auto sphereRadius = glm::vec2(3.f, 10.f);
-    int spheresmax = 400;
+    int spheresmax = 10;
     float placementRadius = 80.f;
 
     std::vector<RTSphere> spheres;
@@ -170,7 +162,7 @@ void RayTraceRenderer::SetupSpheres() {
         if (reject) continue;
 
         glm::vec4 color = glm::linearRand(glm::vec4(0.f), glm::vec4(1.f));
-        bool metal = glm::linearRand(0.f, 1.f) < 0.5f;
+        bool metal = false;// lm::linearRand(0.f, 1.f) < 0.5f;
         s.albedo = metal ? glm::vec3(0.f) : glm::vec3(color.r, color.g, color.b);
         s.specular = metal ? glm::vec3(color.r, color.g, color.b) : glm::vec3(1.f) * 0.04f;
         spheres.push_back(std::move(s));
@@ -184,34 +176,88 @@ void RayTraceRenderer::SetupSpheres() {
 void RayTraceRenderer::Register(MeshRenderObj* meshObj) {
 }
 
+void RayTraceRenderer::OnResizeViewport(uint32_t width, uint32_t height) {
+    if (computeResultTex != NULL_ID)
+        device()->DestroyResource(computeResultTex);
+
+    computeResultTex = device()->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::ShaderRW, width, height, nullptr, "rayTraceImmResultTex");
+
+    gfx::StateGroupEncoder encoder;
+
+    encoder.Begin();
+    encoder.BindBuffer(0, csVertBuffer, ShaderStageFlags::ComputeBit);
+    encoder.BindBuffer(2, sphereBuff, ShaderStageFlags::ComputeBit);
+    encoder.BindResource(cbPerObj->GetBinding(2));
+    encoder.BindTexture(0, computeResultTex, ShaderStageFlags::ComputeBit, ShaderBindingFlags::ReadWrite);
+    encoder.BindTexture(1, skyboxTextureId, ShaderStageFlags::ComputeBit);
+    encoder.SetComputeShader(services()->shaderCache()->Get(gfx::ShaderType::ComputeShader, "rayTraceKernel"));
+    csStateGroup.reset(encoder.End());
+
+    gfx::RasterState rs;
+    rs.cullMode = gfx::CullMode::None;
+
+    gfx::BlendState blendState;
+    blendState.enable = true;
+    blendState.srcRgbFunc = gfx::BlendFunc::SrcAlpha;
+    blendState.srcAlphaFunc = blendState.srcRgbFunc;
+    blendState.dstRgbFunc = gfx::BlendFunc::OneMinusSrcAlpha;
+    blendState.dstAlphaFunc = blendState.dstRgbFunc;
+
+    gfx::DepthState ds;
+    ds.enable = false;
+
+    encoder.Begin();
+    encoder.BindTexture(0, computeResultTex, ShaderStageFlags::PixelBit, ShaderBindingFlags::SampleRead);
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuad"));
+    encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
+    encoder.SetVertexBuffer(fakeVertBuff);
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuad"));
+    encoder.SetBlendState(blendState);
+    encoder.SetRasterState(rs);
+    encoder.SetDepthState(ds);
+    renderStateGroupColor.reset(encoder.End());
+}
+
 void RayTraceRenderer::Submit(RenderQueue* renderQueue, const FrameView* renderView) {
-    _drawItems.clear();
+    const gfx::StateGroup* sg = nullptr;
+    if (firstColorPass) {
+        _drawItems.clear();
 
-    bool hasChanged = !(*renderView == *lastFrameView);
-    if (hasChanged) {
-        currentSample = 0;
-        lastFrameView = std::make_unique<FrameView>(*renderView);
+        sg = renderStateGroupColor.get();
     }
-    else
-        currentSample++;
+    else {
 
-    auto perObj = rpCbPerObj->Map<unsigned int>();
-    *perObj = currentSample;
-    rpCbPerObj->Unmap();
+        bool hasChanged = !(*renderView == *lastFrameView);
+        if (hasChanged) {
+            currentSample = 0;
+            lastFrameView = std::make_unique<FrameView>(*renderView);
+        }
+        else
+            currentSample++;
+
+        auto perObj = rpCbPerObj->Map<unsigned int>();
+        *perObj = currentSample;
+        rpCbPerObj->Unmap();
+
+        sg = renderStateGroupBlit.get();
+    }
+
+    dg_assert_nm(sg != nullptr);
+
+    std::vector<const gfx::StateGroup*> groups = {
+        sg,
+        renderQueue->defaults
+    };
 
     gfx::DrawCall drawCall;
     drawCall.type = gfx::DrawCall::Type::Arrays;
     drawCall.startOffset = 0;
     drawCall.primitiveCount = 3;
 
-    std::vector<const gfx::StateGroup*> groups = {
-        renderStateGroup,
-        renderQueue->defaults
-    };
-
     _drawItems.emplace_back(DrawItemEncoder::Encode(device(), drawCall, groups.data(), groups.size()));
 
     renderQueue->AddDrawItem(0, _drawItems.back().get());
+    firstColorPass = !firstColorPass;
 }
 
 void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView) {
@@ -219,20 +265,25 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView)
 
     _dispatchItems.clear();
 
+    if (!(lastFrameView->viewport == renderView->viewport)) {
+        OnResizeViewport(static_cast<uint32_t>(renderView->viewport.width), static_cast<uint32_t>(renderView->viewport.height));
+    }
+
     auto perObj = cbPerObj->Map<RTPerObject>();
     perObj->pixOffsets = glm::vec2(glm::linearRand(0.f, 1.f), glm::linearRand(0.f, 1.f));
     perObj->dirLight.direction = glm::vec3(0.5f, -1.f, 0.f);
     perObj->dirLight.intensity = 0.8f;
+    perObj->seed = glm::linearRand(0.f, 1.f);
     cbPerObj->Unmap();
 
     std::vector<const gfx::StateGroup*> groups = {
-        csStateGroup,
+        csStateGroup.get(),
         cQueue->defaults
     };
 
     DispatchCall dc;
-    dc.groupX = 1920 / 8;//renderView->viewport.width / 8;
-    dc.groupY = 1080 / 8;// renderView->viewport.height / 8;
+    dc.groupX = renderView->viewport.width / 8;
+    dc.groupY = renderView->viewport.height / 8;
     dc.groupZ = 1;
 
     DispatchItemEncoder die;
@@ -244,49 +295,4 @@ void RayTraceRenderer::Submit(ComputeQueue* cQueue, const FrameView* renderView)
 
     cQueue->AddDispatchItem(0, _dispatchItems.back().get());
 
-    /*
-    // todo: switch this back to renderview
-    for (RenderObj* baseRO : meshRenderObjs) {
-        if (baseRO->GetRendererType() != Renderer::rendererType()) {
-            continue;
-        }
-        MeshRenderObj* renderObj = static_cast<MeshRenderObj*>(baseRO);
-
-        glm::mat4 world = renderObj->_transform.matrix();
-
-        assert(renderObj->perObject);
-        assert(renderObj->mat);
-        assert(renderObj->mesh);
-        assert(renderObj->lighting);
-
-        MeshConstants* meshBuffer = renderObj->perObject->Map<MeshConstants>();
-        assert(renderObj->_boneOffsets.size() <= meshBuffer->boneOffsets.size());
-
-        std::memcpy(meshBuffer->boneOffsets.data(), renderObj->_boneOffsets.data(), std::min(renderObj->_boneOffsets.size(), meshBuffer->boneOffsets.size()) * sizeof(glm::mat4));
-        meshBuffer->world = world;
-        renderObj->perObject->Unmap();
-
-        auto* lighting = renderObj->lighting->Map<Lighting>();
-        std::memcpy(&lighting->dirLight, &dirLight, sizeof(DirLight));
-        lighting->numPointLights = 0;
-        renderObj->lighting->Unmap();
-
-        for (const auto& mg : renderObj->mesh->GetMeshGeometry()) {
-            gfx::DrawItemEncoder encoder;
-
-            std::unique_ptr<const gfx::DrawItem> drawItem;
-
-            uint32_t meshMatIdx = mg.meshMaterialId;
-            assert(renderObj->meshMaterial.size() > meshMatIdx);
-
-            std::vector<const gfx::StateGroup*> groups = {
-                renderObj->stateGroup.get(),
-                mg.stateGroup(),
-                renderObj->meshMaterial[meshMatIdx]->stateGroup(),
-                cQueue->defaults
-            };
-
-            drawItem.reset(encoder.Encode(device(), mg.drawCall(), groups.data(), groups.size()));
-        }
-    }*/
 }

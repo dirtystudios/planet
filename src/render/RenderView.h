@@ -40,7 +40,7 @@ struct FrameView {
     {}
 
     bool operator==(const FrameView& other) const {
-        return eyePos == other.eyePos &&
+        return glm::all(glm::lessThan(eyePos - other.eyePos, glm::vec3(0.01f))) &&
             projection == other.projection &&
             view == other.view &&
             ortho == other.ortho &&
