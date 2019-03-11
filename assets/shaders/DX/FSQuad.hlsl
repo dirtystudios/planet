@@ -10,9 +10,9 @@ VS_OUTPUT VSMain(uint VertexID: SV_VertexID) {
 	return Out;
 }
 
-Texture2D<float4> tex : register(t0);
-SamplerState texSampler : register(s0);
+Texture2D<float4> tex : register(t10);
+SamplerState texSampler : register(s10);
 
 float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {
-	return tex.Sample(texSampler, Input.texcoord);
+	return float4(tex.Sample(texSampler, Input.texcoord).rgb, 1.f);
 }

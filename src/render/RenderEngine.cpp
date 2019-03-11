@@ -86,7 +86,7 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     _baseRenderPass = _device->CreateRenderPass(baseRenderPassInfo);
 
     gfx::RenderPassInfo aaRenderPassInfo;
-    aaRenderPassInfo.attachments[0] = { swapchain->pixelFormat(), LoadAction::Clear, StoreAction::Store };
+    aaRenderPassInfo.attachments[0] = { PixelFormat::RGBA32Float, LoadAction::Load, StoreAction::Store };
     aaRenderPassInfo.attachmentCount = 1;
     aaRenderPassInfo.hasDepth = false;
 

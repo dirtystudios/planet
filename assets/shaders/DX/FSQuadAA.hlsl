@@ -14,7 +14,7 @@ cbuffer cbPerObject : register(b2) {
     uint currentSample;
 }
 
-Texture2D<float4> tex : register(t10);
+Texture2D<float4> tex : register(t0);
 SamplerState texSampler : register(s0);
 
 float4 PSMain( VS_OUTPUT Input ) : SV_TARGET {  

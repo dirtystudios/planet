@@ -124,11 +124,10 @@ void RayTraceRenderer::OnInit() {
 
     gfx::StateGroupEncoder encoder;
     encoder.Begin();
-    encoder.BindResource(rpCbPerObj->GetBinding(2));
-    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuadAA"));
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuad"));
     encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
     encoder.SetVertexBuffer(fakeVertBuff);
-    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuadAA"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuad"));
     encoder.SetBlendState(blendState);
     encoder.SetRasterState(rs);
     encoder.SetDepthState(ds);
@@ -207,11 +206,12 @@ void RayTraceRenderer::OnResizeViewport(uint32_t width, uint32_t height) {
     ds.enable = false;
 
     encoder.Begin();
+    encoder.BindResource(rpCbPerObj->GetBinding(2));
     encoder.BindTexture(0, computeResultTex, ShaderStageFlags::PixelBit, ShaderBindingFlags::SampleRead);
-    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuad"));
+    encoder.SetVertexShader(services()->shaderCache()->Get(gfx::ShaderType::VertexShader, "FSQuadAA"));
     encoder.SetVertexLayout(services()->vertexLayoutCache()->Pos3f());
     encoder.SetVertexBuffer(fakeVertBuff);
-    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuad"));
+    encoder.SetPixelShader(services()->shaderCache()->Get(gfx::ShaderType::PixelShader, "FSQuadAA"));
     encoder.SetBlendState(blendState);
     encoder.SetRasterState(rs);
     encoder.SetDepthState(ds);
