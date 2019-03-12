@@ -135,8 +135,8 @@ void RayTraceRenderer::OnInit() {
 }
 
 void RayTraceRenderer::SetupSpheres() {
-    auto sphereRadius = glm::vec2(3.f, 10.f);
-    int spheresmax = 10;
+    auto sphereRadius = glm::vec2(5.f, 30.f);
+    int spheresmax = 10000;
     float placementRadius = 80.f;
 
     std::vector<RTSphere> spheres;
@@ -167,7 +167,7 @@ void RayTraceRenderer::SetupSpheres() {
         spheres.push_back(std::move(s));
     }
 
-    auto desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, sizeof(RTSphere) * spheresmax, "rayTraceSpheres");
+    auto desc = gfx::BufferDesc::defaultPersistent(gfx::BufferUsageFlags::ShaderBufferBit, sizeof(RTSphere) * spheres.size(), "rayTraceSpheres");
     desc.stride = sizeof(RTSphere);
     sphereBuff = device()->AllocateBuffer(desc, spheres.data());
 }

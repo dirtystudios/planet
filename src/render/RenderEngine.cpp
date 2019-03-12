@@ -131,7 +131,7 @@ void RenderEngine::CreateRenderTargets()
         _device->DestroyResource(offScreenRT);
 
     _depthBuffer = _device->CreateTexture2D(PixelFormat::Depth32Float, TextureUsageFlags::RenderTarget, _swapchain->width(), _swapchain->height(), nullptr);
-    offScreenRT = _device->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::RenderTargetShaderRead, _swapchain->width(), _swapchain->height(), "offScreenRT");
+    offScreenRT = _device->CreateTexture2D(PixelFormat::RGBA32Float, TextureUsageFlags::RenderTargetShaderRead, _swapchain->width(), _swapchain->height(), nullptr, "offScreenRT");
 
     CreateRenderPasses();
 }
