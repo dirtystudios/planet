@@ -61,6 +61,11 @@ Ray CreateRay(float3 origin, float3 direction) {
     return ray;
 }
 
+float energy(float3 color)
+{
+    return dot(color, 1.0f / 3.0f);
+}
+
 static float2 _Pixel;
 static float2 _Seed;
 float rand()
@@ -149,10 +154,29 @@ float3 Shade(inout Ray ray, RayHit hit)
 {
     if (hit.distance < 1.#INF)
     {
-        // Diffuse shading
-        ray.origin = hit.position + hit.normal * 0.001f;
-        ray.direction = SampleHemisphere(hit.normal);
-        ray.energy *= 2 * hit.albedo * sdot(hit.normal, ray.direction);
+        // Calculate chances of diffuse and specular reflection
+        hit.albedo = min(1.0f - hit.specular, hit.albedo);
+        float specChance = energy(hit.specular);
+        float diffChance = energy(hit.albedo);
+        float sum = specChance + diffChance;
+        specChance /= sum;
+        diffChance /= sum;
+        // Roulette-select the ray's path
+        float roulette = rand();
+        if (roulette < specChance)
+        {
+            // Specular reflection
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = reflect(ray.direction, hit.normal);
+            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction);
+        }
+        else
+        {
+            // Diffuse reflection
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = SampleHemisphere(hit.normal);
+            ray.energy *= (1.0f / diffChance) * 2 * hit.albedo * sdot(hit.normal, ray.direction);
+        }
         return 0.0f;
     }
     else

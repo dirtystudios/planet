@@ -161,7 +161,7 @@ void RayTraceRenderer::SetupSpheres() {
         if (reject) continue;
 
         glm::vec4 color = glm::linearRand(glm::vec4(0.f), glm::vec4(1.f));
-        bool metal = false;// lm::linearRand(0.f, 1.f) < 0.5f;
+        bool metal = glm::linearRand(0.f, 1.f) < 0.5f;
         s.albedo = metal ? glm::vec3(0.f) : glm::vec3(color.r, color.g, color.b);
         s.specular = metal ? glm::vec3(color.r, color.g, color.b) : glm::vec3(1.f) * 0.04f;
         spheres.push_back(std::move(s));
