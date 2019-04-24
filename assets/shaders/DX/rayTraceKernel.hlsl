@@ -18,6 +18,8 @@ struct Sphere {
     float p0;
     float3 specular;
     float p1;
+    float3 emission;
+    float smoothness;
 };
 
 RWTexture2D<float4> result : register(u0);
@@ -40,6 +42,8 @@ struct RayHit
     float3 normal;
     float3 albedo;
     float3 specular;
+    float3 emission;
+    float smoothness;
 };
 
 RayHit CreateRayHit()
@@ -50,6 +54,8 @@ RayHit CreateRayHit()
     hit.normal = float3(0.0f, 0.0f, 0.0f);
     hit.albedo = float3(0.f, 0.f, 0.f);
     hit.specular = float3(0.f, 0.f, 0.f);
+    hit.emission = float3(0.f, 0.f, 0.f);
+    hit.smoothness = 0.f;
     return hit;
 }
 
@@ -80,6 +86,11 @@ float sdot(float3 x, float3 y, float f = 1.0f)
     return saturate(dot(x, y) * f);
 }
 
+float SmoothnessToPhongAlpha(float s)
+{
+    return pow(1000.0f, s * s);
+}
+
 void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
 {
     // Calculate distance along the ray where the ground plane is intersected
@@ -91,6 +102,8 @@ void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
         bestHit.normal = float3(0.0f, 1.0f, 0.0f);
         bestHit.albedo = 0.5f;
         bestHit.specular = 0.33f;
+        bestHit.smoothness = 0.2f;
+        bestHit.emission = float3(0.f, 0.f, 0.f);
     }
 }
 
@@ -111,6 +124,8 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, Sphere sphere)
         bestHit.normal = normalize(bestHit.position - sphere.position);
         bestHit.albedo = sphere.albedo;
         bestHit.specular = sphere.specular;
+        bestHit.emission = sphere.emission;
+        bestHit.smoothness = sphere.smoothness;
     }
 }
 
@@ -126,11 +141,13 @@ float3x3 GetTangentSpace(float3 normal)
     return float3x3(tangent, binormal, normal);
 }
 
-float3 SampleHemisphere(float3 normal)
+float3 SampleHemisphere(float3 normal, float alpha)
 {
-    // Uniformly sample hemisphere direction
-    float cosTheta = rand();
-    float sinTheta = sqrt(max(0.0f, 1.0f - cosTheta * cosTheta));
+
+    // alpha determines cosine/power of distribution
+    // 0 uniform, 1 for cos, higher for phong
+    float cosTheta = pow(rand(), 1.f / (alpha + 1.f));
+    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
     float phi = 2 * PI * rand();
     float3 tangentSpaceDir = float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
     // Transform direction to world space
@@ -166,18 +183,20 @@ float3 Shade(inout Ray ray, RayHit hit)
         if (roulette < specChance)
         {
             // Specular reflection
+            float alpha = SmoothnessToPhongAlpha(hit.smoothness);
             ray.origin = hit.position + hit.normal * 0.001f;
-            ray.direction = reflect(ray.direction, hit.normal);
-            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction);
+            ray.direction = SampleHemisphere(reflect(ray.direction, hit.normal), alpha);
+            float f = (alpha + 2) / (alpha + 1);
+            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction, f);
         }
         else
         {
             // Diffuse reflection
             ray.origin = hit.position + hit.normal * 0.001f;
-            ray.direction = SampleHemisphere(hit.normal);
-            ray.energy *= (1.0f / diffChance) * 2 * hit.albedo * sdot(hit.normal, ray.direction);
+            ray.direction = SampleHemisphere(hit.normal, 1.f);
+            ray.energy *= (1.0f / diffChance) * hit.albedo;
         }
-        return 0.0f;
+        return hit.emission;
     }
     else
     {
@@ -186,7 +205,7 @@ float3 Shade(inout Ray ray, RayHit hit)
         // Sample the skybox and write it
         float theta = acos(ray.direction.y) / PI;
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
-        return skyboxtex.SampleLevel(samplerSky, float2(phi, theta), 0).xyz * 1.8f;
+        return skyboxtex.SampleLevel(samplerSky, float2(phi, theta), 0).xyz;
     }
 }
 

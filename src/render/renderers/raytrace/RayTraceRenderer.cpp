@@ -3,6 +3,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtx/color_space.hpp>
 #include "ConstantBuffer.h"
 #include "ConstantBufferManager.h"
 #include "StateGroupEncoder.h"
@@ -49,6 +50,8 @@ struct RTSphere {
     float p0;
     glm::vec3 specular;
     float p1;
+    glm::vec3 emission;
+    float smoothness;
 };
 
 struct PointLight {
@@ -161,9 +164,23 @@ void RayTraceRenderer::SetupSpheres() {
         if (reject) continue;
 
         glm::vec4 color = glm::linearRand(glm::vec4(0.f), glm::vec4(1.f));
-        bool metal = glm::linearRand(0.f, 1.f) < 0.5f;
-        s.albedo = metal ? glm::vec3(0.f) : glm::vec3(color.r, color.g, color.b);
-        s.specular = metal ? glm::vec3(color.r, color.g, color.b) : glm::vec3(1.f) * 0.04f;
+        bool chance = glm::linearRand(0.f, 1.f);
+        if (chance < 0.8f) {
+            bool metal = chance < 0.4f;
+            s.albedo = metal ? glm::vec3(0.f) : glm::vec3(color.r, color.g, color.b);
+            s.specular = metal ? glm::vec3(color.r, color.g, color.b) : glm::vec3(1.f) * 0.04f;
+            s.smoothness = glm::linearRand(0.f, 1.f);
+            s.emission = glm::vec3(0.f);
+        }
+        else {
+            auto hsvEmission = glm::linearRand(glm::vec3(0.f, 0.f, 3.f), glm::vec3(1.f, 1.f, 8.f));
+            //s.emission = glm::rgbColor(hsvEmission) / 255.f;
+            s.emission = glm::vec3(color.r, color.g, color.b);
+            s.albedo = glm::vec3(0.f);
+            s.specular = glm::vec3(0.f);
+            s.smoothness = 0.f;
+        }
+
         spheres.push_back(std::move(s));
     }
 
