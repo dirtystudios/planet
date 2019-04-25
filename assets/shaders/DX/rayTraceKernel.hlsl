@@ -101,7 +101,7 @@ void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
         bestHit.position = ray.origin + t * ray.direction;
         bestHit.normal = float3(0.0f, 1.0f, 0.0f);
         bestHit.albedo = 0.5f;
-        bestHit.specular = 0.33f;
+        bestHit.specular = 0.03f;
         bestHit.smoothness = 0.2f;
         bestHit.emission = float3(0.f, 0.f, 0.f);
     }
@@ -175,27 +175,30 @@ float3 Shade(inout Ray ray, RayHit hit)
         hit.albedo = min(1.0f - hit.specular, hit.albedo);
         float specChance = energy(hit.specular);
         float diffChance = energy(hit.albedo);
-        float sum = specChance + diffChance;
-        specChance /= sum;
-        diffChance /= sum;
+
         // Roulette-select the ray's path
         float roulette = rand();
         if (roulette < specChance)
         {
             // Specular reflection
-            float alpha = SmoothnessToPhongAlpha(hit.smoothness);
             ray.origin = hit.position + hit.normal * 0.001f;
+            float alpha = SmoothnessToPhongAlpha(hit.smoothness);
             ray.direction = SampleHemisphere(reflect(ray.direction, hit.normal), alpha);
-            float f = (alpha + 2) / (alpha + 1);
-            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction, f);
+            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction);
         }
-        else
+        else if (diffChance > 0 && roulette < specChance + diffChance)
         {
             // Diffuse reflection
             ray.origin = hit.position + hit.normal * 0.001f;
-            ray.direction = SampleHemisphere(hit.normal, 1.f);
+            ray.direction = SampleHemisphere(hit.normal, 1.0f);
             ray.energy *= (1.0f / diffChance) * hit.albedo;
         }
+        else
+        {
+            // Terminate ray
+            ray.energy = 0.0f;
+        }
+
         return hit.emission;
     }
     else
