@@ -101,8 +101,8 @@ void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
         bestHit.position = ray.origin + t * ray.direction;
         bestHit.normal = float3(0.0f, 1.0f, 0.0f);
         bestHit.albedo = 0.5f;
-        bestHit.specular = 0.03f;
-        bestHit.smoothness = 0.2f;
+        bestHit.specular = 0.33f;
+        bestHit.smoothness = 1.0f;
         bestHit.emission = float3(0.f, 0.f, 0.f);
     }
 }
@@ -208,7 +208,7 @@ float3 Shade(inout Ray ray, RayHit hit)
         // Sample the skybox and write it
         float theta = acos(ray.direction.y) / PI;
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
-        return skyboxtex.SampleLevel(samplerSky, float2(phi, theta), 0).xyz;
+        return float3(0.1f,0.1f, 0.1f);//skyboxtex.SampleLevel(samplerSky, float2(phi, theta), 0).xyz;
     }
 }
 

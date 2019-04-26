@@ -140,7 +140,7 @@ void RayTraceRenderer::OnInit() {
 void RayTraceRenderer::SetupSpheres() {
     auto sphereRadius = glm::vec2(5.f, 20.f);
     int spheresmax = 10000;
-    float placementRadius = 80.f;
+    float placementRadius = 300.f;
 
     std::vector<RTSphere> spheres;
     spheres.reserve(spheresmax);
@@ -165,7 +165,7 @@ void RayTraceRenderer::SetupSpheres() {
 
         glm::vec4 color = glm::linearRand(glm::vec4(0.f), glm::vec4(1.f));
         float chance = glm::linearRand(0.f, 1.f);
-        if (chance < 0.8f) {
+        if (chance < 0.9f) {
             bool metal = chance < 0.4f;
             s.albedo = metal ? glm::vec3(0.f) : glm::vec3(color.r, color.g, color.b);
             s.specular = metal ? glm::vec3(color.r, color.g, color.b) : glm::vec3(1.f) * 0.04f;
@@ -173,7 +173,7 @@ void RayTraceRenderer::SetupSpheres() {
             s.emission = glm::vec3(0.f);
         }
         else {
-            s.emission = glm::linearRand(glm::vec3(0.8f), glm::vec3(1.f));
+            s.emission = glm::linearRand(glm::vec3(3.9f), glm::vec3(8.f));
             s.albedo = glm::vec3(0.f);
             s.specular = glm::vec3(0.f);
             s.smoothness = 0.f;
