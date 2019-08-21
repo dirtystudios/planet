@@ -8,6 +8,9 @@
 #include "DMath.h"
 #include "ByteBuffer.h"
 
+#include "d3dx12.h"
+#include "d3dx12Residency.h"
+
 #include <memory>
 #include <cstring>
 #include <unordered_map>
@@ -52,7 +55,7 @@ namespace gfx {
     };
 
 
-    class DX12Device : public RenderDevice {
+    class DX12Device final : public RenderDevice {
     private:
 
         static const uint32_t FrameCount = 2;
@@ -61,9 +64,7 @@ namespace gfx {
         uint32_t m_winWidth, m_winHeight;
         bool m_usePrebuiltShaders;
 
-        ComPtr<IDXGIFactory4> m_factory;
         ComPtr<ID3D12Device> m_dev;
-        ComPtr<IDXGISwapChain3> m_swapchain;
 
         ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
         ComPtr<ID3D12CommandAllocator> m_commandAllocators[FrameCount];
@@ -95,14 +96,11 @@ namespace gfx {
         ByteBuffer m_drawItemByteBuffer;
 
     public:
-        DX12Device() {};
+        DX12Device() = delete;
+        DX12Device(ResourceManager* resourceManager, bool usePrebuiltShaders = false);
         ~DX12Device();
 
-        RenderDeviceApi GetDeviceApi() { return RenderDeviceApi::D3D12; };
-
-        int32_t InitializeDevice(const DeviceInitialization& deviceInit);
-        void ResizeWindow(uint32_t width, uint32_t height) {};
-        void PrintDisplayAdapterInfo();
+        RenderDeviceApi GetDeviceApi() final { return RenderDeviceApi::D3D12; };
 
         BufferId AllocateBuffer(const BufferDesc& desc, const void* initialData);
 
@@ -110,26 +108,28 @@ namespace gfx {
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-        TextureId CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName);
+        TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") final;
         TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height,
             uint32_t depth, const std::string& debugName) { return 0; }
 
         TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) { return 0; }
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
+        RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo) final;
         CommandBuffer* CreateCommandBuffer() { return 0; }
+        void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) final;
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers) {}
 
         uint8_t* MapMemory(BufferId buffer, BufferAccess);
         void UnmapMemory(BufferId buffer);
 
-        void RenderFrame();
+        ID3D12CommandQueue* GetCommandQueue() { return m_commandQueue.Get(); }
 
         //todo:
-        void DestroyResource(ResourceId resourceId) {}
-        void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) {}
-        uint32_t DrawCallCount() { return 0; }
+        void DestroyResource(ResourceId resourceId) final {}
     private:
+        void PrintDisplayAdapterInfo();
+
         ShaderId CreateShader(ShaderType type, const std::string& source);
         ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const std::string& source);
 

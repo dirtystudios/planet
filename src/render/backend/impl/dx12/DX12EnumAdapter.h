@@ -11,6 +11,8 @@
 
 #include <d3d12.h>
 
+#define SafeGet(id, idx) id[(uint32_t)idx]
+
 namespace gfx {
     static DXGI_FORMAT PixelFormatDX12[(uint32_t)PixelFormat::Count] = {
         DXGI_FORMAT_R8_UNORM,           // R8Unorm

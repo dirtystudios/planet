@@ -27,7 +27,7 @@ workspace "planet"
 
     filter "system:windows"
         defines { "_WINDOWS", "WIN32" }
-        systemversion "10.0.14393.0"
+        systemversion "10.0"
     -- optimization levels in debug running debug stepping
     filter { "configurations:debug", "system:macosx" }
         xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
@@ -98,6 +98,7 @@ project "planet"
         removefiles { "src/**/osx/**" }
         removefiles { "src/**/uwp/**" }
         removefiles { "src/**/metal/**"}
+		removefiles { "assets/shaders/**" }
     filter "system:macosx"
         files { "src/**.mm" }
         removefiles { "src/**/win32/**" }

@@ -6,6 +6,8 @@
 #include "SimpleShaderLibrary.h"
 #include "TexConvert.h"
 #include "Memory.h"
+#include "ResourceManager.h"
+
 
 #include "DrawItemDecoder.h"
 
@@ -221,7 +223,7 @@ namespace gfx {
         return UseHandleEmplaceConstRef(m_inputLayouts, hash, il);
     }
 
-    TextureId DX12Device::CreateTexture2D(PixelFormat format, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
+    TextureId DX12Device::CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
         D3D12_RESOURCE_DESC texDesc = {};
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
         texDesc.Width = width;
@@ -536,10 +538,8 @@ namespace gfx {
         m_bufferIndex = m_bufferIndex == 0 ? 1 : 0;
     }
 
-    int32_t DX12Device::InitializeDevice(const DeviceInitialization& deviceInit) {
-        m_winWidth = deviceInit.windowWidth;
-        m_winHeight = deviceInit.windowHeight;
-        m_usePrebuiltShaders = deviceInit.usePrebuiltShaders;
+    DX12Device::DX12Device(ResourceManager* resourceManager, bool usePrebuiltShaders) {
+        m_usePrebuiltShaders = usePrebuiltShaders;
 
 		DeviceConfig.DeviceAbbreviation = "DX12";
 		DeviceConfig.ShaderDir = "DX";
@@ -562,11 +562,9 @@ namespace gfx {
         }
 #endif
 
-        DX12_CHECK_RET0(CreateDXGIFactory1(IID_PPV_ARGS(&m_factory)));
-
         ComPtr<IDXGIAdapter1> adapter;
 
-        DX12_CHECK_RET0(D3D12CreateDevice(
+        DX12_CHECK_RET(D3D12CreateDevice(
             adapter.Get(),
             D3D_FEATURE_LEVEL_11_0,
             IID_PPV_ARGS(&m_dev)
@@ -581,39 +579,15 @@ namespace gfx {
         // If CheckFeatureSupport succeeds, the HighestVersion returned will not be greater than this.
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
 
-        DX12_CHECK_RET0(m_dev->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData)));
+        DX12_CHECK_RET(m_dev->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData)));
 
         // Describe and create the command queue.
         D3D12_COMMAND_QUEUE_DESC queueDesc = {};
         queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
         queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-        DX12_CHECK_RET0(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
+        DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 
-        // Describe and create the swap chain.
-        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
-        swapChainDesc.BufferCount = FrameCount;
-        swapChainDesc.Width = m_winWidth;
-        swapChainDesc.Height = m_winHeight;
-        swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        swapChainDesc.SampleDesc.Count = 1;
-
-        ComPtr<IDXGISwapChain1> swapChain;
-        DX12_CHECK_RET0(m_factory->CreateSwapChainForHwnd(
-            m_commandQueue.Get(),		// Swap chain needs the queue so that it can force a flush on it.
-            static_cast<HWND>(deviceInit.windowHandle),
-            &swapChainDesc,
-            nullptr,
-            nullptr,
-            &swapChain
-        ));
-
-        // disable fullscreen transitions.
-        DX12_CHECK_RET0(m_factory->MakeWindowAssociation(static_cast<HWND>(deviceInit.windowHandle), DXGI_MWA_NO_ALT_ENTER));
-
-        DX12_CHECK_RET0(swapChain.As(&m_swapchain));
         m_bufferIndex = m_swapchain->GetCurrentBackBufferIndex();
 
         // Describe and create a render target view (RTV) descriptor heap.
@@ -621,7 +595,7 @@ namespace gfx {
         rtvHeapDesc.NumDescriptors = FrameCount;
         rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        DX12_CHECK_RET0(m_dev->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
+        DX12_CHECK_RET(m_dev->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
 
         m_rtvDescriptorSize = m_dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
@@ -631,44 +605,28 @@ namespace gfx {
         // Create a RTV and a command allocator for each frame.
         for (uint32_t n = 0; n < FrameCount; n++)
         {
-            DX12_CHECK_RET0(m_swapchain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
+            DX12_CHECK_RET(m_swapchain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
             m_dev->CreateRenderTargetView(m_renderTargets[n].Get(), nullptr, m_rtvHandle);
             m_rtvHandle.Offset(1, m_rtvDescriptorSize);
 
-            DX12_CHECK_RET0(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
+            DX12_CHECK_RET(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
         }
 
-        DX12_CHECK_RET0(m_dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[0].Get(), NULL, IID_PPV_ARGS(&m_commandList)));
+        DX12_CHECK_RET(m_dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[0].Get(), NULL, IID_PPV_ARGS(&m_commandList)));
 
         m_commandList->Close();
 
-        DX12_CHECK_RET0(m_dev->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+        DX12_CHECK_RET(m_dev->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
 
         m_fenceEvent = CreateEventEx(NULL, FALSE, FALSE, EVENT_ALL_ACCESS);
 
         m_fenceValues[0] = 1;
 
         m_drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
-
-        return 1;
-    }
-
-    void DX12Device::PrintDisplayAdapterInfo() {
-        ComPtr<IDXGIAdapter> adapter;
-        DX12_CHECK(m_factory->EnumAdapters(0, &adapter));
-        auto adapterDesc = DXGI_ADAPTER_DESC();
-        DX12_CHECK(adapter->GetDesc(&adapterDesc));
-
-        char buffer[128];
-        wcstombs_s(0, buffer, 128, adapterDesc.Description, 128);
-
-        LOG_D("DisplayAdaterDesc: %s", buffer);
-        LOG_D("VendorID:DeviceID 0x%x:0x%x", adapterDesc.VendorId, adapterDesc.DeviceId);
     }
 
     DX12Device::~DX12Device() {
         m_dev.Reset();
-        m_swapchain.Reset();
         CloseHandle(m_fenceEvent);
     }
 }
