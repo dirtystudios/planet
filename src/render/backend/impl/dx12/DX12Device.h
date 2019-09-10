@@ -6,7 +6,8 @@
 #include "ResourceManager.h"
 #include "Pool.h"
 #include "DMath.h"
-#include "ByteBuffer.h"
+#include "DX12Resources.h"
+#include "ResourceManager.h"
 
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
@@ -29,39 +30,10 @@
 namespace gfx {
     using namespace Microsoft::WRL;
 
-    struct BufferDX12 {
-        ComPtr<ID3D12Resource> buffer;
-        BufferAccessFlags accessFlags;
-        BufferUsageFlags usageFlags;
-    };
-
-    struct PipelineStateDX12 {
-        ComPtr<ID3D12PipelineState> pipelineState;
-        PrimitiveType primitiveType;
-    };
-
-    struct ShaderDX12 {
-        ComPtr<ID3DBlob> blob;
-        ShaderType shaderType;
-    };
-
-    struct InputLayoutDX12 {
-        std::vector<D3D12_INPUT_ELEMENT_DESC> elements;
-        uint32_t stride;
-    };
-
-    struct TextureDX12 {
-        ComPtr<ID3D12Resource> resource;
-    };
-
-
     class DX12Device final : public RenderDevice {
     private:
 
         static const uint32_t FrameCount = 2;
-        uint32_t m_numDrawCalls{ 0 };
-
-        uint32_t m_winWidth, m_winHeight;
         bool m_usePrebuiltShaders;
 
         ComPtr<ID3D12Device> m_dev;
@@ -73,19 +45,12 @@ namespace gfx {
         ComPtr<ID3D12DescriptorHeap> m_srvDescriptorHeap;
         ComPtr<ID3D12CommandQueue> m_commandQueue;
         ComPtr<ID3D12RootSignature> m_rootSignature;
-        ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
         ComPtr<ID3D12GraphicsCommandList> m_commandList;
         uint32_t m_rtvDescriptorSize;
 
-        std::unordered_map<PipelineStateId, PipelineStateDX12> m_pipelinestates;
-        std::unordered_map<BufferId, BufferDX12> m_buffers;
-        std::unordered_map<ShaderId, ShaderDX12> m_shaders;
-        std::unordered_map<VertexLayoutId, InputLayoutDX12> m_inputLayouts;
-        std::unordered_map<TextureId, TextureDX12> m_textures;
+        std::unordered_map<size_t, PipelineStateId> m_pipelinestates;
+        std::unordered_map<size_t, VertexLayoutId> m_inputLayouts;
 
-        CD3DX12_CPU_DESCRIPTOR_HANDLE m_rtvHandle;
-
-        uint32_t m_bufferIndex;
         HANDLE m_fenceEvent;
         ComPtr<ID3D12Fence> m_fence;
 
@@ -93,7 +58,9 @@ namespace gfx {
 
         SimpleShaderLibrary m_shaderLibrary;
 
-        ByteBuffer m_drawItemByteBuffer;
+        D3DX12Residency::ResidencyManager m_residencyManager;
+
+        ResourceManager* m_resourceManager{ nullptr };
 
     public:
         DX12Device() = delete;
@@ -108,14 +75,13 @@ namespace gfx {
         void AddOrUpdateShaders(const std::vector<ShaderData>& shaderData);
 
         PipelineStateId CreatePipelineState(const PipelineStateDesc& desc);
-        TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") final;
-        TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height,
-            uint32_t depth, const std::string& debugName) { return 0; }
+        RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo) final;
 
+        TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") final;
+        TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName) { return 0; }
         TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) { return 0; }
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
 
-        RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo) final;
         CommandBuffer* CreateCommandBuffer() { return 0; }
         void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) final;
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers) {}
@@ -128,7 +94,6 @@ namespace gfx {
         //todo:
         void DestroyResource(ResourceId resourceId) final {}
     private:
-        void PrintDisplayAdapterInfo();
 
         ShaderId CreateShader(ShaderType type, const std::string& source);
         ComPtr<ID3DBlob> CompileShader(ShaderType shaderType, const std::string& source);
@@ -136,8 +101,6 @@ namespace gfx {
         D3D12_RASTERIZER_DESC CreateRasterState(const RasterState& state);
         D3D12_BLEND_DESC CreateBlendState(const BlendState& state);
         D3D12_DEPTH_STENCIL_DESC CreateDepthState(const DepthState& state);
-
-        void Execute(CommandBuffer* cmdBuffer);
 
         // todo: make this stuff shared between dx
         void* TextureDataConverter(const D3D12_RESOURCE_DESC& tDesc, PixelFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef);
@@ -151,34 +114,6 @@ namespace gfx {
             case DXGI_FORMAT_R32G32B32A32_FLOAT: return 16;
             default: return 0;
             }
-        }
-
-        inline size_t GenerateHandle(gfx::ResourceType type) {
-            static size_t key = 1;
-            return key++;
-        }
-
-        template<class T, class K>
-        K UseHandleEmplaceConstRef(std::unordered_map<K, T>& map, K handle, const T& item) {
-            map.emplace(handle, item);
-            return handle;
-        }
-
-        template<gfx::ResourceType t, class K, class T>
-        K GenerateHandleEmplaceConstRef(std::unordered_map<K, T>& map, const T& item) {
-            K handle = GenerateHandle(t);
-            map.emplace(handle, item);
-            return handle;
-        }
-
-        template <class K, class T>
-        T* GetResource(std::unordered_map<K, T>& map, K handle) {
-            auto it = map.find(handle);
-            if (it == map.end()) {
-                return nullptr;
-            }
-
-            return &(*it).second;
         }
     };
 }

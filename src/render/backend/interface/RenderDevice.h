@@ -52,13 +52,13 @@ namespace gfx {
 
         virtual void DestroyResource(ResourceId resourceId) = 0;
         
-        virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) {}
+        virtual void Submit(const std::vector<CommandBuffer*>& cmdBuffers) = 0;
 
         virtual uint8_t* MapMemory(BufferId buffer, BufferAccess) = 0;
         virtual void UnmapMemory(BufferId buffer) = 0;
 
         virtual void UpdateTexture(TextureId texture, uint32_t slice, const void* srcData) = 0;
                 
-        virtual CommandBuffer* CreateCommandBuffer() { return nullptr; }
+        virtual CommandBuffer* CreateCommandBuffer() = 0;
     };
 }

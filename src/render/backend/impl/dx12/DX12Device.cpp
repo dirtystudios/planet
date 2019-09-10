@@ -64,13 +64,13 @@ namespace gfx {
             resource->Unmap(0, nullptr);
         }
 
-        BufferDX12 bufDx12; 
+        BufferDX12* bufDx12 = new BufferDX12();
 
-        bufDx12.accessFlags = desc.accessFlags;
-        bufDx12.usageFlags = desc.usageFlags;
-        bufDx12.buffer.Swap(resource);
+        bufDx12->accessFlags = desc.accessFlags;
+        bufDx12->usageFlags = desc.usageFlags;
+        bufDx12->buffer.Swap(resource);
 
-        return GenerateHandleEmplaceConstRef<ResourceType::Buffer>(m_buffers, bufDx12);
+        return m_resourceManager->AddResource(bufDx12);
     }
 
     ShaderId DX12Device::GetShader(ShaderType type, const std::string& functionName) {
@@ -150,7 +150,7 @@ namespace gfx {
         ShaderDX12* shaderDX12 = new ShaderDX12();
         shaderDX12->shaderType = type;
         shaderDX12->blob.Swap(blob);
-        return GenerateHandleEmplaceConstRef<ResourceType::Shader>(m_shaders, *shaderDX12);
+        return m_resourceManager->AddResource(shaderDX12);
     }
 
     ComPtr<ID3DBlob> DX12Device::CompileShader(ShaderType shaderType, const std::string& source) {
@@ -196,16 +196,14 @@ namespace gfx {
     }
 
     VertexLayoutId DX12Device::CreateVertexLayout(const VertexLayoutDesc& layoutDesc) {
-        // not internal, check hash first
-        VertexLayoutId hash = 0;
-        HashCombine(hash, layoutDesc);
-        auto layoutCheck = GetResource(m_inputLayouts, hash);
-        if (layoutCheck != nullptr)
-            return hash;
+        size_t hash = std::hash<VertexLayoutDesc>()(layoutDesc);
+        auto layoutCheck = m_inputLayouts.find(hash);
+        if (layoutCheck != m_inputLayouts.end())
+            return layoutCheck->second;
 
         bool first = true;
         uint32_t stride = 0;
-        InputLayoutDX12 il;
+        InputLayoutDX12* il = new InputLayoutDX12();
         for (auto layout : layoutDesc.elements) {
             D3D12_INPUT_ELEMENT_DESC ied;
             ied.SemanticName = SemanticNameCache::AddGetSemanticNameToCache(VertexAttributeUsageToString(layout.usage).c_str());
@@ -217,10 +215,12 @@ namespace gfx {
             ied.Format = SafeGet(VertexAttributeTypeDX12, layout.type);
             first = false;
             stride += GetByteCount(layout);
-            il.elements.emplace_back(ied);
+            il->elements.emplace_back(ied);
         }
-        il.stride = stride;
-        return UseHandleEmplaceConstRef(m_inputLayouts, hash, il);
+        il->stride = stride;
+        auto id = m_resourceManager->AddResource(il);
+        m_inputLayouts.emplace(hash, id);
+        return id;
     }
 
     TextureId DX12Device::CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
@@ -328,17 +328,23 @@ namespace gfx {
     }
 
     PipelineStateId DX12Device::CreatePipelineState(const PipelineStateDesc& desc) {
+        size_t descHash = std::hash<PipelineStateDesc>()(desc);
+        auto pc = m_pipelinestates.find(descHash);
+        if (pc != m_pipelinestates.end()) {
+            return pc->second;
+        }
+
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 
-        InputLayoutDX12* layout = GetResource(m_inputLayouts, desc.vertexLayout);
+        InputLayoutDX12* layout = m_resourceManager->GetResource<InputLayoutDX12>(desc.vertexLayout);
         assert(layout);
         psoDesc.InputLayout = { layout->elements.data(), static_cast<UINT>(layout->elements.size())  };
 
-        ShaderDX12* ps = GetResource(m_shaders, desc.pixelShader);
+        ShaderDX12* ps = m_resourceManager->GetResource<ShaderDX12>(desc.pixelShader);
         assert(ps);
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps->blob.Get());
 
-        ShaderDX12* vs = GetResource(m_shaders, desc.vertexShader);
+        ShaderDX12* vs = m_resourceManager->GetResource<ShaderDX12>(desc.vertexShader);
         assert(vs);
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs->blob.Get());
 
@@ -363,7 +369,19 @@ namespace gfx {
         pso->primitiveType = desc.topology;
         pso->pipelineState.Swap(pipelineState);
 
-        return GenerateHandleEmplaceConstRef<ResourceType::PipelineState>(m_pipelinestates, *pso);
+        auto id = m_resourceManager->AddResource(pso);
+        m_pipelinestates.emplace(id, descHash);
+        return id;
+    }
+
+    RenderPassId DX12Device::CreateRenderPass(const RenderPassInfo& renderPassInfo) {
+        RenderPassDX12* renderPass = new RenderPassDX12();
+        renderPass->info = renderPassInfo;
+        return m_resourceManager->AddResource(renderPass);
+    }
+
+    CommandBuffer* DX12Device::CreateCommandBuffer() {
+        return dynamic_cast<CommandBuffer*>(new DX12CommandBuffer(m_dev, m_resourceManager, &m_cache));
     }
 
     void* DX12Device::TextureDataConverter(const D3D12_RESOURCE_DESC& tDesc, PixelFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef) {
@@ -382,7 +400,7 @@ namespace gfx {
         if (access != BufferAccess::Write && access != BufferAccess::WriteNoOverwrite)
             assert(false);
 
-        BufferDX12* bufferDX12 = GetResource(m_buffers, buffer);
+        BufferDX12* bufferDX12 = m_resourceManager->GetResource<BufferDX12>(buffer);
 
         uint8_t* pData;
         CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
@@ -391,86 +409,9 @@ namespace gfx {
     }
 
     void DX12Device::UnmapMemory(BufferId buffer) {
-        BufferDX12* bufferDX12 = GetResource(m_buffers, buffer);
+        BufferDX12* bufferDX12 = m_resourceManager->GetResource<BufferDX12>(buffer);
         assert(bufferDX12);
         bufferDX12->buffer->Unmap(0, nullptr);
-    }
-
-    void DX12Device::Execute(CommandBuffer* cmdBuffer) {
-        const std::vector<const DrawItem*>* items = cmdBuffer->GetDrawItems();
-        for (const DrawItem* item : *items) {
-            DrawItemDecoder decoder(item);
-
-            PipelineStateId psId;
-            DrawCall drawCall;
-            BufferId indexBufferId;
-            size_t streamCount = decoder.GetStreamCount();
-            size_t bindingCount = decoder.GetBindingCount();
-            std::vector<VertexStream> streams(streamCount);
-            std::vector<Binding> bindings(bindingCount);
-            VertexStream* streamPtr = streams.data();
-            Binding* bindingPtr = bindings.data();
-
-            dg_assert_nm(streamCount == 1); // > 1 not supported
-
-            dg_assert_nm(decoder.ReadDrawCall(&drawCall));
-            dg_assert_nm(decoder.ReadPipelineState(&psId));
-            dg_assert_nm(decoder.ReadIndexBuffer(&indexBufferId));
-            dg_assert_nm(decoder.ReadVertexStreams(&streamPtr));
-            if (bindingCount > 0) {
-                dg_assert_nm(decoder.ReadBindings(&bindingPtr));
-            }
-
-
-            /*PipelineStateDX12* pipelineState = GetResource(m_pipelinestates, psId);
-            SetPipelineState(pipelineState);
-
-            dg_assert_nm(streamCount == 1); // > 1 not supported
-            const VertexStream& stream = streamPtr[0];
-
-            auto vertexBuffer = GetResource(m_buffers, stream.vertexBuffer);
-            if (vertexBuffer)
-                m_context->SetVertexBuffer(stream.vertexBuffer, vertexBuffer->buffer.Get());
-
-            // bindings
-            for (uint32_t idx = 0; idx <bindingCount; ++idx) {
-
-                const Binding& binding = bindingPtr[idx];
-                switch (binding.type) {
-                case Binding::Type::ConstantBuffer: {
-                    BufferDX11* cbuffer = GetResource(m_buffers, binding.resource);
-                    if (binding.stageFlags & ShaderStageFlags::VertexBit)
-                        m_context->SetVertexCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
-                    if (binding.stageFlags & ShaderStageFlags::PixelBit)
-                        m_context->SetPixelCBuffer(binding.resource, binding.slot, cbuffer->buffer.Get());
-                    break;
-                }
-                case Binding::Type::Texture: {
-                    TextureDX11* texturedx11 = GetResource(m_textures, binding.resource);
-                    if (binding.stageFlags & ShaderStageFlags::VertexBit)
-                        m_context->SetVertexShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
-                    if (binding.stageFlags & ShaderStageFlags::PixelBit)
-                        m_context->SetPixelShaderTexture(binding.slot, texturedx11->shaderResourceView.Get(), m_defaultSampler.Get());
-                    break;
-                }
-                }
-            }
-
-            switch (drawCall.type) {
-            case DrawCall::Type::Arrays: {
-                m_context->DrawPrimitive(pipelineState->topology, drawCall.startOffset, drawCall.primitiveCount, false);
-                break;
-            }
-            case DrawCall::Type::Indexed: {
-                assert(indexBufferId);
-                auto indexBuffer = GetResource(m_buffers, indexBufferId);
-                m_context->SetIndexBuffer(indexBufferId, indexBuffer->buffer.Get());
-                m_context->DrawPrimitive(pipelineState->topology, drawCall.startOffset, drawCall.primitiveCount, true, drawCall.baseVertexOffset);
-                break;
-            }
-            }*/
-            m_numDrawCalls++;
-        }
     }
     
     void DX12Device::RenderFrame() {
@@ -538,7 +479,8 @@ namespace gfx {
         m_bufferIndex = m_bufferIndex == 0 ? 1 : 0;
     }
 
-    DX12Device::DX12Device(ResourceManager* resourceManager, bool usePrebuiltShaders) {
+    DX12Device::DX12Device(ResourceManager* resourceManager, bool usePrebuiltShaders)
+        : m_resourceManager(resourceManager) {
         m_usePrebuiltShaders = usePrebuiltShaders;
 
 		DeviceConfig.DeviceAbbreviation = "DX12";
@@ -588,8 +530,6 @@ namespace gfx {
 
         DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 
-        m_bufferIndex = m_swapchain->GetCurrentBackBufferIndex();
-
         // Describe and create a render target view (RTV) descriptor heap.
         D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
         rtvHeapDesc.NumDescriptors = FrameCount;
@@ -621,8 +561,6 @@ namespace gfx {
         m_fenceEvent = CreateEventEx(NULL, FALSE, FALSE, EVENT_ALL_ACCESS);
 
         m_fenceValues[0] = 1;
-
-        m_drawItemByteBuffer.Resize(memory::KilobytesToBytes(1));
     }
 
     DX12Device::~DX12Device() {
