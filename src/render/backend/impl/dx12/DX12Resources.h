@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BufferAccessFlags.h"
+#include "BufferUsageFlags.h"
 #include "PrimitiveType.h"
 #include "ShaderType.h"
 #include "RenderPassInfo.h"
@@ -14,10 +15,12 @@ namespace gfx {
         Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
         BufferAccessFlags accessFlags;
         BufferUsageFlags usageFlags;
+        size_t size;
     };
 
     struct PipelineStateDX12 : public Resource {
         Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
+        VertexLayoutId vertexLayoutId;
         PrimitiveType primitiveType;
     };
 

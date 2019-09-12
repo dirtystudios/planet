@@ -1,13 +1,13 @@
 #include "DX12Device.h"
 #include "DX12Assert.h"
 #include "DX12EnumAdapter.h"
+#include "DX12CommandBuffer.h"
 
 #include "SemanticNameCache.h"
 #include "SimpleShaderLibrary.h"
 #include "TexConvert.h"
 #include "Memory.h"
 #include "ResourceManager.h"
-
 
 #include "DrawItemDecoder.h"
 
@@ -68,6 +68,7 @@ namespace gfx {
 
         bufDx12->accessFlags = desc.accessFlags;
         bufDx12->usageFlags = desc.usageFlags;
+        bufDx12->size = desc.size;
         bufDx12->buffer.Swap(resource);
 
         return m_resourceManager->AddResource(bufDx12);
@@ -367,6 +368,7 @@ namespace gfx {
 
         PipelineStateDX12* pso = new PipelineStateDX12();;
         pso->primitiveType = desc.topology;
+        pso->vertexLayoutId = desc.vertexLayout;
         pso->pipelineState.Swap(pipelineState);
 
         auto id = m_resourceManager->AddResource(pso);
@@ -381,7 +383,7 @@ namespace gfx {
     }
 
     CommandBuffer* DX12Device::CreateCommandBuffer() {
-        return dynamic_cast<CommandBuffer*>(new DX12CommandBuffer(m_dev, m_resourceManager, &m_cache));
+        return dynamic_cast<CommandBuffer*>(new DX12CommandBuffer(m_dev, m_resourceManager));
     }
 
     void* DX12Device::TextureDataConverter(const D3D12_RESOURCE_DESC& tDesc, PixelFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef) {
