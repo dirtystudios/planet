@@ -253,6 +253,7 @@ namespace gfx {
         std::unique_ptr<byte> dataByteRef;
         D3D12_SUBRESOURCE_DATA srd;
         if (data) {
+            // todo: lock and upload
             srd.pData = TextureDataConverter(texDesc, format, data, dataByteRef);
             srd.RowPitch = GetFormatByteSize(texDesc.Format) * texDesc.Width;
             srd.SlicePitch = 0;// srd.RowPitch * height;
@@ -417,7 +418,6 @@ namespace gfx {
     }
     
     void DX12Device::RenderFrame() {
-        m_numDrawCalls = 0;
 
         ID3D12CommandList* ppCommandLists[1];
 
@@ -514,7 +514,6 @@ namespace gfx {
             IID_PPV_ARGS(&m_dev)
         ));
 
-
         // Sanity check, just want the highest versions for now, not sure if 1.0 will ignore
         //   but it looks like 1.1 gives us more flags n such for driver optimizations,
         //   also, if i remember, i think the d3dx12 will convert in code definitions for us automatically
@@ -525,32 +524,20 @@ namespace gfx {
 
         DX12_CHECK_RET(m_dev->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData)));
 
-        // Describe and create the command queue.
         D3D12_COMMAND_QUEUE_DESC queueDesc = {};
         queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
         queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
         DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 
-        // Describe and create a render target view (RTV) descriptor heap.
-        D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-        rtvHeapDesc.NumDescriptors = FrameCount;
-        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        DX12_CHECK_RET(m_dev->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
-
-        m_rtvDescriptorSize = m_dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-        // Create frame resources.
-        m_rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
+        m_nonVisDsvHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, "nonVisDsvHeap");
+        m_nonVisSrvHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "nonVisSrvHeap");
+        m_nonVisSamplerHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "nonVisSamplerHeap");
+        m_rtvHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, "devRtvHeap");
 
         // Create a RTV and a command allocator for each frame.
         for (uint32_t n = 0; n < FrameCount; n++)
         {
-            DX12_CHECK_RET(m_swapchain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
-            m_dev->CreateRenderTargetView(m_renderTargets[n].Get(), nullptr, m_rtvHandle);
-            m_rtvHandle.Offset(1, m_rtvDescriptorSize);
-
             DX12_CHECK_RET(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
         }
 

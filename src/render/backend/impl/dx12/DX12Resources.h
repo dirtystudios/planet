@@ -36,6 +36,14 @@ namespace gfx {
 
     struct TextureDX12 : public Resource {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+        D3D12_CPU_DESCRIPTOR_HANDLE sampler;
+        D3D12_CPU_DESCRIPTOR_HANDLE srv;
+        D3D12_CPU_DESCRIPTOR_HANDLE rtv;
+        D3D12_CPU_DESCRIPTOR_HANDLE dsv;
+        DXGI_FORMAT format;
+        PixelFormat requestedFormat;
+        uint32_t width;
+        uint32_t height;
     };
 
     struct RenderPassDX12 : public Resource {

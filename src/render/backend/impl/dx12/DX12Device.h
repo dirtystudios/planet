@@ -8,6 +8,7 @@
 #include "DMath.h"
 #include "DX12Resources.h"
 #include "ResourceManager.h"
+#include "DX12NonVisibleHeap.h"
 
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
@@ -42,11 +43,13 @@ namespace gfx {
         ComPtr<ID3D12CommandAllocator> m_commandAllocators[FrameCount];
         uint64_t m_fenceValues[FrameCount];
 
-        ComPtr<ID3D12DescriptorHeap> m_srvDescriptorHeap;
+        std::unique_ptr<DX12NonVisibleHeap> m_rtvHeap{ nullptr };
+        std::unique_ptr<DX12NonVisibleHeap> m_nonVisSrvHeap{ nullptr };
+        std::unique_ptr<DX12NonVisibleHeap> m_nonVisDsvHeap{ nullptr };
+        std::unique_ptr<DX12NonVisibleHeap> m_nonVisSamplerHeap{ nullptr };
+
         ComPtr<ID3D12CommandQueue> m_commandQueue;
-        ComPtr<ID3D12RootSignature> m_rootSignature;
         ComPtr<ID3D12GraphicsCommandList> m_commandList;
-        uint32_t m_rtvDescriptorSize;
 
         std::unordered_map<size_t, PipelineStateId> m_pipelinestates;
         std::unordered_map<size_t, VertexLayoutId> m_inputLayouts;
@@ -78,21 +81,25 @@ namespace gfx {
         RenderPassId CreateRenderPass(const RenderPassInfo& renderPassInfo) final;
 
         TextureId CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName = "") final;
-        TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName) { return 0; }
-        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) { return 0; }
-        VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc);
+        TextureId CreateTextureArray(PixelFormat format, uint32_t levels, uint32_t width, uint32_t height, uint32_t depth, const std::string& debugName) final { return 0; }
+        TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) final { return 0; }
+        VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc) final;
 
-        CommandBuffer* CreateCommandBuffer() { return 0; }
+        CommandBuffer* CreateCommandBuffer() final { return 0; }
         void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) final;
-        void Submit(const std::vector<CommandBuffer*>& cmdBuffers) {}
+        void Submit(const std::vector<CommandBuffer*>& cmdBuffers) final {}
 
-        uint8_t* MapMemory(BufferId buffer, BufferAccess);
-        void UnmapMemory(BufferId buffer);
+        uint8_t* MapMemory(BufferId buffer, BufferAccess) final;
+        void UnmapMemory(BufferId buffer) final;
 
-        ID3D12CommandQueue* GetCommandQueue() { return m_commandQueue.Get(); }
+        ID3D12Device* GetID3D12Dev() { return m_dev.Get(); }
 
         //todo:
         void DestroyResource(ResourceId resourceId) final {}
+
+        // dx12 specific helpers
+        ID3D12CommandQueue* GetCommandQueue() { return m_commandQueue.Get(); }
+
     private:
 
         ShaderId CreateShader(ShaderType type, const std::string& source);
