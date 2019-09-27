@@ -8,7 +8,7 @@
 #include "DMath.h"
 #include "DX12Resources.h"
 #include "ResourceManager.h"
-#include "DX12NonVisibleHeap.h"
+#include "DX12CpuDescHeap.h"
 
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
@@ -43,10 +43,10 @@ namespace gfx {
         ComPtr<ID3D12CommandAllocator> m_commandAllocators[FrameCount];
         uint64_t m_fenceValues[FrameCount];
 
-        std::unique_ptr<DX12NonVisibleHeap> m_rtvHeap{ nullptr };
-        std::unique_ptr<DX12NonVisibleHeap> m_nonVisSrvHeap{ nullptr };
-        std::unique_ptr<DX12NonVisibleHeap> m_nonVisDsvHeap{ nullptr };
-        std::unique_ptr<DX12NonVisibleHeap> m_nonVisSamplerHeap{ nullptr };
+        std::unique_ptr<DX12CpuDescHeap> m_rtvHeap{ nullptr };
+        std::unique_ptr<DX12CpuDescHeap> m_dsvHeap{ nullptr };
+        std::unique_ptr<DX12CpuDescHeap> m_CpuSrvHeap{ nullptr };
+        std::unique_ptr<DX12CpuDescHeap> m_CpuSamplerHeap{ nullptr };
 
         ComPtr<ID3D12CommandQueue> m_commandQueue;
         ComPtr<ID3D12GraphicsCommandList> m_commandList;

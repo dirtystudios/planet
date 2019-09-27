@@ -530,10 +530,10 @@ namespace gfx {
 
         DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 
-        m_nonVisDsvHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, "nonVisDsvHeap");
-        m_nonVisSrvHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "nonVisSrvHeap");
-        m_nonVisSamplerHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "nonVisSamplerHeap");
-        m_rtvHeap = std::make_unique<DX12NonVisibleHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, "devRtvHeap");
+        m_CpuSrvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "cpuSrvHeap");
+        m_CpuSamplerHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "cpuSamplerHeap");
+        m_rtvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, "devRtvHeap");
+        m_dsvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, "devDsvHeap");
 
         // Create a RTV and a command allocator for each frame.
         for (uint32_t n = 0; n < FrameCount; n++)

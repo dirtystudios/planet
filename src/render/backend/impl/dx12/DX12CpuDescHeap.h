@@ -9,9 +9,9 @@
 namespace gfx {
     using namespace Microsoft::WRL;
 
-    constexpr UINT kHeapNumDescriptors = 100;
+    constexpr UINT kHeapNumDescriptors = 50;
 
-    class DX12NonVisibleHeap {
+    class DX12CpuDescHeap {
     private:
         ID3D12Device* _dev;
         UINT _descSize;
@@ -21,8 +21,8 @@ namespace gfx {
 
         std::vector<ComPtr<ID3D12DescriptorHeap>> _heaps;
     public:
-        DX12NonVisibleHeap() = delete;
-        DX12NonVisibleHeap(ID3D12Device* dev, D3D12_DESCRIPTOR_HEAP_TYPE type, const std::string& name = "");
+        DX12CpuDescHeap() = delete;
+        DX12CpuDescHeap(ID3D12Device* dev, D3D12_DESCRIPTOR_HEAP_TYPE type, const std::string& name = "");
         D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor();
 
     private:
