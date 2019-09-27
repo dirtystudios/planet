@@ -14,15 +14,13 @@ namespace gfx {
 
     D3D12_CPU_DESCRIPTOR_HANDLE DX12NonVisibleHeap::AllocateDescriptor() {
         ID3D12DescriptorHeap* heap;
-        if (_currentIdx == kHeapSize) {
+        if (_currentIdx == kHeapNumDescriptors) {
             // allocate new heap;
             heap = AllocateNewHeap();
             _currentIdx = 0;
         }
         else
             heap = _heaps.back().Get();
-
-        auto t = heap->GetCPUDescriptorHandleForHeapStart();
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtnHandle(heap->GetCPUDescriptorHandleForHeapStart(), _currentIdx, _descSize);
         _currentIdx++;
@@ -33,8 +31,8 @@ namespace gfx {
         ComPtr<ID3D12DescriptorHeap> heap;
 
         D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-        desc.NumDescriptors = 400;
-        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        desc.NumDescriptors = kHeapNumDescriptors;
+        desc.Type = _type;
         desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         DX12_CHECK_RET0(_dev->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&heap)));
 

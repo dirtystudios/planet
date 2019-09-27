@@ -9,7 +9,7 @@
 namespace gfx {
     using namespace Microsoft::WRL;
 
-    constexpr UINT kHeapSize = 100;
+    constexpr UINT kHeapNumDescriptors = 100;
 
     class DX12NonVisibleHeap {
     private:
