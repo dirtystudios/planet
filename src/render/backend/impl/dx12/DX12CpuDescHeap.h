@@ -14,9 +14,9 @@ namespace gfx {
     class DX12CpuDescHeap {
     private:
         ID3D12Device* _dev;
+        const D3D12_DESCRIPTOR_HEAP_TYPE _type;
+        const std::string _debugName;
         UINT _descSize;
-        D3D12_DESCRIPTOR_HEAP_TYPE _type;
-        std::string _debugName;
         UINT _currentIdx{0};
 
         std::vector<ComPtr<ID3D12DescriptorHeap>> _heaps;

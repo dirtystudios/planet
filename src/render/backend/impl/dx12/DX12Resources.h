@@ -13,6 +13,8 @@ namespace gfx {
 
     struct BufferDX12 : public Resource {
         Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
+        D3D12_CPU_DESCRIPTOR_HANDLE cbv;
+        D3D12_CPU_DESCRIPTOR_HANDLE uav;
         BufferAccessFlags accessFlags;
         BufferUsageFlags usageFlags;
         size_t size;

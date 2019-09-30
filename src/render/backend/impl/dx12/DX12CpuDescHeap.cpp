@@ -25,7 +25,7 @@ namespace gfx {
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtnHandle(heap->GetCPUDescriptorHandleForHeapStart(), _currentIdx, _descSize);
         _currentIdx++;
-        return { rtnHandle.ptr };
+        return rtnHandle;
     }
 
     ID3D12DescriptorHeap* DX12CpuDescHeap::AllocateNewHeap() {

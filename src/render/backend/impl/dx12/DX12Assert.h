@@ -2,6 +2,8 @@
 
 #include "Log.h"
 
+#include <cassert>
+
 #ifdef _DEBUG
 #define DEBUG_DX12
 #endif

@@ -530,10 +530,13 @@ namespace gfx {
 
         DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 
-        m_CpuSrvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "cpuSrvHeap");
-        m_CpuSamplerHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "cpuSamplerHeap");
+        m_cpuSrvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "cpuSrvHeap");
+        m_cpuSamplerHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "cpuSamplerHeap");
         m_rtvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, "devRtvHeap");
         m_dsvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, "devDsvHeap");
+
+        m_gpuSrvHeap = std::make_unique<DX12GpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "gpuSrvHeap");
+        m_gpuSamplerHeap = std::make_unique<DX12GpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "gpuSamplerHeap");
 
         // Create a RTV and a command allocator for each frame.
         for (uint32_t n = 0; n < FrameCount; n++)

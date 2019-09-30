@@ -37,9 +37,14 @@ namespace gfx {
     RenderPassCommandBuffer* DX12CommandBuffer::beginRenderPass(RenderPassId passId, const FrameBuffer& framebuffer, const std::string& name) {
         dg_assert_nm(_inPass == false);
 
-        _inPass = true;
-
         _rpPass->reset(_directAllocator.Get());
+
+        RenderPassDX12* rp = _resourceManager->GetResource<RenderPassDX12>(passId);
+        dg_assert_nm(rp != nullptr);
+
+        _passName = name;
+        _inPass = true;
+        _rpPass->SetRenderTargets(frameBuffer, *rp);
 
         return _rpPass.get();
     }

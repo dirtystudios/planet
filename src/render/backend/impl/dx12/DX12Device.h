@@ -9,6 +9,7 @@
 #include "DX12Resources.h"
 #include "ResourceManager.h"
 #include "DX12CpuDescHeap.h"
+#include "DX12GpuDescHeap.h"
 
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
@@ -45,8 +46,10 @@ namespace gfx {
 
         std::unique_ptr<DX12CpuDescHeap> m_rtvHeap{ nullptr };
         std::unique_ptr<DX12CpuDescHeap> m_dsvHeap{ nullptr };
-        std::unique_ptr<DX12CpuDescHeap> m_CpuSrvHeap{ nullptr };
-        std::unique_ptr<DX12CpuDescHeap> m_CpuSamplerHeap{ nullptr };
+        std::unique_ptr<DX12CpuDescHeap> m_cpuSrvHeap{ nullptr };
+        std::unique_ptr<DX12CpuDescHeap> m_cpuSamplerHeap{ nullptr };
+        std::unique_ptr<DX12GpuDescHeap> m_gpuSrvHeap{ nullptr };
+        std::unique_ptr<DX12GpuDescHeap> m_gpuSamplerHeap{ nullptr };
 
         ComPtr<ID3D12CommandQueue> m_commandQueue;
         ComPtr<ID3D12GraphicsCommandList> m_commandList;

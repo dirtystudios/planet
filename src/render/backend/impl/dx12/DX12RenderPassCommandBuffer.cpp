@@ -4,20 +4,58 @@
 #include "DX12Resources.h"
 #include "ResourceManager.h"
 
+#include <d3dx12.h>
+
 namespace gfx {
     using namespace Microsoft::WRL;
 
-    DX12RenderPassCommandBuffer::DX12RenderPassCommandBuffer(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdlist, ResourceManager* rm) {
+    DX12RenderPassCommandBuffer::DX12RenderPassCommandBuffer(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdlist, const DX12GpuHeaps& heapinfo, ResourceManager* rm) {
         dg_assert_nm(rm != nullptr);
         dg_assert_nm(cmdlist != nullptr);
+        _heapInfo = heapinfo;
         _rm = rm;
         _cmdlist = cmdlist;
+
+        ID3D12DescriptorHeap* ppheaps[] = { _heapInfo.srvHeap, _heapInfo.samplerHeap };
+        _cmdlist->SetDescriptorHeaps(2, ppheaps);
+        _cmdlist->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset, _heapInfo.srvSize));
     }
 
     void DX12RenderPassCommandBuffer::reset(ID3D12CommandAllocator* cmdAlloc) {
         _vbufferId = 0;
         _inputLayoutId = 0;
         DX12_CHECK(_cmdlist->Reset(cmdAlloc, nullptr));
+        _srvDescCopyInfo.clear();
+        ID3D12DescriptorHeap* ppheaps[] = { _heapInfo.srvHeap, _heapInfo.samplerHeap };
+        _cmdlist->SetDescriptorHeaps(2, ppheaps);
+        _cmdlist->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset, _heapInfo.srvSize));
+    }
+
+    void DX12RenderPassCommandBuffer::SetViewPort(uint32_t height, uint32_t width) {
+        D3D12_VIEWPORT vp;
+        vp.Width = (float)width;
+        vp.Height = (float)height;
+        vp.MinDepth = 0;
+        vp.MaxDepth = 1;
+        vp.TopLeftX = 0;
+        vp.TopLeftY = 0;
+        _cmdlist->RSSetViewports(1, &vp);
+    }
+
+
+    void DX12RenderPassCommandBuffer::SetRenderTargets(const FrameBuffer& framebuffer, const RenderPassDX12& rp) {
+        if (framebuffer.colorCount > 0) {
+            auto buf = _rm->GetResource<TextureDX12>(framebuffer.color[0]);
+            D3D12_RESOURCE_DESC desc = buf->resource->GetDesc();
+            SetViewPort(desc.Height, desc.Width);
+        }
+        else if (framebuffer.depth != 0) {
+            auto buf = _rm->GetResource<TextureDX12>(framebuffer.depth);
+            D3D12_RESOURCE_DESC desc = buf->resource->GetDesc();
+            SetViewPort(desc.Height, desc.Width);
+        }
+
+        // todo: set rtv's 
     }
 
     void DX12RenderPassCommandBuffer::close() {
@@ -38,12 +76,24 @@ namespace gfx {
         _vbufferId = vertexBuffer;
     }
 
-    void DX12RenderPassCommandBuffer::setShaderBuffer(BufferId buffer, uint8_t index, ShaderStageFlags stages) {
-
+    void DX12RenderPassCommandBuffer::setShaderBuffer(BufferId bufferId, uint8_t index, ShaderStageFlags stages) {
+        auto buf = _rm->GetResource<BufferDX12>(bufferId);
+        dg_assert_nm(buf != nullptr);
+        auto dest = CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset + index, _heapInfo.srvSize);
+        DescInfo tmp;
+        tmp.src = buf->cbv;
+        tmp.dest = { dest.ptr };
+        _srvDescCopyInfo[index] = tmp;
     }
 
-    void DX12RenderPassCommandBuffer::setShaderTexture(TextureId texture, uint8_t index, ShaderStageFlags stages) {
-
+    void DX12RenderPassCommandBuffer::setShaderTexture(TextureId textureId, uint8_t index, ShaderStageFlags stages) {
+        auto tex = _rm->GetResource<TextureDX12>(textureId);
+        dg_assert_nm(tex != nullptr);
+        auto dest = CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset + index, _heapInfo.srvSize);
+        DescInfo tmp;
+        tmp.src = tex->srv;
+        tmp.dest = { dest.ptr };
+        _srvDescCopyInfo[index] = tmp;
     }
 
     void DX12RenderPassCommandBuffer::drawCommon() {
