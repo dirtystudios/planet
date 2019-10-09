@@ -14,12 +14,12 @@ namespace gfx {
 
     struct DX12GpuHeaps {
         ID3D12DescriptorHeap* srvHeap;
-        UINT srvSize;
+        UINT srvDescSize;
         ID3D12DescriptorHeap* samplerHeap;
-        UINT samplerSize;
+        UINT samplerDescSize;
 
         UINT offset;
-        UINT maxSize;
+        UINT numAllocated;
     };
 
     class DX12RenderPassCommandBuffer final : public RenderPassCommandBuffer {
@@ -48,6 +48,7 @@ namespace gfx {
         DX12RenderPassCommandBuffer(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdlist, const DX12GpuHeaps& heapinfo, ResourceManager* rm);
 
         void SetRenderTargets(const FrameBuffer& framebuffer, const RenderPassDX12& rp);
+        void SetViewPort(uint32_t height, uint32_t width);
 
         void reset(ID3D12CommandAllocator* cmdAlloc);
         void close();

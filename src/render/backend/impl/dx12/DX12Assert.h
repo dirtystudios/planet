@@ -6,6 +6,9 @@
 
 #ifdef _DEBUG
 #define DEBUG_DX12
+constexpr bool kDebugDx12 = true;
+#else
+constexpr bool kDebugDx12 = false;
 #endif
 
 #define DX12_CHECK(func) \

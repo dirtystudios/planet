@@ -22,10 +22,6 @@
 
 #include <wrl.h>
 
-#ifdef _DEBUG
-#define DEBUG_DX12
-#endif
-
 #include <dxgi1_4.h>
 #include <d3d12.h>
 
@@ -56,6 +52,7 @@ namespace gfx {
 
         std::unordered_map<size_t, PipelineStateId> m_pipelinestates;
         std::unordered_map<size_t, VertexLayoutId> m_inputLayouts;
+        std::vector<ComPtr<ID3D12RootSignature>> m_rootSigs;
 
         HANDLE m_fenceEvent;
         ComPtr<ID3D12Fence> m_fence;

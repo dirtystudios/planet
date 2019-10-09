@@ -18,4 +18,8 @@ enum class PixelFormat : uint8_t {
     Depth32FloatStencil8,
     Count,
 };
+
+bool IsDepthFormat(PixelFormat format) {
+    return (format == PixelFormat::Depth32Float) || (format == PixelFormat::Depth32FloatStencil8);
+}
 }

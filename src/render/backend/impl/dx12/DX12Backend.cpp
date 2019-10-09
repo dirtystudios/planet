@@ -11,7 +11,8 @@ namespace gfx {
     using namespace Microsoft::WRL;
 
     DX12Backend::DX12Backend(bool usePrebuiltShaders) {
-        DX12_CHECK(CreateDXGIFactory1(IID_PPV_ARGS(&_factory)));
+        UINT factoryFlags = kDebugDx12 ? DXGI_CREATE_FACTORY_DEBUG : 0;
+        DX12_CHECK(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&_factory)));
         _device.reset(new DX12Device(&resourceManager, usePrebuiltShaders));
         dg_assert_nm(_device.get() != nullptr);
     }

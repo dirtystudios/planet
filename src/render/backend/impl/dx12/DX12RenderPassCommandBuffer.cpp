@@ -4,6 +4,7 @@
 #include "DX12Resources.h"
 #include "ResourceManager.h"
 
+#include <array>
 #include <d3dx12.h>
 
 namespace gfx {
@@ -18,7 +19,7 @@ namespace gfx {
 
         ID3D12DescriptorHeap* ppheaps[] = { _heapInfo.srvHeap, _heapInfo.samplerHeap };
         _cmdlist->SetDescriptorHeaps(2, ppheaps);
-        _cmdlist->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset, _heapInfo.srvSize));
+        _cmdlist->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset, _heapInfo.srvDescSize));
     }
 
     void DX12RenderPassCommandBuffer::reset(ID3D12CommandAllocator* cmdAlloc) {
@@ -28,7 +29,7 @@ namespace gfx {
         _srvDescCopyInfo.clear();
         ID3D12DescriptorHeap* ppheaps[] = { _heapInfo.srvHeap, _heapInfo.samplerHeap };
         _cmdlist->SetDescriptorHeaps(2, ppheaps);
-        _cmdlist->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset, _heapInfo.srvSize));
+        _cmdlist->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset, _heapInfo.srvDescSize));
     }
 
     void DX12RenderPassCommandBuffer::SetViewPort(uint32_t height, uint32_t width) {
@@ -55,7 +56,45 @@ namespace gfx {
             SetViewPort(desc.Height, desc.Width);
         }
 
-        // todo: set rtv's 
+        std::array<CD3DX12_CPU_DESCRIPTOR_HANDLE, 8> rtvs{};
+        for (uint32_t i = 0; i < framebuffer.colorCount; ++i) {
+            auto tex = _rm->GetResource<TextureDX12>(framebuffer.color[i]);
+            dg_assert_nm(tex != nullptr);
+            rtvs[(size_t)i] = tex->rtv;
+        }
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE dsv{};
+        if (framebuffer.depth != 0) {
+            auto depth = _rm->GetResource<TextureDX12>(framebuffer.depth);
+            dg_assert_nm(depth != nullptr);
+            dsv = depth->dsv;
+        }
+
+        _cmdlist->OMSetRenderTargets(framebuffer.colorCount, rtvs.data(), true, rp.info.hasDepth ? &dsv : nullptr);
+
+        for (uint32_t i = 0; i < rp.info.attachmentCount; ++i) {
+            const auto& a = rp.info.attachments[i];
+            if (a.loadAction == LoadAction::Clear) {
+                std::array<FLOAT, 4> color = { 0.f, 0.f, 0.f, 0.f };
+                _cmdlist->ClearRenderTargetView(rtvs[i], color.data(), 0, nullptr);
+            }
+        }
+        if (rp.info.hasDepth || rp.info.hasStencil) {
+            D3D12_CLEAR_FLAGS clearFlags{};
+            bool clearDepth = rp.info.hasDepth && rp.info.depthAttachment.loadAction == LoadAction::Clear;
+            bool clearStencil = rp.info.hasStencil && rp.info.stencilAttachment.loadAction == LoadAction::Clear;
+
+            if (clearDepth)
+                clearFlags |= D3D12_CLEAR_FLAG_DEPTH;
+            if (clearStencil)
+                clearFlags |= D3D12_CLEAR_FLAG_STENCIL;
+
+            if (clearFlags) {
+                auto buf = _rm->GetResource<TextureDX12>(framebuffer.depth);
+                dg_assert_nm(buf != nullptr);
+                _cmdlist->ClearDepthStencilView(buf->dsv, clearFlags, 1.f, 0, 0, nullptr);
+            }
+        }
     }
 
     void DX12RenderPassCommandBuffer::close() {
@@ -79,20 +118,25 @@ namespace gfx {
     void DX12RenderPassCommandBuffer::setShaderBuffer(BufferId bufferId, uint8_t index, ShaderStageFlags stages) {
         auto buf = _rm->GetResource<BufferDX12>(bufferId);
         dg_assert_nm(buf != nullptr);
-        auto dest = CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset + index, _heapInfo.srvSize);
+        dg_assert(index < _heapInfo.numAllocated, "dx12: index exceeds desc buffer range");
+
+        auto dest = CD3DX12_CPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetCPUDescriptorHandleForHeapStart(), _heapInfo.offset + index, _heapInfo.srvDescSize);
         DescInfo tmp;
         tmp.src = buf->cbv;
-        tmp.dest = { dest.ptr };
+        tmp.dest = dest;
         _srvDescCopyInfo[index] = tmp;
     }
 
     void DX12RenderPassCommandBuffer::setShaderTexture(TextureId textureId, uint8_t index, ShaderStageFlags stages) {
         auto tex = _rm->GetResource<TextureDX12>(textureId);
         dg_assert_nm(tex != nullptr);
-        auto dest = CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset + index, _heapInfo.srvSize);
+        dg_assert(index < _heapInfo.numAllocated, "dx12: index exceeds desc tex range");
+        dg_assert_nm(tex->srv.ptr);
+
+        auto dest = CD3DX12_CPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetCPUDescriptorHandleForHeapStart(), _heapInfo.offset + index, _heapInfo.srvDescSize);
         DescInfo tmp;
         tmp.src = tex->srv;
-        tmp.dest = { dest.ptr };
+        tmp.dest = dest;
         _srvDescCopyInfo[index] = tmp;
     }
 
@@ -109,6 +153,8 @@ namespace gfx {
         vbview.StrideInBytes = il->stride;
 
         _cmdlist->IASetVertexBuffers(0, 1, &vbview);
+
+        // todo: copy descriptors to gpu heap
     }
 
     void DX12RenderPassCommandBuffer::drawPrimitives(uint32_t startOffset, uint32_t vertexCount) {

@@ -178,9 +178,8 @@ namespace gfx {
         }
 
         uint32_t flags = 0;
-#ifdef DEBUG_DX12
-        flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
-#endif 
+        if (kDebugDx12)
+            flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
 
         hr = D3DCompile(&source[0], source.length(), NULL, NULL, NULL, entryPoint, target, flags, 0, &blob, &errorBlob);
 
@@ -225,17 +224,7 @@ namespace gfx {
     }
 
     TextureId DX12Device::CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
-        D3D12_RESOURCE_DESC texDesc = {};
-        texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        texDesc.Width = width;
-        texDesc.Height = height;
-        texDesc.DepthOrArraySize = 1;
-        texDesc.MipLevels = 1;
-        texDesc.Format = SafeGet(PixelFormatDX12, format);
-        texDesc.SampleDesc.Count = 1;
-        texDesc.SampleDesc.Quality = 0;
-        texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-        texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+        auto texDesc = CD3DX12_RESOURCE_DESC::Tex2D(SafeGet(PixelFormatDX12, format), width, height);
 
         D3D12_HEAP_PROPERTIES HeapProps;
         HeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
@@ -259,15 +248,59 @@ namespace gfx {
             srd.SlicePitch = 0;// srd.RowPitch * height;
         }
 
-        //CommandContext::InitializeTexture(*this, 1, &texResource);
+        D3D12_CPU_DESCRIPTOR_HANDLE srvDescCpuHandle{};
+        D3D12_CPU_DESCRIPTOR_HANDLE uavDescCpuHandle{};
+        D3D12_CPU_DESCRIPTOR_HANDLE dsvDescCpuHandle{};
+        D3D12_CPU_DESCRIPTOR_HANDLE rtvDescCpuHandle{};
 
-        D3D12_CPU_DESCRIPTOR_HANDLE descHandle;
+        if (usage & TextureUsageFlags::ShaderRead) {
+            srvDescCpuHandle = m_cpuSrvHeap->AllocateDescriptor();
 
-        // stupid heap
+            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+            srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            srvDesc.Format = texDesc.Format;
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            srvDesc.Texture2D.MipLevels = 1;
+            m_dev->CreateShaderResourceView(resource.Get(), &srvDesc, srvDescCpuHandle);
+        }
 
-        /*if (descHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
-            descHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        m_dev->CreateShaderResourceView(m_pResource.Get(), nullptr, m_hCpuDescriptorHandle);*/
+        if (usage & TextureUsageFlags::ShaderWrite) {
+            dg_assert_fail_nm();
+            //uavDescCpuHandle = m_cpuSrvHeap->AllocateDescriptor();
+            //D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+            //uavDesc.Format = 
+        }
+
+        if (usage & TextureUsageFlags::RenderTarget) {
+            if (IsDepthFormat(format)) {
+                dsvDescCpuHandle = m_dsvHeap->AllocateDescriptor();
+
+                D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+                dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+                dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+                dsvDesc.Format = texDesc.Format;
+                dsvDesc.Texture2D.MipSlice = 0;
+            }
+            else {
+                rtvDescCpuHandle = m_rtvHeap->AllocateDescriptor();
+
+                D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+                rtvDesc.Format = texDesc.Format;
+            }
+        }
+
+        TextureDX12* texDx12 = new TextureDX12();
+        texDx12->resource.Swap(resource);
+        texDx12->srv = srvDescCpuHandle;
+        texDx12->uav = uavDescCpuHandle;
+        texDx12->dsv = dsvDescCpuHandle;
+        texDx12->rtv = rtvDescCpuHandle;
+        texDx12->requestedFormat = format;
+        texDx12->height = height;
+        texDx12->width = width;
+        texDx12->usage = usage;
+        texDx12->format = texDesc.Format;
+        return m_resourceManager->AddResource(texDx12);
     }
 
     D3D12_RASTERIZER_DESC DX12Device::CreateRasterState(const RasterState& state) {
@@ -350,8 +383,10 @@ namespace gfx {
         assert(vs);
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs->blob.Get());
 
-        // DONT KNOW WHAT TO DO HERE YET
-        //psoDesc.pRootSignature = m_rootSignature.Get();
+        ComPtr<ID3D12RootSignature> rootSig;
+        DX12_CHECK_RET0(m_dev->CreateRootSignature(0, vs->blob->GetBufferPointer(), vs->blob->GetBufferSize(), IID_PPV_ARGS(&rootSig)));
+        psoDesc.pRootSignature = rootSig.Get();
+        m_rootSigs.emplace_back(rootSig);
 
         psoDesc.RasterizerState = CreateRasterState(desc.rasterState);
         psoDesc.BlendState = CreateBlendState(desc.blendState);
@@ -495,16 +530,14 @@ namespace gfx {
             DeviceConfig.ShaderExtension = ".hlsl";
         }
 
-#ifdef DEBUG_DX12
         // Enable the D3D12 debug layer.
-        {
+        if (kDebugDx12) {
             ComPtr<ID3D12Debug> debugController;
             if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
             {
                 debugController->EnableDebugLayer();
             }
         }
-#endif
 
         ComPtr<IDXGIAdapter1> adapter;
 

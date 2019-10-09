@@ -27,7 +27,7 @@ namespace gfx {
 
         DX12_CHECK_RET(_sc->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
 
-        //todo:
+        //todo: jake
     }
 
     void DX12Swapchain::present(TextureId surface) {

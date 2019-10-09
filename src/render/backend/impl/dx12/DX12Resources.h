@@ -5,6 +5,7 @@
 #include "PrimitiveType.h"
 #include "ShaderType.h"
 #include "RenderPassInfo.h"
+#include "TextureUsage.h"
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -40,8 +41,10 @@ namespace gfx {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource;
         D3D12_CPU_DESCRIPTOR_HANDLE sampler;
         D3D12_CPU_DESCRIPTOR_HANDLE srv;
+        D3D12_CPU_DESCRIPTOR_HANDLE uav;
         D3D12_CPU_DESCRIPTOR_HANDLE rtv;
         D3D12_CPU_DESCRIPTOR_HANDLE dsv;
+        TextureUsageFlags usage;
         DXGI_FORMAT format;
         PixelFormat requestedFormat;
         uint32_t width;
