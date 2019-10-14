@@ -2,6 +2,7 @@
 
 #include "ResourceTypes.h"
 #include "Framebuffer.h"
+#include <string>
 
 namespace gfx
 {

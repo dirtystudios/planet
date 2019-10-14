@@ -5,7 +5,7 @@
 #include "d3dx12.h"
 
 namespace gfx {
-    DX12GpuDescHeap::DX12GpuDescHeap(ID3D12Device* dev, D3D12_DESCRIPTOR_HEAP_TYPE type, const std::string& name = "")
+    DX12GpuDescHeap::DX12GpuDescHeap(ID3D12Device* dev, D3D12_DESCRIPTOR_HEAP_TYPE type, const std::string& name)
         : _dev(dev), _type(type), _debugName(name) {
 
         _descSize = _dev->GetDescriptorHandleIncrementSize(type);
@@ -19,10 +19,8 @@ namespace gfx {
         D3D_SET_OBJECT_NAME_A(_heap, _debugName.c_str());
     }
 
-    D3D12_GPU_DESCRIPTOR_HANDLE DX12GpuDescHeap::GetNextFrameAllocation() {
-        auto rtn = CD3DX12_GPU_DESCRIPTOR_HANDLE(_heap->GetGPUDescriptorHandleForHeapStart(), _currentIdx, _descSize);
-
+    UINT DX12GpuDescHeap::GetNextFrameOffset() {
         _currentIdx = (_currentIdx + kHeapNumGpuDescPerFrame) % kHeapSize;
-        return rtn;
+        return _currentIdx;
     }
 }

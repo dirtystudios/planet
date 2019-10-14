@@ -49,7 +49,7 @@ namespace gfx {
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
             D3D12_HEAP_FLAG_NONE,
             &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-            D3D12_RESOURCE_STATE_GENERIC_READ,
+            D3D12_RESOURCE_STATE_COMMON,
             nullptr,
             IID_PPV_ARGS(&resource)));
 
@@ -57,6 +57,7 @@ namespace gfx {
             D3D_SET_OBJECT_NAME_A(resource, desc.debugName.c_str());
 
         if (initialData) {
+            dg_assert_fail_nm(); // todo: fix me
             uint8_t* pData;
             CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
             DX12_CHECK_RET0(resource->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
@@ -69,6 +70,7 @@ namespace gfx {
         bufDx12->accessFlags = desc.accessFlags;
         bufDx12->usageFlags = desc.usageFlags;
         bufDx12->size = desc.size;
+        bufDx12->currentState = D3D12_RESOURCE_STATE_COMMON;
         bufDx12->buffer.Swap(resource);
 
         return m_resourceManager->AddResource(bufDx12);
@@ -236,7 +238,7 @@ namespace gfx {
         ComPtr<ID3D12Resource> resource;
 
         DX12_CHECK_RET0(m_dev->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
-            D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(resource.ReleaseAndGetAddressOf())));
+            D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(resource.ReleaseAndGetAddressOf())));
         D3D_SET_OBJECT_NAME_A(resource, debugName.c_str());
 
         std::unique_ptr<byte> dataByteRef;
@@ -300,6 +302,7 @@ namespace gfx {
         texDx12->width = width;
         texDx12->usage = usage;
         texDx12->format = texDesc.Format;
+        texDx12->currentState = D3D12_RESOURCE_STATE_COMMON;
         return m_resourceManager->AddResource(texDx12);
     }
 
@@ -419,7 +422,10 @@ namespace gfx {
     }
 
     CommandBuffer* DX12Device::CreateCommandBuffer() {
-        return dynamic_cast<CommandBuffer*>(new DX12CommandBuffer(m_dev, m_resourceManager));
+        auto rtn = dynamic_cast<CommandBuffer*>(new DX12CommandBuffer(m_dev.Get(), _heapInfo, m_resourceManager));
+        _heapInfo.offset = m_gpuSrvHeap->GetNextFrameOffset();
+        m_gpuSamplerHeap->GetNextFrameOffset();
+        return rtn;
     }
 
     void* DX12Device::TextureDataConverter(const D3D12_RESOURCE_DESC& tDesc, PixelFormat reqFormat, void* data, std::unique_ptr<byte>& dataRef) {
@@ -436,7 +442,7 @@ namespace gfx {
 
     uint8_t* DX12Device::MapMemory(BufferId buffer, BufferAccess access) {
         if (access != BufferAccess::Write && access != BufferAccess::WriteNoOverwrite)
-            assert(false);
+            dg_assert_fail_nm(false);
 
         BufferDX12* bufferDX12 = m_resourceManager->GetResource<BufferDX12>(buffer);
 
@@ -570,6 +576,13 @@ namespace gfx {
 
         m_gpuSrvHeap = std::make_unique<DX12GpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "gpuSrvHeap");
         m_gpuSamplerHeap = std::make_unique<DX12GpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "gpuSamplerHeap");
+
+        _heapInfo.numAllocated = m_gpuSamplerHeap->GetNumDescriptorsPerAllocation();
+        _heapInfo.offset = 0;
+        _heapInfo.samplerDescSize = m_gpuSamplerHeap->GetDescSize();
+        _heapInfo.srvDescSize = m_gpuSrvHeap->GetDescSize();
+        _heapInfo.samplerHeap = m_gpuSamplerHeap->GetHeap();
+        _heapInfo.srvHeap = m_gpuSrvHeap->GetHeap();
 
         // Create a RTV and a command allocator for each frame.
         for (uint32_t n = 0; n < FrameCount; n++)

@@ -21,8 +21,10 @@ namespace gfx {
         DX12GpuDescHeap() = delete;
         DX12GpuDescHeap(ID3D12Device* dev, D3D12_DESCRIPTOR_HEAP_TYPE type, const std::string& name = "");
 
-        D3D12_GPU_DESCRIPTOR_HANDLE GetNextFrameAllocation();
-        const UINT GetNumDescriptorsPerAllocation() { return kHeapNumGpuDescPerFrame; }
-        const UINT GetDescSize() { return _descSize; }
+        ID3D12DescriptorHeap* GetHeap() { return _heap.Get(); }
+        UINT GetNextFrameOffset();
+        UINT GetNumDescriptorsPerAllocation() { return kHeapNumGpuDescPerFrame; }
+        UINT GetDescSize() { return _descSize; }
+        D3D12_DESCRIPTOR_HEAP_TYPE GetDescType() { return _type };
     };
 }

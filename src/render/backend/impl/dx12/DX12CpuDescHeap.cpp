@@ -5,7 +5,7 @@
 
 namespace gfx {
 
-    DX12CpuDescHeap::DX12CpuDescHeap(ID3D12Device* dev, D3D12_DESCRIPTOR_HEAP_TYPE type, const std::string& name = "")
+    DX12CpuDescHeap::DX12CpuDescHeap(ID3D12Device* dev, D3D12_DESCRIPTOR_HEAP_TYPE type, const std::string& name)
         : _dev(dev),  _type(type), _debugName(name) {
 
         _descSize = _dev->GetDescriptorHandleIncrementSize(type);

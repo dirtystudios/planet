@@ -10,6 +10,7 @@
 #include "ResourceManager.h"
 #include "DX12CpuDescHeap.h"
 #include "DX12GpuDescHeap.h"
+#include "DX12GpuHeaps.h"
 
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
@@ -64,6 +65,7 @@ namespace gfx {
         D3DX12Residency::ResidencyManager m_residencyManager;
 
         ResourceManager* m_resourceManager{ nullptr };
+        DX12GpuHeaps _heapInfo;
 
     public:
         DX12Device() = delete;
@@ -85,7 +87,7 @@ namespace gfx {
         TextureId CreateTextureCube(PixelFormat format, uint32_t width, uint32_t height, void** data, const std::string& debugName) final { return 0; }
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc) final;
 
-        CommandBuffer* CreateCommandBuffer() final { return 0; }
+        CommandBuffer* CreateCommandBuffer() final;
         void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) final;
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers) final {}
 

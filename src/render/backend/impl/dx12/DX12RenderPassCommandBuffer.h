@@ -3,6 +3,7 @@
 #include "Framebuffer.h"
 #include "DX12Resources.h"
 #include "Framebuffer.h"
+#include "DX12GpuHeaps.h"
 
 #include <wrl.h>
 #include <memory>
@@ -11,16 +12,6 @@
 
 namespace gfx {
     class ResourceManager;
-
-    struct DX12GpuHeaps {
-        ID3D12DescriptorHeap* srvHeap;
-        UINT srvDescSize;
-        ID3D12DescriptorHeap* samplerHeap;
-        UINT samplerDescSize;
-
-        UINT offset;
-        UINT numAllocated;
-    };
 
     class DX12RenderPassCommandBuffer final : public RenderPassCommandBuffer {
     private:
@@ -38,17 +29,19 @@ namespace gfx {
         DX12GpuHeaps _heapInfo;
 
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> _cmdlist;
-
+        ID3D12Device* _dev;
 
         std::map<int, DescInfo> _srvDescCopyInfo;
         BufferId _vbufferId{ 0 };
         VertexLayoutId _inputLayoutId{ 0 };
     public:
         DX12RenderPassCommandBuffer() = delete;
-        DX12RenderPassCommandBuffer(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdlist, const DX12GpuHeaps& heapinfo, ResourceManager* rm);
+        DX12RenderPassCommandBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdlist, const DX12GpuHeaps& heapinfo, ResourceManager* rm);
 
         void SetRenderTargets(const FrameBuffer& framebuffer, const RenderPassDX12& rp);
         void SetViewPort(uint32_t height, uint32_t width);
+
+        ID3D12GraphicsCommandList* getCmdList() { return _cmdlist.Get(); }
 
         void reset(ID3D12CommandAllocator* cmdAlloc);
         void close();

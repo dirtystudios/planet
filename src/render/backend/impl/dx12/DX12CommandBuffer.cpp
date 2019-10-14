@@ -11,7 +11,7 @@
 namespace gfx {
     using namespace Microsoft::WRL;
 
-    DX12CommandBuffer::DX12CommandBuffer(ID3D12Device* dev, ResourceManager* resourceManager)
+    DX12CommandBuffer::DX12CommandBuffer(ID3D12Device* dev, const DX12GpuHeaps& heapInfo, ResourceManager* resourceManager)
         : _resourceManager(resourceManager) {
 
         dg_assert_nm(resourceManager != nullptr);
@@ -23,13 +23,13 @@ namespace gfx {
         DX12_CHECK(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, _directAllocator.Get(), nullptr, IID_PPV_ARGS(&cmdList)));
         cmdList->Close();
 
-        _rpPass.reset(new DX12RenderPassCommandBuffer(cmdList, resourceManager));
+        _rpPass.reset(new DX12RenderPassCommandBuffer(dev, cmdList, heapInfo, resourceManager));
     }
 
-    ID3D12GraphicsCommandList* DX12CommandBuffer::GetCmdList() {
-        auto cmdlist = _rpPass.getCmdList();
+    ID3D12GraphicsCommandList* DX12CommandBuffer::CloseAndGetCmdList() {
+        auto cmdlist = _rpPass->getCmdList();
         dg_assert_nm(cmdlist != nullptr);
-        D3D_SET_OBJECT_NAME_A(cmdList, _passName.c_str());
+        D3D_SET_OBJECT_NAME_A(cmdlist, _passName.c_str());
 
         return cmdlist;
     }
@@ -44,7 +44,7 @@ namespace gfx {
 
         _passName = name;
         _inPass = true;
-        _rpPass->SetRenderTargets(frameBuffer, *rp);
+        _rpPass->SetRenderTargets(framebuffer, *rp);
 
         return _rpPass.get();
     }

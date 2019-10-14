@@ -6,6 +6,7 @@
 #include "ShaderType.h"
 #include "RenderPassInfo.h"
 #include "TextureUsage.h"
+#include "Resource.h"
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -16,6 +17,7 @@ namespace gfx {
         Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
         D3D12_CPU_DESCRIPTOR_HANDLE cbv;
         D3D12_CPU_DESCRIPTOR_HANDLE uav;
+        D3D12_RESOURCE_STATES currentState;
         BufferAccessFlags accessFlags;
         BufferUsageFlags usageFlags;
         size_t size;
@@ -44,6 +46,7 @@ namespace gfx {
         D3D12_CPU_DESCRIPTOR_HANDLE uav;
         D3D12_CPU_DESCRIPTOR_HANDLE rtv;
         D3D12_CPU_DESCRIPTOR_HANDLE dsv;
+        D3D12_RESOURCE_STATES currentState;
         TextureUsageFlags usage;
         DXGI_FORMAT format;
         PixelFormat requestedFormat;
