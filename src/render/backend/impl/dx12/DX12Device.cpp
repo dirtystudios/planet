@@ -282,12 +282,12 @@ namespace gfx {
                 dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
                 dsvDesc.Format = texDesc.Format;
                 dsvDesc.Texture2D.MipSlice = 0;
+
+                m_dev->CreateDepthStencilView(resource.Get(), &dsvDesc, dsvDescCpuHandle);
             }
             else {
                 rtvDescCpuHandle = m_rtvHeap->AllocateDescriptor();
-
-                D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-                rtvDesc.Format = texDesc.Format;
+                m_dev->CreateRenderTargetView(resource.Get(), nullptr, rtvDescCpuHandle);
             }
         }
 
