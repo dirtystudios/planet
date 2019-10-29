@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "DX12RenderPassCommandBuffer.h"
 #include "DGAssert.h"
 #include "DX12Assert.h"
@@ -29,6 +30,7 @@ namespace gfx {
         _inputLayoutId = 0;
         DX12_CHECK(_cmdlist->Reset(cmdAlloc, nullptr));
         _srvDescCopyInfo.clear();
+        _maxCopyFenceValue = 0;
         ID3D12DescriptorHeap* ppheaps[] = { _heapInfo.srvHeap, _heapInfo.samplerHeap };
         _cmdlist->SetDescriptorHeaps(2, ppheaps);
         _cmdlist->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(_heapInfo.srvHeap->GetGPUDescriptorHandleForHeapStart(), _heapInfo.offset, _heapInfo.srvDescSize));
@@ -149,6 +151,7 @@ namespace gfx {
         tmp.src = buf->cbv;
         tmp.dest = dest;
         _srvDescCopyInfo[index] = tmp;
+        _maxCopyFenceValue = std::max(_maxCopyFenceValue, buf->copyFenceValue);
     }
 
     void DX12RenderPassCommandBuffer::setShaderTexture(TextureId textureId, uint8_t index, ShaderStageFlags stages) {
@@ -173,6 +176,7 @@ namespace gfx {
         tmp.src = tex->srv;
         tmp.dest = dest;
         _srvDescCopyInfo[index] = tmp;
+        _maxCopyFenceValue = std::max(_maxCopyFenceValue, tex->copyFenceValue);
     }
 
     void DX12RenderPassCommandBuffer::drawCommon() {
@@ -206,6 +210,7 @@ namespace gfx {
         }
 
         _dev->CopyDescriptors(dests.size(), dests.data(), copySizes.data(), srcs.size(), srcs.data(), copySizes.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        _maxCopyFenceValue = std::max(_maxCopyFenceValue, vb->copyFenceValue);
     }
 
     void DX12RenderPassCommandBuffer::drawPrimitives(uint32_t startOffset, uint32_t vertexCount) {
@@ -229,5 +234,6 @@ namespace gfx {
             _cmdlist->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer->buffer.Get(), indexBuffer->currentState, D3D12_RESOURCE_STATE_INDEX_BUFFER));
 
         _cmdlist->DrawIndexedInstanced(indexCount, 1, indexOffset, baseVertexOffset, 0);
+        _maxCopyFenceValue = std::max(_maxCopyFenceValue, indexBuffer->copyFenceValue);
     }
 }

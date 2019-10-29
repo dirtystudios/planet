@@ -72,7 +72,7 @@ namespace gfx {
             tmp->height = height;
             tmp->width = width;
             tmp->rtv = rtvDescCpuHandle;
-            tmp->usage = usageflags.underlying_value;
+            tmp->usage = &usageflags.underlying_value;
             tmp->srv = srvDescCpuHandle;
 
             _backBuffers.push_back(_rm->AddResource(tmp));

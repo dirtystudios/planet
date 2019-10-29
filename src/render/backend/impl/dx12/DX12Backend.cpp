@@ -59,13 +59,20 @@ namespace gfx {
         UINT i = 0;
         while (_factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND) {
             auto adapterDesc = DXGI_ADAPTER_DESC();
+            ComPtr<IDXGIAdapter3> castedAdapter;
+            DX12_CHECK(adapter.As(&castedAdapter));
 
-            DX12_CHECK(adapter->GetDesc(&adapterDesc));
+            DX12_CHECK(castedAdapter->GetDesc(&adapterDesc));
             char buffer[128];
             wcstombs_s(0, buffer, 128, adapterDesc.Description, 128);
 
             LOG_D("DisplayAdapterDesc %d: %s", i, buffer);
             LOG_D("VendorID:DeviceID 0x%x:0x%x", adapterDesc.VendorId, adapterDesc.DeviceId);
+
+            DXGI_QUERY_VIDEO_MEMORY_INFO memoryInfo = {};
+            DX12_CHECK(castedAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &memoryInfo));
+            LOG_D("Memory Budget: %llu MB | Using: %llu MB", memoryInfo.Budget >> 20, memoryInfo.CurrentUsage >> 20);
+
             ++i;
         }
     }

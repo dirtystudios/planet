@@ -25,6 +25,7 @@ namespace gfx {
         DX12CommandBuffer() = delete;
         DX12CommandBuffer(ID3D12Device* dev, const DX12GpuHeaps& heapInfo, ResourceManager* resourceManager);
 
+        uint64_t GetMaxCopyFenceValue();
         ID3D12GraphicsCommandList* CloseAndGetCmdList();
 
         RenderPassCommandBuffer* beginRenderPass(RenderPassId passId, const FrameBuffer& frameBuffer, const std::string& name = "") final;

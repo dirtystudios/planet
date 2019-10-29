@@ -226,28 +226,52 @@ namespace gfx {
     }
 
     TextureId DX12Device::CreateTexture2D(PixelFormat format, TextureUsageFlags usage, uint32_t width, uint32_t height, void* data, const std::string& debugName) {
-        auto texDesc = CD3DX12_RESOURCE_DESC::Tex2D(SafeGet(PixelFormatDX12, format), width, height);
 
-        D3D12_HEAP_PROPERTIES HeapProps;
-        HeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-        HeapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-        HeapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-        HeapProps.CreationNodeMask = 1;
-        HeapProps.VisibleNodeMask = 1;
+        auto texDesc = CD3DX12_RESOURCE_DESC::Tex2D(SafeGet(PixelFormatDX12, format), width, height);
 
         ComPtr<ID3D12Resource> resource;
 
-        DX12_CHECK_RET0(m_dev->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
-            D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(resource.ReleaseAndGetAddressOf())));
+        DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &texDesc,
+            D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource)));
         D3D_SET_OBJECT_NAME_A(resource, debugName.c_str());
 
-        std::unique_ptr<byte> dataByteRef;
-        D3D12_SUBRESOURCE_DATA srd;
+        auto info = m_dev->GetResourceAllocationInfo(0, 1, &texDesc);
+
+        D3DX12Residency::ManagedObject managedObject;
+        managedObject.Initialize(resource.Get(), info.SizeInBytes);
+        m_residencyManager.BeginTrackingObject(&managedObject);
+
         if (data) {
-            // todo: lock and upload
+            std::unique_ptr<byte> dataByteRef;
+            D3D12_SUBRESOURCE_DATA srd;
             srd.pData = TextureDataConverter(texDesc, format, data, dataByteRef);
             srd.RowPitch = GetFormatByteSize(texDesc.Format) * texDesc.Width;
             srd.SlicePitch = 0;// srd.RowPitch * height;
+
+            // todo: is a lock needed for commandlist/fences maybe??
+            ComPtr<ID3D12Resource> uploadBuffer;
+            D3DX12Residency::ResidencySet* residencySet = m_residencyManager.CreateResidencySet();
+            // gpu upload buffer
+            DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
+                &CD3DX12_RESOURCE_DESC::Buffer(info.SizeInBytes), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&uploadBuffer)));
+
+            residencySet->Open();
+            UpdateSubresources<1>(m_copyCommandList.Get(), resource.Get(), uploadBuffer.Get(), 0, 0, 1, &srd);
+
+            residencySet->Insert(&managedObject);
+
+            DX12_CHECK_RET0(m_copyCommandList->Close());
+            DX12_CHECK_RET0(residencySet->Close());
+
+            ID3D12CommandList* ppCommandLists[] = { m_copyCommandList.Get() };
+            D3DX12Residency::ResidencySet* ppResidencySets[] = { residencySet };
+            m_copyQueue->Wait(m_directQueueFence.Get(), m_directQueueFenceValue);
+            DX12_CHECK(m_residencyManager.ExecuteCommandLists(m_copyQueue.Get(), ppCommandLists, ppResidencySets, _countof(ppCommandLists)));
+            m_copyQueue->Signal(m_copyQueueFence.Get(), ++m_copyQueueFenceValue);
+
+            // todo: clear these outsomewhere, probly on execute/frameclear
+            m_managedUploads.emplace_back(uploadBuffer, residencySet, m_copyQueueFenceValue);
+            m_copyCommandList->Reset(m_copyCommandAllocator.Get(), nullptr);
         }
 
         D3D12_CPU_DESCRIPTOR_HANDLE srvDescCpuHandle{};
@@ -292,17 +316,20 @@ namespace gfx {
         }
 
         TextureDX12* texDx12 = new TextureDX12();
+        texDx12->trackingHandle = managedObject;
         texDx12->resource.Swap(resource);
         texDx12->srv = srvDescCpuHandle;
         texDx12->uav = uavDescCpuHandle;
         texDx12->dsv = dsvDescCpuHandle;
         texDx12->rtv = rtvDescCpuHandle;
+        texDx12->size = info.SizeInBytes;
         texDx12->requestedFormat = format;
         texDx12->height = height;
         texDx12->width = width;
         texDx12->usage = usage;
         texDx12->format = texDesc.Format;
         texDx12->currentState = D3D12_RESOURCE_STATE_COMMON;
+        texDx12->copyFenceValue = m_copyQueueFenceValue;
         return m_resourceManager->AddResource(texDx12);
     }
 
@@ -441,6 +468,8 @@ namespace gfx {
     }
 
     uint8_t* DX12Device::MapMemory(BufferId buffer, BufferAccess access) {
+        // todo: copy queue
+        dg_assert_fail_nm();
         if (access != BufferAccess::Write && access != BufferAccess::WriteNoOverwrite)
             dg_assert_fail_nm(false);
 
@@ -457,7 +486,11 @@ namespace gfx {
         assert(bufferDX12);
         bufferDX12->buffer->Unmap(0, nullptr);
     }
-    
+
+    void DX12Device::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
+        //todo: remember to use wait/signal on queues
+    }
+
     void DX12Device::RenderFrame() {
 
         ID3D12CommandList* ppCommandLists[1];
@@ -545,10 +578,8 @@ namespace gfx {
             }
         }
 
-        ComPtr<IDXGIAdapter1> adapter;
-
         DX12_CHECK_RET(D3D12CreateDevice(
-            adapter.Get(),
+            nullptr,
             D3D_FEATURE_LEVEL_11_0,
             IID_PPV_ARGS(&m_dev)
         ));
@@ -567,7 +598,10 @@ namespace gfx {
         queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
         queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-        DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
+        DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_directCommandQueue)));
+
+        queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+        DX12_CHECK_RET(m_dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_copyQueue)));
 
         m_cpuSrvHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "cpuSrvHeap");
         m_cpuSamplerHeap = std::make_unique<DX12CpuDescHeap>(m_dev.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, "cpuSamplerHeap");
@@ -584,25 +618,19 @@ namespace gfx {
         _heapInfo.samplerHeap = m_gpuSamplerHeap->GetHeap();
         _heapInfo.srvHeap = m_gpuSrvHeap->GetHeap();
 
-        // Create a RTV and a command allocator for each frame.
-        for (uint32_t n = 0; n < FrameCount; n++)
-        {
-            DX12_CHECK_RET(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
-        }
+        DX12_CHECK_RET(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_directCommandAllocator)));
+        DX12_CHECK_RET(m_dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_directCommandAllocator.Get(), NULL, IID_PPV_ARGS(&m_directCommandList)));
+        DX12_CHECK_RET(m_dev->CreateFence(m_directQueueFenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_directQueueFence)));
 
-        DX12_CHECK_RET(m_dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[0].Get(), NULL, IID_PPV_ARGS(&m_commandList)));
+        DX12_CHECK_RET(m_dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&m_copyCommandAllocator)));
+        DX12_CHECK_RET(m_dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COPY, m_copyCommandAllocator.Get(), NULL, IID_PPV_ARGS(&m_copyCommandList)));
+        DX12_CHECK_RET(m_dev->CreateFence(m_copyQueueFenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_copyQueueFence)));
 
-        m_commandList->Close();
-
-        DX12_CHECK_RET(m_dev->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
-
-        m_fenceEvent = CreateEventEx(NULL, FALSE, FALSE, EVENT_ALL_ACCESS);
-
-        m_fenceValues[0] = 1;
+        // todo: pick out correct adapter
+        m_residencyManager.Initialize(m_dev.Get(), 0, adapter.Get(), 10);
     }
 
     DX12Device::~DX12Device() {
         m_dev.Reset();
-        CloseHandle(m_fenceEvent);
     }
 }

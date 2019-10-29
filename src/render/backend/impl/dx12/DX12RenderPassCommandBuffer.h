@@ -32,6 +32,7 @@ namespace gfx {
         ID3D12Device* _dev;
 
         std::map<int, DescInfo> _srvDescCopyInfo;
+        uint64_t _maxCopyFenceValue{ 0 };
         BufferId _vbufferId{ 0 };
         VertexLayoutId _inputLayoutId{ 0 };
     public:
@@ -42,6 +43,7 @@ namespace gfx {
         void SetViewPort(uint32_t height, uint32_t width);
 
         ID3D12GraphicsCommandList* getCmdList() { return _cmdlist.Get(); }
+        uint64_t getMaxCopyFenceValue() { return _maxCopyFenceValue; }
 
         void reset(ID3D12CommandAllocator* cmdAlloc);
         void close();

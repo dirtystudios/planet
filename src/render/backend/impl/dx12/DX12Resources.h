@@ -8,6 +8,8 @@
 #include "TextureUsage.h"
 #include "Resource.h"
 
+#include "d3dx12Residency.h"
+
 #include <wrl.h>
 #include <d3d12.h>
 
@@ -21,6 +23,7 @@ namespace gfx {
         BufferAccessFlags accessFlags;
         BufferUsageFlags usageFlags;
         size_t size;
+        uint64_t copyFenceValue;
     };
 
     struct PipelineStateDX12 : public Resource {
@@ -52,6 +55,9 @@ namespace gfx {
         PixelFormat requestedFormat;
         uint32_t width;
         uint32_t height;
+        uint64_t size;
+        D3DX12Residency::ManagedObject trackingHandle;
+        uint64_t copyFenceValue;
     };
 
     struct RenderPassDX12 : public Resource {

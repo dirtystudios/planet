@@ -34,6 +34,10 @@ namespace gfx {
         return cmdlist;
     }
 
+    uint64_t DX12CommandBuffer::GetMaxCopyFenceValue() {
+        return _rpPass->getMaxCopyFenceValue();
+    }
+
     RenderPassCommandBuffer* DX12CommandBuffer::beginRenderPass(RenderPassId passId, const FrameBuffer& framebuffer, const std::string& name) {
         dg_assert_nm(_inPass == false);
 

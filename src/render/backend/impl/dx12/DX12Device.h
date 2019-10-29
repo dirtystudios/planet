@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <map>
 #include <array>
+#include <vector>
 
 #include <wrl.h>
 
@@ -32,14 +33,24 @@ namespace gfx {
     class DX12Device final : public RenderDevice {
     private:
 
+        struct ManagedUpload {
+            ComPtr<ID3D12Resource> uploadBuffer;
+            D3DX12Residency::ResidencySet* residencySet;
+            uint64_t fenceValue;
+
+            ManagedUpload(ComPtr<ID3D12Resource> buf, D3DX12Residency::ResidencySet* set, uint64_t val) {
+                uploadBuffer.Swap(buf);
+                residencySet = set;
+                fenceValue = val;
+            }
+        };
+
+        std::vector<ManagedUpload> m_managedUploads;
+
         static const uint32_t FrameCount = 2;
         bool m_usePrebuiltShaders;
 
         ComPtr<ID3D12Device> m_dev;
-
-        ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
-        ComPtr<ID3D12CommandAllocator> m_commandAllocators[FrameCount];
-        uint64_t m_fenceValues[FrameCount];
 
         std::unique_ptr<DX12CpuDescHeap> m_rtvHeap{ nullptr };
         std::unique_ptr<DX12CpuDescHeap> m_dsvHeap{ nullptr };
@@ -48,15 +59,21 @@ namespace gfx {
         std::unique_ptr<DX12GpuDescHeap> m_gpuSrvHeap{ nullptr };
         std::unique_ptr<DX12GpuDescHeap> m_gpuSamplerHeap{ nullptr };
 
-        ComPtr<ID3D12CommandQueue> m_commandQueue;
-        ComPtr<ID3D12GraphicsCommandList> m_commandList;
+        ComPtr<ID3D12CommandAllocator> m_copyCommandAllocator;
+        ComPtr<ID3D12CommandQueue> m_copyQueue;
+        ComPtr<ID3D12GraphicsCommandList> m_copyCommandList;
+        ComPtr<ID3D12Fence> m_copyQueueFence;
+        uint64_t m_copyQueueFenceValue{ 1 };
+
+        ComPtr<ID3D12CommandQueue> m_directCommandQueue;
+        ComPtr<ID3D12GraphicsCommandList> m_directCommandList;
+        ComPtr<ID3D12CommandAllocator> m_directCommandAllocator;
+        ComPtr<ID3D12Fence> m_directQueueFence;
+        uint64_t m_directQueueFenceValue{ 1 };
 
         std::unordered_map<size_t, PipelineStateId> m_pipelinestates;
         std::unordered_map<size_t, VertexLayoutId> m_inputLayouts;
         std::vector<ComPtr<ID3D12RootSignature>> m_rootSigs;
-
-        HANDLE m_fenceEvent;
-        ComPtr<ID3D12Fence> m_fence;
 
         std::vector<CommandBuffer*> m_submittedBuffers;
 
@@ -89,7 +106,7 @@ namespace gfx {
 
         CommandBuffer* CreateCommandBuffer() final;
         void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) final;
-        void Submit(const std::vector<CommandBuffer*>& cmdBuffers) final {}
+        void Submit(const std::vector<CommandBuffer*>& cmdBuffers) final;
 
         uint8_t* MapMemory(BufferId buffer, BufferAccess) final;
         void UnmapMemory(BufferId buffer) final;

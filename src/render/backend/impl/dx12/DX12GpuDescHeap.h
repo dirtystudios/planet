@@ -25,6 +25,6 @@ namespace gfx {
         UINT GetNextFrameOffset();
         UINT GetNumDescriptorsPerAllocation() { return kHeapNumGpuDescPerFrame; }
         UINT GetDescSize() { return _descSize; }
-        D3D12_DESCRIPTOR_HEAP_TYPE GetDescType() { return _type };
+        D3D12_DESCRIPTOR_HEAP_TYPE GetDescType() { return _type; }
     };
 }
