@@ -117,7 +117,7 @@ namespace gfx {
         void DestroyResource(ResourceId resourceId) final {}
 
         // dx12 specific helpers
-        ID3D12CommandQueue* GetCommandQueue() { return m_commandQueue.Get(); }
+        ID3D12CommandQueue* GetCommandQueue() { return m_directCommandQueue.Get(); }
 
     private:
 

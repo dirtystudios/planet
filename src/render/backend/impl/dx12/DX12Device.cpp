@@ -24,8 +24,6 @@
 namespace gfx {
 
     BufferId DX12Device::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
-        ComPtr<ID3D12Resource> resource;
-        uint32_t unused = 0;
         uint32_t bufferSize = desc.size;
 
         switch (desc.usageFlags) {
@@ -40,30 +38,71 @@ namespace gfx {
             assert(false);
         }
 
-        // copypasterino
-        // Note: using upload heaps to transfer static data like vert buffers is not 
-        // recommended. Every time the GPU needs it, the upload heap will be marshalled 
-        // over. Please read up on Default Heap usage. An upload heap is used here for 
-        // code simplicity and because there are very few verts to actually transfer.
-        DX12_CHECK_RET0(m_dev->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-            D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-            D3D12_RESOURCE_STATE_COMMON,
-            nullptr,
-            IID_PPV_ARGS(&resource)));
+        ComPtr<ID3D12Resource> resource;
+        D3DX12Residency::ManagedObject managedObject;
+        // use upload heap for constant buffers, and the dedicated upload pipeline for any others
+        // todo: it may be beneficial to support using this heap for others as well, but we may need a new flag?
+        if (desc.usageFlags == BufferUsageFlags::ConstantBufferBit) {
+            DX12_CHECK_RET0(m_dev->CreateCommittedResource(
+                &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+                D3D12_HEAP_FLAG_NONE,
+                &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+                D3D12_RESOURCE_STATE_COMMON,
+                nullptr,
+                IID_PPV_ARGS(&resource)));
 
-        if (desc.debugName != "")
-            D3D_SET_OBJECT_NAME_A(resource, desc.debugName.c_str());
+            managedObject.Initialize(resource.Get(), bufferSize);
+            m_residencyManager.BeginTrackingObject(&managedObject);
 
-        if (initialData) {
-            dg_assert_fail_nm(); // todo: fix me
-            uint8_t* pData;
-            CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
-            DX12_CHECK_RET0(resource->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
-            memcpy(pData, initialData, desc.size);
-            resource->Unmap(0, nullptr);
+            if (initialData) {
+                uint8_t* pData;
+                CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+                DX12_CHECK_RET0(resource->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
+                memcpy(pData, initialData, desc.size);
+                resource->Unmap(0, nullptr);
+            }
         }
+        else {
+            DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+                D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource)));
+
+            if (initialData) {
+                D3D12_SUBRESOURCE_DATA srd;
+                srd.pData = initialData;
+                srd.RowPitch = bufferSize;
+                srd.SlicePitch = 0;// srd.RowPitch * height;
+
+                // todo: is a lock needed for commandlist/fences maybe??
+                // todo: switch uploading to a dynamic ringbuffer system
+                ComPtr<ID3D12Resource> uploadBuffer;
+                DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+                    D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&uploadBuffer)));
+
+                std::string uploadBufferDebugName = desc.debugName + "uploadBuffer";
+                D3D_SET_OBJECT_NAME_A(uploadBuffer, uploadBufferDebugName.c_str());
+
+                D3DX12Residency::ResidencySet* residencySet = m_residencyManager.CreateResidencySet();
+                residencySet->Open();
+                UpdateSubresources<1>(m_copyCommandList.Get(), resource.Get(), uploadBuffer.Get(), 0, 0, 1, &srd);
+
+                residencySet->Insert(&managedObject);
+
+                DX12_CHECK_RET0(m_copyCommandList->Close());
+                DX12_CHECK_RET0(residencySet->Close());
+
+                ID3D12CommandList* ppCommandLists[] = { m_copyCommandList.Get() };
+                D3DX12Residency::ResidencySet* ppResidencySets[] = { residencySet };
+                m_copyQueue->Wait(m_directQueueFence.Get(), m_directQueueFenceValue);
+                DX12_CHECK(m_residencyManager.ExecuteCommandLists(m_copyQueue.Get(), ppCommandLists, ppResidencySets, _countof(ppCommandLists)));
+                m_copyQueue->Signal(m_copyQueueFence.Get(), ++m_copyQueueFenceValue);
+
+                // todo: clear these outsomewhere, probly on execute/frameclear
+                m_managedUploads.emplace_back(uploadBuffer, residencySet, m_copyQueueFenceValue);
+                m_copyCommandList->Reset(m_copyCommandAllocator.Get(), nullptr);
+            }
+        }
+
+        D3D_SET_OBJECT_NAME_A(resource, desc.debugName.c_str());
 
         BufferDX12* bufDx12 = new BufferDX12();
 
@@ -71,6 +110,8 @@ namespace gfx {
         bufDx12->usageFlags = desc.usageFlags;
         bufDx12->size = desc.size;
         bufDx12->currentState = D3D12_RESOURCE_STATE_COMMON;
+        bufDx12->copyFenceValue = m_copyQueueFenceValue;
+        bufDx12->trackingHandle = managedObject;
         bufDx12->buffer.Swap(resource);
 
         return m_resourceManager->AddResource(bufDx12);
@@ -249,11 +290,15 @@ namespace gfx {
             srd.SlicePitch = 0;// srd.RowPitch * height;
 
             // todo: is a lock needed for commandlist/fences maybe??
+            // todo: switch uploading to a dynamic ringbuffer system
             ComPtr<ID3D12Resource> uploadBuffer;
             D3DX12Residency::ResidencySet* residencySet = m_residencyManager.CreateResidencySet();
             // gpu upload buffer
             DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
                 &CD3DX12_RESOURCE_DESC::Buffer(info.SizeInBytes), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&uploadBuffer)));
+
+            std::string uploadBufferDebugName = debugName + "uploadBuffer";
+            D3D_SET_OBJECT_NAME_A(uploadBuffer, uploadBufferDebugName.c_str());
 
             residencySet->Open();
             UpdateSubresources<1>(m_copyCommandList.Get(), resource.Get(), uploadBuffer.Get(), 0, 0, 1, &srd);
@@ -468,17 +513,20 @@ namespace gfx {
     }
 
     uint8_t* DX12Device::MapMemory(BufferId buffer, BufferAccess access) {
-        // todo: copy queue
-        dg_assert_fail_nm();
         if (access != BufferAccess::Write && access != BufferAccess::WriteNoOverwrite)
             dg_assert_fail_nm(false);
 
         BufferDX12* bufferDX12 = m_resourceManager->GetResource<BufferDX12>(buffer);
-
-        uint8_t* pData;
-        CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
-        DX12_CHECK_RET0(bufferDX12->buffer->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
-        return static_cast<uint8_t*>(pData);
+        if (bufferDX12->usageFlags == BufferUsageFlags::ConstantBufferBit) {
+            uint8_t* pData;
+            CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+            DX12_CHECK_RET0(bufferDX12->buffer->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
+            return static_cast<uint8_t*>(pData);
+        }
+        else {
+            //todo: upload queue
+            dg_assert_fail_nm();
+        }
     }
 
     void DX12Device::UnmapMemory(BufferId buffer) {

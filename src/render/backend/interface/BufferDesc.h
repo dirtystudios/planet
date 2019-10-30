@@ -12,7 +12,6 @@ struct BufferDesc {
     BufferUsageFlags usageFlags{BufferUsageFlags::None};                   // in what ways will the buffer be used
     BufferAccessFlags accessFlags{BufferAccessFlags::GpuReadCpuWriteBits}; // how will this buffer be accessed
     BufferLifetime lifetime{BufferLifetime::Persistent};
-    bool isDynamic{false}; // will you be writing to the buffer while the gpu is using it
     size_t size{0};
     std::string debugName{""};
 
@@ -21,7 +20,6 @@ struct BufferDesc {
         bd.usageFlags  = usageFlags;
         bd.accessFlags = BufferAccessFlags::GpuReadCpuWriteBits;
         bd.lifetime    = BufferLifetime::Transient;
-        bd.isDynamic   = false;
         bd.size        = size;
         bd.debugName   = debugName;
         return bd;
@@ -36,7 +34,6 @@ struct BufferDesc {
         bd.usageFlags  = usageFlags;
         bd.accessFlags = BufferAccessFlags::GpuReadCpuWriteBits;
         bd.lifetime    = BufferLifetime::Persistent;
-        bd.isDynamic   = false;
         bd.size        = size;
         bd.debugName   = debugName;
         return bd;

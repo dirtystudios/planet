@@ -23,6 +23,7 @@ namespace gfx {
         BufferAccessFlags accessFlags;
         BufferUsageFlags usageFlags;
         size_t size;
+        D3DX12Residency::ManagedObject trackingHandle;
         uint64_t copyFenceValue;
     };
 
