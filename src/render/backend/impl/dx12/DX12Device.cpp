@@ -344,7 +344,7 @@ namespace gfx {
         D3D12_CPU_DESCRIPTOR_HANDLE dsvDescCpuHandle{};
         D3D12_CPU_DESCRIPTOR_HANDLE rtvDescCpuHandle{};
 
-        if (usage & TextureUsageFlags::ShaderRead) {
+        if ((usage & TextureUsageFlags::ShaderRead) || (usage & TextureUsageFlags::RenderTarget)) {
             srvDescCpuHandle = m_cpuSrvHeap->AllocateDescriptor();
 
             D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -534,7 +534,7 @@ namespace gfx {
 
     uint8_t* DX12Device::MapMemory(BufferId buffer, BufferAccess access) {
         if (access != BufferAccess::Write && access != BufferAccess::WriteNoOverwrite)
-            dg_assert_fail_nm(false);
+            dg_assert_fail_nm();
 
         BufferDX12* bufferDX12 = m_resourceManager->GetResource<BufferDX12>(buffer);
         if (bufferDX12->usageFlags == BufferUsageFlags::ConstantBufferBit) {
@@ -612,6 +612,9 @@ namespace gfx {
         for (auto set : residencySets) {
             m_residencyManager.DestroyResidencySet(set);
         }
+
+        uint64_t currentCopyValue = m_copyQueueFence->GetCompletedValue();
+        // todo: clear managed upload queue based on current copy queue value;
     }
 
     DX12Device::DX12Device(IDXGIAdapter3* adapter, ResourceManager* resourceManager, bool usePrebuiltShaders)

@@ -20,8 +20,8 @@ namespace gfx {
         _format = dx12Desc.Format;
         _reqFormat = desc.format;
 
-        _srvHeap = std::make_unique<DX12CpuDescHeap>(_dev, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "swapchainSrvHeap");
-        _rtvHeap = std::make_unique<DX12CpuDescHeap>(_dev, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, "swapchainRtvHeap");
+        _srvHeap = std::make_unique<DX12CpuDescHeap>(_dev->GetID3D12Dev(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, "swapchainSrvHeap");
+        _rtvHeap = std::make_unique<DX12CpuDescHeap>(_dev->GetID3D12Dev(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, "swapchainRtvHeap");
 
         DX12_CHECK(_dev->GetID3D12Dev()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_directAllocator)));
 
@@ -62,8 +62,6 @@ namespace gfx {
             srvDesc.Texture2D.MipLevels = 1;
             _dev->GetID3D12Dev()->CreateShaderResourceView(buffer.Get(), &srvDesc, srvDescCpuHandle);
 
-            auto usageflags = TextureUsageFlags::ShaderRead | TextureUsageFlags::RenderTarget;;
-
             TextureDX12* tmp = new TextureDX12();
             tmp->currentState = D3D12_RESOURCE_STATE_PRESENT; // this is a guess
             tmp->dsv = { 0 };
@@ -72,7 +70,7 @@ namespace gfx {
             tmp->height = height;
             tmp->width = width;
             tmp->rtv = rtvDescCpuHandle;
-            tmp->usage = &usageflags.underlying_value;
+            tmp->usage = TextureUsageFlags::RenderTarget;
             tmp->srv = srvDescCpuHandle;
 
             _backBuffers.push_back(_rm->AddResource(tmp));

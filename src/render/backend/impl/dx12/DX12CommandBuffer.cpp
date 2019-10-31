@@ -26,7 +26,7 @@ namespace gfx {
         _rpPass.reset(new DX12RenderPassCommandBuffer(dev, cmdList, heapInfo, resourceManager));
     }
 
-    ID3D12GraphicsCommandList* DX12CommandBuffer::GetCmdList() {
+    ID3D12GraphicsCommandList* DX12CommandBuffer::getCmdList() {
         auto cmdlist = _rpPass->getCmdList();
         dg_assert_nm(cmdlist != nullptr);
         D3D_SET_OBJECT_NAME_A(cmdlist, _passName.c_str());
@@ -34,7 +34,7 @@ namespace gfx {
         return cmdlist;
     }
 
-    uint64_t DX12CommandBuffer::GetMaxCopyFenceValue() {
+    uint64_t DX12CommandBuffer::getMaxCopyFenceValue() {
         return _rpPass->getMaxCopyFenceValue();
     }
 

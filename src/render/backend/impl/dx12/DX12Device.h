@@ -105,7 +105,7 @@ namespace gfx {
         VertexLayoutId CreateVertexLayout(const VertexLayoutDesc& layoutDesc) final;
 
         CommandBuffer* CreateCommandBuffer() final;
-        void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) final;
+        void UpdateTexture(TextureId textureId, uint32_t slice, const void* srcData) final { dg_assert_fail_nm(); };
         void Submit(const std::vector<CommandBuffer*>& cmdBuffers) final;
 
         uint8_t* MapMemory(BufferId buffer, BufferAccess) final;
