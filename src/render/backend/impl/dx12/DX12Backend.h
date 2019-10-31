@@ -25,5 +25,8 @@ namespace gfx {
         RenderDevice* getRenderDevice();
         void printDeviceInfo();
         Swapchain* createSwapchainForWindow(const SwapchainDesc& swapchainDesc, RenderDevice* device, void* windowHandle);
+
+    private:
+        void getHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
     };
 } // namespace gfx

@@ -2,13 +2,13 @@
 #include "File.h"
 #include "Log.h"
 
-#include <Windows.h>
 #include <memory>
 #include <algorithm>
 #include <vector>
 #include <cassert>
 #include <atlstr.h>
 #define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 namespace fs {

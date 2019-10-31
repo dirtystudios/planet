@@ -4,6 +4,8 @@
 #include "Log.h"
 
 #include "StringUtil.h"
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <Shlwapi.h>
 

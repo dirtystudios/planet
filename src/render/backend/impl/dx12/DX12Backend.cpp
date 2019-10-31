@@ -13,7 +13,21 @@ namespace gfx {
     DX12Backend::DX12Backend(bool usePrebuiltShaders) {
         UINT factoryFlags = kDebugDx12 ? DXGI_CREATE_FACTORY_DEBUG : 0;
         DX12_CHECK(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&_factory)));
-        _device.reset(new DX12Device(&resourceManager, usePrebuiltShaders));
+
+        /* warp adapter
+        ComPtr<IDXGIAdapter> warpAdapter;
+        DX12_CHECK(factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
+        */
+
+        ComPtr<IDXGIAdapter1> hardwareAdapter;
+
+        getHardwareAdapter(_factory.Get(), &hardwareAdapter);
+        dg_assert(hardwareAdapter.Get() != nullptr, "DX12: No dx12 supported device found!");
+
+        ComPtr<IDXGIAdapter3> castedAdapter;
+        hardwareAdapter.As(&castedAdapter);
+
+        _device.reset(new DX12Device(castedAdapter.Get(), &resourceManager, usePrebuiltShaders));
         dg_assert_nm(_device.get() != nullptr);
     }
 
@@ -75,5 +89,31 @@ namespace gfx {
 
             ++i;
         }
+    }
+
+    void DX12Backend::getHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter) {
+        ComPtr<IDXGIAdapter1> adapter;
+        *ppAdapter = nullptr;
+
+        for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != pFactory->EnumAdapters1(adapterIndex, &adapter); ++adapterIndex)
+        {
+            DXGI_ADAPTER_DESC1 desc;
+            adapter->GetDesc1(&desc);
+
+            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+            {
+                // Don't select the Basic Render Driver adapter
+                continue;
+            }
+
+            // Check to see if the adapter supports Direct3D 12, but don't create the
+            // actual device yet.
+            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+            {
+                break;
+            }
+        }
+
+        *ppAdapter = adapter.Detach();
     }
 }

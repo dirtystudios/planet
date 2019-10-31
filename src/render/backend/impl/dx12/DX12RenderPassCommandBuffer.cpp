@@ -30,6 +30,7 @@ namespace gfx {
         _inputLayoutId = 0;
         DX12_CHECK(_cmdlist->Reset(cmdAlloc, nullptr));
         _srvDescCopyInfo.clear();
+        _trackingHandles.clear();
         _maxCopyFenceValue = 0;
         ID3D12DescriptorHeap* ppheaps[] = { _heapInfo.srvHeap, _heapInfo.samplerHeap };
         _cmdlist->SetDescriptorHeaps(2, ppheaps);
@@ -70,6 +71,7 @@ namespace gfx {
                 barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(tex->resource.Get(), tex->currentState, D3D12_RESOURCE_STATE_RENDER_TARGET));
                 tex->currentState = D3D12_RESOURCE_STATE_RENDER_TARGET;
             }
+            _trackingHandles.push_back(tex->trackingHandle);
         }
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE dsv{};
@@ -81,6 +83,7 @@ namespace gfx {
                 barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(depth->resource.Get(), depth->currentState, D3D12_RESOURCE_STATE_DEPTH_WRITE));
                 depth->currentState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
             }
+            _trackingHandles.push_back(depth->trackingHandle);
         }
         _cmdlist->OMSetRenderTargets(framebuffer.colorCount, rtvHandles.data(), true, rp.info.hasDepth ? &dsv : nullptr);
         _cmdlist->ResourceBarrier(barriers.size(), barriers.data());
@@ -152,6 +155,7 @@ namespace gfx {
         tmp.dest = dest;
         _srvDescCopyInfo[index] = tmp;
         _maxCopyFenceValue = std::max(_maxCopyFenceValue, buf->copyFenceValue);
+        _trackingHandles.push_back(buf->trackingHandle);
     }
 
     void DX12RenderPassCommandBuffer::setShaderTexture(TextureId textureId, uint8_t index, ShaderStageFlags stages) {
@@ -177,6 +181,7 @@ namespace gfx {
         tmp.dest = dest;
         _srvDescCopyInfo[index] = tmp;
         _maxCopyFenceValue = std::max(_maxCopyFenceValue, tex->copyFenceValue);
+        _trackingHandles.push_back(tex->trackingHandle);
     }
 
     void DX12RenderPassCommandBuffer::drawCommon() {
@@ -211,6 +216,7 @@ namespace gfx {
 
         _dev->CopyDescriptors(dests.size(), dests.data(), copySizes.data(), srcs.size(), srcs.data(), copySizes.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         _maxCopyFenceValue = std::max(_maxCopyFenceValue, vb->copyFenceValue);
+        _trackingHandles.push_back(vb->trackingHandle);
     }
 
     void DX12RenderPassCommandBuffer::drawPrimitives(uint32_t startOffset, uint32_t vertexCount) {
@@ -235,5 +241,6 @@ namespace gfx {
 
         _cmdlist->DrawIndexedInstanced(indexCount, 1, indexOffset, baseVertexOffset, 0);
         _maxCopyFenceValue = std::max(_maxCopyFenceValue, indexBuffer->copyFenceValue);
+        _trackingHandles.push_back(indexBuffer->trackingHandle);
     }
 }

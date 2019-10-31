@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "DX12Device.h"
 #include "DX12Assert.h"
 #include "DX12EnumAdapter.h"
@@ -39,6 +40,7 @@ namespace gfx {
         }
 
         ComPtr<ID3D12Resource> resource;
+        ComPtr<ID3D12Resource> cpubuffer;
         D3DX12Residency::ManagedObject managedObject;
         // use upload heap for constant buffers, and the dedicated upload pipeline for any others
         // todo: it may be beneficial to support using this heap for others as well, but we may need a new flag?
@@ -66,6 +68,7 @@ namespace gfx {
             DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
                 D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource)));
 
+            ComPtr<ID3D12Resource> uploadBuffer;
             if (initialData) {
                 D3D12_SUBRESOURCE_DATA srd;
                 srd.pData = initialData;
@@ -74,7 +77,6 @@ namespace gfx {
 
                 // todo: is a lock needed for commandlist/fences maybe??
                 // todo: switch uploading to a dynamic ringbuffer system
-                ComPtr<ID3D12Resource> uploadBuffer;
                 DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
                     D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&uploadBuffer)));
 
@@ -100,6 +102,23 @@ namespace gfx {
                 m_managedUploads.emplace_back(uploadBuffer, residencySet, m_copyQueueFenceValue);
                 m_copyCommandList->Reset(m_copyCommandAllocator.Get(), nullptr);
             }
+
+            // todo: this is a bit nasty but it works for now
+            if ((desc.accessFlags & BufferAccessFlags::CpuWriteBit) || (desc.accessFlags & BufferAccessFlags::CpuReadBit)) {
+                DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+                    D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&cpubuffer)));
+
+                std::string uploadBufferDebugName = desc.debugName + "cpuBuffer";
+                D3D_SET_OBJECT_NAME_A(cpubuffer, uploadBufferDebugName.c_str());
+
+                if (initialData) {
+                    uint8_t* pData;
+                    CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+                    DX12_CHECK_RET0(cpubuffer->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
+                    memcpy(pData, initialData, desc.size);
+                    cpubuffer->Unmap(0, nullptr);
+                }
+            }
         }
 
         D3D_SET_OBJECT_NAME_A(resource, desc.debugName.c_str());
@@ -112,6 +131,7 @@ namespace gfx {
         bufDx12->currentState = D3D12_RESOURCE_STATE_COMMON;
         bufDx12->copyFenceValue = m_copyQueueFenceValue;
         bufDx12->trackingHandle = managedObject;
+        bufDx12->cpubuffer = cpubuffer;
         bufDx12->buffer.Swap(resource);
 
         return m_resourceManager->AddResource(bufDx12);
@@ -519,91 +539,82 @@ namespace gfx {
         BufferDX12* bufferDX12 = m_resourceManager->GetResource<BufferDX12>(buffer);
         if (bufferDX12->usageFlags == BufferUsageFlags::ConstantBufferBit) {
             uint8_t* pData;
-            CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+            CD3DX12_RANGE readRange(0, 0);
             DX12_CHECK_RET0(bufferDX12->buffer->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
             return static_cast<uint8_t*>(pData);
         }
         else {
-            //todo: upload queue
-            dg_assert_fail_nm();
+            dg_assert_nm(bufferDX12->cpubuffer != nullptr);
+            uint8_t* pData;
+            CD3DX12_RANGE readRange(0, 0);
+            DX12_CHECK_RET0(bufferDX12->cpubuffer->Map(0, &readRange, reinterpret_cast<void**>(&pData)));
+            return static_cast<uint8_t*>(pData);
         }
     }
 
     void DX12Device::UnmapMemory(BufferId buffer) {
         BufferDX12* bufferDX12 = m_resourceManager->GetResource<BufferDX12>(buffer);
         assert(bufferDX12);
-        bufferDX12->buffer->Unmap(0, nullptr);
+        if (bufferDX12->cpubuffer != nullptr) {
+            // todo: is a lock needed for commandlist/fences maybe??
+            // todo: switch uploading to a dynamic ringbuffer system??
+            D3DX12Residency::ResidencySet* residencySet = m_residencyManager.CreateResidencySet();
+            residencySet->Open();
+
+            m_copyCommandList->CopyBufferRegion(bufferDX12->buffer.Get(), 0, bufferDX12->cpubuffer.Get(), 0, bufferDX12->size);
+
+            residencySet->Insert(&bufferDX12->trackingHandle);
+
+            DX12_CHECK(m_copyCommandList->Close());
+            DX12_CHECK(residencySet->Close());
+
+            ID3D12CommandList* ppCommandLists[] = { m_copyCommandList.Get() };
+            D3DX12Residency::ResidencySet* ppResidencySets[] = { residencySet };
+            if (m_directCommandQueue != 0)
+                m_copyQueue->Wait(m_directQueueFence.Get(), m_directQueueFenceValue);
+            DX12_CHECK(m_residencyManager.ExecuteCommandLists(m_copyQueue.Get(), ppCommandLists, ppResidencySets, _countof(ppCommandLists)));
+            m_copyQueue->Signal(m_copyQueueFence.Get(), ++m_copyQueueFenceValue);
+
+            m_copyCommandList->Reset(m_copyCommandAllocator.Get(), nullptr);
+            m_residencyManager.DestroyResidencySet(residencySet);
+        }
+        else {
+            bufferDX12->buffer->Unmap(0, nullptr);
+        }
     }
 
     void DX12Device::Submit(const std::vector<CommandBuffer*>& cmdBuffers) {
-        //todo: remember to use wait/signal on queues
-    }
+        uint64_t maxCopyFenceValue = 0;
+        std::vector<D3DX12Residency::ResidencySet*> residencySets;
+        std::vector<ID3D12CommandList*> cmdLists;
+        for (CommandBuffer* cmdBuffer : cmdBuffers) {
+            auto dx12cmdbuf = dynamic_cast<DX12CommandBuffer*>(cmdBuffer);
+            cmdLists.push_back(dx12cmdbuf->getCmdList());
 
-    void DX12Device::RenderFrame() {
+            D3DX12Residency::ResidencySet* residencySet = m_residencyManager.CreateResidencySet();
+            residencySet->Open();
+            for (auto handle : dx12cmdbuf->getTrackingHandles()) {
+                residencySet->Insert(&handle);
+            }
+            DX12_CHECK(residencySet->Close());
+            residencySets.push_back(residencySet);
 
-        ID3D12CommandList* ppCommandLists[1];
-
-        DX12_CHECK(m_commandAllocators[0]->Reset());
-        DX12_CHECK(m_commandList->Reset(m_commandAllocators[0].Get(), 0));
-
-        CD3DX12_RESOURCE_BARRIER barrier;
-        barrier.Transition(
-            m_renderTargets[m_bufferIndex].Get(),
-            D3D12_RESOURCE_STATE_PRESENT,
-            D3D12_RESOURCE_STATE_RENDER_TARGET
-        );
-
-        m_commandList->ResourceBarrier(1, &barrier);
-
-        m_rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
-        
-        const uint32_t rtvDescSize = m_dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-        if (m_bufferIndex == 1)
-            m_rtvHandle.Offset(rtvDescSize);
-
-        m_commandList->OMSetRenderTargets(1, &m_rtvHandle, false, NULL);
-
-        m_commandList->ClearRenderTargetView(m_rtvHandle, new float[4]{ 0.5, 0.5, 0.5, 1.0 }, 0, NULL);
-
-        barrier.Transition(
-            m_renderTargets[m_bufferIndex].Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PRESENT
-        );
-        m_commandList->ResourceBarrier(1, &barrier);
-
-        for (uint32_t idx = 0; idx < m_submittedBuffers.size(); ++idx) {
-            CommandBuffer* dx12Buffer = reinterpret_cast<CommandBuffer*>(m_submittedBuffers[idx]);
-            //Execute(dx12Buffer);
-            dx12Buffer->Reset();
+            maxCopyFenceValue = std::max(maxCopyFenceValue, dx12cmdbuf->getMaxCopyFenceValue());
         }
 
-        DX12_CHECK(m_commandList->Close());
+        m_directCommandQueue->Wait(m_copyQueueFence.Get(), maxCopyFenceValue);
+        m_residencyManager.ExecuteCommandLists(m_directCommandQueue.Get(), cmdLists.data(), residencySets.data(), cmdLists.size());
+        m_directCommandQueue->Signal(m_directQueueFence.Get(), ++m_directQueueFenceValue);
 
-        ppCommandLists[0] = m_commandList.Get();
-        m_commandQueue->ExecuteCommandLists(1, ppCommandLists);
-
-        DX12_CHECK(m_swapchain->Present(1, 0));
-
-        m_submittedBuffers.clear();
-        m_drawItemByteBuffer.Reset();
-
-        const uint64_t fenceToWaitFor = m_fenceValues[0];
-
-        DX12_CHECK(m_commandQueue->Signal(m_fence.Get(), fenceToWaitFor));
-
-        m_fenceValues[0]++;
-
-        if (m_fence->GetCompletedValue() < fenceToWaitFor) {
-            DX12_CHECK_RET(m_fence->SetEventOnCompletion(fenceToWaitFor, m_fenceEvent));
-            WaitForSingleObject(m_fenceEvent, INFINITE);
+        for (CommandBuffer* cmdBuffer : cmdBuffers) {
+            delete dynamic_cast<DX12CommandBuffer*>(cmdBuffer);
         }
-
-        m_bufferIndex = m_bufferIndex == 0 ? 1 : 0;
+        for (auto set : residencySets) {
+            m_residencyManager.DestroyResidencySet(set);
+        }
     }
 
-    DX12Device::DX12Device(ResourceManager* resourceManager, bool usePrebuiltShaders)
+    DX12Device::DX12Device(IDXGIAdapter3* adapter, ResourceManager* resourceManager, bool usePrebuiltShaders)
         : m_resourceManager(resourceManager) {
         m_usePrebuiltShaders = usePrebuiltShaders;
 
@@ -627,7 +638,7 @@ namespace gfx {
         }
 
         DX12_CHECK_RET(D3D12CreateDevice(
-            nullptr,
+            adapter,
             D3D_FEATURE_LEVEL_11_0,
             IID_PPV_ARGS(&m_dev)
         ));
@@ -675,7 +686,7 @@ namespace gfx {
         DX12_CHECK_RET(m_dev->CreateFence(m_copyQueueFenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_copyQueueFence)));
 
         // todo: pick out correct adapter
-        m_residencyManager.Initialize(m_dev.Get(), 0, adapter.Get(), 10);
+        m_residencyManager.Initialize(m_dev.Get(), 0, adapter, 10);
     }
 
     DX12Device::~DX12Device() {

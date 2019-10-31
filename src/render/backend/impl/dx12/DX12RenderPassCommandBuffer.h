@@ -4,11 +4,13 @@
 #include "DX12Resources.h"
 #include "Framebuffer.h"
 #include "DX12GpuHeaps.h"
+#include "d3dx12Residency.h"
 
 #include <wrl.h>
 #include <memory>
 #include <map>
 #include <d3d12.h>
+#include <vector>
 
 namespace gfx {
     class ResourceManager;
@@ -35,6 +37,8 @@ namespace gfx {
         uint64_t _maxCopyFenceValue{ 0 };
         BufferId _vbufferId{ 0 };
         VertexLayoutId _inputLayoutId{ 0 };
+
+        std::vector<D3DX12Residency::ManagedObject> _trackingHandles;
     public:
         DX12RenderPassCommandBuffer() = delete;
         DX12RenderPassCommandBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdlist, const DX12GpuHeaps& heapinfo, ResourceManager* rm);
@@ -44,6 +48,7 @@ namespace gfx {
 
         ID3D12GraphicsCommandList* getCmdList() { return _cmdlist.Get(); }
         uint64_t getMaxCopyFenceValue() { return _maxCopyFenceValue; }
+        const std::vector<D3DX12Residency::ManagedObject>& getTrackingHandles() { return _trackingHandles; }
 
         void reset(ID3D12CommandAllocator* cmdAlloc);
         void close();

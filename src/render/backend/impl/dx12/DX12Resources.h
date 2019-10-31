@@ -17,6 +17,7 @@ namespace gfx {
 
     struct BufferDX12 : public Resource {
         Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
+        Microsoft::WRL::ComPtr<ID3D12Resource> cpubuffer; // used for uploadbuffer when needed
         D3D12_CPU_DESCRIPTOR_HANDLE cbv;
         D3D12_CPU_DESCRIPTOR_HANDLE uav;
         D3D12_RESOURCE_STATES currentState;

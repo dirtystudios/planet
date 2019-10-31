@@ -63,13 +63,13 @@ namespace gfx {
         ComPtr<ID3D12CommandQueue> m_copyQueue;
         ComPtr<ID3D12GraphicsCommandList> m_copyCommandList;
         ComPtr<ID3D12Fence> m_copyQueueFence;
-        uint64_t m_copyQueueFenceValue{ 1 };
+        uint64_t m_copyQueueFenceValue{ 0 };
 
         ComPtr<ID3D12CommandQueue> m_directCommandQueue;
         ComPtr<ID3D12GraphicsCommandList> m_directCommandList;
         ComPtr<ID3D12CommandAllocator> m_directCommandAllocator;
         ComPtr<ID3D12Fence> m_directQueueFence;
-        uint64_t m_directQueueFenceValue{ 1 };
+        uint64_t m_directQueueFenceValue{ 0 };
 
         std::unordered_map<size_t, PipelineStateId> m_pipelinestates;
         std::unordered_map<size_t, VertexLayoutId> m_inputLayouts;
@@ -86,7 +86,7 @@ namespace gfx {
 
     public:
         DX12Device() = delete;
-        DX12Device(ResourceManager* resourceManager, bool usePrebuiltShaders = false);
+        DX12Device(IDXGIAdapter3* adapter, ResourceManager* resourceManager, bool usePrebuiltShaders = false);
         ~DX12Device();
 
         RenderDeviceApi GetDeviceApi() final { return RenderDeviceApi::D3D12; };
