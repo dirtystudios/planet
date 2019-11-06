@@ -32,14 +32,15 @@ workspace "planet"
         xcodebuildsettings {['GCC_OPTIMIZATION_LEVEL'] = 0}
     filter {}
 
-    cppdialect "C++14"
-    xcodebuildsettings {['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++14'}
+    cppdialect "C++17"
+    xcodebuildsettings {['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'}
 
     group "external"
         include "external/assimp.lua"
         include "external/libnoise.lua"
         include "external/freetype2.lua"
         include "external/sdl2.lua"
+        include "external/enet.lua"
     group ""
 
 project "planet"
@@ -68,6 +69,7 @@ project "planet"
 
         "external/assimp/include",
         "build/assimp/inc",
+        "external/enet/include",
         "external/freetype2/include",
         "external/libnoise/src",
         "external/SDL-mirror/include"
@@ -81,6 +83,7 @@ project "planet"
     files {
         "src/**.cpp",
         "src/**.h",
+        "src/**.hpp",
         "assets/shaders/**"
     }
 
@@ -109,6 +112,7 @@ project "planet"
     links {
         "assimp-zlib",
         "assimp",
+        "enet",
         "freetype2",
         "libnoise",
         "SDL2"
