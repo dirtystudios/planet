@@ -29,6 +29,10 @@
 #include "AnimationComponent.h"
 #include "ComponentManager.h"
 
+#include "Socket.h"
+#include "Connection.h"
+#include "ClientSession.h"
+
 uint32_t frame_count = 0;
 double taccumulate = 0;
 double total_frame_count = 0;
@@ -45,6 +49,10 @@ ui::ConsoleUI* consoleUI;
 ui::DebugUI* debugUI;
 std::unique_ptr<FlatTerrain> terrain;
 input::InputContext* inputContextPlayer;
+
+Socket socket;
+ConnectionPtr connection;
+ClientSession* clientSession;
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");

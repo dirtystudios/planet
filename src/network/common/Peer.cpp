@@ -5,7 +5,7 @@
 //  Created by Eugene Sturm on 2/3/19.
 //
 
-#include "Peer.hpp"
+#include "Peer.h"
 #include <enet/enet.h>
 #include <array>
 

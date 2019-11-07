@@ -8,8 +8,8 @@
 #pragma once
 
 #include <vector>
-#include "Packet.hpp"
-#include "Map.hpp"
+#include "Packet.h"
+#include "Map.h"
 
 class Session;
 using SessionPtr = std::shared_ptr<Session>;

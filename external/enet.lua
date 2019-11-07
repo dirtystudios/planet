@@ -6,4 +6,9 @@ project "enet"
 
     files { "enet/*.c" }
     includedirs { "enet/include/" }
-        
+    
+    filter { "system:windows" }
+        links {
+            "ws2_32", 
+            "winmm"
+        }

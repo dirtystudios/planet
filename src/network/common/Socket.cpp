@@ -5,10 +5,11 @@
 //  Created by Eugene Sturm on 2/2/19.
 //
 
-#include "Socket.hpp"
+#include "Socket.h"
 #include <enet/enet.h>
 #include <iostream>
-#include "Connection.hpp"
+#include "Connection.h"
+#include "Log.h"
 
 const char* to_string(SocketEventType type)
 {
@@ -65,7 +66,7 @@ std::shared_ptr<Connection> Socket::connect(const std::string& addr, uint16_t po
     address.port = port;
     ENetPeer* peer = enet_host_connect(_host, &address, 2, 0);
     if (peer == nullptr) {
-        std::cerr << "No available peers for initiating an ENet connection\n";
+        LOG_E("No available peers for initiating an ENet connection");
         return nullptr;
     }    
     

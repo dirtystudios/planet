@@ -3,13 +3,12 @@
 #include <deque>
 #include <mutex>
 #include <thread>
-using namespace std;
 
 template <class T>
 class BlockingQueue {
 private:
     bool                    _shutdown;
-    deque<T>                _data;
+    std::deque<T>                _data;
     std::mutex              _lock;
     std::condition_variable _cond;
 

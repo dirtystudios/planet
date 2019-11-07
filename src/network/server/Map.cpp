@@ -5,9 +5,9 @@
 //  Created by Eugene Sturm on 2/5/19.
 //
 
-#include "Map.hpp"
-#include "Player.hpp"
-#include "Session.hpp"
+#include "Map.h"
+#include "Player.h"
+#include "Session.h"
 
 Map::Map()
 {

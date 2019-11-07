@@ -10,11 +10,12 @@
 #include <string>
 #include <stdint.h>
 #include <functional>
-#include "Packet.hpp"
+#include "Packet.h"
 #include <thread>
 #include <map>
 #include <unordered_map>
 #include <mutex>
+#include <atomic>
 
 class Connection;
 using ConnectionPtr = std::shared_ptr<Connection>;
@@ -39,7 +40,7 @@ private:
     _ENetHost* _host { nullptr };
     SocketEventDelegate _eventDelegate;
     std::thread _serviceThread;
-    bool _isServiceThreadRunning { false };
+    std::atomic<bool> _isServiceThreadRunning { false };
     
     std::vector<ConnectionPtr> _activeConnections;
     

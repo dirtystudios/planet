@@ -8,7 +8,7 @@
 #pragma once
 
 #include <set>
-#include "Packet.hpp"
+#include "Packet.h"
 #include <functional>
 
 class Player;

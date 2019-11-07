@@ -83,7 +83,6 @@ project "planet"
     files {
         "src/**.cpp",
         "src/**.h",
-        "src/**.hpp",
         "assets/shaders/**"
     }
 

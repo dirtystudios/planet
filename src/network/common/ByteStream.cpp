@@ -5,7 +5,8 @@
 //  Created by Eugene Sturm on 1/29/19.
 //
 
-#include "ByteStream.hpp"
+#include "ByteStream.h"
+#include <cassert>
 
 ByteStream::ByteStream()
 {

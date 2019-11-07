@@ -5,7 +5,7 @@
 //  Created by Eugene Sturm on 1/29/19.
 //
 
-#include "Packet.hpp"
+#include "Packet.h"
 
 Packet::Packet(const uint8_t* data, size_t len)
 {

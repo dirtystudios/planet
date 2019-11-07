@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "MessageType.hpp"
-#include "ByteStream.hpp"
+#include "MessageType.h"
+#include "ByteStream.h"
 
 class Packet : public ByteStream
 {

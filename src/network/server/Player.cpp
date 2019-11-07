@@ -5,7 +5,7 @@
 //  Created by Eugene Sturm on 2/5/19.
 //
 
-#include "Player.hpp"
+#include "Player.h"
 
 Player::Player(const PlayerCreateInfo& createInfo, Session* session)
 : _session(session)

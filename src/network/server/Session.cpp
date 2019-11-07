@@ -5,10 +5,10 @@
 //  Created by Eugene Sturm on 2/3/19.
 //
 
-#include "Session.hpp"
-#include "Connection.hpp"
-#include "World.hpp"
-#include "Player.hpp"
+#include "Session.h"
+#include "Connection.h"
+#include "World.h"
+#include "Player.h"
 #include "GuidProvider.h"
 
 Session::Session(const ConnectionPtr& connection)
@@ -28,13 +28,17 @@ void Session::processIncoming()
         Packet& packet = packetResult.value();
         const MessageType type = packet.read<MessageType>();
         
-        
-        switch (type) {
+        if (_player == nullptr) {
+            switch (type) {
             case MessageType::Login: {
                 handleLoginMessage(packet);
                 break;
             }
-            case MessageType::SChat: {
+            }
+        }
+        else {
+            switch (type) {
+            case MessageType::CChat: {
                 handleChatMessage(packet);
                 break;
             }
@@ -44,6 +48,7 @@ void Session::processIncoming()
             }
             default: {
                 break;
+            }
             }
         }
     }
@@ -67,14 +72,15 @@ void Session::handleLoginMessage(Packet& packet)
     response << MessageType::LoginResponse;
     sendPacket(std::move(response));
     
-    Player* player = new Player(createInfo, this);
-    _world->map()->addPlayer(player);
+    _player = new Player(createInfo, this);
+    _world->map()->addPlayer(_player);
 }
 
 void Session::handleChatMessage(Packet& packet)
 {
-    Packet copy = packet;
-    _world->broadcastPacket(std::move(copy));
+    std::string contents;
+    packet >> contents;
+    _world->broadcastPacket(ServerChatMessage(_player->guid(), std::move(contents)));
 }
 
 void Session::sendPacket(Packet packet)

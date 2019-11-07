@@ -8,7 +8,8 @@
 #pragma once
 
 #include <memory>
-#include "Packet.hpp"
+#include "Packet.h"
+#include "Player.h"
 
 class World;
 class Connection;
@@ -18,6 +19,7 @@ class Session
 {
 private:
     ConnectionPtr _connection { nullptr };
+    Player* _player{ nullptr };
     World* _world { nullptr };
 public:
     Session(const ConnectionPtr& connection);

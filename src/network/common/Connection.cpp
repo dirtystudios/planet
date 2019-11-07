@@ -5,8 +5,8 @@
 //  Created by Eugene Sturm on 2/3/19.
 //
 
-#include "Connection.hpp"
-#include "Socket.hpp"
+#include "Connection.h"
+#include "Socket.h"
 #include <enet/enet.h>
 
 Connection::Connection(ENetPeer* peer, Socket* socket)

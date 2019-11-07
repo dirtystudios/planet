@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <vector>
 #include <array>
-#include "ByteStream.hpp"
+#include "ByteStream.h"
 
 enum class MessageType : uint16_t
 {
@@ -96,6 +96,14 @@ struct ClientChatMessage : public Message
         Message::pack(buffer);
         buffer << contents;
     }
+};
+
+struct ServerChatMessage : public Message {
+    ServerChatMessage() = delete;
+    ServerChatMessage(uint64_t guid, std::string&& contents) : Message(MessageType::SChat), _guid(guid), contents(std::move(contents)) {}
+
+    uint64_t _guid{ 0 };
+    std::string contents;
 };
 
 enum class MoveType : uint8_t

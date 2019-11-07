@@ -5,8 +5,8 @@
 //  Created by Eugene Sturm on 2/3/19.
 //
 
-#include "World.hpp"
-#include "Session.hpp"
+#include "World.h"
+#include "Session.h"
 
 World::World()
 {
