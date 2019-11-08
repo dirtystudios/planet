@@ -32,7 +32,7 @@ const char* to_string(SocketEventType type);
 
 using SocketEventDelegate = std::function<void(SocketEventType, ConnectionPtr&)>;
 
-class _ENetHost;
+struct _ENetHost;
 
 class Socket
 {

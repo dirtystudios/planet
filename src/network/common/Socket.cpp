@@ -10,6 +10,7 @@
 #include <iostream>
 #include "Connection.h"
 #include "Log.h"
+#include "DGAssert.h"
 
 const char* to_string(SocketEventType type)
 {
@@ -31,7 +32,7 @@ Socket::Socket(SocketEventDelegate&& socketEventDelegate)
                              0 /* assume any amount of incoming bandwidth */,
                              0 /* assume any amount of incoming bandwidth */);
     
-    
+    dg_assert(_host != nullptr, "creating client failed!");
     _isServiceThreadRunning = true;
     _serviceThread = std::thread([this]() { this->serviceSocket(); });
 }
@@ -47,7 +48,8 @@ Socket::Socket(uint64_t listenPort, SocketEventDelegate&& socketEventDelegate)
                              2      /* allow up to 2 channels to be used, 0 and 1 */,
                              0      /* assume any amount of incoming bandwidth */,
                              0      /* assume any amount of outgoing bandwidth */);
-    
+
+    dg_assert(_host != nullptr, "creating host failed!");
     _isServiceThreadRunning = true;
     _serviceThread = std::thread([this]() { this->serviceSocket(); });
 }
@@ -56,6 +58,7 @@ Socket::~Socket()
 {
     _isServiceThreadRunning = false;
     _serviceThread.join();
+    enet_host_destroy(_host);
 }
 
 std::shared_ptr<Connection> Socket::connect(const std::string& addr, uint16_t port)

@@ -4,25 +4,6 @@
 
 namespace ui {
 
-bool UIManager::HandleInputEvent(const InputEvent& ev) {
-
-    if (ev.context == input::InputManager::ContextPriority::CONTEXT_MENU) {
-        if (ev.type == input::ContextBindingType::Axis) {
-            if (ev.name == "MousePosX")
-                return HandleMouseX(ev.args);
-            else if (ev.name == "MousePosY")
-                return HandleMouseY(ev.args);
-        }
-        else {
-            if (ev.name == "MouseKey1")
-                return HandleMouse1(ev.args);
-            else if (ev.name == "MouseKey2")
-                return HandleMouse2(ev.args);
-        }
-    }
-    return true;
-}
-
 bool UIManager::HandleMouseX(const input::InputContextCallbackArgs& xArgs) {
     // x is fine
     m_mouseX = xArgs.value;
@@ -137,7 +118,7 @@ void UIManager::ProcessFrames() {
 
 // This returns first frame with given name
 // todo: deal with multiple somehow, or don't do this
-UIFrame* UIManager::GetFrame(const std::string& name) {
+UIFrame* UIManager::GetFrame(std::string_view name) {
     for (auto& p : m_uiFrames) {
         for (auto& uiFrame : p.second) {
             if (uiFrame->GetFrameName() == name) {
@@ -145,7 +126,7 @@ UIFrame* UIManager::GetFrame(const std::string& name) {
             }
         }
     }
-    LOG_D("UIManager::GetFrame: '%s' not found!", name.c_str())
+    LOG_D("UIManager::GetFrame: '%s' not found!", name)
     return nullptr;
 }
 
@@ -205,6 +186,25 @@ void UIManager::PostProcess(float ms) {
     }
 }
 
+void UIManager::ProcessEvents() {
+
+    for (auto& p : m_uiFrames) {
+        for (auto& frame : p.second) {
+            auto& wantedEvents = frame->GetRegisteredEvents();
+            for (auto& ename : wantedEvents) {
+                auto check = m_pendingUIEvents.find(ename);
+                if (check != m_pendingUIEvents.end()) {
+                    for (auto& e : check->second) {
+                        frame->OnEvent(check->first, e.args);
+                    }
+                }
+            }
+        }
+    }
+
+    m_pendingUIEvents.clear();
+}
+
 void UIManager::DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) {
     assert(components[ComponentType::UI] != nullptr);
     assert(components[ComponentType::Spatial] != nullptr);
@@ -224,6 +224,8 @@ void UIManager::DoUpdate(std::map<ComponentType, const std::array<std::unique_pt
 
     // Process hide/show/focus and render
     ProcessFrames();
+
+    ProcessEvents();
 
     for (auto& p : m_uiFrames) {
         for(auto& frame : p.second)

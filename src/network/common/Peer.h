@@ -9,7 +9,7 @@
 
 #include <string>
 
-class _ENetPeer;
+struct _ENetPeer;
 
 class Peer
 {

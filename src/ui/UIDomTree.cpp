@@ -193,7 +193,7 @@ namespace ui {
                     textRO->y(y + 5.f);
                     textRO->z(newPos.z);
                     // todo, get lineheight....
-                    y += 12.f;
+                    y += 14.f;
                 }
             }
         }

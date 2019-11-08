@@ -16,7 +16,7 @@
 #include <optional>
 #include <array>
 
-class _ENetPeer;
+struct _ENetPeer;
 class Socket;
 
 enum class ConnectionState : uint8_t

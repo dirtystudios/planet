@@ -8,7 +8,7 @@ PlayerCtrlManager::PlayerCtrlManager(Camera* camera, input::InputContext* inputC
     moveInput = { 0.0f, 0.0f, 0.0f };
     m_mouseLookInput = { 0.f, 0.f };
     walkSpeed = 550.0f;
-    lookSpeed = 1.f;
+    lookSpeed = 1.0f;
     m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveForward", std::bind(&PlayerCtrlManager::MoveForward, this, std::placeholders::_1));
     m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveBackward", std::bind(&PlayerCtrlManager::MoveBackward, this, std::placeholders::_1));
     m_inputContext->BindContext<input::ContextBindingType::Axis>("MoveLeft", std::bind(&PlayerCtrlManager::MoveLeft, this, std::placeholders::_1));
@@ -169,7 +169,7 @@ void PlayerCtrlManager::DoUpdate(std::map<ComponentType, const std::array<std::u
     auto& spatials = *reinterpret_cast<const std::array<std::unique_ptr<Spatial>, MAX_SIM_OBJECTS>*>(components[ComponentType::Spatial]);
     auto& anims = *reinterpret_cast<const std::array<std::unique_ptr<AnimationComponent>, MAX_SIM_OBJECTS>*>(components[ComponentType::Animation]);
 
-    HandleCameraMovement(ms);
+    HandleCameraMovement(ms/1000.f);
 
     for (size_t i = 0; i < MAX_SIM_OBJECTS; ++i) {
         PlayerControlled* pc = pcs[i].get();

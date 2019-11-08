@@ -21,7 +21,7 @@ namespace ui {
     }
 
     void TextList::InsertTextLine(std::string line) {
-        m_contents.push_front(line);
+        m_contents.push_front(std::move(line));
         if (m_contents.size() > m_textListDesc.maxLines) {
             m_contents.pop_back();
         }

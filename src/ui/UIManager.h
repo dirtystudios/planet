@@ -17,7 +17,7 @@
 #include "SimulationManager.h"
 #include "ComponentManager.h"
 #include "EventManager.h"
-#include "InputEvent.h"
+#include "UIEvent.h"
 
 #include <memory>
 #include <map>
@@ -40,19 +40,27 @@ private:
     EditBox*                m_focusedEditBox = 0;
     input::KeyboardManager* m_keyboardManager;
     input::InputContext*    m_debugContext;
+    input::InputContext*    m_uiInputContext;
     bool                    m_mouseDown = false;
     bool                    m_mouse2Down = false;
     float                   m_mouseX = 0.f, m_mouseY = 0.f;
     ScriptApi               m_scriptApi;
 
+    std::unordered_map<std::string, std::vector<UIEvent>> m_pendingUIEvents;
+
 public:
-    UIManager(EventManager* em, input::KeyboardManager* keyboardManager, input::InputContext* debugContext, Viewport viewport, 
+    UIManager(EventManager* em, input::KeyboardManager* keyboardManager, input::InputContext* inputContext, input::InputContext* debugContext, Viewport viewport,
         TextRenderer* textRenderer, UIRenderer* uiRenderer, DebugDrawInterface* debug)
-        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_debugContext(debugContext), m_scriptApi(this),
+        : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext), m_scriptApi(this),
           m_textRenderer(textRenderer), m_uiRenderer(uiRenderer), m_debugRenderer(debug) {
 
-        em->subscribe<InputEvent>(std::bind(&UIManager::HandleInputEvent, this, std::placeholders::_1));
-        
+        m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", std::bind(&UIManager::HandleMouseX, this, std::placeholders::_1));
+        m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", std::bind(&UIManager::HandleMouseY, this, std::placeholders::_1));
+        m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1", std::bind(&UIManager::HandleMouse1, this, std::placeholders::_1));
+        m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey2", std::bind(&UIManager::HandleMouse2, this, std::placeholders::_1));
+
+        em->subscribe<UIEvent>(std::bind(&UIManager::HandleUIEvent, this, std::placeholders::_1));
+
         m_debugContext->BindContext<input::ContextBindingType::Action>("debug5", std::bind(&UIManager::ToggleDebugDraw, this, std::placeholders::_1));
         config::ConsoleCommands::getInstance().RegisterCommand("toggleFocusDebug", std::bind(&UIManager::ToggleDebugDrawConsole, this, std::placeholders::_1));
     };
@@ -62,9 +70,22 @@ public:
 
     void DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) override;
 
-    UIFrame* GetFrame(const std::string& name);
+    bool HandleUIEvent(const UIEvent& ev) {
+        auto check = m_pendingUIEvents.find(ev.name);
+        if (check == m_pendingUIEvents.end())
+            m_pendingUIEvents[ev.name] = std::vector<UIEvent>{ ev };
+        else
+            check->second.emplace_back(ev);
+        return true;
+    }
 
-    bool HandleInputEvent(const InputEvent& ev);
+    // ScriptApi calls, would be nice to pull these outsomehow, but w/e
+    UIFrame* GetFrame(std::string_view name);
+
+    template<typename T>
+    std::unique_ptr<T> CreateScriptHandler() {
+        return std::make_unique<T>(&m_scriptApi);
+    }
 
     // Callbacks from inputmanager
 
@@ -82,6 +103,7 @@ private:
     void PreProcess();
     void PostProcess(float ms);
     void ProcessFrames();
+    void ProcessEvents();
 
     template <typename T, typename T2> void RemoveChildren(T* frame, std::unordered_multimap<T2, T2>& map) {
         bool hasChildren = false;

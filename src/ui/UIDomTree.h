@@ -26,7 +26,7 @@ namespace ui {
         UIDomNode* root{ nullptr };
 
         // this is *def* not a nasty hack spawned out of lazines
-        UIDomNode* lastInserted;
+        UIDomNode* lastInserted{ nullptr };
 
         // anchor pos
         glm::vec3 m_anchor{0.f, 0.f, 0.f};
@@ -35,7 +35,7 @@ namespace ui {
         TextRenderer* m_textRenderer;
         UIRenderer* m_uiRenderer;
         Viewport m_viewport;
-        UIFrame* m_focused;
+        UIFrame* m_focused{ nullptr };
         bool m_worldFrame{ false };
 
     public:

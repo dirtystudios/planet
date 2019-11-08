@@ -11,6 +11,6 @@ namespace ui {
     public:
         ScriptApi(UIManager* uiManager)
             : m_uiManager(uiManager) {}
-        UIFrame* GetFrame(std::string name);
+        UIFrame* GetFrame(std::string_view name);
     };
 }

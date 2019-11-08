@@ -12,7 +12,7 @@
 namespace ui {
 class ConsoleUI {
 private:
-    class ConsoleScriptHandler : public EditBoxScriptHandler {
+    class ConsoleEditBoxScriptHandler : public EditBoxScriptHandler {
     private:
         TextList* consoleFrame{ nullptr };
         
@@ -32,7 +32,26 @@ private:
         }
     };
 
-    std::unique_ptr<ConsoleScriptHandler> m_scriptHandler;
+    class ConsoleFrameScriptHandler : public BaseScriptHandler {
+    private:
+        TextList* consoleFrame{ nullptr };
+
+    public:
+        void OnLoad(UIFrame& frame) {
+            frame.RegisterEvent("MSG_CONSOLE");
+            consoleFrame = static_cast<TextList*>(GetFrame("ConsoleTextList"));
+        }
+
+        void OnEvent(UIFrame& frame, std::string_view eventName, const std::vector<std::string>& eventData) {
+            if (eventName == "MSG_CONSOLE") {
+                if (eventData.size() > 0)
+                    consoleFrame->InsertTextLine(eventData[0]);
+            }
+        }
+    };
+
+    ConsoleEditBoxScriptHandler           editBoxSC;
+    ConsoleFrameScriptHandler             frameSC;
     UIFrame*                              consoleFrame;
     TextList*							  textList;
     EditBox*                              editBox;
@@ -50,9 +69,7 @@ public:
         consoleFrameDesc.y           = 400.f;
         consoleFrameDesc.show        = false;
         consoleFrameDesc.acceptMouse = true;
-        uiFrameObj->frames.push_back(std::make_unique<UIFrame>(consoleFrameDesc));
-
-        m_scriptHandler.reset(new ConsoleScriptHandler());
+        uiFrameObj->frames.emplace_back(std::make_unique<UIFrame>(consoleFrameDesc, &frameSC));
 
         consoleFrame = uiFrameObj->frames.back().get();
 
@@ -64,7 +81,7 @@ public:
         textListDesc.x = 10.f;
         textListDesc.y = 60.f;
         textListDesc.show = true;
-        uiFrameObj->frames.push_back(std::make_unique<TextList>(textListDesc));
+        uiFrameObj->frames.emplace_back(std::make_unique<TextList>(textListDesc));
 
         EditBox::EditBoxDesc editBoxDesc;
         editBoxDesc.name          = "ConsoleEditBox";
@@ -77,7 +94,7 @@ public:
         editBoxDesc.blinkSpeed    = 0.f;
         editBoxDesc.show          = true;
         editBoxDesc.acceptMouse   = true;
-        uiFrameObj->frames.push_back(std::make_unique<EditBox>(editBoxDesc, m_scriptHandler.get()));
+        uiFrameObj->frames.emplace_back(std::make_unique<EditBox>(editBoxDesc, &editBoxSC));
 
         editBox = static_cast<EditBox*>(uiFrameObj->frames.back().get());
     }

@@ -33,6 +33,8 @@
 #include "Connection.h"
 #include "ClientSession.h"
 
+#include "enet/enet.h"
+
 uint32_t frame_count = 0;
 double taccumulate = 0;
 double total_frame_count = 0;
@@ -50,7 +52,7 @@ ui::DebugUI* debugUI;
 std::unique_ptr<FlatTerrain> terrain;
 input::InputContext* inputContextPlayer;
 
-Socket socket;
+Socket* clientSocket;
 ConnectionPtr connection;
 ClientSession* clientSession;
 
@@ -157,7 +159,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     // Show/Hide sample text test with this call
     ui::LabelUI::AttachLabel(ui, "hey look im a label");
 
-    simulationManager->RegisterManager<ui::UIManager>({ ComponentType::UI, ComponentType::Spatial }, eventManager, inputManager->GetKeyboardManager(), inputManager->GetDebugContext(), *viewport,
+    simulationManager->RegisterManager<ui::UIManager>({ ComponentType::UI, ComponentType::Spatial }, eventManager, inputManager->GetKeyboardManager(), uiContext, inputManager->GetDebugContext(), *viewport,
         renderEngine->Renderers().text.get(), renderEngine->Renderers().ui.get(), renderEngine->debugDraw());
 }
 
@@ -206,6 +208,12 @@ void AddRoxas() {
     renderEngine->animationCache()->Create("roxasps3", "roxasps3/roxasps3.fbx");
 }
 
+void SetupNetworkCommands() {
+    config::ConsoleCommands::getInstance().RegisterCommand("startserver", [&](auto& params) -> std::string {
+        return "rawrtest";
+    });
+}
+
 void App::OnStart() {
     sys::SysWindowSize windowSize = sys::GetWindowSize();
     playerViewport                = new Viewport();
@@ -214,13 +222,17 @@ void App::OnStart() {
     playerView                    = new RenderView(&cam, playerViewport);
     renderEngine                  = new RenderEngine(renderDevice, swapchain, playerView);
     eventManager                  = new EventManager();
-    inputManager                  = new input::InputManager(eventManager);
+    inputManager                  = new input::InputManager();
     simulationManager             = new SimulationManager(eventManager);
+
+    enet_initialize();
 
     SetupUI(renderDevice, playerViewport);
     AddWorldText();
 
     SetupInputBindings();
+
+    SetupNetworkCommands();
 
     // cam.MoveTo(-2826, 1620, 1600);
     cam.MoveTo(0, 0, 2000);
@@ -258,10 +270,18 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
 
     simulationManager->DoUpdate(dt * 1000);
 
+
+    static int r = 0;
+    if (r < 10) {
+        UIEvent t = { "MSG_CONSOLE", {"test"} };
+        eventManager->emit<UIEvent>(t);
+        r++;
+    }
+
     // render
     // todo: link skinnedmesh's somehow to this correctly
     RenderScene scene;
-//    scene.renderObjects.push_back(terrain.get());
+    //scene.renderObjects.push_back(terrain.get());
     
     renderEngine->RenderFrame(&scene);
     
@@ -287,7 +307,9 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
     }
 }
 
-void App::OnShutdown() {}
+void App::OnShutdown() {
+    enet_deinitialize();
+}
 
 void App::OnWindowResize(uint32_t width, uint32_t height)
 {

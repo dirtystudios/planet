@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <set>
 #include "ScriptHandler.h"
 #include "RenderObj.h"
 #include "Viewport.h"
@@ -56,6 +57,7 @@ protected:
     UIFrameDesc m_frameDesc;
     FrameType m_frameType;
     BaseScriptHandler* m_scriptHandler{nullptr};
+    std::set<std::string> m_registeredEvents;
 
 public:
     UIFrame(UIFrameDesc frameDesc) : m_frameDesc(frameDesc), m_frameType(FrameType::UIFRAME) {}
@@ -77,6 +79,19 @@ public:
         else
             return m_frameDesc.show;
     };
+
+    void RegisterEvent(std::string_view name) {
+        m_registeredEvents.emplace(name);
+    }
+
+    void OnEvent(std::string_view name, const std::vector<std::string>& args) {
+        if (m_scriptHandler)
+            m_scriptHandler->OnEvent(*this, name, args);
+    }
+
+    const std::set<std::string>& GetRegisteredEvents() const {
+        return m_registeredEvents;
+    }
 
     FrameScale GetScaledSize(Viewport viewport) const {
         FrameScale scaledFrame;
