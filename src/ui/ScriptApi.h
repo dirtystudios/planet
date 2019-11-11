@@ -12,5 +12,6 @@ namespace ui {
         ScriptApi(UIManager* uiManager)
             : m_uiManager(uiManager) {}
         UIFrame* GetFrame(std::string_view name);
+        void SendChatMessage(std::string_view msg);
     };
 }

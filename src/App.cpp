@@ -10,6 +10,7 @@
 #include <glm/gtx/transform.hpp>
 #include "Config.h"
 #include "ConsoleUI.h"
+#include "ChatFrameUI.h"
 #include "DebugUI.h"
 #include "FlatTerrain.h"
 #include "InputManager.h"
@@ -51,6 +52,7 @@ SimulationManager* simulationManager;
 EventManager* eventManager;
 
 ui::ConsoleUI* consoleUI;
+ui::ChatFrameUI* chatFrameUI;
 ui::DebugUI* debugUI;
 std::unique_ptr<FlatTerrain> terrain;
 input::InputContext* inputContextPlayer;
@@ -89,6 +91,7 @@ void SetupInputBindings() {
 
     // Console Trigger
     inputManager->AddActionMapping("ToggleConsole", input::InputCode::INPUT_KEY_BACKTICK, input::InputManager::ActionConfig(true, true, false));
+    inputManager->AddActionMapping("ToggleChatEdit", input::InputCode::INPUT_KEY_ENTER, input::InputManager::ActionConfig(true, true, false));
 
     // Handle Key Mappings
     // Keyboard n mouse for player
@@ -160,6 +163,7 @@ void SetupUI(gfx::RenderDevice* renderDevice, Viewport* viewport) {
     // todo: make it so consoleUI reference doesnt have to persist
     consoleUI = new ui::ConsoleUI(ui, uiContext);
     debugUI = new ui::DebugUI(ui);
+    chatFrameUI = new ui::ChatFrameUI(ui, uiContext);
 
     // Show/Hide sample text test with this call
     ui::LabelUI::AttachLabel(ui, "hey look im a label");

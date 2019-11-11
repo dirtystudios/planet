@@ -16,8 +16,12 @@ namespace ui {
 
         virtual ~BaseScriptHandler() = default;
 
-        UIFrame* GetFrame(std::string name) {
+        UIFrame* GetFrame(std::string_view name) {
             return m_scriptApi->GetFrame(name);
+        }
+
+        void SendChatMessage(std::string_view msg) {
+            m_scriptApi->SendChatMessage(msg);
         }
 
         // 'Base Frame API' calls
