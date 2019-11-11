@@ -9,8 +9,8 @@ class World;
 class Connection;
 using ConnectionPtr = std::shared_ptr<Connection>;
 
-using ClientPacketHandler = std::function<void(Packet)>;
-using ClientSessionHandler = std::function<void(Packet)>;
+using ClientPacketHandler = std::function<void(Packet&)>;
+using ClientSessionHandler = std::function<void()>;
 
 enum class SessionStatus {
     Disconnected,
@@ -26,6 +26,8 @@ class ClientSession {
     std::unordered_map<MessageType, std::vector<ClientPacketHandler>> _handlers;
     std::unordered_map<SessionStatus, std::vector<ClientSessionHandler>> _sessionhandlers;
 
+    uint64_t _guid{ 0 };
+
 public:
     ClientSession() = delete;
     ClientSession(const ConnectionPtr& connection);
@@ -33,6 +35,16 @@ public:
     void registerHandler(MessageType type, ClientPacketHandler&& handler);
     void registerHandler(SessionStatus type, ClientSessionHandler&& handler);
     SessionStatus sessionStatus() { return _status; }
+    uint64_t guid() {return _guid; }
 
     void processIncoming();
+
+    template<typename T> 
+    void queueOutgoing(const T& message) {
+        _connection->queueOutgoing(Packet(message));
+    }
+
+private:
+    void setStatus(SessionStatus status);
+    void handlePacket(MessageType type, Packet& p);
 };

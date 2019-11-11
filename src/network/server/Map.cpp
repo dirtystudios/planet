@@ -23,20 +23,16 @@ void Map::addPlayer(Player* player)
     // send information of everything in Map to player
     for (Player* otherPlayer : _players) {
         if (otherPlayer == player) { continue; }
-        
-        Packet packet;
-        packet << MessageType::Object;
-        packet << otherPlayer->guid();
-        player->session()->sendPacket(std::move(packet));
+
+        auto p = Packet(ServerObjectMessage(otherPlayer->guid(), std::string(otherPlayer->name())));
+        player->session()->sendPacket(p);
     }
     
-    // send information of new player to everyone on map
-    Packet packet;
-    packet << MessageType::Object;
-    packet << player->guid();
-    
+    // send information of new player to everyone on 
+    auto p = Packet(ServerObjectMessage(player->guid(), std::string(player->name())));;
+
     auto exclusionPredicate = [player](Player* otherPlayer) -> bool { return otherPlayer == player; };
-    broadcastPacket(packet, exclusionPredicate);
+    broadcastPacket(p, exclusionPredicate);
 }
 
 void Map::broadcastPacket(const Packet& packet, std::function<bool(Player*)> exclusionPredicate)

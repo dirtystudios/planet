@@ -12,18 +12,27 @@ void ClientSession::processIncoming() {
     std::vector<Packet> packets;
     _connection->drainIncomingQueue(&packets);
 
-    for (const Packet& packet : packets) {
+    for (Packet& packet : packets) {
         const MessageType type = packet.read<MessageType>();
 
         LOG_D("ClientSession Recv: %s", to_string(type));
 
         switch (type) {
         case MessageType::AuthResponse: {
-            _status = SessionStatus::Authed;
+            AuthResponseMessage a;
+            a.unpack(packet);
+            _guid = a.sessionId;
+            handlePacket(type, packet);
+            setStatus(SessionStatus::Authed);
             break;
         }
         case MessageType::LoginResponse: {
-            _status = SessionStatus::LoggedIn;
+            handlePacket(type, packet);
+            setStatus(SessionStatus::LoggedIn);
+            break;
+        }
+        case MessageType::SObject: {
+            handlePacket(type, packet);
             break;
         }
         default: {
@@ -31,12 +40,43 @@ void ClientSession::processIncoming() {
         }
         }
     }
+
+    _connection->flushOutgoingQueue();
+}
+
+void ClientSession::setStatus(SessionStatus status) {
+    _status = status;
+    auto check = _sessionhandlers.find(status);
+    if (check != _sessionhandlers.end()) {
+        for (auto& h : check->second) {
+            h();
+        }
+    }
+}
+
+void ClientSession::handlePacket(MessageType type, Packet& p) {
+    auto check = _handlers.find(type);
+    if (check != _handlers.end()) {
+        for (auto& h : check->second) {
+            h(p);
+        }
+    }
 }
 
 void ClientSession::registerHandler(MessageType type, ClientPacketHandler&& handler) {
-    dg_assert_fail_nm();
+    auto check = _handlers.find(type);
+    if (check != _handlers.end()) {
+        check->second.emplace_back(std::move(handler));
+    }
+    else
+        check->second = std::vector<ClientPacketHandler>{ std::move(handler) };
 }
 
 void ClientSession::registerHandler(SessionStatus type, ClientSessionHandler&& handler) {
-    dg_assert_fail_nm();
+    auto check = _sessionhandlers.find(type);
+    if (check != _sessionhandlers.end()) {
+        check->second.emplace_back(std::move(handler));
+    }
+    else
+        check->second = std::vector<ClientSessionHandler>{ std::move(handler) };
 }

@@ -26,8 +26,8 @@ enum class MessageType : uint16_t
 
     SChat,
 
+    SObject,
     Move,
-    Object,
 };
 
 const char* to_string(MessageType type);
@@ -56,6 +56,10 @@ struct LoginMessage : public Message
         Message::pack(buffer);
         buffer << name;
     }
+
+    void unpack(ByteStream& b) {
+        b >> name;
+    }
 };
 
 
@@ -82,6 +86,10 @@ struct AuthResponseMessage : public Message
         Message::pack(buffer);
         buffer << sessionId;
     }
+
+    void unpack(ByteStream& b) {
+        b >> sessionId;
+    }
 };
 
 struct ClientChatMessage : public Message
@@ -96,6 +104,10 @@ struct ClientChatMessage : public Message
         Message::pack(buffer);
         buffer << contents;
     }
+
+    void unpack(ByteStream& b) {
+        b >> contents;
+    }
 };
 
 struct ServerChatMessage : public Message {
@@ -104,6 +116,36 @@ struct ServerChatMessage : public Message {
 
     uint64_t _guid{ 0 };
     std::string contents;
+
+    static ServerChatMessage unpack(ByteStream& b) {
+        uint64_t guid;
+        std::string contents;
+        b >> guid;
+        b >> contents;
+        return ServerChatMessage(guid, std::move(contents));
+    }
+};
+
+struct ServerObjectMessage : public Message {
+    ServerObjectMessage() = delete;
+    ServerObjectMessage(uint64_t guid, std::string&& name) : Message(MessageType::SObject), _guid(guid), _name(std::move(name)) {};
+
+    uint64_t _guid{ 0 };
+    std::string _name;
+
+    void pack(ByteStream& b) const {
+        Message::pack(b);
+        b << _guid;
+        b << _name;
+    }
+
+    static ServerObjectMessage unpack(ByteStream& b) {
+        uint64_t guid;
+        std::string name;
+        b >> guid;
+        b >> name;
+        return ServerObjectMessage(guid, std::move(name));
+    }
 };
 
 enum class MoveType : uint8_t

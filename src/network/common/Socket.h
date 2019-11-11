@@ -6,11 +6,11 @@
 //
 
 #pragma once
-
 #include <string>
 #include <stdint.h>
 #include <functional>
 #include "Packet.h"
+#include "Connection.h"
 #include <thread>
 #include <map>
 #include <unordered_map>
@@ -52,7 +52,7 @@ public:
     Socket(uint64_t listenPort, SocketEventDelegate&& socketEventDelegate = SocketEventDelegate());
     ~Socket();
     
-    std::shared_ptr<Connection> connect(const std::string& addr, uint16_t port);    
+    std::shared_ptr<Connection> connect(const std::string& addr, uint16_t port, ConnectionStateDelegate&& d = ConnectionStateDelegate());    
 private:
     void serviceSocket();
 };

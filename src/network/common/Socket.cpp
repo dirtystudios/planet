@@ -61,7 +61,7 @@ Socket::~Socket()
     enet_host_destroy(_host);
 }
 
-std::shared_ptr<Connection> Socket::connect(const std::string& addr, uint16_t port)
+std::shared_ptr<Connection> Socket::connect(const std::string& addr, uint16_t port, ConnectionStateDelegate&& d)
 {
     ENetAddress address;
     
@@ -73,7 +73,7 @@ std::shared_ptr<Connection> Socket::connect(const std::string& addr, uint16_t po
         return nullptr;
     }    
     
-    auto connection = std::make_shared<Connection>(peer, this);
+    auto connection = std::make_shared<Connection>(peer, this, std::move(d));
     _activeConnections.emplace_back(connection);
     connection->setConnectionState(ConnectionState::Connecting);
     

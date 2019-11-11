@@ -29,11 +29,14 @@
 #include "AnimationComponent.h"
 #include "ComponentManager.h"
 
-#include "Socket.h"
 #include "Connection.h"
+#include "Server.h"
+#include "Socket.h"
 #include "ClientSession.h"
+#include "MessageType.h"
 
 #include "enet/enet.h"
+#include <unordered_map>
 
 uint32_t frame_count = 0;
 double taccumulate = 0;
@@ -53,8 +56,10 @@ std::unique_ptr<FlatTerrain> terrain;
 input::InputContext* inputContextPlayer;
 
 Socket* clientSocket;
-ConnectionPtr connection;
 ClientSession* clientSession;
+Server* server;
+std::string nickname;
+std::unordered_map<uint64_t, std::string> guidmapping;
 
 SkyboxRenderObj* CreateSkybox() {
     std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
@@ -209,8 +214,80 @@ void AddRoxas() {
 }
 
 void SetupNetworkCommands() {
+    auto clientconnect = [&](std::string& addr, int port)  {
+        auto stateDelegate = [&](ConnectionState state) {
+            switch (state) {
+            case ConnectionState::Connecting:
+                eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Connecting..."} });
+                break;
+            case ConnectionState::Connected:
+                eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Connected!"} });
+                break;
+            case ConnectionState::Disconnected:
+                eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Disconnected!"} });
+                break;
+            }
+        };
+        clientSocket = new Socket();
+        auto connection = clientSocket->connect(addr, 44951, stateDelegate);
+        if (connection != nullptr) {
+            clientSession = new ClientSession(connection);
+            clientSession->registerHandler(SessionStatus::Authed, [&]() {
+                eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Authed!"} });
+            });
+            clientSession->registerHandler(SessionStatus::LoggedIn, [&]() {
+                eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Logged in!"} });
+            });
+            clientSession->registerHandler(MessageType::AuthResponse, [&](Packet& p) {
+                clientSession->queueOutgoing(LoginMessage(std::move(std::string(nickname))));
+            });
+
+            clientSession->registerHandler(MessageType::SObject, [&](Packet& p) {
+                auto m = ServerObjectMessage::unpack(p);
+                guidmapping[m._guid] = m._name;
+            });
+            clientSession->registerHandler(MessageType::SChat, [&](Packet& p) {
+                auto m = ServerChatMessage::unpack(p);
+                auto check = guidmapping.find(m._guid);
+                if (check != guidmapping.end()) {
+                    eventManager->emit<UIEvent>({ "MSG_CHAT", {check->second, m.contents} });
+                }
+            });
+
+            eventManager->subscribe<UIEvent>([&](const UIEvent& ev) -> bool {
+                if (ev.name == "MSG_CHAT_SEND" && ev.args.size() > 0) {
+                    std::string name = ev.args[0];
+                    clientSession->queueOutgoing(ClientChatMessage(std::move(name)));
+                }
+                return true;
+            });
+            return "";
+        }
+        else {
+            return "connection failed";
+        }
+    };
+
     config::ConsoleCommands::getInstance().RegisterCommand("startserver", [&](auto& params) -> std::string {
-        return "rawrtest";
+        if (params.size() > 0) {
+            server = new Server();
+            nickname = params[0];
+            clientconnect(std::string("localhost"), 44951);
+            return "Server bound to port: 44951";
+        }
+        else {
+            return "use /startserver <nickname>";
+        }
+    });
+
+    config::ConsoleCommands::getInstance().RegisterCommand("connect", [&](auto& params) -> std::string {
+        if (params.size() > 1) {
+            nickname = params[1];
+            return clientconnect(std::string(params[0]), 44951);
+        }
+        else {
+            return "use /connect <addr> <nickname>";
+        }
     });
 }
 
@@ -264,19 +341,16 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
         simulationManager->UpdateViewport(*playerViewport);
     }
 
+    if (server)
+        server->processIncoming();
+    if (clientSession)
+        clientSession->processIncoming();
+
     // input
     inputManager->ProcessInputs(inputValues, dt * 1000);
     sys::ShowCursor(inputManager->ShouldShowCursor());
 
     simulationManager->DoUpdate(dt * 1000);
-
-
-    static int r = 0;
-    if (r < 10) {
-        UIEvent t = { "MSG_CONSOLE", {"test"} };
-        eventManager->emit<UIEvent>(t);
-        r++;
-    }
 
     // render
     // todo: link skinnedmesh's somehow to this correctly

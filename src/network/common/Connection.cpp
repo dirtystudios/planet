@@ -9,9 +9,11 @@
 #include "Socket.h"
 #include <enet/enet.h>
 
-Connection::Connection(ENetPeer* peer, Socket* socket)
+Connection::Connection(ENetPeer* peer, Socket* socket, ConnectionStateDelegate&& stateDelegate)
 : _peer(peer)
 , _socket(socket)
+, _stateDelegate(stateDelegate)
+
 {}
 
 void Connection::waitForConnectionState(ConnectionState state)
@@ -25,6 +27,8 @@ void Connection::waitForConnectionState(ConnectionState state)
 void Connection::setConnectionState(ConnectionState state)
 {
     std::lock_guard<std::mutex> lock(_connectionStateMutex);
+    if (state != _state)
+        _stateDelegate(state);
     _state = state;
     _connectionStateCondition.notify_one();
 }

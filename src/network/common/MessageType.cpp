@@ -17,7 +17,7 @@ const char* to_string(MessageType type)
         case MessageType::Move: return "Move";
         case MessageType::Login: return "Login";
         case MessageType::LoginResponse: return "LoginResponse";
-        case MessageType::Object: return "Object";
+        case MessageType::SObject: return "SObject";
             
     }
     return "[messageType]";

@@ -15,6 +15,7 @@
 #include "Packet.h"
 #include <optional>
 #include <array>
+#include <functional>
 
 struct _ENetPeer;
 class Socket;
@@ -26,12 +27,16 @@ enum class ConnectionState : uint8_t
     Connected,
 };
 
+using ConnectionStateDelegate = std::function<void(ConnectionState)>;
+
 class Connection
 {
 private:
     _ENetPeer* _peer { nullptr };
     Socket* _socket { nullptr };
     ConnectionState _state { ConnectionState::Disconnected };
+
+    ConnectionStateDelegate _stateDelegate;
     
     std::mutex _sendQueueMutex;
     std::vector<Packet> _sendQueue;
@@ -44,7 +49,7 @@ private:
     std::mutex _connectionStateMutex;
     std::condition_variable _connectionStateCondition;
 public:
-    Connection(_ENetPeer* peer, Socket* socket);
+    Connection(_ENetPeer* peer, Socket* socket, ConnectionStateDelegate&& stateDelegate = ConnectionStateDelegate());
     ~Connection();
     
     void disconnect();
