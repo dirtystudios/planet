@@ -56,9 +56,9 @@ namespace ui {
             UIFrame::UIFrameDesc chatframeDesc;
             chatframeDesc.name = "Chatframe";
             chatframeDesc.parent = 0;
-            chatframeDesc.height = 100;
+            chatframeDesc.height = 160;
             chatframeDesc.width = 200;
-            chatframeDesc.x = 700.f;
+            chatframeDesc.x = 600.f;
             chatframeDesc.y = 0.f;
             chatframeDesc.show = true;
             chatframeDesc.acceptMouse = true;
@@ -69,7 +69,7 @@ namespace ui {
             TextList::TextListDesc textListDesc;
             textListDesc.name = "ChatFrameTextList";
             textListDesc.parent = chatFrame;
-            textListDesc.height = 100;
+            textListDesc.height = 160;
             textListDesc.width = 200;
             textListDesc.x = 0.f;
             textListDesc.y = 0.f;
@@ -79,10 +79,10 @@ namespace ui {
             EditBox::EditBoxDesc editBoxDesc;
             editBoxDesc.name = "ChatFrameEditBox";
             editBoxDesc.parent = chatFrame;
-            editBoxDesc.height = 40;
-            editBoxDesc.width = 780;
-            editBoxDesc.x = 0.f;
-            editBoxDesc.y = -10.f;
+            editBoxDesc.height = 30;
+            editBoxDesc.width = 200;
+            editBoxDesc.x = 10.f;
+            editBoxDesc.y = 165.f;
             editBoxDesc.font.textSize = 12.f;
             editBoxDesc.blinkSpeed = 0.f;
             editBoxDesc.show = false;
@@ -95,6 +95,7 @@ namespace ui {
         bool HandleEnterKey(const input::InputContextCallbackArgs& args) {
             if (editBox->IsShown()) {
                 //editBox->ClearFocus();
+                editBox->Hide();
             }
             else {
                 editBox->Show();

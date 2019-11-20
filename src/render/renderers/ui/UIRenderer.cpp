@@ -18,7 +18,7 @@ struct FrameVertex {
     glm::vec2 texcoords;
 };
 
-static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 48;
+static constexpr size_t kDefaultVertexBufferSize = sizeof(FrameVertex) * 96;
 
 void UIRenderer::OnInit() {
     _viewData            = services()->constantBufferManager()->GetConstantBuffer(sizeof(UIViewConstants), "ui2DViewConstants");
