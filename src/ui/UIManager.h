@@ -18,6 +18,7 @@
 #include "ComponentManager.h"
 #include "EventManager.h"
 #include "UIEvent.h"
+#include "PacketEvent.h"
 
 #include <memory>
 #include <map>
@@ -37,7 +38,7 @@ private:
     float                   m_cursorBlink    = 0;
     bool                    m_drawCaret      = false;
     bool                    m_debugDrawFocus = true;
-    EditBox*                m_focusedEditBox = 0;
+    EditBox*                m_focusedEditBox = nullptr;
     input::KeyboardManager* m_keyboardManager;
     input::InputContext*    m_debugContext;
     input::InputContext*    m_uiInputContext;
@@ -45,6 +46,7 @@ private:
     bool                    m_mouse2Down = false;
     float                   m_mouseX = 0.f, m_mouseY = 0.f;
     ScriptApi               m_scriptApi;
+    EventManager*           m_eventManager = nullptr;
 
     std::unordered_map<std::string, std::vector<UIEvent>> m_pendingUIEvents;
 
@@ -52,14 +54,14 @@ public:
     UIManager(EventManager* em, input::KeyboardManager* keyboardManager, input::InputContext* inputContext, input::InputContext* debugContext, Viewport viewport,
         TextRenderer* textRenderer, UIRenderer* uiRenderer, DebugDrawInterface* debug)
         : m_viewport(viewport), m_keyboardManager(keyboardManager), m_uiInputContext(inputContext), m_debugContext(debugContext), m_scriptApi(this),
-          m_textRenderer(textRenderer), m_uiRenderer(uiRenderer), m_debugRenderer(debug) {
+          m_textRenderer(textRenderer), m_uiRenderer(uiRenderer), m_debugRenderer(debug), m_eventManager(em) {
 
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosX", std::bind(&UIManager::HandleMouseX, this, std::placeholders::_1));
         m_uiInputContext->BindContext<input::ContextBindingType::Axis>("MousePosY", std::bind(&UIManager::HandleMouseY, this, std::placeholders::_1));
         m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey1", std::bind(&UIManager::HandleMouse1, this, std::placeholders::_1));
         m_uiInputContext->BindContext<input::ContextBindingType::Action>("MouseKey2", std::bind(&UIManager::HandleMouse2, this, std::placeholders::_1));
 
-        em->subscribe<UIEvent>(std::bind(&UIManager::HandleUIEvent, this, std::placeholders::_1));
+        m_eventManager->subscribe<UIEvent>(std::bind(&UIManager::HandleUIEvent, this, std::placeholders::_1));
 
         m_debugContext->BindContext<input::ContextBindingType::Action>("debug5", std::bind(&UIManager::ToggleDebugDraw, this, std::placeholders::_1));
         config::ConsoleCommands::getInstance().RegisterCommand("toggleFocusDebug", std::bind(&UIManager::ToggleDebugDrawConsole, this, std::placeholders::_1));
@@ -71,6 +73,11 @@ public:
     void DoUpdate(std::map<ComponentType, const std::array<std::unique_ptr<Component>, MAX_SIM_OBJECTS>*>& components, float ms) override;
 
     bool HandleUIEvent(const UIEvent& ev) {
+        if (ev.name == "CHAT_MSG_SEND") {
+            m_eventManager->emit<PacketEvent>(PacketEvent{ "MSG_CHAT_SEND", ev.args });
+            return true;
+        }
+
         auto check = m_pendingUIEvents.find(ev.name);
         if (check == m_pendingUIEvents.end())
             m_pendingUIEvents[ev.name] = std::vector<UIEvent>{ ev };

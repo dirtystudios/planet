@@ -25,7 +25,7 @@ EditBox::EditBox(EditBoxDesc editBoxDesc, EditBoxScriptHandler* scriptHandler)
 }
 
 void EditBox::SetFocus() {
-    if (!m_editBoxDesc.show)
+    if (!IsShown())
         return;
 
     // this state means we got focus back before acknowledging it
@@ -107,7 +107,7 @@ void EditBox::EnterPressed() {
 }
 
 void EditBox::DoUpdate(float ms) {
-    if (!m_editBoxDesc.show)
+    if (!IsShown())
         m_textBoxState = TextBoxState::UNFOCUSED;
 
     if (m_textBoxState == TextBoxState::PENDINGFOCUS)

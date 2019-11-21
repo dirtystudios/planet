@@ -155,7 +155,7 @@ void Socket::serviceSocket()
                     }
                     
                     (*connectionIt)->queueIncoming(Packet(event.packet->data, event.packet->dataLength));
-                    enet_packet_destroy(event.packet);
+                    //enet_packet_destroy(event.packet);
                     
                     if (_eventDelegate) {
                         _eventDelegate(SocketEventType::PacketReceived, *connectionIt);

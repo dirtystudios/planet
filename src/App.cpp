@@ -59,6 +59,7 @@ input::InputContext* inputContextPlayer;
 
 Socket* clientSocket;
 ClientSession* clientSession;
+ConnectionPtr clientConnection;
 Server* server;
 std::string nickname;
 std::unordered_map<uint64_t, std::string> guidmapping;
@@ -226,6 +227,7 @@ void SetupNetworkCommands() {
                 break;
             case ConnectionState::Connected:
                 eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Connected!"} });
+                clientConnection->queueOutgoing(Packet(AuthMessage()));
                 break;
             case ConnectionState::Disconnected:
                 eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Disconnected!"} });
@@ -233,17 +235,20 @@ void SetupNetworkCommands() {
             }
         };
         clientSocket = new Socket();
-        auto connection = clientSocket->connect(addr, 44951, stateDelegate);
-        if (connection != nullptr) {
-            clientSession = new ClientSession(connection);
+        clientConnection = clientSocket->connect(addr, 44951, stateDelegate);
+        if (clientConnection != nullptr) {
+            clientSession = new ClientSession(clientConnection);
             clientSession->registerHandler(SessionStatus::Authed, [&]() {
                 eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Authed!"} });
+                eventManager->emit<UIEvent>({ "MSG_CONSOLE", {std::string("Logging in as :" + nickname)} });
+                clientSession->queueOutgoing(LoginMessage(std::move(std::string(nickname))));
             });
             clientSession->registerHandler(SessionStatus::LoggedIn, [&]() {
                 eventManager->emit<UIEvent>({ "MSG_CONSOLE", {"Logged in!"} });
             });
             clientSession->registerHandler(MessageType::AuthResponse, [&](Packet& p) {
-                clientSession->queueOutgoing(LoginMessage(std::move(std::string(nickname))));
+                //clientSession->queueOutgoing(LoginMessage(std::move(std::string(nickname))));
+                //eventManager->emit<UIEvent>({ "MSG_CONSOLE", {std::string("Logging in as :" + nickname)} });
             });
 
             clientSession->registerHandler(MessageType::SObject, [&](Packet& p) {
@@ -258,7 +263,7 @@ void SetupNetworkCommands() {
                 }
             });
 
-            eventManager->subscribe<UIEvent>([&](const UIEvent& ev) -> bool {
+            eventManager->subscribe<PacketEvent>([&](const PacketEvent& ev) -> bool {
                 if (ev.name == "MSG_CHAT_SEND" && ev.args.size() > 0) {
                     std::string name = ev.args[0];
                     clientSession->queueOutgoing(ClientChatMessage(std::move(name)));
@@ -345,8 +350,10 @@ void App::OnFrame(const std::vector<float>& inputValues, float dt) {
         simulationManager->UpdateViewport(*playerViewport);
     }
 
-    if (server)
+    if (server) {
         server->processIncoming();
+        server->update();
+    }
     if (clientSession)
         clientSession->processIncoming();
 

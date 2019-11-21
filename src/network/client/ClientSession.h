@@ -4,16 +4,16 @@
 #include <unordered_map>
 #include <functional>
 #include "Packet.h"
+#include "Connection.h"
 
-class World;
-class Connection;
-using ConnectionPtr = std::shared_ptr<Connection>;
+class Socket;
 
 using ClientPacketHandler = std::function<void(Packet&)>;
 using ClientSessionHandler = std::function<void()>;
 
 enum class SessionStatus {
     Disconnected,
+    Connecting,
     Connected,
     Authed,
     LoggedIn,
@@ -21,6 +21,7 @@ enum class SessionStatus {
 
 class ClientSession {
     ConnectionPtr _connection{ nullptr };
+    Socket* _socket{ nullptr };
     SessionStatus _status{ SessionStatus::Disconnected };
 
     std::unordered_map<MessageType, std::vector<ClientPacketHandler>> _handlers;

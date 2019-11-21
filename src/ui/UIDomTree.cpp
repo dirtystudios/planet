@@ -133,6 +133,15 @@ namespace ui {
             if (node->frame->GetFrameDesc().acceptMouse)
                 return node->frame;
         }
+        else {
+            // check children still, in case any are outside of our actual range
+            // todo: still need logic to bubble up check in this case
+            for (auto& child : node->children) {
+                UIFrame* test = HitTestNode(child, x, y, curRect);
+                if (test)
+                    return test;
+            }
+        }
         return nullptr;
     }
 

@@ -46,7 +46,7 @@ public:
         if (it != m_commandMap.end()) {
             // possibly shitty way to do this, but w/e
             if (tokens.size() > 1) {
-                std::vector<std::string> temp(&tokens[0], &tokens[tokens.size()]);
+                std::vector<std::string> temp(tokens.begin()+1, tokens.end());
                 return it->second(temp);
             } else {
                 return it->second(std::vector<std::string>{});

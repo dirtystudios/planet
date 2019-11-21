@@ -1,5 +1,6 @@
 #include "ScriptApi.h"
 #include "UIManager.h"
+#include "EventManager.h"
 
 namespace ui {
     UIFrame* ScriptApi::GetFrame(std::string_view name) {

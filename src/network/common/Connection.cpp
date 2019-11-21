@@ -27,7 +27,7 @@ void Connection::waitForConnectionState(ConnectionState state)
 void Connection::setConnectionState(ConnectionState state)
 {
     std::lock_guard<std::mutex> lock(_connectionStateMutex);
-    if (state != _state)
+    if (state != _state && _stateDelegate)
         _stateDelegate(state);
     _state = state;
     _connectionStateCondition.notify_one();
@@ -98,7 +98,8 @@ uint32_t Connection::flushOutgoingQueue()
     for (const Packet& packet : _sendQueue) {
         ENetPacket* enetPacket = enet_packet_create(packet.data(), packet.size(), ENET_PACKET_FLAG_RELIABLE);
         enet_peer_send(_peer, 0, enetPacket);
-        enet_packet_destroy(enetPacket);
+        // k destroying packet here is wrong....idk where to destroy packet
+        //enet_packet_destroy(enetPacket);
     }
     _sendQueue.clear();
     

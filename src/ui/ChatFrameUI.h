@@ -20,8 +20,12 @@ namespace ui {
             }
 
             void OnEnterPressed(EditBox& frame) {
-                SendChatMessage(frame.GetText());
-                frame.ClearText();
+                auto txt = frame.GetText();
+                if (txt.length() > 0) {
+                    SendChatMessage(txt);
+                    frame.ClearText();
+                    frame.Hide();
+                }
             }
         };
 
@@ -81,7 +85,7 @@ namespace ui {
             editBoxDesc.parent = chatFrame;
             editBoxDesc.height = 30;
             editBoxDesc.width = 200;
-            editBoxDesc.x = 10.f;
+            editBoxDesc.x = 0.f;
             editBoxDesc.y = 165.f;
             editBoxDesc.font.textSize = 12.f;
             editBoxDesc.blinkSpeed = 0.f;

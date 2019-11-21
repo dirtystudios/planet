@@ -21,7 +21,7 @@ Server::Server() {
         }
     };
 
-    Socket socket(44951, eventDelegate);
+    socket = std::make_unique<Socket>(44951, eventDelegate);
 }
 
 void Server::processIncoming() {
@@ -60,4 +60,8 @@ void Server::processIncoming() {
             ++it;
         }
     }
+}
+
+void Server::update() {
+    world.update();
 }

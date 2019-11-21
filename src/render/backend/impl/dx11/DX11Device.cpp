@@ -650,7 +650,7 @@ namespace gfx {
         uint32_t numLevelsRequested = ARRAYSIZE(FeatureLevelsRequested);
         uint32_t creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifdef DEBUG_DX11
-        creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+        //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
         ComPtr<ID3D11DeviceContext> context;

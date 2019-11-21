@@ -31,6 +31,7 @@ void ClientSession::processIncoming() {
             setStatus(SessionStatus::LoggedIn);
             break;
         }
+        case MessageType::SChat:
         case MessageType::SObject: {
             handlePacket(type, packet);
             break;
@@ -69,7 +70,7 @@ void ClientSession::registerHandler(MessageType type, ClientPacketHandler&& hand
         check->second.emplace_back(std::move(handler));
     }
     else
-        check->second = std::vector<ClientPacketHandler>{ std::move(handler) };
+        _handlers[type] = std::vector<ClientPacketHandler>{ std::move(handler) };
 }
 
 void ClientSession::registerHandler(SessionStatus type, ClientSessionHandler&& handler) {
@@ -78,5 +79,5 @@ void ClientSession::registerHandler(SessionStatus type, ClientSessionHandler&& h
         check->second.emplace_back(std::move(handler));
     }
     else
-        check->second = std::vector<ClientSessionHandler>{ std::move(handler) };
+        _sessionhandlers[type] = std::vector<ClientSessionHandler>{ std::move(handler) };
 }

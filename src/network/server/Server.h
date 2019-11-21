@@ -4,6 +4,7 @@
 #include "Connection.h"
 #include "World.h"
 #include "Session.h"
+#include <memory>
 
 class Server {
 private:
@@ -17,8 +18,12 @@ private:
     std::vector<ConnectionPtr> activeConnections;
     World world;
 
+    std::unique_ptr<Socket> socket;
+
 public:
     Server();
 
     void processIncoming();
+
+    void update();
 };

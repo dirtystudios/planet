@@ -155,7 +155,7 @@ void UIManager::PreProcess() {
 void UIManager::PostProcess(float ms) {
     // Double check focusbox
     if (m_focusedEditBox && !m_focusedEditBox->HasFocus()) {
-        m_focusedEditBox = 0;
+        m_focusedEditBox = nullptr;
         m_cursorBlink    = 0;
         m_drawCaret      = false;
         m_keyboardManager->StopCapture();
