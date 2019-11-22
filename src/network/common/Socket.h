@@ -49,7 +49,7 @@ private:
     std::unordered_map<ConnectionPtr, std::vector<Packet>> _outgoingQueues;
 public:
     Socket(SocketEventDelegate&& socketEventDelegate = SocketEventDelegate());
-    Socket(uint64_t listenPort, SocketEventDelegate&& socketEventDelegate = SocketEventDelegate());
+    Socket(uint16_t listenPort, SocketEventDelegate&& socketEventDelegate = SocketEventDelegate());
     ~Socket();
     
     std::shared_ptr<Connection> connect(const std::string& addr, uint16_t port, ConnectionStateDelegate&& d = ConnectionStateDelegate());    

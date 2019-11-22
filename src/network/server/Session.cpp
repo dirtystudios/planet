@@ -80,7 +80,7 @@ void Session::handleChatMessage(Packet& packet)
 {
     std::string contents;
     packet >> contents;
-    _world->broadcastPacket(ServerChatMessage(_player->guid(), std::move(contents)));
+    _world->broadcastPacket(Packet(ServerChatMessage(_player->guid(), std::move(contents))));
 }
 
 void Session::sendPacket(Packet packet)

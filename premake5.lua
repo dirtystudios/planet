@@ -51,8 +51,12 @@ project "planet"
     defines {
         -- do we *actually* need these here?
         "GLEW_STATIC",
-        "NOISE_STATIC"
+        "NOISE_STATIC",
+        "FMT_HEADER_ONLY"
     }
+
+    filter "system:windows"
+        defines { "WIN32_LEAN_AND_MEAN" }
 
     filter "configurations:release"
         flags { "LinkTimeOptimization" }
@@ -66,6 +70,7 @@ project "planet"
     sysincludedirs {
         "external/include",
         "external/include/enum-flags/include",
+        "external/include/fmt/include",
 
         "external/assimp/include",
         "build/assimp/inc",

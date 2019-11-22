@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <memory>
 #include "ConsoleCommands.h"
 #include "EditBox.h"
@@ -7,6 +6,8 @@
 #include "UI.h"
 #include "UIFrame.h"
 #include "TextList.h"
+
+#include <fmt/format.h>
 
 // In a perfect world something like this would be described in lua/xml
 
@@ -42,7 +43,7 @@ namespace ui {
             void OnEvent(UIFrame& frame, std::string_view eventName, const std::vector<std::string>& eventData) {
                 if (eventName == "MSG_CHAT") {
                     if (eventData.size() > 0)
-                        consoleFrame->InsertTextLine(eventData[0]);
+                        consoleFrame->InsertTextLine(fmt::format("{}: {}",  eventData[0], eventData[1]));
                 }
             }
         };

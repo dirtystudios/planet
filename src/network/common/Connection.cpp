@@ -98,8 +98,6 @@ uint32_t Connection::flushOutgoingQueue()
     for (const Packet& packet : _sendQueue) {
         ENetPacket* enetPacket = enet_packet_create(packet.data(), packet.size(), ENET_PACKET_FLAG_RELIABLE);
         enet_peer_send(_peer, 0, enetPacket);
-        // k destroying packet here is wrong....idk where to destroy packet
-        //enet_packet_destroy(enetPacket);
     }
     _sendQueue.clear();
     

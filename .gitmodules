@@ -16,3 +16,6 @@
 [submodule "external/enet"]
 	path = external/enet
 	url = https://github.com/lsalzman/enet/
+[submodule "external/include/fmt"]
+	path = external/include/fmt
+	url = https://github.com/fmtlib/fmt.git

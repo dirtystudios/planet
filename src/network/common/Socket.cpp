@@ -37,7 +37,7 @@ Socket::Socket(SocketEventDelegate&& socketEventDelegate)
     _serviceThread = std::thread([this]() { this->serviceSocket(); });
 }
 
-Socket::Socket(uint64_t listenPort, SocketEventDelegate&& socketEventDelegate)
+Socket::Socket(uint16_t listenPort, SocketEventDelegate&& socketEventDelegate)
 : _eventDelegate(std::move(socketEventDelegate))
 {
     ENetAddress address;
@@ -65,7 +65,10 @@ std::shared_ptr<Connection> Socket::connect(const std::string& addr, uint16_t po
 {
     ENetAddress address;
     
-    enet_address_set_host(&address, addr.c_str());
+    if (enet_address_set_host(&address, addr.c_str()) < 0) {
+        LOG_E("Host lookup failed %s", addr.c_str());
+        return nullptr;
+    }
     address.port = port;
     ENetPeer* peer = enet_host_connect(_host, &address, 2, 0);
     if (peer == nullptr) {
@@ -155,7 +158,7 @@ void Socket::serviceSocket()
                     }
                     
                     (*connectionIt)->queueIncoming(Packet(event.packet->data, event.packet->dataLength));
-                    //enet_packet_destroy(event.packet);
+                    enet_packet_destroy(event.packet);
                     
                     if (_eventDelegate) {
                         _eventDelegate(SocketEventType::PacketReceived, *connectionIt);

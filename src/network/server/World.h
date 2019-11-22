@@ -27,7 +27,7 @@ public:
     
     void update();
     
-    void broadcastPacket(Packet&& packet);
+    void broadcastPacket(const Packet& packet);
 
     Map* map() { return _map.get(); }
 };

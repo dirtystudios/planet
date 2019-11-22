@@ -117,6 +117,12 @@ struct ServerChatMessage : public Message {
     uint64_t _guid{ 0 };
     std::string contents;
 
+    void pack(ByteStream& b) const {
+        Message::pack(b);
+        b << _guid;
+        b << contents;
+    }
+
     static ServerChatMessage unpack(ByteStream& b) {
         uint64_t guid;
         std::string contents;

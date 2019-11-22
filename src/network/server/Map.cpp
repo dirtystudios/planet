@@ -22,7 +22,7 @@ void Map::addPlayer(Player* player)
 
     // send information of everything in Map to player
     for (Player* otherPlayer : _players) {
-        if (otherPlayer == player) { continue; }
+        //if (otherPlayer == player) { continue; }
 
         auto p = Packet(ServerObjectMessage(otherPlayer->guid(), std::string(otherPlayer->name())));
         player->session()->sendPacket(p);

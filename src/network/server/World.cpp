@@ -27,11 +27,9 @@ void World::update()
     }
 }
 
-void World::broadcastPacket(Packet&& packet)
+void World::broadcastPacket(const Packet& packet)
 {
-    Packet p = std::move(packet);
     for (SessionPtr& session : _sessions) {
-        Packet copy = p;
-        session->sendPacket(std::move(copy));
+        session->sendPacket(packet);
     }
 }
