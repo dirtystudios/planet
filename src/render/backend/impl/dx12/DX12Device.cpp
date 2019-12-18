@@ -49,7 +49,7 @@ namespace gfx {
                 &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
                 D3D12_HEAP_FLAG_NONE,
                 &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-                D3D12_RESOURCE_STATE_COMMON,
+                D3D12_RESOURCE_STATE_GENERIC_READ,
                 nullptr,
                 IID_PPV_ARGS(&resource)));
 
@@ -78,7 +78,7 @@ namespace gfx {
                 // todo: is a lock needed for commandlist/fences maybe??
                 // todo: switch uploading to a dynamic ringbuffer system
                 DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-                    D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&uploadBuffer)));
+                    D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&uploadBuffer)));
 
                 std::string uploadBufferDebugName = desc.debugName + "uploadBuffer";
                 D3D_SET_OBJECT_NAME_A(uploadBuffer, uploadBufferDebugName.c_str());
@@ -106,7 +106,7 @@ namespace gfx {
             // todo: this is a bit nasty but it works for now
             if ((desc.accessFlags & BufferAccessFlags::CpuWriteBit) || (desc.accessFlags & BufferAccessFlags::CpuReadBit)) {
                 DX12_CHECK_RET0(m_dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-                    D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&cpubuffer)));
+                    D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&cpubuffer)));
 
                 std::string uploadBufferDebugName = desc.debugName + "cpuBuffer";
                 D3D_SET_OBJECT_NAME_A(cpubuffer, uploadBufferDebugName.c_str());
@@ -275,7 +275,7 @@ namespace gfx {
             ied.AlignedByteOffset = first ? 0 : D3D12_APPEND_ALIGNED_ELEMENT;
             ied.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
             ied.InstanceDataStepRate = 0;
-            ied.Format = SafeGet(VertexAttributeTypeDX12, layout.type);
+            ied.Format = GetVertexAttributeFormatDX12(layout.type, layout.storage);
             first = false;
             stride += GetByteCount(layout);
             il->elements.emplace_back(ied);

@@ -179,7 +179,7 @@ int sys::Run(app::Application* app) {
                 else if (deviceApi == gfx::RenderDeviceApi::D3D12) {
                     std::string usePrebuiltShadersConfig =
                         config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
-
+                    backend.reset(new gfx::DX12Backend(usePrebuiltShadersConfig == "y" ? true : false));
                     windowHandle = info.info.win.window;
                 }
                 else {
