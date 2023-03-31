@@ -8,7 +8,6 @@
 #include <vector>
 #include <cassert>
 #include <atlstr.h>
-#define NOMINMAX
 #include <Windows.h>
 
 namespace fs {

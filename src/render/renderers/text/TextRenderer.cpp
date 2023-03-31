@@ -3,7 +3,7 @@
 #define generic FTGeneric
 #include FT_FREETYPE_H
 #undef generic
-#include "glm/detail/type_vec.hpp"
+#include "glm/detail/type_vec1.hpp"
 #include "glm/detail/type_vec2.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "Log.h"

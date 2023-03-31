@@ -33,14 +33,6 @@ public:
     void height(float h) { _h = h; }
     void isRendered(bool isRendered) { _isRendered = isRendered; }
 
-    void* operator new(size_t i) {
-        return _mm_malloc(i, 16);
-    }
-
-    void operator delete(void* p) {
-        _mm_free(p);
-    }
-
 private:
     float _x{0.f};
     float _y{0.f};

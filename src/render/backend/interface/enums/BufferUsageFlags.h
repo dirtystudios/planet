@@ -10,6 +10,4 @@ enum class BufferUsageFlags : uint16_t {
     ConstantBufferBit = 1 << 2,
 };
 }
-
-template <>
-struct is_enum_flags<gfx::BufferUsageFlags> : public std::true_type {};
+ALLOW_FLAGS_FOR_ENUM(gfx::BufferUsageFlags);

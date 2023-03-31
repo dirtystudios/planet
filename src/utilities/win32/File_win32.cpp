@@ -11,14 +11,15 @@
 
 namespace fs {
     std::string fs::GetProcessDirectory() {
-        char buffer[MAX_PATH];
+        wchar_t buffer[MAX_PATH];
         GetModuleFileName(NULL, buffer, MAX_PATH);
-        std::string::size_type pos = std::string(buffer).find_last_of("\\/");
-        return std::string(buffer).substr(0, pos).append("\\");;
+        auto str = dutil::wstring_to_utf8(buffer);
+        auto pos = str.find_last_of("\\/");
+        return str.substr(0, pos).append("\\");
     }
 
     bool fs::IsPathDirectory(const std::string& path) {
-        return (PathIsDirectory(path.c_str()) > 0);
+        return (PathIsDirectory(dutil::utf8_to_wstring(path).c_str()) > 0);
     }
 
     std::vector<std::string> fs::ListFilesInDirectory(const std::string& dir) {
@@ -26,7 +27,7 @@ namespace fs {
         assert(dir.length() < (MAX_PATH - 3));
 
         // cause win32 uses wildcard notation...
-        std::string searchDir = dir + "\\*";
+        std::wstring searchDir = dutil::utf8_to_wstring(dir) + L"\\*";
         WIN32_FIND_DATA search_data = { 0 };
 
         std::vector<std::string> files;
@@ -35,7 +36,7 @@ namespace fs {
 
         while (handle != INVALID_HANDLE_VALUE) {
             if (!((search_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)) {
-                files.emplace_back(search_data.cFileName);
+                files.emplace_back(dutil::wstring_to_utf8(search_data.cFileName));
             }
             if (FindNextFile(handle, &search_data) == FALSE)
                 break;
@@ -47,11 +48,11 @@ namespace fs {
     }
 
     bool exists(const std::string& path) {
-        return PathFileExists(path.c_str()) == TRUE;
+        return PathFileExists(dutil::utf8_to_wstring(path).c_str()) == TRUE;
     }
 
     bool mkdir(const std::string& path) {
-        BOOL rtn = CreateDirectory(path.c_str(), NULL);
+        BOOL rtn = CreateDirectory(dutil::utf8_to_wstring(path).c_str(), NULL);
         return (rtn == 0 || rtn == ERROR_ALREADY_EXISTS);
     }
 }

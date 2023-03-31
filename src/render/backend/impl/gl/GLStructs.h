@@ -13,11 +13,9 @@
 #include "GLUtils.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace gfx {
 struct GLUniformMetadata {
-    string name;
+    std::string name;
     GLuint location;
     GLint size;
     GLenum type;
@@ -29,7 +27,7 @@ struct GLSamplerMetadata {
 };
 
 struct GLBlockUniformMetadata {
-    string name;
+    std::string name;
     GLuint index;
     GLint size;
     GLint type;
@@ -39,25 +37,25 @@ struct GLBlockUniformMetadata {
 };
 
 struct GLUniformBlockMetadata {
-    string name;
+    std::string name;
     GLint size;
     GLint index;
     uint32_t slot;
-    vector<GLBlockUniformMetadata> uniforms;
+    std::vector<GLBlockUniformMetadata> uniforms;
 };
 
 struct GLAttributeMetadata {
-    string name;
+    std::string name;
     GLenum type;
     GLint location;
     GLint size;
 };
 
 struct GLShaderMetadata {
-    vector<GLUniformBlockMetadata> blocks;
-    vector<GLAttributeMetadata> attributes;
-    vector<GLUniformMetadata> uniforms;  
-    vector<GLSamplerMetadata> samplers;
+    std::vector<GLUniformBlockMetadata> blocks;
+    std::vector<GLAttributeMetadata> attributes;
+    std::vector<GLUniformMetadata> uniforms;  
+    std::vector<GLSamplerMetadata> samplers;
 };
 
 struct GLTexture : public Resource {
@@ -88,7 +86,7 @@ struct GLShaderProgram : public Resource {
     GLuint id{0};
     GLenum type;
     GLShaderMetadata metadata;
-    vector<GLPipelineState*> members;
+    std::vector<GLPipelineState*> members;
     
     GLint GetLocationForSamplerSlot(uint32_t slotIdx) {
         if(metadata.samplers.size() == 0) return -1;
