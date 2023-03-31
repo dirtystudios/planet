@@ -1,6 +1,3 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/997pes24nuhua6g2?svg=true)](https://ci.appveyor.com/project/jarveson/planet)
-[![Build Status](https://travis-ci.org/dirtystudios/planet.svg?branch=master)](https://travis-ci.org/dirtystudios/planet)
-
 # General Things to Do (In no particular order)
 Scratchpad for future tasks. Flesh them out if and when necessary
 

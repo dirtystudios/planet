@@ -45,6 +45,8 @@ ipch/
 *.enc
 *.stackdump
 *.vcxprojResolveAssemblyReference.cache
+.vs/
+.vscode/
 
 # Visual Studio Profiler Files
 *.vspx
@@ -62,4 +64,4 @@ CMakeCache.txt
 Makefile
 cmake_install.cmake
 build/
-
+CMakeUserSettings.json

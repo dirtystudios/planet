@@ -1,0 +1,40 @@
+{
+  "name": "planet",
+  "builtin-baseline": "c9f906558f9bb12ee9811d6edc98ec9255c6cda5",
+  "dependencies": [
+    "fmt",
+    "assimp",
+    "enet",
+    "freetype",
+    "libnoise",
+    "glew",
+    "glm",
+    "xxhash"
+  ],
+  "default-features": [
+    "system-sdl2"
+  ],
+  "features": {
+    "system-sdl2": {
+      "description": "Use sdl2 backend",
+      "dependencies": [
+        {
+          "name": "sdl2",
+          "default-features": false,
+          "features": [
+            "x11"
+          ],
+          "platform": "linux"
+        },
+        {
+          "name": "sdl2",
+          "platform": "!linux"
+        }
+      ]
+    },
+    "test": {
+      "description": "Tests",
+      "dependencies": [ "gtest" ]
+    }
+  }
+}

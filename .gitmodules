@@ -1,15 +1,6 @@
-[submodule "external/freetype2"]
-	path = external/freetype2
-	url = git://git.sv.nongnu.org/freetype/freetype2.git
-[submodule "external/libnoise"]
-	path = external/libnoise
-	url = https://github.com/qknight/libnoise
-[submodule "external/assimp"]
-	path = external/assimp
-	url = https://github.com/assimp/assimp.git	
-[submodule "external/SDL-mirror"]
-	path = external/SDL-mirror
-	url = https://github.com/spurious/SDL-mirror
+[submodule "external/vcpkg"]
+	path = external/vcpkg
+	url = git@github.com:microsoft/vcpkg.git
 [submodule "external/include/enum-flags"]
 	path = external/include/enum-flags
-url=https://github.com/dirtystudios/enum-flags
+	url = git@github.com:dirtystudios/enum-flags.git
