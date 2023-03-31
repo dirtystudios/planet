@@ -146,19 +146,19 @@ namespace gfx {
 
     void DX11RenderPassCommandBuffer::setShaderBuffer(BufferId buffer, uint8_t index, ShaderStageFlags stages) {
         BufferDX11* cbuffer = _rm->GetResource<BufferDX11>(buffer);
-        if (stages & ShaderStageFlags::VertexBit)
+        if ((stages & ShaderStageFlags::VertexBit) != ShaderStageFlags::None)
             _cmdBuf->SetVertexCBuffer(index, cbuffer->buffer.Get());
-        if (stages & ShaderStageFlags::PixelBit)
+        if ((stages & ShaderStageFlags::PixelBit) != ShaderStageFlags::None)
             _cmdBuf->SetPixelCBuffer(index, cbuffer->buffer.Get());
     }
 
     void DX11RenderPassCommandBuffer::setShaderTexture(TextureId texture, uint8_t index, ShaderStageFlags stages) {
         TextureDX11* texturedx11 = _rm->GetResource<TextureDX11>(texture);
-        if (stages & ShaderStageFlags::VertexBit) {
+        if ((stages & ShaderStageFlags::VertexBit) != ShaderStageFlags::None) {
             dg_assert_nm(texturedx11->srv);
             _cmdBuf->SetVertexShaderTexture(index, texturedx11->srv.Get(), texturedx11->sampler.Get());
         }
-        if (stages & ShaderStageFlags::PixelBit) {
+        if ((stages & ShaderStageFlags::PixelBit) != ShaderStageFlags::None) {
             dg_assert_nm(texturedx11->srv);
             _cmdBuf->SetPixelShaderTexture(index, texturedx11->srv.Get(), texturedx11->sampler.Get());
         }

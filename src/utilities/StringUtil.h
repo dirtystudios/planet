@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <string>
+#include <codecvt>
 namespace dutil {
 
 const std::string WHITESPACE = " \n\r\t";
@@ -32,4 +33,18 @@ static std::vector<std::string> Split(const std::string& s, char delim) {
     Split(s, delim, elems);
     return elems;
 }
+
+#ifdef _WIN32
+// wstring / wchar isnt consistant across platforms, this is only used for interactions with winapi
+// portable or other code should use utf16 or similar
+static std::string wstring_to_utf8(const std::wstring& str) {
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> myconv;
+    return myconv.to_bytes(str);
+}
+
+static std::wstring utf8_to_wstring(const std::string& str) {
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> myconv;
+    return myconv.from_bytes(str);
+}
+#endif
 }

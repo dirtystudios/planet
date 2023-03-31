@@ -14,6 +14,4 @@ enum class BufferAccessFlags : uint16_t {
 };
 }
 
-template <>
-struct is_enum_flags<gfx::BufferAccessFlags> : public std::true_type {};
-
+ALLOW_FLAGS_FOR_ENUM(gfx::BufferAccessFlags);

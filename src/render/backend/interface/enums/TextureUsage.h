@@ -17,4 +17,5 @@ namespace gfx
         RenderTarget = 1 << 3,
     };
 }
+
 ALLOW_FLAGS_FOR_ENUM(gfx::TextureUsageFlags);

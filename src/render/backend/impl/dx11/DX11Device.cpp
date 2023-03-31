@@ -27,23 +27,19 @@ namespace gfx {
             assert(false && "unsupported access flags");
         }
 
-        switch (desc.usageFlags) {
-        case BufferUsageFlags::VertexBufferBit:
-            bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-            break;
-        case BufferUsageFlags::IndexBufferBit:
-            bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-            break;
-        case BufferUsageFlags::ConstantBufferBit:
-            bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-            break;
-        default:
-            assert(false);
+        if (desc.usageFlags & BufferUsageFlags::VertexBufferBit) {
+            bufferDesc.BindFlags |= D3D11_BIND_VERTEX_BUFFER;
+        }
+        if (desc.usageFlags & BufferUsageFlags::IndexBufferBit) {
+            bufferDesc.BindFlags |= D3D11_BIND_INDEX_BUFFER;
+        }
+        if (desc.usageFlags & BufferUsageFlags::ConstantBufferBit) {
+            bufferDesc.BindFlags |= D3D11_BIND_CONSTANT_BUFFER;
         }
         
         uint32_t buffSize = desc.size;
 
-        if (bufferDesc.BindFlags == D3D11_BIND_CONSTANT_BUFFER) {
+        if (bufferDesc.BindFlags & D3D11_BIND_CONSTANT_BUFFER) {
             // length must be multiple of 16
             uint32_t sizeCheck = buffSize % 16;
             if (sizeCheck != 0) {
@@ -183,8 +179,8 @@ namespace gfx {
     ComPtr<ID3DBlob> DX11Device::CompileShader(ShaderType shaderType, const std::string& source) {
         ComPtr<ID3DBlob> blob;
         ComPtr<ID3DBlob> errorBlob;
-        char *entryPoint;
-        char *target;
+        const char *entryPoint;
+        const char *target;
 
         HRESULT hr;
 
@@ -673,7 +669,7 @@ namespace gfx {
         // commenting this out seems to make diagnostic debugging work?, ugh
         //InitDX11DebugLayer(m_dev.Get());
 
-        char *dxLevel = "Unknown";
+        const char *dxLevel = "Unknown";
         switch (m_dev->GetFeatureLevel()) {
         case D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_1:
             dxLevel = "11.1";

@@ -13,7 +13,6 @@ enum class ShaderStageFlags : uint8_t {
 
     AllStages = 0xff
 };
-    
 }
 
 ALLOW_FLAGS_FOR_ENUM(gfx::ShaderStageFlags);
