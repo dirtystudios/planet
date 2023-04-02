@@ -57,7 +57,7 @@ namespace fs {
         std::string file;
 
         // grab everything after last '/'
-        uint32_t found = fp.find_last_of("/");
+        auto found = fp.find_last_of("/");
         if (found == std::string::npos)
             file = fp;
         else
