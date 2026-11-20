@@ -73,6 +73,7 @@ find_package(GLEW REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(unofficial-noise CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(simdutf CONFIG REQUIRED)
 find_package(slang CONFIG REQUIRED)
 
 # Sources
@@ -176,6 +177,7 @@ target_link_libraries(planet
                             glm::glm
                             assimp::assimp
                             slang::slang
+                            simdutf::simdutf
                             SDL3::SDL3)
 
 if (WIN32)
