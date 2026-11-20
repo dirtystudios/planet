@@ -11,7 +11,8 @@
     "glm",
     "xxhash",
     "shader-slang",
-    "simdutf"
+    "simdutf",
+    "simde"
   ],
   "default-features": [
     "system-sdl3"
