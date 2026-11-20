@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 4.3)
 
 option(BUILD_ASAN "Build with address sanitizer" OFF)
+
+message("CMake Version: ${CMAKE_VERSION}")
 
 set(PL_DIR_ROOT     ${CMAKE_CURRENT_LIST_DIR})
 set(PL_DIR_SOURCES  "${PL_DIR_ROOT}/src")
@@ -26,6 +28,25 @@ if (MSVC)
     if (BUILD_ASAN)
         add_compile_options(/fsanitize=address)
     endif()
+
+    add_compile_options(
+        "$<$<COMPILE_LANGUAGE:CXX,C>:/bigobj>"
+        # Error on deprecated calls, object redefinition
+        "$<$<COMPILE_LANGUAGE:CXX,C>:/we4996;/we4099>"
+        "$<$<COMPILE_LANGUAGE:CXX,C>:/utf-8>"
+        # Use new 'conforming' windows preprocessor
+        "$<$<COMPILE_LANGUAGE:CXX,C>:/Zc:preprocessor>"
+        # Enable standard C++ stack unwinding and assume extern "C" funcs don't throw
+        "$<$<COMPILE_LANGUAGE:CXX,C>:/EHsc>"
+        "$<$<COMPILE_LANGUAGE:CXX,C>:/Zc:__cplusplus>"
+    )
+
+    string(REPLACE "/Ob1" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/Ob2" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    add_compile_options("$<$<NOT:$<CONFIG:Debug>>:/Ob3;/Zc:inline>")
+
+    add_link_options("$<$<CONFIG:Release>:/DEBUG;/OPT:REF;/OPT:ICF>")
+    add_compile_options("/arch:AVX2")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR 
     CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (BUILD_ASAN)
@@ -36,13 +57,13 @@ endif()
 
 # Platform
 if (WIN32)
-    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX -DUNICODE -D_UNICODE)
+    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX -DUNICODE -D_UNICODE -D _CRT_SECURE_NO_WARNINGS)
 elseif (APPLE)
     add_definitions(-DGL_SILENCE_DEPRECATION)
 endif()
 
 # Deps
-find_package(SDL2 REQUIRED)
+find_package(SDL3 REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(unofficial-enet CONFIG REQUIRED)
@@ -52,6 +73,7 @@ find_package(GLEW REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(unofficial-noise CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(slang CONFIG REQUIRED)
 
 # Sources
 macro(PL_FILES_APPEND)
@@ -120,30 +142,44 @@ endif()
 
 # Compile Options
 add_executable(planet ${PL_SOURCES})
-target_include_directories(planet PRIVATE ${PL_DIR_SOURCES})
-target_include_directories(planet PRIVATE ${PL_HEADER_DIRS})
-target_include_directories(planet PRIVATE "${PL_DIR_EXTERNAL}/include/enum-flags/include")
-set_target_properties(planet PROPERTIES CXX_STANDARD 20)
-set_target_properties(planet PROPERTIES CXX_EXTENSIONS OFF)
-set_target_properties(planet PROPERTIES CXX_STANDARD_REQUIRED ON)
-set_target_properties(planet PROPERTIES POSITION_INDEPENDENT_CODE 1)
+target_include_directories(planet 
+                            PRIVATE 
+                                ${PL_DIR_SOURCES}
+                                ${PL_HEADER_DIRS}
+                                "${PL_DIR_EXTERNAL}/include/enum-flags/include")
+set_target_properties(planet 
+                        PROPERTIES 
+                            CXX_STANDARD 20
+                            CXX_EXTENSIONS OFF
+                            CXX_STANDARD_REQUIRED ON
+                            POSITION_INDEPENDENT_CODE 1
+                            CXX_VISIBILITY_PRESET hidden)
 
-target_link_libraries(planet PRIVATE 
-    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main> 
-    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
-)
+if(NOT DEFINED CMAKE_MSVC_DEBUG_INFORMATION_FORMAT)
+    set_target_properties(${target_name} PROPERTIES MSVC_DEBUG_INFORMATION_FORMAT ProgramDatabase)
+endif()
+if(NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+    set_target_properties(${target_name} PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+endif()
+
 target_link_libraries(planet PRIVATE
     $<IF:$<TARGET_EXISTS:unofficial::noise::noise>,unofficial::noise::noise,unofficial::noise::noise-static>
 )
-target_link_libraries(planet PRIVATE xxHash::xxhash)
-target_link_libraries(planet PRIVATE assimp::assimp)
-target_link_libraries(planet PRIVATE unofficial::enet::enet)
-target_link_libraries(planet PRIVATE fmt::fmt)
-target_link_libraries(planet PRIVATE Freetype::Freetype)
-target_link_libraries(planet PRIVATE GLEW::GLEW)
-target_link_libraries(planet PRIVATE glm::glm)
-target_link_libraries(planet PRIVATE assimp::assimp)
+target_link_libraries(planet 
+                        PRIVATE 
+                            xxHash::xxhash 
+                            assimp::assimp
+                            unofficial::enet::enet
+                            fmt::fmt
+                            Freetype::Freetype
+                            GLEW::GLEW
+                            glm::glm
+                            assimp::assimp
+                            slang::slang
+                            SDL3::SDL3)
 
 if (WIN32)
     target_link_libraries(planet PRIVATE d3d11.lib dxgi.lib dxguid.lib d3dcompiler.lib)
 endif()
+
+target_compile_definitions(planet PRIVATE GLM_ENABLE_EXPERIMENTAL)
