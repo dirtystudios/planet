@@ -1,8 +1,5 @@
 #include "System.h"
 
-#include "SDL.h"
-#include "SDL_syswm.h"
-
 #ifdef _WIN32
 #include <GL/glew.h>
 #include "DX11Backend.h"
@@ -13,12 +10,15 @@
 #include "MetalBackend.h"
 #endif
 
-#include <map>
 #include "Config.h"
 #include "DGAssert.h"
 #include "Log.h"
 #include "RenderDeviceApi.h"
 #include "RenderBackend.h"
+
+#include <SDL3/SDL.h>
+
+#include <map>
 
 SDL_Window*        _window = NULL;
 SDL_Event          _e;
@@ -33,7 +33,7 @@ std::map<int, input::InputCode> sdlkMapping;
 #define MAP_KEY_SDL(x, y) sdlkMapping.insert(std::make_pair(SDLK_##x, input::InputCode::INPUT_KEY_##y));
 void PopulateKeyMapping() {
     for (int x = 0; x <= (int)input::InputCode::INPUT_KEY_Z; ++x) {
-        sdlkMapping.insert(std::make_pair(SDLK_a + x, (input::InputCode)x));
+        sdlkMapping.insert(std::make_pair(SDLK_A + x, (input::InputCode)x));
     }
 
     int range = (int)input::InputCode::INPUT_KEY_9 - (int)input::InputCode::INPUT_KEY_0;
@@ -41,14 +41,14 @@ void PopulateKeyMapping() {
         sdlkMapping.insert(std::make_pair(SDLK_0 + x, (input::InputCode)(x + (int)input::InputCode::INPUT_KEY_0)));
     }
 
-    MAP_KEY_SDL(BACKQUOTE, BACKTICK);
+    MAP_KEY_SDL(GRAVE, BACKTICK);
     MAP_KEY_SDL(MINUS, HYPEN);
     MAP_KEY_SDL(EQUALS, EQUALS);
     MAP_KEY_SDL(LEFTBRACKET, LEFTSQUARE);
     MAP_KEY_SDL(RIGHTBRACKET, RIGHTSQUARE);
     MAP_KEY_SDL(BACKSLASH, BACKSLASH);
     MAP_KEY_SDL(SEMICOLON, SEMICOLON);
-    MAP_KEY_SDL(QUOTE, SINGLEQUOTE);
+    MAP_KEY_SDL(APOSTROPHE, SINGLEQUOTE);
     MAP_KEY_SDL(COMMA, COMMA);
     MAP_KEY_SDL(PERIOD, DOT);
     MAP_KEY_SDL(SLASH, FORWARDSLASH);
@@ -103,7 +103,7 @@ float sys::GetTime() {
 }
 
 void sys::ShowCursor(bool showCursor) {
-    if (SDL_SetRelativeMouseMode(showCursor ? SDL_FALSE : SDL_TRUE) < 0) {
+    if (!SDL_SetWindowRelativeMouseMode(_window, showCursor ? false : true)) {
         LOG_E("SDL_SetRelativeMouseMode failed setting %d. Error: %s", showCursor, SDL_GetError());
     }
 }
@@ -111,7 +111,7 @@ void sys::ShowCursor(bool showCursor) {
 int sys::Run(app::Application* app) {
     _app = app;
 
-    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS) != 0) {
         LOG_E("SDL Init Failed: %s", SDL_GetError());
         return -1;
     }
@@ -133,8 +133,7 @@ int sys::Run(app::Application* app) {
 
     uint32_t sdlCreateAdditionalFlags = deviceApi == gfx::RenderDeviceApi::OpenGL ? SDL_WINDOW_OPENGL : 0;
 
-    _window =
-        SDL_CreateWindow(_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _window_width, _window_height, sdlCreateAdditionalFlags | SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow(_window_title, _window_width, _window_height, sdlCreateAdditionalFlags | SDL_WINDOW_RESIZABLE);
 
     if (_window == NULL) {
         LOG_E("SDL could not create window: %s", SDL_GetError());
@@ -146,62 +145,34 @@ int sys::Run(app::Application* app) {
         SDL_GL_MakeCurrent(_window, glcontext);
     }
     printf("%s\n", SDL_GetError());
-
-    SDL_SysWMinfo info; 
-    SDL_VERSION(&info.version);
-    const char* subsystem = "Unknown System!";
-    int         initRtn   = 0;
     
     std::unique_ptr<gfx::RenderBackend> backend;
     void* windowHandle = nullptr;
-    if (SDL_GetWindowWMInfo(_window, &info)) {
-        switch (info.subsystem) {
-            case SDL_SYSWM_UNKNOWN:
-                break;
-            case SDL_SYSWM_X11:
-                subsystem = "X Window System";
-                break;
-            case SDL_SYSWM_WINDOWS:
-                subsystem = "Microsoft Windows";
 #ifdef _WIN32
-                if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
-                    // start GLEW extension handler
-                    glewExperimental = GL_TRUE;
-                    glewInit();
-                    glGetError();
-                    //_app->renderDevice = new gfx::GLDevice();
-                } else if (deviceApi == gfx::RenderDeviceApi::D3D11) {
-                    std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
-                    backend.reset(new gfx::DX11Backend(usePrebuiltShadersConfig == "y" ? true : false));
-                    windowHandle = info.info.win.window;
-                }
-                else {
-                    assert(false);
-                }
-#endif
-                break;
-            case SDL_SYSWM_COCOA: {
-                subsystem = "Apple OS X";
-#ifndef _WIN32
-                if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
-                    dg_assert_fail("OpenGL isnt supported on MacOS");
-                } else if (deviceApi == gfx::RenderDeviceApi::Metal) {
-                    backend.reset(new gfx::MetalBackend());
-                } else {
-                    dg_assert_fail_nm();
-                }
-                windowHandle = info.info.cocoa.window;
-                break;
-#endif
-            } break;
-            // case SDL_SYSWM_ANDROID: subsystem = "Android"; break;
-            default:
-                dg_assert_fail_nm();
-        }
-
-    } else {
-        LOG_E("Couldn't get window information: %s\n", SDL_GetError());
+    if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
+        // start GLEW extension handler
+        glewExperimental = GL_TRUE;
+        glewInit();
+        glGetError();
+        //_app->renderDevice = new gfx::GLDevice();
+    } else if (deviceApi == gfx::RenderDeviceApi::D3D11) {
+        std::string usePrebuiltShadersConfig = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "UsePrebuiltShaders");
+        backend.reset(new gfx::DX11Backend(usePrebuiltShadersConfig == "y" ? true : false));
+        windowHandle = SDL_GetPointerProperty(SDL_GetWindowProperties(_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     }
+    else {
+        assert(false);
+    }
+#else
+    if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
+        dg_assert_fail("OpenGL isnt supported on MacOS");
+    } else if (deviceApi == gfx::RenderDeviceApi::Metal) {
+        backend.reset(new gfx::MetalBackend());
+    } else {
+        dg_assert_fail_nm();
+    }
+    windowHandle = SDL_GetPointerProperty(SDL_GetWindowProperties(_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+#endif
 
     dg_assert_nm(windowHandle);
     
@@ -215,27 +186,25 @@ int sys::Run(app::Application* app) {
     _app->swapchain = backend->createSwapchainForWindow(desc, _app->renderDevice, windowHandle);
 
     PopulateKeyMapping();
+    auto sver = SDL_GetVersion();
 
-    LOG_D("SDL Initialized. Version: %d.%d.%d on %s", info.version.major, info.version.minor, info.version.patch, subsystem);
+    LOG_D("SDL Initialized. Version: %d.%d.%d", SDL_VERSIONNUM_MAJOR(sver), SDL_VERSIONNUM_MINOR(sver), SDL_VERSIONNUM_MICRO(sver));
 
-    if (initRtn != 0) {
-        LOG_E("%s", "DeviceRender Init Failed.");
-        return -1;
-    }
-
-    int numJoysticks = SDL_NumJoysticks();
+    int numJoysticks{};
+    auto js = SDL_GetJoysticks(&numJoysticks);
     LOG_D("SDL: Num Joysticks Connected : %d", numJoysticks);
 
     for (int x = 0; x < numJoysticks; ++x)
     {
-        if (!SDL_IsGameController(x))
+        if (!SDL_IsGamepad(js[x]))
         {
             continue;
         }
-        SDL_GameControllerOpen(x);
+        SDL_OpenGamepad(js[x]);
         LOG_D("SDL: Opened Controller index: %d", x);
     }
 
+    SDL_free(js);
 
     _app->OnStart();
 
@@ -249,78 +218,76 @@ int sys::Run(app::Application* app) {
         
         // Going to do this here, not sure if i should or not..may want to test how this works
         int temp = SDL_GetModState();
-        inputValues[(int)input::InputCode::INPUT_KEY_CAPSLOCK] = ((temp & KMOD_CAPS) == KMOD_CAPS);
+        inputValues[(int)input::InputCode::INPUT_KEY_CAPSLOCK] = ((temp & SDL_KMOD_CAPS) == SDL_KMOD_CAPS);
 
         while (SDL_PollEvent(&_e) != 0) {
-            if (_e.type == SDL_QUIT){
+            if (_e.type == SDL_EVENT_QUIT){
                 shouldQuit = true;
             }
-            else if (_e.type == SDL_WINDOWEVENT) {
-                if (_e.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    _window_width = (unsigned)_e.window.data1;
-                    _window_height = (unsigned)_e.window.data2;
+            else if (_e.type == SDL_EVENT_WINDOW_RESIZED) {
+                _window_width = (unsigned)_e.window.data1;
+                _window_height = (unsigned)_e.window.data2;
                     
-                    _app->swapchain->resize(_window_width, _window_height);
-                    _app->OnWindowResize(_window_width, _window_height);
-                }
+                _app->swapchain->resize(_window_width, _window_height);
+                _app->OnWindowResize(_window_width, _window_height);
             }
-            else if (_e.type == SDL_KEYDOWN || _e.type == SDL_KEYUP) {
-                switch (_e.key.keysym.sym) {
+            else if (_e.type == SDL_EVENT_KEY_DOWN || _e.type == SDL_EVENT_KEY_UP) {
+                switch (_e.key.key) {
                 case SDLK_ESCAPE:
                     shouldQuit = true;
                 default: 
-                    inputValues[(int)GetKeyCodeFromSDLKey(_e.key.keysym.sym)] = _e.type == SDL_KEYDOWN ? true : false;
+                    inputValues[(int)GetKeyCodeFromSDLKey(_e.key.key)] = _e.type == SDL_EVENT_KEY_DOWN ? true : false;
                     break;
                 }
             }
-            else if (_e.type == SDL_MOUSEMOTION){
+            else if (_e.type == SDL_EVENT_MOUSE_MOTION){
                 inputValues[(int)input::InputCode::INPUT_MOUSE_XAXISRELATIVE] = static_cast<float>(_e.motion.xrel);
                 inputValues[(int)input::InputCode::INPUT_MOUSE_YAXISRELATIVE] = static_cast<float>(_e.motion.yrel);
 
                 inputValues[(int)input::InputCode::INPUT_MOUSE_XAXIS] = static_cast<float>(_e.motion.x);
                 inputValues[(int)input::InputCode::INPUT_MOUSE_YAXIS] = static_cast<float>(_e.motion.y);
             }
-            else if (_e.type == SDL_MOUSEBUTTONDOWN || _e.type == SDL_MOUSEBUTTONUP) {
+            else if (_e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || _e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
                 switch (_e.button.button) {
                 case SDL_BUTTON_LEFT:
-                    inputValues[(int)input::InputCode::INPUT_MOUSE_KEY1] = _e.button.type == SDL_MOUSEBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_MOUSE_KEY1] = _e.button.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? true : false;
                     break;
                 case SDL_BUTTON_RIGHT:
-                    inputValues[(int)input::InputCode::INPUT_MOUSE_KEY2] = _e.button.type == SDL_MOUSEBUTTONDOWN ? true : false;
+                    inputValues[(int)input::InputCode::INPUT_MOUSE_KEY2] = _e.button.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? true : false;
                     break;
                 }
             }
             // todo: redo controller stuff here
-            else if (_e.type == SDL_CONTROLLERBUTTONDOWN || _e.type == SDL_CONTROLLERBUTTONUP) {
-                switch (_e.cbutton.button) {
-                case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_DOWN] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+            else if (_e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || _e.type == SDL_EVENT_GAMEPAD_BUTTON_UP) {
+                switch (_e.gbutton.button) {
+                case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_DOWN] = _e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? true : false;
                     break;
-                case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_UP] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                case SDL_GAMEPAD_BUTTON_DPAD_UP:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_UP] = _e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? true : false;
                     break;
-                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_LEFT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_LEFT] = _e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? true : false;
                     break;
-                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RIGHT] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RIGHT] = _e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? true : false;
                     break;
-                case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSHOULDER] = _e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? true : false;
                     break;
-                case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_LSHOULDER] = _e.type == SDL_CONTROLLERBUTTONDOWN ? true : false;
+                case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_LSHOULDER] = _e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? true : false;
                     break;
                 default: break;
                 }
             }
-            else if (_e.type == SDL_CONTROLLERAXISMOTION) {
-                switch (_e.caxis.axis) {
-                case SDL_CONTROLLER_AXIS_RIGHTX:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKX] = (float)_e.caxis.value / 32767.f;
+            else if (_e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION) {
+                switch (_e.gaxis.axis) {
+                case SDL_GAMEPAD_AXIS_RIGHTX:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKX] = (float)_e.gaxis.value / 32767.f;
                     break;
-                case SDL_CONTROLLER_AXIS_RIGHTY:
-                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKY] = (float)_e.caxis.value / 32767.f;
+                case SDL_GAMEPAD_AXIS_RIGHTY:
+                    inputValues[(int)input::InputCode::INPUT_GAMEPAD_RSTICKY] = (float)_e.gaxis.value / 32767.f;
                     break;
                 default: break;
                 }
