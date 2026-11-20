@@ -10,7 +10,8 @@
     "glew",
     "glm",
     "xxhash",
-    "shader-slang"
+    "shader-slang",
+    "simdutf"
   ],
   "default-features": [
     "system-sdl2"
