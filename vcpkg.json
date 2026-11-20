@@ -1,6 +1,6 @@
 {
   "name": "planet",
-  "builtin-baseline": "c9f906558f9bb12ee9811d6edc98ec9255c6cda5",
+  "builtin-baseline": "74f5ea45ca78988784b810ad9bbb148ea7ff76d8",
   "dependencies": [
     "fmt",
     "assimp",
@@ -9,7 +9,8 @@
     "libnoise",
     "glew",
     "glm",
-    "xxhash"
+    "xxhash",
+    "shader-slang"
   ],
   "default-features": [
     "system-sdl2"
