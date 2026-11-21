@@ -1,4 +1,3 @@
-#pragma once
 #include "DX11Context.h"
 #include "DX11Debug.h"
 #include "DX11Resources.h"
