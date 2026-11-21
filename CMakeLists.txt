@@ -75,6 +75,7 @@ find_package(unofficial-noise CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(simdutf CONFIG REQUIRED)
 find_package(slang CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 
 # Sources
 macro(PL_FILES_APPEND)
@@ -179,6 +180,7 @@ target_link_libraries(planet
                             slang::slang
                             simdutf::simdutf
                             SDL3::SDL3)
+target_include_directories(planet PRIVATE ${Stb_INCLUDE_DIR})
 
 if (WIN32)
     target_link_libraries(planet PRIVATE d3d11.lib dxgi.lib dxguid.lib d3dcompiler.lib)

@@ -12,7 +12,8 @@
     "xxhash",
     "shader-slang",
     "simdutf",
-    "simde"
+    "simde",
+    "stb"
   ],
   "default-features": [
     "system-sdl3"
