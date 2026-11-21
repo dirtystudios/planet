@@ -60,20 +60,20 @@ void TextRenderer::OnInit() {
 
     res = FT_Init_FreeType(&library);
     if (res != FT_Err_Ok) {
-        LOG_E("FreeType Init Failed %d", res);
+        LOG_E("FreeType Init Failed {}", res);
     }
 
     FT_Face face = nullptr;
     res = FT_New_Face(library, kFontPath.c_str(), 0, &face);
     if (res != FT_Err_Ok) {
-        LOG_E("Failed to load face: %s %d", kFontPath.c_str(), res);
+        LOG_E("Failed to load face: {} {}", kFontPath.c_str(), res);
     }
 
     FT_F26Dot6 charWidth  = (int)kFontSize << 6; // 26.6 fractional points (1/64th points)
     FT_F26Dot6 charHeight = (int)kFontSize << 6; // 26.6 fractional points (1/64th points)
     res = FT_Set_Char_Size(face, charWidth, charHeight, kDpi, kDpi);
     if (res != FT_Err_Ok) {
-        LOG_E("Freetype failure %d", res);
+        LOG_E("Freetype failure {}", res);
     }
 
     uint32_t pixelCount = kAtlasHeight * kAtlasWidth;
@@ -83,14 +83,14 @@ void TextRenderer::OnInit() {
     for (char c : kDefaultGlyphSet) {
         res = FT_Load_Char(face, c, FT_LOAD_RENDER);
         if (res != FT_Err_Ok) {
-            LOG_E("Failed to load glyph: %c %d", (char)c, res);
+            LOG_E("Failed to load glyph: {} {}", (char)c, res);
             continue;
         }
 
         FT_GlyphSlot g = face->glyph;
 
         if (!g->bitmap.buffer && c != ' ') {
-            LOG_W("No bitmap buffer for glyph '%c'", (char)c);
+            LOG_W("No bitmap buffer for glyph '{}'", (char)c);
             continue;
         }
 
@@ -99,7 +99,7 @@ void TextRenderer::OnInit() {
         uint32_t regionHeight = g->bitmap.rows;
         if (_xOffset + regionWidth >= kAtlasWidth) {
             if (_yOffset + _currentRowHeight >= kAtlasHeight) {
-                LOG_E("%s", "texture can't fit anymore glyphs");
+                LOG_E("texture can't fit anymore glyphs");
                 break;
             }
 
@@ -266,7 +266,7 @@ void TextRenderer::SetVertices(TextRenderObj* renderObj, size_t offset) {
         }
         std::unordered_map<char, Glyph>::iterator it = _loadedGlyphs.find(c);
         if (it == _loadedGlyphs.end()) {
-            LOG_E("Unloaded glyph '%c'", c);
+            LOG_E("Unloaded glyph '{}'", c);
             continue;
         }
 

@@ -4,10 +4,12 @@
 #include <stdint.h>
 #include <string>
 #include "Hash.h"
-#
+
 #include "DGAssert.h"
 #include "DMath.h"
 #include "Rectangle.h"
+
+#include <fmt/format.h>
 
 using TerrainId = uint32_t;
 
@@ -72,10 +74,10 @@ static dm::Rect2Dd localRectForKey(const TerrainTileKey& key, double rootTileSiz
 }
 
 static std::string asFilename(const TerrainTileKey& key) {
-    return "tid_" + std::to_string(key.tid) + "-tx_" + std::to_string(key.tx) + "-ty_" + std::to_string(key.ty) + "-lod_" + std::to_string(key.lod);
+    return fmt::format("tid_{}-tx_{}-ty_{}-lod_{}", key.tid, key.tx, key.ty, key.lod);
 }
 static std::string toString(const TerrainTileKey& key) {
-    return "TerrainTileKey [tid:" + std::to_string(key.tid) + " tx:" + std::to_string(key.tx) + " ty:" + std::to_string(key.ty) + " lod:" + std::to_string(key.lod) + "]";
+    return fmt::format("TerrainTileKey [tid:{} tx:{} ty:{} lod:{}]", key.tid, key.tx, key.ty, key.lod);
 }
 
 bool operator==(const TerrainTileKey& lhs, const TerrainTileKey& rhs);

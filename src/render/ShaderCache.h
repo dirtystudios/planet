@@ -13,23 +13,25 @@ class ShaderCache {
 private:
     using ShaderCacheKey = size_t;
     gfx::RenderDevice* _device;
-    std::string _baseDir;
+    fs::path _baseDir;
     fs::WatcherId _watcherId;
 
 public:
     ShaderCache(gfx::RenderDevice* device, const std::string& baseDir) : _device(device), _baseDir(baseDir) {
-        if (!fs::IsPathDirectory(baseDir)) {
-            LOG_E("%s", "Invalid Directory Path given for ShaderDirectory");
-            _baseDir = fs::AppendPathProcessDir("/shaders");
+        if (_baseDir.empty()) {
+            _baseDir = fs::GetProcessDirectory() / "assets";
+        }
+        else if (_baseDir.is_relative()) {
+            _baseDir = fs::GetProcessDirectory() / _baseDir;
         }
 
         _baseDir += _device->DeviceConfig.ShaderDir;
-        LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
+        LOG_D("ShaderChache initialized ({})", _baseDir);
 
         fs::FileEventDelegate eventCallback = [&](const fs::FileEvent& event) {
             std::string fileContents;
             if (!fs::ReadFileContents(event.fpath, &fileContents)) {
-                LOG_D("Filed to read file contents for file:%s", event.fpath.c_str());
+                LOG_D("Filed to read file contents for file:{}", event.fpath);
                 return;
             }
             
@@ -37,7 +39,7 @@ public:
             shaderData.type             = gfx::ShaderDataType::Source;
             shaderData.data             = fileContents.data();
             shaderData.len              = fileContents.size();
-            shaderData.name             = event.fpath;
+            shaderData.name             = event.fpath.string();
             _device->AddOrUpdateShaders({shaderData});
         };
         
@@ -45,23 +47,22 @@ public:
             _watcherId = fs::WatchDirManager::AddWatcher(_baseDir, eventCallback);
         }
 
-        std::vector<std::string> dirFiles = fs::ListFilesInDirectory(_baseDir);
-
         // TODO: determine if we will need set as Binary instead of Source
         gfx::ShaderDataType dataType = gfx::ShaderDataType::Source;
         std::vector<gfx::ShaderData> datas;
         std::vector<std::string> allSrcs;
 
-        for (const std::string& fname : dirFiles) {
-            std::string absPath = _baseDir + "/" + fname;
-
-            LOG_D("Creating shader for file:%s", fname.c_str());
+        for (const auto& entry : fs::directory_iterator(_baseDir)) {
+            if (!entry.is_regular_file())
+                continue;
+            auto fname = entry.path().filename().string();
+            LOG_D("Creating shader for file:{}", fname);
 
             allSrcs.emplace_back();
             std::string& fileContentsBuffer = allSrcs.back();
 
-            if (!fs::ReadFileContents(absPath, &fileContentsBuffer)) {
-                LOG_D("Filed to read file contents for file:%s", fname.c_str());
+            if (!fs::ReadFileContents(entry, &fileContentsBuffer)) {
+                LOG_D("Filed to read file contents for file:{}", fname);
                 continue;
             }
 

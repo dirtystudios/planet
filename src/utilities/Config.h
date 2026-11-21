@@ -6,36 +6,36 @@
 namespace config {
     class Config {
     private:
-        std::string configPath;
-        INI::Parser* p;
+        fs::path configPath;
+        INI::Parser* p{};
     public:
         static Config& getInstance() {
             static Config instance; 
             return instance;
         }
 
-        std::string GetConfigString(std::string key) {
-            return p->top()[key];
+        std::string GetConfigString(const std::string& key) {
+            return p ? p->top()[key] : "";
         }
 
-        std::string GetConfigString(std::string section, std::string key) {
-            return p->top()(section)[key];
+        std::string GetConfigString(const std::string& section, const std::string& key) {
+            return p ? p->top()(section)[key] : "";
         }
 
     private:
         Config() {
-            configPath = fs::AppendPathProcessDir("/planet.ini");
+            configPath = fs::GetProcessDirectory() / "planet.ini";
             std::ifstream fin(configPath);
 
             if (fin.fail()) {
-                LOG_E("Failed to open file '%s'\n", configPath.c_str());
+                LOG_E("Failed to open file '{}'\n", configPath);
                 assert(false);
             }
             try {
-                p = new INI::Parser(configPath.c_str());
+                p = new INI::Parser(configPath.string().c_str());
             }
             catch (std::runtime_error& e) {
-                LOG_E("INI Parsing Error: %s", e.what());
+                LOG_E("INI Parsing Error: {}", e.what());
             }
         };
 

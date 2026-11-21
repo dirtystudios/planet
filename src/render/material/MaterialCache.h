@@ -1,5 +1,6 @@
 #pragma once
 
+#include "File.h"
 #include "Material.h"
 #include "RenderCache.h"
 #include "MaterialImporter.h"
@@ -10,7 +11,7 @@ struct MaterialCachePolicy {
 
     MaterialCachePolicy(gfx::RenderDevice* device) {};
 
-    FileDataType LoadDataFromFile(const std::string& fpath) {
+    FileDataType LoadDataFromFile(const fs::path& fpath) {
         return materialImport::LoadMaterialDataFromFile(fpath);
     }
 

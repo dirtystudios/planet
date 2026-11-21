@@ -62,7 +62,7 @@ sys::SysWindowSize sys::GetWindowSize() {
 float sys::GetTime() {
     LARGE_INTEGER li;
     if (!QueryPerformanceCounter(&li))
-        LOG_E("Sys::GetTime QueryPerformanceCounter failed! -- %d", GetLastError());
+        LOG_E("Sys::GetTime QueryPerformanceCounter failed! -- {}", GetLastError());
     double tempTime = static_cast<double>(li.QuadPart - g_counterStart.QuadPart) / g_counterFreq;
     return static_cast<float>(tempTime);
 }
@@ -108,13 +108,13 @@ void PlanetUWPApp::Load(Platform::String^ entryPoint) {
 
     LARGE_INTEGER li;
     if (!QueryPerformanceFrequency(&li))
-        LOG_E("QueryPerformanceFreqError! -- %d", GetLastError());
+        LOG_E("QueryPerformanceFreqError! -- {}", GetLastError());
 
     // this should give us counter in microseconds
     g_counterFreq = static_cast<double>(li.QuadPart);
 
     if (!QueryPerformanceCounter(&g_counterStart))
-        LOG_E("QueryPerformanceCounterError! -- %d", GetLastError());
+        LOG_E("QueryPerformanceCounterError! -- {}", GetLastError());
 
     g_app->renderDevice = new graphics::DX11Device();
     

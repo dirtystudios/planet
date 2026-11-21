@@ -2,6 +2,7 @@
 
 #include "Animation.h"
 #include "AnimationImporter.h"
+#include "File.h"
 #include "RenderCache.h"
 
 struct AnimationCachePolicy {
@@ -10,7 +11,7 @@ struct AnimationCachePolicy {
 
     AnimationCachePolicy(gfx::RenderDevice* device) {};
 
-    FileDataType LoadDataFromFile(const std::string& fpath) {
+    FileDataType LoadDataFromFile(const fs::path& fpath) {
         return animationImport::LoadAnimationDataFromFile(fpath);
     }
 

@@ -35,8 +35,8 @@ private:
 public:
     MeshMaterial(gfx::RenderDevice* device, const MaterialData& matData, gfx::ShaderId ps) {
 
-        std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
-        if (!fs::IsPathDirectory(assetDirPath)) {
+        auto assetDirPath = fs::path{ config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory") };
+        if (assetDirPath.empty()) {
             LOG_E("Invalid Directory Path given for AssetDirectory.");
         }
         if (matData.diffuseData.data != nullptr) {
@@ -44,7 +44,7 @@ public:
         }
         else {
             // just log for now
-            Log::msg(Log::Level::Debug, "MeshMatLoader", "No diffuse map specified, using white");
+            LOG_D("MeshMatLoader - No diffuse map specified, using white");
             // euge said to use a 16x16 white texture
             // and yes, this *is* a new texture everytime
             std::vector<uint32_t> whiteImageData(16 * 16, 0xFFFFFFFF);

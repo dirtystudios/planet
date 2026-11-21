@@ -32,7 +32,7 @@ void GLContext::WriteTextureData(GLTexture* texture, const void* data, uint32_t 
     else if (texture->type == GL_TEXTURE_2D_ARRAY)
         GL_CHECK(glTexSubImage3D(texture->type, 0, 0, 0, slice, texture->width, texture->height, 1, texture->format.dataFormat, texture->format.dataType, data));
     else
-        LOG_E("%s", "Unsupported WriteTextureData texture type");
+        LOG_E("Unsupported WriteTextureData texture type");
 }
 
 void GLContext::BindVertexArrayObject(GLVertexArrayObject* vao) {

@@ -23,7 +23,7 @@ enum class FileEventType : uint8_t {
 
 struct FileEvent {
     FileEventType type;
-    std::string fpath;
+    fs::path fpath;
 };
 
 using FileEventDelegate = std::function<void(const FileEvent& event)>;
@@ -33,7 +33,7 @@ private:
     static std::vector<std::unique_ptr<Watcher>> _watchers;
     static std::unordered_map<std::string, std::vector<Watcher*>> _watchedPaths;
 public:
-    static WatcherId AddWatcher(const std::string& path, fs::FileEventDelegate delegate);
+    static WatcherId AddWatcher(const fs::path& path, fs::FileEventDelegate delegate);
     static bool RemoveWatcher(WatcherId watcherId);
 };
 }

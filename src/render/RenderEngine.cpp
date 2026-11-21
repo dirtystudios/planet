@@ -83,7 +83,7 @@ RenderEngine::RenderEngine(RenderDevice* device, gfx::Swapchain* swapchain, Rend
     
     
     for (auto p : _renderersByType) {
-        LOG_D("Initializing Renderer: %d", p.first);
+        LOG_D("Initializing Renderer: {}", ToString(p.first));
         p.second->Init(_device, this);
     }
 

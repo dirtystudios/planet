@@ -50,8 +50,8 @@ namespace gfx {
             char buffer[128];
             wcstombs_s(0, buffer, 128, adapterDesc.Description, 128);
 
-            LOG_D("DisplayAdapterDesc %d: %s", i, buffer);
-            LOG_D("VendorID:DeviceID 0x%x:0x%x", adapterDesc.VendorId, adapterDesc.DeviceId);
+            LOG_D("DisplayAdapterDesc {}: {}", i, buffer);
+            LOG_D("VendorID:DeviceID 0x{:x}:0x{:x}", adapterDesc.VendorId, adapterDesc.DeviceId);
             ++i;
         }
     }

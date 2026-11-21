@@ -12,7 +12,7 @@
 #include "TileCache.h"
 
 static const std::string kEDPChannel = "tileproducer.cpunormals";
-#define EDPLog_W(fmt, ...) LOG(Log::Level::Warn, kEDPChannel, fmt, ##__VA_ARGS__)
+#define EDPLog_W(...) LOG_W(__VA_ARGS__)
 
 struct GenerateNormalmapTaskResults {
     TerrainTileKey         key;
@@ -144,7 +144,7 @@ public:
 
         for (const GenerateNormalmapTaskResults& results : completed) {
             if (_pendingTasks.find(results.key) == end(_pendingTasks)) {
-                EDPLog_W("Processing arrival of unexpected key %s -- skipping", toString(results.key).c_str());
+                EDPLog_W("Processing arrival of unexpected key {} -- skipping", toString(results.key));
                 continue;
             }
             dg_assert_nm(_dataTiles.find(results.key) == end(_dataTiles));

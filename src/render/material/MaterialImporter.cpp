@@ -25,9 +25,9 @@ namespace materialImport {
         { aiShadingMode_Blinn, ShadingModel::Blinn },
     };
 
-    std::vector<MaterialData> LoadMaterialDataFromFile(const std::string& fpath) {
+    std::vector<MaterialData> LoadMaterialDataFromFile(const fs::path& fpath) {
         Assimp::Importer import;
-        const aiScene* scene = import.ReadFile(fpath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+        const aiScene* scene = import.ReadFile(fpath.string(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
         if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             LOG_E("ASSIMP %s", import.GetErrorString());
             return{};
@@ -44,7 +44,7 @@ namespace materialImport {
 
             aiString materialName;
             material->Get(AI_MATKEY_NAME, materialName);
-            LOG_D("Material:%s", materialName.C_Str());
+            LOG_D("Material:{}", materialName.C_Str());
             matData->name = std::string(materialName.C_Str());
 
             if (material->GetTextureCount(aiTextureType_DIFFUSE)) {
@@ -52,10 +52,10 @@ namespace materialImport {
                 aiString texturePath;
 
                 material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath);
-                matData->diffuseMap = fs::SanitizeFilePath(std::string(texturePath.C_Str()));
-                LOG_D("aiTextureType_DIFFUSE:%s", matData->diffuseMap.c_str());
+                matData->diffuseMap = texturePath.C_Str();
+                LOG_D("aiTextureType_DIFFUSE:{}", matData->diffuseMap);
 
-                std::string imgPath = fs::FullPathDirName(fpath) + "/" + matData->diffuseMap.c_str();
+                auto imgPath = fpath.parent_path() / matData->diffuseMap;
 
                 dimg::LoadImageFromFile(imgPath.c_str(), &matData->diffuseData);
 
@@ -67,8 +67,8 @@ namespace materialImport {
                 assert(material->GetTextureCount(aiTextureType_SPECULAR) == 1);
                 aiString texturePath;
                 material->GetTexture(aiTextureType_SPECULAR, 0, &texturePath);
-                matData->specularMap = fs::SanitizeFilePath(std::string(texturePath.C_Str()));
-                LOG_D("aiTextureType_SPECULAR:%s", matData->specularMap.c_str());
+                matData->specularMap = texturePath.C_Str();
+                LOG_D("aiTextureType_SPECULAR:{}", matData->specularMap);
             }
 
             aiColor3D color;

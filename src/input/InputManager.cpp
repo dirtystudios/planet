@@ -43,7 +43,7 @@ namespace input {
 
     InputContext* InputManager::CreateNewContext(ContextPriority priority) {
         if (priority == ContextPriority::CONTEXT_DEBUG) {
-            LOG(Log::Level::Error, "Input", "dont create debug context euge");
+            LOG_E("Input - dont create debug context euge");
             return 0;
         }
         auto it = contextMappings.insert(std::make_pair((uint32_t)priority, std::make_unique<InputContext>()));

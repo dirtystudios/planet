@@ -20,6 +20,17 @@ endif()
 
 project(planet C CXX)
 
+# Host architecture
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^x86|^X86|amd64|AMD64")
+    set(PL_HOST_ARCH_IS_X86 FALSE)
+    set(PL_HOST_ARCH_IS_AARCH64 TRUE)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+    set(PL_HOST_ARCH_IS_X86 FALSE)
+    set(PL_HOST_ARCH_IS_AARCH64 TRUE)
+else()
+    message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
 if (MSVC)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "19.15")
@@ -53,6 +64,30 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
         add_compile_options(-fsanitize=address,undefined)
         add_link_options(-fsanitize=address,undefined)
     endif()
+
+    if(PL_HOST_ARCH_IS_X86)
+        add_compile_options(
+            "$<$<COMPILE_LANGUAGE:CXX,C>:-fcf-protection>"
+            "$<$<COMPILE_LANGUAGE:CXX,C>:-march=x86-64-v3>"
+        )
+    endif()
+
+    add_compile_options(
+        # stack smashing protection, may be default on some hosts
+        "$<$<COMPILE_LANGUAGE:CXX,C>:-fstack-clash-protection;-fstack-protector-strong>"
+        # Add mismatched tags, roughly matches clang/msvc warning
+        "$<$<COMPILE_LANGUAGE:CXX,C>:-Wmismatched-tags>"
+        # Enable debug symbols on release
+        "$<$<CONFIG:Release>:-g>"
+    )
+
+    add_link_options(
+        # no execute stack and read only sections / GOT
+        "$<$<COMPILE_LANGUAGE:CXX,C>:LINKER:-z,noexecstack>"
+        "$<$<COMPILE_LANGUAGE:CXX,C>:LINKER:-z,relro>"
+        "$<$<COMPILE_LANGUAGE:CXX,C>:LINKER:-z,now>"
+    )
+
 endif()
 
 # Platform
@@ -75,6 +110,8 @@ find_package(unofficial-noise CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(simdutf CONFIG REQUIRED)
 find_package(slang CONFIG REQUIRED)
+find_package(Stb REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 # Sources
 macro(PL_FILES_APPEND)
@@ -178,10 +215,21 @@ target_link_libraries(planet
                             assimp::assimp
                             slang::slang
                             simdutf::simdutf
-                            SDL3::SDL3)
+                            SDL3::SDL3
+                            spdlog::spdlog)
+target_include_directories(planet PRIVATE ${Stb_INCLUDE_DIR})
 
 if (WIN32)
     target_link_libraries(planet PRIVATE d3d11.lib dxgi.lib dxguid.lib d3dcompiler.lib)
 endif()
 
-target_compile_definitions(planet PRIVATE GLM_ENABLE_EXPERIMENTAL)
+target_compile_definitions(planet 
+                            PRIVATE 
+                            GLM_ENABLE_EXPERIMENTAL
+                            SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/bin/planet.sample.ini"
+    "${CMAKE_CURRENT_BINARY_DIR}/planet.ini"
+    COPYONLY
+)

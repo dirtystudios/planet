@@ -1,5 +1,6 @@
 #pragma once
 
+#include "File.h"
 #include <stdint.h>
 
 namespace dimg {
@@ -27,6 +28,6 @@ struct Image {
     ~Image();
 };
 
-bool LoadImageFromFile(const char* fpath, Image* image);
-bool WriteImageToFile(const char* fpath, uint32_t width, uint32_t height, PixelFormat format, void* data);
+bool LoadImageFromFile(const fs::path& fpath, Image* image);
+bool WriteImageToFile(const fs::path& fpath, uint32_t width, uint32_t height, PixelFormat format, void* data);
 }

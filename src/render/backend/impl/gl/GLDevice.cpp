@@ -44,10 +44,10 @@ void GLDevice::ResizeWindow(uint32_t width, uint32_t height) {}
 #define GL_SILENCE_DEPRECATION 1
     
 void GLDevice::PrintDisplayAdapterInfo() {
-    LOG_D("GL_VERSION: %s", glGetString(GL_VERSION));
-    LOG_D("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    LOG_D("GL_VENDOR: %s", glGetString(GL_VENDOR));
-    LOG_D("GL_RENDERER: %s", glGetString(GL_RENDERER));
+    LOG_D("GL_VERSION: {}", (const char*)glGetString(GL_VERSION));
+    LOG_D("GL_SHADING_LANGUAGE_VERSION: {}", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+    LOG_D("GL_VENDOR: {}", (const char*)glGetString(GL_VENDOR));
+    LOG_D("GL_RENDERER: {}", (const char*)glGetString(GL_RENDERER));
 }
 
 BufferId GLDevice::AllocateBuffer(const BufferDesc& desc, const void* initialData) {
@@ -151,7 +151,7 @@ ShaderId GLDevice::CreateShader(ShaderType shaderType, const char* source) {
     if (!linked) {
         char log[1024];
         GL_CHECK(glGetProgramInfoLog(shader->id, 1024, nullptr, log));
-        LOG_E("Failed to compile/link program: %s\n--------------:\n%s\n", log, source);
+        LOG_E("Failed to compile/link program: {}\n--------------:\n{}\n", log, source);
         delete shader;
         return 0;
     }
@@ -492,8 +492,8 @@ GLVertexArrayObject* GLDevice::GetOrCreateVertexArrayObject(GLShaderProgram* ver
         assert(attributeAsElement.count == element.count);
         assert(attributeAsElement.type == element.type);
 
-        LOG_D("Binding attribute (size:%d, type:%s, stride:%d, offset:%d) to location:%d", attributeAsElement.count,
-              GLEnumToString(attributeAsElement.type).c_str(), vertexLayout->stride, offset, attribute.location);
+        LOG_D("Binding attribute (size:{}, type:{}, stride:{}, offset:{}) to location:{}", attributeAsElement.count,
+            GLEnumToString(attributeAsElement.type), vertexLayout->stride, offset, attribute.location);
 
         GL_CHECK(glEnableVertexAttribArray(attribute.location));
         if (attributeAsElement.type == GL_INT || attributeAsElement.type == GL_UNSIGNED_INT)

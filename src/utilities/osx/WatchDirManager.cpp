@@ -7,7 +7,7 @@ struct Watcher {
     WatcherId id;
     FSEventStreamRef stream;
     fs::FileEventDelegate delegate;
-    std::string path;
+    fs::path path;
 };
 
 std::vector<std::unique_ptr<Watcher>> WatchDirManager::_watchers = std::vector<std::unique_ptr<Watcher>>();
@@ -47,7 +47,7 @@ void FsEventDelegate(ConstFSEventStreamRef streamRef, void* clientCallBackInfo, 
     }
 }
 
-WatcherId WatchDirManager::AddWatcher(const std::string& path, fs::FileEventDelegate delegate) {
+WatcherId WatchDirManager::AddWatcher(const fs::path& path, fs::FileEventDelegate delegate) {
     static uint64_t key     = 1;
     CFStringRef mypath      = CFStringCreateWithCStringNoCopy(NULL, path.c_str(), kCFStringEncodingUTF8, kCFAllocatorNull);
     CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void**)&mypath, 1, NULL);
@@ -69,12 +69,7 @@ WatcherId WatchDirManager::AddWatcher(const std::string& path, fs::FileEventDele
     watcher->delegate = delegate;
     watcher->path = path;
     
-    auto it = _watchedPaths.find(path);
-    if (it == end(_watchedPaths)) {
-        std::vector<Watcher*> watchers;
-        _watchedPaths.insert(std::make_pair(path, watchers));
-    }
-    _watchedPaths[path].push_back(watcher.get());
+    _watchedPaths[path.string()].push_back(watcher.get());
     
     WatcherId watcherId = watcher->id;
     _watchers.push_back(std::move(watcher));

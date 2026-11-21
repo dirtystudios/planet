@@ -145,7 +145,7 @@ UIFrame* UIManager::GetFrame(const std::string& name) {
             }
         }
     }
-    LOG_D("UIManager::GetFrame: '%s' not found!", name.c_str())
+    LOG_D("UIManager::GetFrame: '{}' not found!", name);
     return nullptr;
 }
 

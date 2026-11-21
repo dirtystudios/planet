@@ -8,8 +8,7 @@
 
 using namespace dm;
 
-static const std::string uiDomTreeChannel = "UIDomTree";
-#define DomTreeLogE(fmt, ...) LOG(Log::Level::Error, uiDomTreeChannel, fmt, ##__VA_ARGS__)
+#define DomTreeLogE(...) LOG_E(__VA_ARGS__)
 
 namespace ui {
     void UIDomTree::SetRoot(UIFrame* frame) {
