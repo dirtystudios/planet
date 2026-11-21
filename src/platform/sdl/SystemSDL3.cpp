@@ -111,7 +111,7 @@ void sys::ShowCursor(bool showCursor) {
 int sys::Run(app::Application* app) {
     _app = app;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS)) {
         LOG_E("SDL Init Failed: %s", SDL_GetError());
         return -1;
     }
@@ -220,7 +220,7 @@ int sys::Run(app::Application* app) {
         int temp = SDL_GetModState();
         inputValues[(int)input::InputCode::INPUT_KEY_CAPSLOCK] = ((temp & SDL_KMOD_CAPS) == SDL_KMOD_CAPS);
 
-        while (SDL_PollEvent(&_e) != 0) {
+        while (SDL_PollEvent(&_e)) {
             if (_e.type == SDL_EVENT_QUIT){
                 shouldQuit = true;
             }
