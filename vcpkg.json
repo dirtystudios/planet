@@ -1,6 +1,6 @@
 {
   "name": "planet",
-  "builtin-baseline": "74f5ea45ca78988784b810ad9bbb148ea7ff76d8",
+  "builtin-baseline": "504152f3f2a9fc3290c4214d05ff641be2c9b4c1",
   "dependencies": [
     "fmt",
     "assimp",
