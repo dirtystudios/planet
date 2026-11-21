@@ -2,6 +2,7 @@
 
 #include "ConstantBuffer.h"
 #include "DrawItem.h"
+#include "File.h"
 #include "RenderObj.h"
 #include "RendererType.h"
 #include "ResourceTypes.h"
@@ -14,7 +15,7 @@ private:
     friend SkyRenderer;
 
 public:
-    SkyboxRenderObj(const std::array<std::string, 6>& imagePaths) : RenderObj(RendererType::Skybox), _imagePaths(imagePaths) {}
+    SkyboxRenderObj(const std::array<fs::path, 6>& imagePaths) : RenderObj(RendererType::Skybox), _imagePaths(imagePaths) {}
     ~SkyboxRenderObj() {}
 
 private:
@@ -25,5 +26,5 @@ private:
     const gfx::StateGroup* _group{nullptr};
     const gfx::DrawItem*   _item{nullptr};
 
-    std::array<std::string, 6> _imagePaths;
+    std::array<fs::path, 6> _imagePaths;
 };

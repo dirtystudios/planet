@@ -47,19 +47,19 @@ std::unique_ptr<FlatTerrain> terrain;
 input::InputContext* inputContextPlayer;
 
 SkyboxRenderObj* CreateSkybox() {
-    std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
-    if (!fs::IsPathDirectory(assetDirPath)) {
+    auto assetDirPath = fs::path{ config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory") };
+    if (assetDirPath.empty()) {
         LOG_E("Invalid Directory Path given for AssetDirectory.");
     }
 
-    std::array<std::string, 6> imagePaths;
+    std::array<fs::path, 6> imagePaths;
 
-    imagePaths[0] = assetDirPath + "/skybox/TropicalSunnyDayLeft2048.png";
-    imagePaths[1] = assetDirPath + "/skybox/TropicalSunnyDayRight2048.png";
-    imagePaths[2] = assetDirPath + "/skybox/TropicalSunnyDayUp2048.png";
-    imagePaths[3] = assetDirPath + "/skybox/TropicalSunnyDayDown2048.png";
-    imagePaths[4] = assetDirPath + "/skybox/TropicalSunnyDayFront2048.png";
-    imagePaths[5] = assetDirPath + "/skybox/TropicalSunnyDayBack2048.png";
+    imagePaths[0] = assetDirPath / "skybox" / "TropicalSunnyDayLeft2048.png";
+    imagePaths[1] = assetDirPath / "skybox" / "TropicalSunnyDayRight2048.png";
+    imagePaths[2] = assetDirPath / "skybox" / "TropicalSunnyDayUp2048.png";
+    imagePaths[3] = assetDirPath / "skybox" / "TropicalSunnyDayDown2048.png";
+    imagePaths[4] = assetDirPath / "skybox" / "TropicalSunnyDayFront2048.png";
+    imagePaths[5] = assetDirPath / "skybox" / "TropicalSunnyDayBack2048.png";
 
     return new SkyboxRenderObj(imagePaths);
 }

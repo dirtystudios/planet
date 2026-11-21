@@ -1,6 +1,9 @@
 #pragma once 
 
 #include "MeshNode.h"
+
+#include "File.h"
+
 #include <vector>
 #include <string>
 
@@ -12,5 +15,5 @@ namespace meshImport {
         glm::mat4 gimt;
         std::map<uint32_t, std::vector<uint32_t>> tree;
     };
-    MeshData LoadMeshDataFromFile(const std::string& fpath);
+    MeshData LoadMeshDataFromFile(const fs::path& fpath);
 }

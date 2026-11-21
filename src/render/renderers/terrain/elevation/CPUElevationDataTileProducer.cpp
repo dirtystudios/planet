@@ -117,7 +117,7 @@ void CPUElevationDataTileProducer::dumpCachedHeightmapsToDisk() {
     std::vector<HeightmapCPUTileCache::CacheEntry> cacheSnapshot;
     _cpuTileCache->copyContents(cacheSnapshot);
 
-    std::string          rootDir = fs::GetProcessDirectory();
+    auto rootDir = fs::GetProcessDirectory();
     std::vector<uint8_t> data;
     data.reserve(DataTileProducer::tileResolution.x * DataTileProducer::tileResolution.y);
     for (const HeightmapCPUTileCache::CacheEntry& cacheEntry : cacheSnapshot) {
@@ -126,10 +126,10 @@ void CPUElevationDataTileProducer::dumpCachedHeightmapsToDisk() {
         TerrainTileKey        key     = cacheEntry.first;
         HeightmapCPUTileSlot* cpuSlot = cacheEntry.second;
         TerrainTileKey        parent  = getParentKey(key);
-        std::string           dirPath = rootDir + "heightmap_dump/terrain_" + std::to_string(key.tid) + "/lod_" + std::to_string(key.lod) + "/" + asFilename(parent);
-        std::string           fpath   = dirPath + "/" + asFilename(key) + ".png";
-        dg_assert_nm(fs::mkdirs(dirPath));
+        auto        dirPath = rootDir / "heightmap_dump" / ("terrain_" + std::to_string(key.tid) + " ") / ("lod_" + std::to_string(key.lod) + " ") / asFilename(parent);
+        auto fpath = dirPath / (asFilename(key) + ".png");
+        fs::create_directories(dirPath);
         std::transform(begin(cpuSlot->data), end(cpuSlot->data), std::back_inserter(data), [&](float d) { return static_cast<uint8_t>((d + 1.0) * 127.5f); });
-        dg_assert_nm(dimg::WriteImageToFile(fpath.c_str(), DataTileProducer::tileResolution.x, DataTileProducer::tileResolution.y, dimg::PixelFormat::R8Unorm, data.data()));
+        dimg::WriteImageToFile(fpath, DataTileProducer::tileResolution.x, DataTileProducer::tileResolution.y, dimg::PixelFormat::R8Unorm, data.data());
     }
 }

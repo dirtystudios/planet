@@ -35,8 +35,8 @@ private:
 public:
     MeshMaterial(gfx::RenderDevice* device, const MaterialData& matData, gfx::ShaderId ps) {
 
-        std::string assetDirPath = config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory");
-        if (!fs::IsPathDirectory(assetDirPath)) {
+        auto assetDirPath = fs::path{ config::Config::getInstance().GetConfigString("RenderDeviceSettings", "AssetDirectory") };
+        if (assetDirPath.empty()) {
             LOG_E("Invalid Directory Path given for AssetDirectory.");
         }
         if (matData.diffuseData.data != nullptr) {

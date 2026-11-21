@@ -16,7 +16,7 @@ namespace fs {
         WatcherId id;
         HANDLE dirHandle;
         FileEventDelegate delegate;
-        std::string path;
+        fs::path path;
         std::vector<BYTE> buffer;
         std::vector<BYTE> backBuffer;
         DWORD bytesReturned;
@@ -83,8 +83,7 @@ namespace fs {
             FILE_NOTIFY_INFORMATION& fni = (FILE_NOTIFY_INFORMATION&)*pBase;
 
             CStringW wstrFilename(fni.FileName, fni.FileNameLength / sizeof(wchar_t));
-            std::wstring stemp = std::wstring(watcher->path.begin(), watcher->path.end());
-            CStringW sw = stemp.c_str();
+            CStringW sw = watcher->path.c_str();
             // Handle a trailing backslash, such as for a root directory.
             if (wstrFilename.Right(1) != L"\\")
                 wstrFilename = sw + L"\\" + wstrFilename;
@@ -118,7 +117,7 @@ namespace fs {
                 LOG_E("WatchDir - Invalid Event given in notification");
             }
 
-            fEvent.fpath = CW2A(wstrFilename);
+            fEvent.fpath = fs::path{ wstrFilename.GetString() };
 
             watcher->delegate(fEvent);
 
@@ -129,11 +128,10 @@ namespace fs {
     }
 
 
-    WatcherId WatchDirManager::AddWatcher(const std::string& path, FileEventDelegate delegate) {
+    WatcherId WatchDirManager::AddWatcher(const fs::path& path, FileEventDelegate delegate) {
         static uint64_t key = 1;
 
-        std::wstring stemp = std::wstring(path.begin(), path.end());
-        LPCWSTR sw = stemp.c_str();
+        LPCWSTR sw = path.c_str();
 
         HANDLE handle = CreateFileW(
             sw,					// pointer to the file name
@@ -180,12 +178,7 @@ namespace fs {
             return 0;
         }
 
-        auto it = _watchedPaths.find(path);
-        if (it == end(_watchedPaths)) {
-            std::vector<Watcher*> watchers;
-            _watchedPaths.insert(std::make_pair(path, watchers));
-        }
-        _watchedPaths[path].push_back(watcher.get());
+        _watchedPaths[path.string()].push_back(watcher.get());
         _watchers.push_back(std::move(watcher));
 
         return key-1;
@@ -201,7 +194,7 @@ namespace fs {
         CancelIo(result->get()->dirHandle);
         CloseHandle(result->get()->dirHandle);
 
-        auto pathObservers = _watchedPaths.find(result->get()->path);
+        auto pathObservers = _watchedPaths.find(result->get()->path.string());
         if (pathObservers == end(_watchedPaths)) {
             LOG_D("WatchDir - Path already removed");
         }

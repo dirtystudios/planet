@@ -5,5 +5,5 @@
 #include "MaterialData.h"
 
 namespace materialImport {
-    std::vector<MaterialData> LoadMaterialDataFromFile(const std::string& fpath);
+    std::vector<MaterialData> LoadMaterialDataFromFile(const fs::path& fpath);
 }

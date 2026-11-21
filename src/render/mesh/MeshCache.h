@@ -35,7 +35,7 @@ public:
         indexBufferId = _device->AllocateBuffer(iBufDesc);
     }
 
-    FileDataType LoadDataFromFile(const std::string& fpath) {
+    FileDataType LoadDataFromFile(const fs::path& fpath) {
         return meshImport::LoadMeshDataFromFile(fpath);
     }
 

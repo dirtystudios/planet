@@ -16,12 +16,12 @@
 #include "DGAssert.h"
 #include "Log.h"
 
-std::unordered_map<std::string, AnimationData> animationImport::LoadAnimationDataFromFile(const std::string& fpath) {
+std::unordered_map<std::string, AnimationData> animationImport::LoadAnimationDataFromFile(const fs::path& fpath) {
     std::unordered_map<std::string, AnimationData> animInfo;
 
     Assimp::Importer import;
 
-    const aiScene* scene = import.ReadFile(fpath,
+    const aiScene* scene = import.ReadFile(fpath.string(),
         aiProcess_JoinIdenticalVertices
         | aiProcess_Triangulate
         | aiProcess_FlipUVs

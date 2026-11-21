@@ -107,7 +107,7 @@ const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string&
     return NULL;
 }
 
-meshImport::MeshData meshImport::LoadMeshDataFromFile(const std::string& fpath) {
+meshImport::MeshData meshImport::LoadMeshDataFromFile(const fs::path& fpath) {
 
     std::vector<MeshNode> meshNodes;
     std::vector<MeshGeometryData> meshGeomData;
@@ -115,7 +115,7 @@ meshImport::MeshData meshImport::LoadMeshDataFromFile(const std::string& fpath) 
     std::map<uint32_t, std::vector<uint32_t>> tree;
     Assimp::Importer import;
 
-    const aiScene* scene = import.ReadFile(fpath,
+    const aiScene* scene = import.ReadFile(fpath.string(),
         aiProcess_JoinIdenticalVertices
         | aiProcess_Triangulate
         | aiProcess_FlipUVs

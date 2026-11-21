@@ -68,15 +68,15 @@ Image::~Image() {
     }
 }
 
-bool dimg::WriteImageToFile(const char* fpath, uint32_t width, uint32_t height, PixelFormat format, void* data) {
+bool dimg::WriteImageToFile(const fs::path& fpath, uint32_t width, uint32_t height, PixelFormat format, void* data) {
     dg_assert_nm(format == PixelFormat::R8Unorm || format == PixelFormat::RGB8Unorm || format == PixelFormat::RGBA8Unorm);
-    int result = stbi_write_png(fpath, width, height, getComponents(format), data, getStride(width, format));
+    int result = stbi_write_png(fpath.string().c_str(), width, height, getComponents(format), data, getStride(width, format));
     return result == 1;
 }
 
-bool dimg::LoadImageFromFile(const char* fpath, Image* image) {
+bool dimg::LoadImageFromFile(const fs::path& fpath, Image* image) {
     int      components = 0;
-    uint8_t* data       = stbi_load(fpath, (int*)&image->width, (int*)&image->height, &components, 0);
+    uint8_t* data       = stbi_load(fpath.string().c_str(), (int*)&image->width, (int*)&image->height, &components, 0);
     if (!data) {
         LOG_D("Failed to load image %s", fpath);
         return false;
