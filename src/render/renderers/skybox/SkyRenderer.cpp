@@ -39,7 +39,7 @@ void SkyRenderer::Register(SkyboxRenderObj* skybox) {
     dimg::Image skyboxImages[6];
     for (uint32_t idx = 0; idx < 6; ++idx) {
         if (!LoadImageFromFile(skybox->_imagePaths[idx].c_str(), &skyboxImages[idx])) {
-            LOG_E("Failed to load image: %s", skybox->_imagePaths[idx].c_str());
+            LOG_E("Failed to load image: {}", skybox->_imagePaths[idx]);
         }
     }
 

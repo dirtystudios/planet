@@ -44,7 +44,7 @@ namespace materialImport {
 
             aiString materialName;
             material->Get(AI_MATKEY_NAME, materialName);
-            LOG_D("Material:%s", materialName.C_Str());
+            LOG_D("Material:{}", materialName.C_Str());
             matData->name = std::string(materialName.C_Str());
 
             if (material->GetTextureCount(aiTextureType_DIFFUSE)) {
@@ -53,7 +53,7 @@ namespace materialImport {
 
                 material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath);
                 matData->diffuseMap = texturePath.C_Str();
-                LOG_D("aiTextureType_DIFFUSE:%s", matData->diffuseMap.c_str());
+                LOG_D("aiTextureType_DIFFUSE:{}", matData->diffuseMap);
 
                 auto imgPath = fpath.parent_path() / matData->diffuseMap;
 
@@ -68,7 +68,7 @@ namespace materialImport {
                 aiString texturePath;
                 material->GetTexture(aiTextureType_SPECULAR, 0, &texturePath);
                 matData->specularMap = texturePath.C_Str();
-                LOG_D("aiTextureType_SPECULAR:%s", matData->specularMap.c_str());
+                LOG_D("aiTextureType_SPECULAR:{}", matData->specularMap);
             }
 
             aiColor3D color;

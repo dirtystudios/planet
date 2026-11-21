@@ -14,7 +14,7 @@ namespace fs {
         std::ifstream fin(fpath, std::ios::in | std::ios::binary);
 
         if (fin.fail()) {
-            LOG_E("Failed to open file '%s'\n", fpath.c_str());
+            LOG_E("Failed to open file '{}'\n", fpath);
             return false;
         }
 

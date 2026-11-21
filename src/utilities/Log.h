@@ -3,21 +3,29 @@
 #include <cstdio>
 #include <string>
 
-class Log {
-public:
-    enum class Level : uint8_t {
-        Debug = 0,
-        Warn,
-        Error,
+#include <fmt/std.h>
+#include <spdlog/spdlog.h>
 
-    };
+#define LOG_D(...)                                                      \
+    do {                                                                \
+        spdlog::logger* default_logger = spdlog::default_logger_raw();  \
+        if (default_logger->should_log(spdlog::level::debug))           \
+            SPDLOG_LOGGER_DEBUG(default_logger, __VA_ARGS__);           \
+    } while (0)
 
-    static void msg(Log::Level level, const std::string& channel, std::string fmt, ...);
-};
+#define LOG_W(...)                                                       \
+    do {                                                                 \
+        spdlog::logger* default_logger = spdlog::default_logger_raw();   \
+        if (default_logger->should_log(spdlog::level::warn))             \
+            SPDLOG_LOGGER_WARN(default_logger, __VA_ARGS__);             \
+    } while (0)
 
-static const std::string kDefaultChannel = "main";
+#define LOG_E(...)                                                        \
+    do {                                                                  \
+        spdlog::logger* default_logger = spdlog::default_logger_raw();    \
+        if (default_logger->should_log(spdlog::level::err))               \
+            SPDLOG_LOGGER_ERROR(default_logger, __VA_ARGS__);             \
+    } while (0)
 
-#define LOG_D(fmt, ...) Log::msg(Log::Level::Debug, kDefaultChannel, fmt, ##__VA_ARGS__);
-#define LOG_W(fmt, ...) Log::msg(Log::Level::Warn, kDefaultChannel, fmt, ##__VA_ARGS__);
-#define LOG_E(fmt, ...) Log::msg(Log::Level::Error, kDefaultChannel, fmt, ##__VA_ARGS__);
-#define LOG(level, channel, fmt, ...) Log::msg(level, channel, fmt, ##__VA_ARGS__);
+
+void initlogging();

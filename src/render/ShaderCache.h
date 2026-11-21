@@ -26,12 +26,12 @@ public:
         }
 
         _baseDir += _device->DeviceConfig.ShaderDir;
-        LOG_D("ShaderChache initialized (%s)", _baseDir.c_str());
+        LOG_D("ShaderChache initialized ({})", _baseDir);
 
         fs::FileEventDelegate eventCallback = [&](const fs::FileEvent& event) {
             std::string fileContents;
             if (!fs::ReadFileContents(event.fpath, &fileContents)) {
-                LOG_D("Filed to read file contents for file:%s", event.fpath.c_str());
+                LOG_D("Filed to read file contents for file:{}", event.fpath);
                 return;
             }
             
@@ -56,13 +56,13 @@ public:
             if (!entry.is_regular_file())
                 continue;
             auto fname = entry.path().filename().string();
-            LOG_D("Creating shader for file:%s", fname.c_str());
+            LOG_D("Creating shader for file:{}", fname);
 
             allSrcs.emplace_back();
             std::string& fileContentsBuffer = allSrcs.back();
 
             if (!fs::ReadFileContents(entry, &fileContentsBuffer)) {
-                LOG_D("Filed to read file contents for file:%s", fname.c_str());
+                LOG_D("Filed to read file contents for file:{}", fname);
                 continue;
             }
 

@@ -28,14 +28,14 @@ namespace config {
             std::ifstream fin(configPath);
 
             if (fin.fail()) {
-                LOG_E("Failed to open file '%s'\n", configPath.c_str());
+                LOG_E("Failed to open file '{}'\n", configPath);
                 assert(false);
             }
             try {
                 p = new INI::Parser(configPath.string().c_str());
             }
             catch (std::runtime_error& e) {
-                LOG_E("INI Parsing Error: %s", e.what());
+                LOG_E("INI Parsing Error: {}", e.what());
             }
         };
 

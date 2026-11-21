@@ -59,7 +59,7 @@ do {                                                                            
 func;                                                                                                          \
 GLenum err = glGetError();                                                                                     \
 if (err != GL_NO_ERROR) {                                                                                      \
-LOG_E("GL error: %d (%s) %s\n", err, GLEnumToString(err).c_str(), #func);                          \
+LOG_E("GL error: {} ({}) {}\n", err, GLEnumToString(err), #func);                          \
 assert(false);                                                                                             \
 }                                                                                                              \
 } while (false)

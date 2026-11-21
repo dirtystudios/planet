@@ -78,12 +78,12 @@ bool dimg::LoadImageFromFile(const fs::path& fpath, Image* image) {
     int      components = 0;
     uint8_t* data       = stbi_load(fpath.string().c_str(), (int*)&image->width, (int*)&image->height, &components, 0);
     if (!data) {
-        LOG_D("Failed to load image %s", fpath);
+        LOG_D("Failed to load image {}", fpath);
         return false;
     }
 
     image->data = data;
-    LOG_D("%s, w:%d h:%d comp:%d", fpath, image->width, image->height, components);
+    LOG_D("{}, w:{} h:{} comp:{}", fpath, image->width, image->height, components);
     image->pixelFormat = getFormat(components);
     return true;
 }

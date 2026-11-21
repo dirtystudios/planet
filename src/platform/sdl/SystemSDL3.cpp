@@ -104,7 +104,7 @@ float sys::GetTime() {
 
 void sys::ShowCursor(bool showCursor) {
     if (!SDL_SetWindowRelativeMouseMode(_window, showCursor ? false : true)) {
-        LOG_E("SDL_SetRelativeMouseMode failed setting %d. Error: %s", showCursor, SDL_GetError());
+        LOG_E("SDL_SetRelativeMouseMode failed setting {}. Error: {}", showCursor, SDL_GetError());
     }
 }
 
@@ -112,7 +112,7 @@ int sys::Run(app::Application* app) {
     _app = app;
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS)) {
-        LOG_E("SDL Init Failed: %s", SDL_GetError());
+        LOG_E("SDL Init Failed: {}", SDL_GetError());
         return -1;
     }
 
@@ -136,7 +136,7 @@ int sys::Run(app::Application* app) {
     _window = SDL_CreateWindow(_window_title, _window_width, _window_height, sdlCreateAdditionalFlags | SDL_WINDOW_RESIZABLE);
 
     if (_window == NULL) {
-        LOG_E("SDL could not create window: %s", SDL_GetError());
+        LOG_E("SDL could not create window: {}", SDL_GetError());
         return -1;
     }
 
@@ -188,11 +188,11 @@ int sys::Run(app::Application* app) {
     PopulateKeyMapping();
     auto sver = SDL_GetVersion();
 
-    LOG_D("SDL Initialized. Version: %d.%d.%d", SDL_VERSIONNUM_MAJOR(sver), SDL_VERSIONNUM_MINOR(sver), SDL_VERSIONNUM_MICRO(sver));
+    LOG_D("SDL Initialized. Version: {}.{}.{}", SDL_VERSIONNUM_MAJOR(sver), SDL_VERSIONNUM_MINOR(sver), SDL_VERSIONNUM_MICRO(sver));
 
     int numJoysticks{};
     auto js = SDL_GetJoysticks(&numJoysticks);
-    LOG_D("SDL: Num Joysticks Connected : %d", numJoysticks);
+    LOG_D("SDL: Num Joysticks Connected : {}", numJoysticks);
 
     for (int x = 0; x < numJoysticks; ++x)
     {
@@ -201,7 +201,7 @@ int sys::Run(app::Application* app) {
             continue;
         }
         SDL_OpenGamepad(js[x]);
-        LOG_D("SDL: Opened Controller index: %d", x);
+        LOG_D("SDL: Opened Controller index: {}", x);
     }
 
     SDL_free(js);

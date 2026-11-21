@@ -53,7 +53,7 @@ public:
         }
         // hacky hack
         else {
-            Log::msg(Log::Level::Debug, "MeshGeomData", "Doesnt have texcoordData for layout, assuming it anyway");
+            LOG_D("MeshGeomData - Doesnt have texcoordData for layout, assuming it anyway");
             vertexLayout.elements.push_back(
                 gfx::VertexLayoutElement(gfx::VertexAttributeType::Float2, gfx::VertexAttributeUsage::Texcoord0, gfx::VertexAttributeStorage::Float));
         }

@@ -44,7 +44,7 @@ public:
         }
         else {
             // just log for now
-            Log::msg(Log::Level::Debug, "MeshMatLoader", "No diffuse map specified, using white");
+            LOG_D("MeshMatLoader - No diffuse map specified, using white");
             // euge said to use a 16x16 white texture
             // and yes, this *is* a new texture everytime
             std::vector<uint32_t> whiteImageData(16 * 16, 0xFFFFFFFF);

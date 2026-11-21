@@ -204,7 +204,7 @@ namespace gfx {
 #endif
             break;
         default:
-            LOG_E("DX11RenderDev: Unsupported shader type supplied. Type: %d", shaderType);
+            LOG_E("DX11RenderDev: Unsupported shader type supplied. Type: {}", ToString(shaderType));
             return blob;
         }
 
@@ -217,10 +217,10 @@ namespace gfx {
 
         if (FAILED(hr)) {
             if (errorBlob) {
-                LOG_E("DX11RenderDev: Failed to Compile Shader. Error: %s", errorBlob->GetBufferPointer());
+                LOG_E("DX11RenderDev: Failed to Compile Shader. Error: {}", errorBlob->GetBufferPointer());
             }
             else {
-                LOG_E("DX11RenderDev: Failed to compile Shader. Hr: 0x%x", hr);
+                LOG_E("DX11RenderDev: Failed to compile Shader. Hr: 0x{:x}", hr);
             }
             return blob;
         }
@@ -681,14 +681,14 @@ namespace gfx {
             dxLevel = "10.0";
         }
 
-        LOG_D("DirectX Feature Level: v%s", dxLevel);
+        LOG_D("DirectX Feature Level: v{}", dxLevel);
 
         // spit out these cause im curious what cards support them
         D3D11_FEATURE_DATA_THREADING feat;
         m_dev->CheckFeatureSupport(D3D11_FEATURE_THREADING, &feat, sizeof(D3D11_FEATURE_DATA_THREADING));
 
-        LOG_D("CommandListSupport: %s", feat.DriverCommandLists ? "True" : "False");
-        LOG_D("ConcurrentCreateSupport: %s", feat.DriverConcurrentCreates ? "True" : "False");
+        LOG_D("CommandListSupport: {}", feat.DriverCommandLists ? "True" : "False");
+        LOG_D("ConcurrentCreateSupport: {}", feat.DriverConcurrentCreates ? "True" : "False");
 
         m_immediateContext.reset(new DX11Context(context));
 

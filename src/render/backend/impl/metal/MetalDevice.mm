@@ -16,8 +16,8 @@
 #include "MetalCommandBuffer.h"
 
 static const std::string kMetalGfxChannel = "MetalDevice";
-#define GFXLog_D(fmt, ...) LOG(Log::Level::Debug, kMetalGfxChannel, fmt, ##__VA_ARGS__)
-#define GFXLog_W(fmt, ...) LOG(Log::Level::Warn, kMetalGfxChannel, fmt, ##__VA_ARGS__)
+#define GFXLog_D(...) LOG_D(__VA_ARGS__)
+#define GFXLog_W(...) LOG_W(__VA_ARGS__)
 
 using namespace gfx;
 

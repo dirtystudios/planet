@@ -76,6 +76,7 @@ find_package(assimp CONFIG REQUIRED)
 find_package(simdutf CONFIG REQUIRED)
 find_package(slang CONFIG REQUIRED)
 find_package(Stb REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 # Sources
 macro(PL_FILES_APPEND)
@@ -179,11 +180,15 @@ target_link_libraries(planet
                             assimp::assimp
                             slang::slang
                             simdutf::simdutf
-                            SDL3::SDL3)
+                            SDL3::SDL3
+                            spdlog::spdlog)
 target_include_directories(planet PRIVATE ${Stb_INCLUDE_DIR})
 
 if (WIN32)
     target_link_libraries(planet PRIVATE d3d11.lib dxgi.lib dxguid.lib d3dcompiler.lib)
 endif()
 
-target_compile_definitions(planet PRIVATE GLM_ENABLE_EXPERIMENTAL)
+target_compile_definitions(planet 
+                            PRIVATE 
+                            GLM_ENABLE_EXPERIMENTAL
+                            SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)

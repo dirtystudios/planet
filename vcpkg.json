@@ -13,7 +13,8 @@
     "shader-slang",
     "simdutf",
     "simde",
-    "stb"
+    "stb",
+    "spdlog"
   ],
   "default-features": [
     "system-sdl3"

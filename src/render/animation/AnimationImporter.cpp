@@ -40,7 +40,7 @@ std::unordered_map<std::string, AnimationData> animationImport::LoadAnimationDat
         const aiAnimation* pAnimation = scene->mAnimations[i];
         const std::string animName = std::string(pAnimation->mName.C_Str());
 
-        LOG_D("Processing Animation: %s", animName.c_str());
+        LOG_D("Processing Animation: {}", animName);
         dg_assert(pAnimation->mNumMeshChannels == 0, "Mesh Animation Channels > 0 not supported");
         
         AnimationData animData;

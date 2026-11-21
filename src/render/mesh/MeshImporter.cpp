@@ -129,7 +129,7 @@ meshImport::MeshData meshImport::LoadMeshDataFromFile(const fs::path& fpath) {
     );
 
     if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        LOG_E("ASSIMP %s", import.GetErrorString());
+        LOG_E("ASSIMP {}", import.GetErrorString());
         return{};
     }
     
@@ -137,7 +137,7 @@ meshImport::MeshData meshImport::LoadMeshDataFromFile(const fs::path& fpath) {
     meshGeomData.reserve(scene->mNumMeshes);
     for (uint32_t i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
-        LOG_D("Mesh:%s", mesh->mName.C_Str());
+        LOG_D("Mesh:{}", mesh->mName.C_Str());
         meshGeomData.emplace_back(ProcessMesh(mesh, scene, boneInfo));
     }
 
@@ -149,7 +149,7 @@ meshImport::MeshData meshImport::LoadMeshDataFromFile(const fs::path& fpath) {
     while(!dfsQueue.empty()) {
         auto node = dfsQueue.front();
         const std::string nodeName = std::string(node->mName.C_Str());
-        LOG_D("Processing node:%s", nodeName.c_str());
+        LOG_D("Processing node:{}", nodeName);
         dfsQueue.pop();	
 
 		const size_t currentIdx = meshNodes.size();

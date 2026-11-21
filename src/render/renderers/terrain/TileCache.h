@@ -6,8 +6,7 @@
 #include "LRUCache.h"
 #include "Log.h"
 
-static const std::string kGPUTileCachChannel = "GPUTileCache";
-#define GPUTCLog(fmt, ...) LOG(Log::Level::Debug, kGPUTileCachChannel, fmt, ##__VA_ARGS__)
+#define GPUTCLog(...) LOG_D(__VA_ARGS__)
 
 template <typename K, typename V>
 class TileCache : private IdObj {
@@ -40,7 +39,7 @@ public:
         bool matchesKey = true;
         if (*slot == nullptr) {
             if (!_tileBuffer->hasCapacity()) {
-                GPUTCLog("CacheId:%d GetSlot(%s) - cache miss and no available. Evicting", _id, toString(key).c_str());
+                GPUTCLog("CacheId:{} GetSlot({}) - cache miss and no available. Evicting", _id, toString(key).c_str());
                 dg_assert_nm(_cache->forceEvict());
                 // TODO: handle tiles that reference the slot that just got evicted. They think that have data in the slot
             }

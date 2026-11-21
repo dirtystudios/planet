@@ -73,7 +73,7 @@ namespace fs {
             &NotificationCompletion);           // completion routine
 
         if (!success) {
-            LOG_E("WatchDir - ReadDirChangesW reset Failed, %d", GetLastError());
+            LOG_E("WatchDir - ReadDirChangesW reset Failed, {}", GetLastError());
             return;
         }
 
@@ -174,7 +174,7 @@ namespace fs {
             &NotificationCompletion);           // completion routine
 
         if (!success) {
-            LOG_E("WatchDir - ReadDirChangesW Failed, %d", GetLastError());
+            LOG_E("WatchDir - ReadDirChangesW Failed, {}", GetLastError());
             return 0;
         }
 
