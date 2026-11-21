@@ -119,8 +119,15 @@ int sys::Run(app::Application* app) {
     std::string renderDeviceConfig =
         config::Config::getInstance().GetConfigString("RenderDeviceSettings", "RenderDevice");
     gfx::RenderDeviceApi deviceApi = gfx::ApiFromString(renderDeviceConfig);
-    dg_assert(deviceApi != gfx::RenderDeviceApi::Unknown, "Could not find compatible device api for string:%s",
-              renderDeviceConfig.c_str());
+
+    if (deviceApi == gfx::RenderDeviceApi::Unknown) {
+#ifdef _WIN32
+        deviceApi = gfx::RenderDeviceApi::D3D11;
+#elif defined(__APPLE__)
+        deviceApi = gfx::RenderDeviceApi::Metal;
+#endif
+
+    }
 
     if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
         // TODO: context creation should probably be moved to render backend
@@ -163,7 +170,7 @@ int sys::Run(app::Application* app) {
     else {
         assert(false);
     }
-#else
+#elif defined(__APPLE__)
     if (deviceApi == gfx::RenderDeviceApi::OpenGL) {
         dg_assert_fail("OpenGL isnt supported on MacOS");
     } else if (deviceApi == gfx::RenderDeviceApi::Metal) {
@@ -172,6 +179,8 @@ int sys::Run(app::Application* app) {
         dg_assert_fail_nm();
     }
     windowHandle = SDL_GetPointerProperty(SDL_GetWindowProperties(_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+#else
+#error "fixme"
 #endif
 
     dg_assert_nm(windowHandle);

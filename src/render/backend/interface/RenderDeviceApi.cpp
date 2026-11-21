@@ -2,29 +2,22 @@
 
 
 namespace gfx {
-RenderDeviceApi ApiFromString(const std::string& apiString) {
-    static constexpr size_t d3d11StringCount                                = 1;
-    static constexpr std::array<const char*, d3d11StringCount> d3d11Strings = {{"directx11"}};
-    static constexpr size_t glStringCount                                   = 1;
-    static constexpr std::array<const char*, glStringCount> glStrings       = {{"opengl"}};
-    static constexpr size_t mtlStringCount                                  = 1;
-    static constexpr std::array<const char*, mtlStringCount> mtlStrings     = {{"metal"}};
-    
+RenderDeviceApi ApiFromString(const std::string& apiString) {   
     std::string lowerCase = ToLowercase(apiString);
     
-    for (const char* str : d3d11Strings) {
+    for (const char* str : { "directx11" }) {
         if (lowerCase.compare(str) == 0) {
             return RenderDeviceApi::D3D11;
         }
     }
     
-    for (const char* str : glStrings) {
+    for (const char* str : { "opengl" }) {
         if (lowerCase.compare(str) == 0) {
             return RenderDeviceApi::OpenGL;
         }
     }
     
-    for (const char* str : mtlStrings) {
+    for (const char* str : { "metal" }) {
         if (lowerCase.compare(str) == 0) {
             return RenderDeviceApi::Metal;
         }
